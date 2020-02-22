@@ -156,7 +156,7 @@ fun Project.publishingConfig(
 
 }
 
-fun PublishingExtension.config(
+private fun PublishingExtension.config(
     project: Project,
     pubName: String,
     variant: String = "",
@@ -178,9 +178,10 @@ fun PublishingExtension.config(
 
 }
 
-fun currentZonedDateTime(): String =
+private fun currentZonedDateTime(): String =
     ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
 
+@Suppress("unused")
 fun BintrayExtension.config(
     project: Project,
     pubName: String,
@@ -235,6 +236,7 @@ fun BintrayExtension.config(
 
 }
 
+@Suppress("unused")
 fun SigningExtension.config(
     project: Project,
     pubName: String,
