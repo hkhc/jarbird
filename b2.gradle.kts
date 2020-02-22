@@ -18,7 +18,6 @@ repositories {
     }
 }
 
-
 plugins {
     kotlin("jvm") version "1.3.61"
     `kotlin-dsl`
@@ -33,22 +32,6 @@ compileKotlin.kotlinOptions {
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
-}
-
-sourceSets{
-    main {
-        java {
-            srcDirs("src/java")
-        }
-        resources {
-            srcDirs("src/resources")
-        }
-    }
-    test {
-        java {
-            srcDirs("src/test")
-        }
-    }
 }
 
 val artifactGroup: String by project
@@ -78,10 +61,8 @@ publishing {
                 description.set(pomDescription)
                 url.set(pomUrl)
             }
-
         }
     }
-
 }
 
 dependencies {
@@ -90,5 +71,4 @@ dependencies {
 
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
-
 }

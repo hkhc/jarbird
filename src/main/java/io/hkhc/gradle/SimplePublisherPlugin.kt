@@ -8,6 +8,5 @@ class SimplePublisherPlugin : Plugin<Project> {
     override fun apply(project: Project) {
 
         // do nothing at the moment
-
     }
 }

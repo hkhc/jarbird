@@ -29,7 +29,6 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.closureOf
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.named
 import org.gradle.plugins.signing.SigningExtension
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -138,6 +137,7 @@ fun RepositoryHandler.createRepository(project: Project) {
  * @param pubComponent The component name to publish, it is usually "java" for ordinary jar
  * archives, and "android" for Android AAR
  */
+@Suppress("unused")
 fun Project.publishingConfig(
     pubName: String,
     variant: String = "",
@@ -149,7 +149,7 @@ fun Project.publishingConfig(
     val ext = (this as ExtensionAware).extensions
 
     ext.findByType(PublishingExtension::class.java)?.config(this, pubName, variantCap, pubComponent)
-    if (!pubConfig.artifactVersion.endsWith("-SNAPSHOT")?:false) {
+    if (!pubConfig.artifactVersion.endsWith("-SNAPSHOT")) {
         ext.findByType(SigningExtension::class.java)?.config(this, pubName, variantCap)
     }
     ext.findByType(BintrayExtension::class.java)?.config(this, pubName, variantCap)
@@ -178,7 +178,7 @@ fun PublishingExtension.config(
 
 }
 
-fun currentZonedDateTime() =
+fun currentZonedDateTime(): String =
     ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
 
 fun BintrayExtension.config(
@@ -189,8 +189,7 @@ fun BintrayExtension.config(
 
     val variantCap = variant.capitalize()
     val pubConfig = PublishConfig(project)
-    val labelList = pubConfig.bintrayLabels?.split(',') ?: emptyList()
-    val labelArray = Array(labelList.size) { labelList[it] }
+    val labelList = pubConfig.bintrayLabels?.split(',')?.toTypedArray() ?: arrayOf()
 
     override = true
     dryRun = false
@@ -210,12 +209,12 @@ fun BintrayExtension.config(
         githubRepo = pubConfig.scmGithubRepo!!
         issueTrackerUrl = pubConfig.issuesUrl!!
         version.apply {
-            name = pubConfig.artifactVersion!!
+            name = pubConfig.artifactVersion
             desc = pubConfig.pomDescription!!
             released = currentZonedDateTime()
-            vcsTag = pubConfig.artifactVersion!!
+            vcsTag = pubConfig.artifactVersion
         }
-        setLabels(*labelArray)
+        setLabels(*labelList)
     }
 
     // Bintray requires our private key in order to sign archives for us. I don't want to share

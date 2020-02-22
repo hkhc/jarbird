@@ -1,6 +1,6 @@
 import io.hkhc.gradle.publishingConfig
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 buildscript {
     repositories {
@@ -17,14 +17,12 @@ buildscript {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     jcenter()
     maven {
         url = uri("https://plugins.gradle.org/m2/")
     }
 }
-
 
 plugins {
     kotlin("jvm") version "1.3.61"
@@ -38,9 +36,6 @@ plugins {
 }
 
 apply(plugin = "io.hkhc.simplepublisher")
-
-group = "io.hkhc.gradle"
-version = "0.1-SNAPSHOT"
 
 tasks {
     dokka {
@@ -60,7 +55,8 @@ ktlint {
 }
 
 detekt {
-    config = files("default-detekt-config.yml")
+    buildUponDefaultConfig = true
+    config = files("detekt-config.yml")
 }
 
 val sourcesJar by tasks.registering(Jar::class) {
@@ -75,7 +71,6 @@ val dokkaJar by tasks.registering(Jar::class) {
     dependsOn(tasks.dokka)
 }
 
-
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = "1.8"
@@ -86,22 +81,6 @@ compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
 
-sourceSets{
-    main {
-        java {
-            srcDirs("src/java")
-        }
-        resources {
-            srcDirs("src/resources")
-        }
-    }
-    test {
-        java {
-            srcDirs("src/test")
-        }
-    }
-}
-
 project.publishingConfig("lib")
 
 dependencies {
@@ -110,5 +89,4 @@ dependencies {
 
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
-
 }
