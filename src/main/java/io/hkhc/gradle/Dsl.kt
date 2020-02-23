@@ -18,14 +18,8 @@
 
 package io.hkhc.gradle
 
-import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-class SimplePublisherPlugin : Plugin<Project> {
-
-    override fun apply(project: Project) {
-
-        project.extensions.create("simplyPublish", SimplePublisherExtension::class.java, project)
-
-    }
+fun Project.simplyPublish(configure: SimplePublisherExtension.() -> Unit) {
+    extensions.configure("simplyPublish", configure)
 }

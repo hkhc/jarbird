@@ -18,14 +18,21 @@
 
 package io.hkhc.gradle
 
-import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.TaskProvider
 
-class SimplePublisherPlugin : Plugin<Project> {
+open class SimplePublisherExtension(val project: Project) {
 
-    override fun apply(project: Project) {
+    fun publish(block: PublishParam.() -> (Unit)) {
 
-        project.extensions.create("simplyPublish", SimplePublisherExtension::class.java, project)
+        val param = PublishParam()
+        block.invoke(param)
+        val builder = PublicationBuilder(
+            project,
+            param
+        )
+        builder.build()
 
     }
+
 }

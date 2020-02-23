@@ -18,14 +18,12 @@
 
 package io.hkhc.gradle
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
+class PublishParam {
 
-class SimplePublisherPlugin : Plugin<Project> {
+    var pubName: String = ""
+    var variant: String = ""
+    var pubComponent: String = "java"
+    var dokka: Any? = null
+    var sourceSetName: String = "main"
 
-    override fun apply(project: Project) {
-
-        project.extensions.create("simplyPublish", SimplePublisherExtension::class.java, project)
-
-    }
 }

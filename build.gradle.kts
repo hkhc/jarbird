@@ -16,7 +16,7 @@
  *
  */
 
-import io.hkhc.gradle.publishingConfig
+import io.hkhc.gradle.simplyPublish
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
@@ -65,7 +65,6 @@ tasks {
 ktlint {
     debug.set(true)
     verbose.set(true)
-    android.set(true)
     coloredOutput.set(true)
     reporters {
         setOf(ReporterType.CHECKSTYLE, ReporterType.PLAIN)
@@ -75,18 +74,6 @@ ktlint {
 detekt {
     buildUponDefaultConfig = true
     config = files("detekt-config.yml")
-}
-
-val sourcesJar by tasks.registering(Jar::class) {
-    description = "Create archive of source code for the binary"
-    from(sourceSets.getByName("main").allSource)
-}
-
-val dokkaJar by tasks.registering(Jar::class) {
-    group = JavaBasePlugin.DOCUMENTATION_GROUP
-    description = "Assembles Kotlin docs with Dokka to Jar"
-    from(tasks.dokka)
-    dependsOn(tasks.dokka)
 }
 
 val compileKotlin: KotlinCompile by tasks
@@ -99,7 +86,12 @@ compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
 
-project.publishingConfig("lib")
+simplyPublish {
+    publish {
+        pubName = "lib"
+        dokka = tasks.dokka
+    }
+}
 
 dependencies {
 
