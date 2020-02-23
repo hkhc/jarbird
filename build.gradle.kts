@@ -31,7 +31,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.hkhc:simplepublisher:0.1-SNAPSHOT")
+        classpath("io.hkhc.gradle:simplepublisher:0.1-SNAPSHOT")
     }
 }
 
