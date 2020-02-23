@@ -19,20 +19,26 @@
 package io.hkhc.gradle
 
 import org.gradle.api.Project
-import org.gradle.api.tasks.TaskProvider
 
-open class SimplePublisherExtension(val project: Project) {
+open class SimplePublisherExtension(private val project: Project) {
 
-    fun publish(block: PublishParam.() -> (Unit)) {
+    private var publisherHasSetup = false
+
+    @Suppress("unused")
+    fun publish(block: (PublishParam.() -> (Unit))? = null) {
+
+        if (publisherHasSetup) {
+            throw Exception("Publisher can be setup once only.")
+        }
 
         val param = PublishParam()
-        block.invoke(param)
+        block?.invoke(param)
         val builder = PublicationBuilder(
             project,
             param
         )
         builder.build()
-
+        publisherHasSetup = false
     }
 
 }

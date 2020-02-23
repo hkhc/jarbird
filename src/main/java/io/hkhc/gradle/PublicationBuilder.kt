@@ -33,9 +33,6 @@ import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.closureOf
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.getValue
-import org.gradle.kotlin.dsl.provideDelegate
-import org.gradle.kotlin.dsl.registering
 import org.gradle.plugins.signing.SigningExtension
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -43,11 +40,11 @@ import java.time.format.DateTimeFormatter
 class PublicationBuilder(val project: Project, val param: PublishParam) {
 
     private val pubConfig = PublishConfig(project)
-    val pubName = param.pubName
-    val variantCap = param.variant.capitalize()
-    val dokka = param.dokka
-    val pubComponent = param.pubComponent
-    val sourceSetName = param.sourceSetName
+    private val pubName = param.pubName ?: "lib"
+    private val variantCap = param.variant.capitalize()
+    private val dokka = param.dokka ?: project.tasks.named("dokka")
+    private val pubComponent = param.pubComponent
+    private val sourceSetName = param.sourceSetName
 
     /**
      * @param pubName Form the maven publication name in publishing extension together with variant
@@ -66,7 +63,6 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
             ext.findByType(SigningExtension::class.java)?.config()
         }
         ext.findByType(BintrayExtension::class.java)?.config()
-
     }
 
     private fun PublishingExtension.config(
@@ -79,16 +75,14 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
         repositories {
             createRepository()
         }
-
     }
 
-    fun SigningExtension.config() {
+    private fun SigningExtension.config() {
 
         val ext = (project as ExtensionAware).extensions
         val publishingExtension = ext.findByType(PublishingExtension::class.java)
 
         publishingExtension?.let { sign(it.publications["$pubName$variantCap"]) }
-
     }
 
     @Suppress("unused")
@@ -137,7 +131,6 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
             into("${(pubConfig.artifactGroup as String)
                 .replace('.', '/')}/${pubConfig.artifactEyeD}/${pubConfig.artifactVersion}")
         })
-
     }
 
     private fun setupDokkaJar(): TaskProvider<Jar>? {
@@ -172,7 +165,6 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
                 from(project.sourceSets.getByName(sourceSetName).allSource)
             }
         }
-
     }
 
     private fun PublicationContainer.createPublication(pubComponent: String) {
@@ -225,21 +217,13 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
                 }
 
                 // TODO dependency versionMapping
-
             }
-
-
-
         }
-
     }
 
     private fun RepositoryHandler.createRepository() {
-
         maven {
-
             with(pubConfig) {
-
                 url = project.uri(
                     if (project.version.toString().endsWith("SNAPSHOT"))
                         nexusSnapshotRepositoryUrl!!
@@ -250,11 +234,8 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
                     username = nexusUsername!!
                     password = nexusPassword!!
                 }
-
             }
-
         }
-
     }
 
     private fun currentZonedDateTime(): String =

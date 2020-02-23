@@ -87,10 +87,7 @@ compileTestKotlin.kotlinOptions {
 }
 
 simplyPublish {
-    publish {
-        pubName = "lib"
-        dokka = tasks.dokka
-    }
+    publish()
 }
 
 dependencies {
