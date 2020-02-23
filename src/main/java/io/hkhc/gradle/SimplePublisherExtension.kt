@@ -22,6 +22,7 @@ import org.gradle.api.Project
 
 open class SimplePublisherExtension(private val project: Project) {
 
+    // TODO limitation shall not be global, but on per-publication-name basis
     private var publisherHasSetup = false
 
     @Suppress("unused")
@@ -38,7 +39,7 @@ open class SimplePublisherExtension(private val project: Project) {
             param
         )
         builder.build()
-        publisherHasSetup = false
+        publisherHasSetup = true
     }
 
 }

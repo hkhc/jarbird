@@ -54,9 +54,13 @@ compileTestKotlin.kotlinOptions {
 
 val artifactGroup: String by project
 val artifactVersion: String by project
-val artifactEyeD: String = project.name
+val artifactId: String by project
+val artifactEyeD = artifactId
 val pomDescription: String by project
 val pomUrl: String by project
+
+group = artifactGroup
+version = artifactVersion
 
 publishing {
 
@@ -67,7 +71,7 @@ publishing {
             groupId = artifactGroup
 
             // The default artifactId is project.name
-            // artifactId = artifactEyeD
+            artifactId = artifactEyeD
             // version is gotten from an external plugin
             //            version = project.versioning.info.display
             version = artifactVersion

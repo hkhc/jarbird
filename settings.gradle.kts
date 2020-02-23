@@ -16,4 +16,4 @@
  *
  */
 
-rootProject.name = "simplePublisher"
+rootProject.name = "simplepublisher"

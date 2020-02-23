@@ -17,6 +17,7 @@
  */
 
 import io.hkhc.gradle.simplyPublish
+import io.hkhc.gradle.PublishConfig
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
@@ -30,16 +31,13 @@ buildscript {
         }
     }
     dependencies {
-        classpath("io.hkhc.gradle:simplePublisher:0.1-SNAPSHOT")
+        classpath("io.hkhc:simplepublisher:0.1-SNAPSHOT")
     }
 }
 
 repositories {
     mavenCentral()
     jcenter()
-    maven {
-        url = uri("https://plugins.gradle.org/m2/")
-    }
 }
 
 plugins {
@@ -54,6 +52,11 @@ plugins {
 }
 
 apply(plugin = "io.hkhc.simplepublisher")
+
+val pubConfig = PublishConfig(project)
+
+group = pubConfig.artifactGroup!!
+version = pubConfig.artifactVersion!!
 
 tasks {
     dokka {

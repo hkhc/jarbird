@@ -20,10 +20,9 @@ package io.hkhc.gradle
 
 class PublishParam {
 
-    var pubName: String? = null
+    var pubName: String = "lib"
     var variant: String = ""
     var pubComponent: String = "java"
     var dokka: Any? = null
     var sourceSetName: String = "main"
-
 }

@@ -27,41 +27,46 @@ import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.tasks.GenerateModuleMetadata
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.closureOf
-import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningExtension
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class PublicationBuilder(val project: Project, val param: PublishParam) {
+class PublicationBuilder(private val project: Project, param: PublishParam) {
 
     private val pubConfig = PublishConfig(project)
-    private val pubName = param.pubName ?: "lib"
     private val variantCap = param.variant.capitalize()
+    private val pubName = "${param.pubName}$variantCap"
     private val dokka = param.dokka ?: project.tasks.named("dokka")
     private val pubComponent = param.pubComponent
     private val sourceSetName = param.sourceSetName
+    private val ext = (project as ExtensionAware).extensions
 
-    /**
-     * @param pubName Form the maven publication name in publishing extension together with variant
-     * @param variant To suffix the name of taaks and publication, so that multiple publications
-     * can co-exist
-     * @param pubComponent The component name to publish, it is usually "java" for ordinary jar
-     * archives, and "android" for Android AAR
-     */
     @Suppress("unused")
     fun build() {
 
-        val ext = (project as ExtensionAware).extensions
+        /*
+            Create a publication tasks
+                "publish${pubName}${variantCap}ToMaven${pubName}${variantCap}Repository"
+                "publish${pubName}${variantCap}ToMavenLocal"
+         */
+
+        // Without this sign will fail. may be gradle 6.2 will fix this?
+        // https://discuss.gradle.org/t/unable-to-publish-artifact-to-mavencentral/33727/3
+        project.tasks.withType<GenerateModuleMetadata> {
+            enabled = false
+        }
 
         ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
-        if (!pubConfig.artifactVersion.endsWith("-SNAPSHOT")) {
+//        if (!pubConfig.artifactVersion.endsWith("-SNAPSHOT")) {
             ext.findByType(SigningExtension::class.java)?.config()
-        }
+//        }
         ext.findByType(BintrayExtension::class.java)?.config()
     }
 
@@ -72,6 +77,7 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
         publications {
             createPublication(pubComponent = pubComponent)
         }
+
         repositories {
             createRepository()
         }
@@ -79,10 +85,12 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
 
     private fun SigningExtension.config() {
 
-        val ext = (project as ExtensionAware).extensions
         val publishingExtension = ext.findByType(PublishingExtension::class.java)
 
-        publishingExtension?.let { sign(it.publications["$pubName$variantCap"]) }
+        isRequired = !pubConfig.artifactVersion.endsWith("-SNAPSHOT")
+        publishingExtension?.let { sign(it.publications[pubName]) }
+
+
     }
 
     @Suppress("unused")
@@ -96,7 +104,7 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
 
         user = pubConfig.bintrayUser
         key = pubConfig.bintrayApiKey
-        setPublications("$pubName$variantCap")
+        setPublications(pubName)
 
         pkg.apply {
             repo = "maven"
@@ -123,7 +131,7 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
                 include("*.aar.asc")
                 include("*.jar.asc")
             }
-            from("${project.buildDir}/publications/$pubName$variantCap").apply {
+            from("${project.buildDir}/publications/$pubName").apply {
                 include("pom-default.xml.asc")
                 rename("pom-default.xml.asc",
                     "${pubConfig.artifactEyeD}-${pubConfig.artifactVersion}.pom.asc")
@@ -172,18 +180,21 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
         val dokkaJar = setupDokkaJar()
         val sourcesJar = setupSourcesJar(sourceSetName)
 
-        create<MavenPublication>("$pubName$variantCap") {
+        register(pubName, MavenPublication::class.java) {
+
+            groupId = pubConfig.artifactGroup
+
+            System.out.println("artifactID = ${pubConfig.artifactEyeD}")
+
+            // The default artifactId is project.name
+            artifactId = pubConfig.artifactEyeD
+            // version is gotten from an external plugin
+            //            version = project.versioning.info.display
+            version = pubConfig.artifactVersion
 
             with(pubConfig) {
 
-                groupId = artifactGroup
-
-                // The default artifactId is project.name
-                // artifactId = artifactEyeD
-                // version is gotten from an external plugin
-                //            version = project.versioning.info.display
-                version = artifactVersion
-                // This is the main artifact
+            // This is the main artifact
                 from(project.components[pubComponent])
                 // We are adding documentation artifact
                 dokkaJar?.let { artifact(it.get()) }
@@ -223,6 +234,7 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
 
     private fun RepositoryHandler.createRepository() {
         maven {
+            name = "Maven$pubName"
             with(pubConfig) {
                 url = project.uri(
                     if (project.version.toString().endsWith("SNAPSHOT"))
@@ -230,6 +242,11 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
                     else
                         nexusReleaseRepositoryUrl!!
                 )
+
+                System.out.println("Repository URL = ${url}")
+                System.out.println("Username = ${nexusUsername!!}")
+                System.out.println("Password = ${nexusPassword!!}")
+
                 credentials {
                     username = nexusUsername!!
                     password = nexusPassword!!
@@ -242,9 +259,5 @@ class PublicationBuilder(val project: Project, val param: PublishParam) {
         ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
 
     private val Project.sourceSets: SourceSetContainer get() =
-        (this as ExtensionAware).extensions.getByName("sourceSets") as SourceSetContainer
-
+        ext.getByName("sourceSets") as SourceSetContainer
 }
-
-
-
