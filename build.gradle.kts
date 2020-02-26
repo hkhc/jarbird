@@ -26,6 +26,7 @@ buildscript {
         mavenLocal()
         mavenCentral()
         jcenter()
+
         maven {
             url = uri("https://plugins.gradle.org/m2/")
         }

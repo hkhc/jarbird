@@ -19,6 +19,7 @@
 package io.hkhc.gradle
 
 import com.jfrog.bintray.gradle.BintrayExtension
+import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.dsl.RepositoryHandler
@@ -60,13 +61,12 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
         // Without this sign will fail. may be gradle 6.2 will fix this?
         // https://discuss.gradle.org/t/unable-to-publish-artifact-to-mavencentral/33727/3
         project.tasks.withType<GenerateModuleMetadata> {
+            System.out.println("Disable GenerateModuleMetadata")
             enabled = false
         }
 
         ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
-//        if (!pubConfig.artifactVersion.endsWith("-SNAPSHOT")) {
-            ext.findByType(SigningExtension::class.java)?.config()
-//        }
+        ext.findByType(SigningExtension::class.java)?.config()
         ext.findByType(BintrayExtension::class.java)?.config()
     }
 
@@ -126,7 +126,7 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
 
         // Bintray requires our private key in order to sign archives for us. I don't want to share
         // the key and hence specify the signature files manually and upload them.
-        filesSpec(closureOf<com.jfrog.bintray.gradle.tasks.RecordingCopyTask> {
+        filesSpec(closureOf<RecordingCopyTask> {
             from("${project.buildDir}/libs").apply {
                 include("*.aar.asc")
                 include("*.jar.asc")
@@ -197,9 +197,11 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
             // This is the main artifact
                 from(project.components[pubComponent])
                 // We are adding documentation artifact
-                dokkaJar?.let { artifact(it.get()) }
-                // And sources
-                sourcesJar?.let { artifact(it.get()) }
+                project.afterEvaluate {
+                    dokkaJar?.let { artifact(it.get()) }
+                    // And sources
+                    sourcesJar?.let { artifact(it.get()) }
+                }
 
                 // See https://maven.apache.org/pom.html for POM definitions
 
