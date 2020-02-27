@@ -20,6 +20,7 @@ package io.hkhc.gradle
 
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
+import groovy.lang.GroovyObject
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.dsl.RepositoryHandler
@@ -33,9 +34,17 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.closureOf
+import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getPluginByName
+import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningExtension
+import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
+import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
+import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
+import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -68,6 +77,9 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
         ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
         ext.findByType(SigningExtension::class.java)?.config()
         ext.findByType(BintrayExtension::class.java)?.config()
+
+        project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+
     }
 
     private fun PublishingExtension.config(
@@ -139,6 +151,34 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
             into("${(pubConfig.artifactGroup as String)
                 .replace('.', '/')}/${pubConfig.artifactEyeD}/${pubConfig.artifactVersion}")
         })
+    }
+
+    private fun ArtifactoryPluginConvention.config() {
+
+        setContextUrl("http://oss.jfrog.org")
+        publish(delegateClosureOf<PublisherConfig> {
+            repository(delegateClosureOf<GroovyObject> {
+                setProperty("repoKey", "oss-snapshot-local")
+                setProperty("username", pubConfig.bintrayUser)
+                setProperty("password", pubConfig.bintrayApiKey)
+                setProperty("maven", true)
+            })
+            defaults(delegateClosureOf<GroovyObject> {
+                invokeMethod("publications", pubName)
+                setProperty("publishArtifacts", true)
+                setProperty("publishArtifacts", true)
+                setProperty("publishPom", true)
+            })
+        })
+        resolve(delegateClosureOf<ResolverConfig> {
+            setProperty("repoKey", "jcenter")
+        })
+
+        project.tasks.register("artifactory${pubName.capitalize()}Publish", ArtifactoryTask::class) {
+            publications(pubName)
+        }
+
+
     }
 
     private fun setupDokkaJar(): TaskProvider<Jar>? {

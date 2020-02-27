@@ -93,4 +93,5 @@ dependencies {
 
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
+    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
 }

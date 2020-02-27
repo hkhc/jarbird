@@ -32,13 +32,22 @@ buildscript {
         }
     }
     dependencies {
+
         classpath("io.hkhc.gradle:simplepublisher:0.1-SNAPSHOT")
     }
 }
 
+val bintrayUser: String by project
+val bintrayApiKey: String by project
+
 repositories {
     mavenCentral()
     jcenter()
+
+    maven {
+        url = uri("http://oss.jfrog.org/oss-snapshot-local")
+    }
+
 }
 
 plugins {
@@ -50,6 +59,7 @@ plugins {
     `maven-publish`
     signing
     id("com.jfrog.bintray") version "1.8.4"
+    id("com.jfrog.artifactory") version "4.13.0"
 }
 
 apply(plugin = "io.hkhc.simplepublisher")
@@ -100,4 +110,5 @@ dependencies {
 
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
+    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
 }
