@@ -33,7 +33,7 @@ buildscript {
     }
     dependencies {
 
-        classpath("io.hkhc.gradle:simplepublisher:0.1-SNAPSHOT")
+        classpath("io.hkhc.gradle:simplepublisher:0.2")
     }
 }
 
@@ -60,14 +60,13 @@ plugins {
     signing
     id("com.jfrog.bintray") version "1.8.4"
     id("com.jfrog.artifactory") version "4.13.0"
+    id("com.gradle.plugin-publish") version "0.10.1"
+    id("java-gradle-plugin")
 }
 
 apply(plugin = "io.hkhc.simplepublisher")
 
 val pubConfig = PublishConfig(project)
-
-group = pubConfig.artifactGroup!!
-version = pubConfig.artifactVersion!!
 
 tasks {
     dokka {
@@ -100,8 +99,33 @@ compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
 
+group = pubConfig.artifactGroup!!
+version = pubConfig.effectiveArtifactVersion
+
 simplyPublish {
     publish()
+}
+
+pluginBundle {
+    website = pubConfig.pomUrl
+    vcsUrl = pubConfig.scmUrl
+    tags = listOf("publish")
+}
+
+gradlePlugin {
+    plugins {
+        create("simplepublisher") {
+            id = "io.hkhc.simplepublisher"
+            displayName = "Plugin to make publishing artifacts easy."
+            description = "Wrapping build script for major repositories and make simple things as simple as possible"
+            implementationClass = "io.hkhc.gradle.SimplePublisherPlugin"
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor(0, "seconds")
+    resolutionStrategy.cacheDynamicVersionsFor(0, "seconds")
 }
 
 dependencies {

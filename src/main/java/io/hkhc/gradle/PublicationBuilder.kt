@@ -48,7 +48,11 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-class PublicationBuilder(private val project: Project, param: PublishParam) {
+class PublicationBuilder(
+    private val extension: SimplePublisherExtension,
+    private val project: Project,
+    param: PublishParam
+) {
 
     private val pubConfig = PublishConfig(project)
     private val variantCap = param.variant.capitalize()
@@ -70,15 +74,19 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
         // Without this sign will fail. may be gradle 6.2 will fix this?
         // https://discuss.gradle.org/t/unable-to-publish-artifact-to-mavencentral/33727/3
         project.tasks.withType<GenerateModuleMetadata> {
-            System.out.println("Disable GenerateModuleMetadata")
             enabled = false
         }
 
         ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
-        ext.findByType(SigningExtension::class.java)?.config()
-        ext.findByType(BintrayExtension::class.java)?.config()
-
-        project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+        if (extension.signing) {
+            ext.findByType(SigningExtension::class.java)?.config()
+        }
+        if (extension.bintray) {
+            ext.findByType(BintrayExtension::class.java)?.config()
+        }
+        if (extension.ossArtifactory) {
+            project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+        }
 
     }
 
@@ -99,7 +107,7 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
 
         val publishingExtension = ext.findByType(PublishingExtension::class.java)
 
-        isRequired = !pubConfig.artifactVersion.endsWith("-SNAPSHOT")
+        isRequired = !pubConfig.effectiveArtifactVersion.endsWith("-SNAPSHOT")
         publishingExtension?.let { sign(it.publications[pubName]) }
 
 
@@ -120,7 +128,7 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
 
         pkg.apply {
             repo = "maven"
-            name = pubConfig.artifactEyeD
+            name = pubConfig.effectiveArtifactId
             desc = pubConfig.pomDescription!!
             setLicenses(pubConfig.licenseName!!)
             websiteUrl = pubConfig.scmUrl!!
@@ -128,10 +136,10 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
             githubRepo = pubConfig.scmGithubRepo!!
             issueTrackerUrl = pubConfig.issuesUrl!!
             version.apply {
-                name = pubConfig.artifactVersion
+                name = pubConfig.effectiveArtifactVersion
                 desc = pubConfig.pomDescription!!
                 released = currentZonedDateTime()
-                vcsTag = pubConfig.artifactVersion
+                vcsTag = pubConfig.effectiveArtifactVersion
             }
             setLabels(*labelList)
         }
@@ -146,10 +154,10 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
             from("${project.buildDir}/publications/$pubName").apply {
                 include("pom-default.xml.asc")
                 rename("pom-default.xml.asc",
-                    "${pubConfig.artifactEyeD}-${pubConfig.artifactVersion}.pom.asc")
+                    "${pubConfig.effectiveArtifactId}-${pubConfig.effectiveArtifactVersion}.pom.asc")
             }
             into("${(pubConfig.artifactGroup as String)
-                .replace('.', '/')}/${pubConfig.artifactEyeD}/${pubConfig.artifactVersion}")
+                .replace('.', '/')}/${pubConfig.effectiveArtifactId}/${pubConfig.effectiveArtifactVersion}")
         })
     }
 
@@ -224,13 +232,11 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
 
             groupId = pubConfig.artifactGroup
 
-            System.out.println("artifactID = ${pubConfig.artifactEyeD}")
-
             // The default artifactId is project.name
-            artifactId = pubConfig.artifactEyeD
+            artifactId = pubConfig.effectiveArtifactId
             // version is gotten from an external plugin
             //            version = project.versioning.info.display
-            version = pubConfig.artifactVersion
+            version = pubConfig.effectiveArtifactVersion
 
             with(pubConfig) {
 
@@ -246,7 +252,7 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
                 // See https://maven.apache.org/pom.html for POM definitions
 
                 pom {
-                    name.set(artifactEyeD)
+                    name.set(effectiveArtifactId)
                     description.set(pomDescription)
                     url.set(pubConfig.pomUrl)
                     licenses {
@@ -279,15 +285,13 @@ class PublicationBuilder(private val project: Project, param: PublishParam) {
             name = "Maven$pubName"
             with(pubConfig) {
                 url = project.uri(
-                    if (project.version.toString().endsWith("SNAPSHOT"))
+                    if (effectiveArtifactVersion.toString().endsWith("SNAPSHOT"))
                         nexusSnapshotRepositoryUrl!!
                     else
                         nexusReleaseRepositoryUrl!!
                 )
 
                 System.out.println("Repository URL = ${url}")
-                System.out.println("Username = ${nexusUsername!!}")
-                System.out.println("Password = ${nexusPassword!!}")
 
                 credentials {
                     username = nexusUsername!!

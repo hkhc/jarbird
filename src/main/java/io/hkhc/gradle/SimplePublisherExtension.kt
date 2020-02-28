@@ -25,21 +25,26 @@ open class SimplePublisherExtension(private val project: Project) {
     // TODO limitation shall not be global, but on per-publication-name basis
     private var publisherHasSetup = false
 
+    var bintray = true
+    var ossArtifactory = true
+    var gradlePlugin = false
+    var signing = true
+
     @Suppress("unused")
     fun publish(block: (PublishParam.() -> (Unit))? = null) {
 
         if (publisherHasSetup) {
-            throw Exception("Publisher can be setup once only.")
+            throw SImplyPublisherException("Publisher can be setup once only.")
         }
 
         val param = PublishParam()
         block?.invoke(param)
         val builder = PublicationBuilder(
+            this,
             project,
             param
         )
         builder.build()
         publisherHasSetup = true
     }
-
 }

@@ -21,12 +21,11 @@ package io.hkhc.gradle
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.provideDelegate
 
-class PublishConfig(project: Project) {
+class PublishConfig(private val project: Project) {
 
     val artifactGroup : String? by project
-    val artifactId : String? by project
-    val artifactEyeD = artifactId?: project.name
-    val artifactVersion : String by project
+    private val artifactId : String? by project
+    private val artifactVersion : String? by project
     val pomDescription : String? by project
     val pomUrl : String? by project
     val licenseName : String? by project
@@ -49,5 +48,10 @@ class PublishConfig(project: Project) {
     val bintrayUser: String? by project
     val bintrayApiKey: String? by project
     val bintrayLabels: String? by project // comma delimited
+
+    val effectiveArtifactId: String
+        get() = artifactId ?: project.name
+    val effectiveArtifactVersion: String
+        get() = artifactVersion ?: project.version.toString()
 
 }
