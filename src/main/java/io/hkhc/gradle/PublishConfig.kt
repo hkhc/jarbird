@@ -23,22 +23,23 @@ import org.gradle.kotlin.dsl.provideDelegate
 
 class PublishConfig(private val project: Project) {
 
-    val artifactGroup : String? by project
-    private val artifactId : String? by project
-    private val artifactVersion : String? by project
-    val pomDescription : String? by project
-    val pomUrl : String? by project
-    val licenseName : String? by project
-    val licenseUrl : String? by project
-    val licenseDist : String? by project
-    val developerId : String? by project
-    val developerName : String? by project
-    val developerEmail : String? by project
-    val scmUrl : String? by project
-    val scmConnection : String? by project
-    val scmDeveloperConnection : String? by project
-    val scmGithubRepo : String? by project
-    val issuesUrl : String? by project
+//    val artifactGroup : String? by project
+//    private val artifactId : String? by project
+//    private val artifactVersion : String? by project
+//    val pomDescription : String? by project
+//    val pomUrl : String? by project
+//    val licenseName : String? by project
+//    val licenseUrl : String? by project
+//    val licenseDist : String? by project
+
+//    val developerId : String? by project
+//    val developerName : String? by project
+//    val developerEmail : String? by project
+//    val scmUrl : String? by project
+//    val scmConnection : String? by project
+//    val scmDeveloperConnection : String? by project
+//    val scmGithubRepo : String? by project
+//    val issuesUrl : String? by project
 
     val nexusSnapshotRepositoryUrl : String? by project
     val nexusReleaseRepositoryUrl : String? by project
@@ -49,9 +50,9 @@ class PublishConfig(private val project: Project) {
     val bintrayApiKey: String? by project
     val bintrayLabels: String? by project // comma delimited
 
-    val effectiveArtifactId: String
-        get() = artifactId ?: project.name
-    val effectiveArtifactVersion: String
-        get() = artifactVersion ?: project.version.toString()
+//    val effectiveArtifactId: String
+//        get() = artifactId ?: project.name
+//    val effectiveArtifactVersion: String
+//        get() = artifactVersion ?: project.version.toString()
 
 }

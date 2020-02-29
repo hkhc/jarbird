@@ -1,0 +1,17 @@
+group: io.hkhc.gradle
+id: simplepublisher
+version: 0.2
+description: Wrapping boilerplate code of publishing artifact to maven repository
+
+license:
+  name: Apache-2.0
+  url: http://www.apache.org/licenses/LICENSE-2.0.txt
+  dist: repo
+
+developer:
+  id: hkhc
+  name: Herman Cheung
+  email: herman.kh.cheung+simplepublisher@gmail.com
+
+scm:
+  githubRepo: hkhc/simplepublisher

@@ -37,7 +37,6 @@ import org.gradle.kotlin.dsl.closureOf
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getPluginByName
-import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningExtension
@@ -54,6 +53,7 @@ class PublicationBuilder(
     param: PublishParam
 ) {
 
+    private val pom = PomFactory().resolvePom(project)
     private val pubConfig = PublishConfig(project)
     private val variantCap = param.variant.capitalize()
     private val pubName = "${param.pubName}$variantCap"
@@ -87,7 +87,6 @@ class PublicationBuilder(
         if (extension.ossArtifactory) {
             project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
         }
-
     }
 
     private fun PublishingExtension.config(
@@ -107,10 +106,8 @@ class PublicationBuilder(
 
         val publishingExtension = ext.findByType(PublishingExtension::class.java)
 
-        isRequired = !pubConfig.effectiveArtifactVersion.endsWith("-SNAPSHOT")
+        isRequired = !pom.version!!.endsWith("-SNAPSHOT")
         publishingExtension?.let { sign(it.publications[pubName]) }
-
-
     }
 
     @Suppress("unused")
@@ -128,18 +125,18 @@ class PublicationBuilder(
 
         pkg.apply {
             repo = "maven"
-            name = pubConfig.effectiveArtifactId
-            desc = pubConfig.pomDescription!!
-            setLicenses(pubConfig.licenseName!!)
-            websiteUrl = pubConfig.scmUrl!!
-            vcsUrl = pubConfig.scmUrl!!
-            githubRepo = pubConfig.scmGithubRepo!!
-            issueTrackerUrl = pubConfig.issuesUrl!!
+            name = pom.name
+            desc = pom.description
+            setLicenses(*pom.licenses.map { it.name }.toTypedArray())
+            websiteUrl = pom.web.url ?: ""
+            vcsUrl = pom.scm.url ?: ""
+            githubRepo = pom.scm.githubRepo ?: ""
+            issueTrackerUrl = pom.scm.issueUrl ?: ""
             version.apply {
-                name = pubConfig.effectiveArtifactVersion
-                desc = pubConfig.pomDescription!!
+                name = pom.version
+                desc = pom.description
                 released = currentZonedDateTime()
-                vcsTag = pubConfig.effectiveArtifactVersion
+                vcsTag = pom.version
             }
             setLabels(*labelList)
         }
@@ -154,10 +151,9 @@ class PublicationBuilder(
             from("${project.buildDir}/publications/$pubName").apply {
                 include("pom-default.xml.asc")
                 rename("pom-default.xml.asc",
-                    "${pubConfig.effectiveArtifactId}-${pubConfig.effectiveArtifactVersion}.pom.asc")
+                    "${pom.name}-${pom.version}.pom.asc")
             }
-            into("${(pubConfig.artifactGroup as String)
-                .replace('.', '/')}/${pubConfig.effectiveArtifactId}/${pubConfig.effectiveArtifactVersion}")
+            into("${pom.group!!.replace('.', '/')}/${pom.name}/${pom.version}")
         })
     }
 
@@ -185,10 +181,9 @@ class PublicationBuilder(
         project.tasks.register("artifactory${pubName.capitalize()}Publish", ArtifactoryTask::class) {
             publications(pubName)
         }
-
-
     }
 
+    @Suppress("UnstableApiUsage")
     private fun setupDokkaJar(): TaskProvider<Jar>? {
         val dokkaJarTaskName = "dokkaJar$variantCap"
         return try {
@@ -207,6 +202,7 @@ class PublicationBuilder(
         }
     }
 
+    @Suppress("UnstableApiUsage")
     private fun setupSourcesJar(sourceSetName: String): TaskProvider<Jar>? {
 
         val sourcesTaskName = "sourcesJar$variantCap"
@@ -228,55 +224,27 @@ class PublicationBuilder(
         val dokkaJar = setupDokkaJar()
         val sourcesJar = setupSourcesJar(sourceSetName)
 
+        val pomSpec = pom
+
         register(pubName, MavenPublication::class.java) {
 
-            groupId = pubConfig.artifactGroup
+            groupId = pomSpec.group
 
             // The default artifactId is project.name
-            artifactId = pubConfig.effectiveArtifactId
+            artifactId = pomSpec.name
             // version is gotten from an external plugin
             //            version = project.versioning.info.display
-            version = pubConfig.effectiveArtifactVersion
-
-            with(pubConfig) {
+            version = pomSpec.version
 
             // This is the main artifact
-                from(project.components[pubComponent])
-                // We are adding documentation artifact
-                project.afterEvaluate {
-                    dokkaJar?.let { artifact(it.get()) }
-                    // And sources
-                    sourcesJar?.let { artifact(it.get()) }
-                }
-
-                // See https://maven.apache.org/pom.html for POM definitions
-
-                pom {
-                    name.set(effectiveArtifactId)
-                    description.set(pomDescription)
-                    url.set(pubConfig.pomUrl)
-                    licenses {
-                        license {
-                            name.set(licenseName)
-                            url.set(licenseUrl)
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set(developerId)
-                            name.set(developerName)
-                            email.set(developerEmail)
-                        }
-                    }
-                    scm {
-                        connection.set(scmConnection)
-                        developerConnection.set(scmConnection)
-                        url.set(scmUrl)
-                    }
-                }
-
-                // TODO dependency versionMapping
+            from(project.components[pubComponent])
+            // We are adding documentation artifact
+            project.afterEvaluate {
+                dokkaJar?.let { artifact(it.get()) }
+                // And sources
+                sourcesJar?.let { artifact(it.get()) }
             }
+            pom { pomSpec.fillTo(this) }
         }
     }
 
@@ -285,13 +253,12 @@ class PublicationBuilder(
             name = "Maven$pubName"
             with(pubConfig) {
                 url = project.uri(
-                    if (effectiveArtifactVersion.toString().endsWith("SNAPSHOT"))
+                    if (pom.version!!.endsWith("SNAPSHOT")) {
                         nexusSnapshotRepositoryUrl!!
-                    else
+                    } else {
                         nexusReleaseRepositoryUrl!!
+                    }
                 )
-
-                System.out.println("Repository URL = ${url}")
 
                 credentials {
                     username = nexusUsername!!

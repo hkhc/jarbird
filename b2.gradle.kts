@@ -16,6 +16,16 @@
  *
  */
 
+/*
+This is a bootstrap script to do minimal thing to deploy the plugin to mavel local repository, so that
+the build.gradle.kts script can make use of itself to do full feature publishing
+
+run the following to publish bootstrap plugin
+
+./gradlew -b b2.gradle.kts publishLibToMavenLocal
+
+ */
+
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -39,6 +49,7 @@ repositories {
 plugins {
     kotlin("jvm") version "1.3.61"
     `kotlin-dsl`
+    kotlin("plugin.serialization") version "1.3.61"
     `maven-publish`
 }
 
@@ -94,4 +105,6 @@ dependencies {
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
+    implementation("com.charleskorn.kaml:kaml:0.15.0")
 }

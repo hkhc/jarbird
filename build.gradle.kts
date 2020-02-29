@@ -37,22 +37,18 @@ buildscript {
     }
 }
 
-val bintrayUser: String by project
-val bintrayApiKey: String by project
-
 repositories {
     mavenCentral()
     jcenter()
 
-    maven {
-        url = uri("http://oss.jfrog.org/oss-snapshot-local")
-    }
-
+//    maven {
+//        url = uri("http://oss.jfrog.org/oss-snapshot-local")
+//    }
 }
 
 plugins {
-    kotlin("jvm") version "1.3.61"
     `kotlin-dsl`
+    kotlin("plugin.serialization") version "1.3.61"
     id("org.jetbrains.dokka") version "0.10.1"
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("io.gitlab.arturbosch.detekt") version "1.5.1"
@@ -123,11 +119,6 @@ gradlePlugin {
     }
 }
 
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor(0, "seconds")
-    resolutionStrategy.cacheDynamicVersionsFor(0, "seconds")
-}
-
 dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
@@ -135,4 +126,6 @@ dependencies {
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
+    implementation("com.charleskorn.kaml:kaml:0.15.0")
 }
