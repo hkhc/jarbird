@@ -60,10 +60,10 @@ class PomFactory {
 
         pom.syncWith(project)
 
-        val yaml = Yaml.default.stringify(Pom.serializer(), pom)
-        System.out.println("-----POM Start-----")
-        System.out.println(yaml)
-        System.out.println("-----POM End-----")
+//        val yaml = Yaml.default.stringify(Pom.serializer(), pom)
+//        System.out.println("-----POM Start-----")
+//        System.out.println(yaml)
+//        System.out.println("-----POM End-----")
 
         return pom
     }
@@ -127,10 +127,11 @@ fun Pom.fillTo(mavenPom: MavenPom) {
         url.set(scm.url)
         tag.set(scm.tag)
     }
-    mavenPom.issueManagement {
-        if (scm.issueType != null && scm.issueUrl != null)
-        system.set(scm.issueType)
-        url.set(scm.issueUrl)
+    if (scm.issueType != null && scm.issueUrl != null) {
+        mavenPom.issueManagement {
+            system.set(scm.issueType)
+            url.set(scm.issueUrl)
+        }
     }
 }
 
@@ -146,7 +147,7 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
         setLicenses(*pom.licenses.map { it.name }.toTypedArray())
         websiteUrl = pom.web.url ?: ""
         vcsUrl = pom.scm.url ?: ""
-        if (pom.scm.repoType=="github.com") {
+        if (pom.scm.repoType == "github.com") {
             githubRepo = pom.scm.repoName ?: ""
         }
         issueTrackerUrl = pom.scm.issueUrl ?: ""
@@ -162,4 +163,3 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
 
 private fun currentZonedDateTime(): String =
     ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
-
