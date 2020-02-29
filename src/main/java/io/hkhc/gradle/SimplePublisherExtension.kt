@@ -20,15 +20,33 @@ package io.hkhc.gradle
 
 import org.gradle.api.Project
 
+// Gradle plugin extensions must be open class so that Gradle system can "decorate" it.
 open class SimplePublisherExtension(private val project: Project) {
 
     // TODO limitation shall not be global, but on per-publication-name basis
     private var publisherHasSetup = false
 
+    /**
+     * Configure for bintray publishing or not
+     */
     var bintray = true
+
+    /**
+     * Configure for OSS JFrog Snapshot publishing or not
+     */
     var ossArtifactory = true
+
+    /**
+     * Configure for gradle plugin publishing or not (reserve for future use)
+     */
     var gradlePlugin = false
+
+    /**
+     * Configure for artifact signing or not
+     */
     var signing = true
+
+    val pom = PomFactory().resolvePom(project)
 
     @Suppress("unused")
     fun publish(block: (PublishParam.() -> (Unit))? = null) {
@@ -42,7 +60,8 @@ open class SimplePublisherExtension(private val project: Project) {
         val builder = PublicationBuilder(
             this,
             project,
-            param
+            param,
+            pom
         )
         builder.build()
         publisherHasSetup = true

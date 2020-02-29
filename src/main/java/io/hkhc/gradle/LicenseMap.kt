@@ -18,18 +18,11 @@
 
 package io.hkhc.gradle
 
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.provideDelegate
-
-class PublishConfig(private val project: Project) {
-
-    val nexusSnapshotRepositoryUrl : String? by project
-    val nexusReleaseRepositoryUrl : String? by project
-    val nexusUsername : String? by project
-    val nexusPassword : String? by project
-
-    val bintrayUser: String? by project
-    val bintrayApiKey: String? by project
-    val bintrayLabels: String? by project // comma delimited
-
-}
+/**
+ * List of license identifiers and URL to the text as according to SPDX License List
+ * https://spdx.org/licenses/
+ */
+var LICENSE_MAP = mapOf(
+    "Apache-2.0" to "http://www.apache.org/licenses/LICENSE-2.0.txt",
+    "BSD-3-Clause" to "https://https://opensource.org/licenses/BSD-3-Clause"
+)

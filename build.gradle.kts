@@ -95,18 +95,22 @@ compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
 
-group = pubConfig.artifactGroup!!
-version = pubConfig.effectiveArtifactVersion
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+dependencies {
+}
 
 simplyPublish {
+    pluginBundle {
+        website = pom.url
+        vcsUrl = pom.url
+        tags = listOf("publish")
+    }
     publish()
 }
 
-pluginBundle {
-    website = pubConfig.pomUrl
-    vcsUrl = pubConfig.scmUrl
-    tags = listOf("publish")
-}
 
 gradlePlugin {
     plugins {
@@ -128,4 +132,8 @@ dependencies {
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
     implementation("com.charleskorn.kaml:kaml:0.15.0")
+
+//    testImplementation("junit:junit:4.12")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.0-BETA1")
+
 }

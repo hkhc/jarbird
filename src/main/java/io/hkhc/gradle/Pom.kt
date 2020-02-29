@@ -20,32 +20,54 @@ package io.hkhc.gradle
 
 import kotlinx.serialization.Serializable
 import org.gradle.api.Project
-import org.gradle.api.publish.maven.MavenPom
 import java.util.*
 
 @Serializable
 data class License(
-    var name: String?,
-    var url: String?,
-    var dist: String?
+    var name: String? = null,
+    var url: String? = null,
+    var dist: String? = null,
+    var comments: String? = null
 ) {
-    fun merge(other: License) {
-        name = name ?: other.name
-        url = url ?: other.url
-        dist = dist ?: other.dist
+    fun overlayTo(other: License) {
+        name?.let { other.name = name }
+        url?.let { other.url = url }
+        dist?.let { other.dist = dist }
+        comments?.let { other.comments = comments }
     }
 }
 
 @Serializable
-data class People (
-    var id: String?,
-    var name: String?,
-    var email: String?
+// TODO missed Properties, Roles
+// see https://docs.gradle.org/current/javadoc/org/gradle/api/publish/maven/MavenPomDeveloper.html
+data class People(
+    var id: String? = null,
+    var name: String? = null,
+    var email: String? = null,
+    var organization: String? = null,
+    var organizationUrl: String? = null,
+    var timeZone: String? = null,
+    var url: String? = null
 ) {
-    fun merge(other: People) {
-        id = id ?: other.id
-        name = name ?: other.name
-        email = email ?: other.email
+    fun overlayTo(other: People) {
+        id?.let { other.id = id }
+        name?.let { other.name = name }
+        email?.let { other.email = email }
+        organization?.let { other.organization = organization }
+        organizationUrl?.let { other.organizationUrl = organizationUrl }
+        timeZone?.let { other.timeZone = timeZone }
+        url?.let { other.url = url }
+    }
+}
+
+@Serializable
+data class Organization(
+    var name: String? = null,
+    var url: String? = null
+) {
+    fun overlayTo(other: Organization) {
+        name?.let { other.name = name }
+        url?.let { other.url = url }
     }
 }
 
@@ -54,9 +76,9 @@ data class Web(
     var url: String? = null,
     var description: String? = null
 ) {
-    fun merge(other: Web) {
-        url = url ?: other.url
-        description = description ?: other.description
+    fun overlayTo(other: Web) {
+        url?.let { other.url = url }
+        description?.let { other.description = description }
     }
 }
 
@@ -65,15 +87,22 @@ data class Scm(
     var url: String? = null,
     var connection: String? = null,
     var developerConnection: String? = null,
-    var githubRepo: String? = null, // "user/repo": preferbly give this only and the system try to fill others in Scm
-    var issueUrl: String? = null
+    var repoType: String? = null, // "github.com" / "gitlab.com" / "bitbucket.org"
+    var repoName: String? = null, // "user/repo": preferbly give this only and the system try to fill others in Scm
+    var issueType: String? = null, // may be same as repoType or others
+    var issueUrl: String? = null,
+    var tag: String? = null
 ) {
-    fun merge(other: Scm) {
-        url = url ?: other.url
-        connection = connection ?: other.connection
-        developerConnection = developerConnection ?: other.developerConnection
-        githubRepo = githubRepo ?: other.githubRepo
-        issueUrl = issueUrl ?: other.issueUrl
+    @Suppress("DuplicatedCode")
+    fun overlayTo(other: Scm) {
+        url?.let { other.url = url }
+        connection?.let { other.connection = connection }
+        developerConnection?.let { other.developerConnection = developerConnection }
+        repoType?.let { other.repoType = repoType }
+        repoName?.let { other.repoName = repoName }
+        issueType?.let { other.issueType = issueType }
+        issueUrl?.let { other.issueUrl = issueUrl }
+        tag?.let { other.tag = tag }
     }
 }
 
@@ -84,118 +113,108 @@ data class Pom(
     var group: String? = null,
     var name: String? = null,
     var version: String? = null,
-    var year: Int = -1,
+    var inceptionYear: Int = -1,
     var packaging: String? = null,
     var url: String? = null,
     var description: String? = null,
-    var licenses: List<License> = mutableListOf(),
-    var developers: List<People> = mutableListOf(),
-    var contributors: List<People> = mutableListOf(),
+    // Thw following 3 fields are use for YAML to setting it in serializable way.
+    var licenses: MutableList<License> = mutableListOf(),
+    var developers: MutableList<People> = mutableListOf(),
+    var contributors: MutableList<People> = mutableListOf(),
+    var organization: Organization = Organization(),
     var web: Web = Web(),
-    var scm: Scm = Scm()
+    var scm: Scm = Scm(),
+    var bintrayLabels: String? = null
 ) {
 
-    var license: License?
-        get() = if (licenses.isEmpty()) null else licenses[0]
-        set(value) { licenses = if (value == null) mutableListOf() else mutableListOf(value) }
-
-    var developer: People?
-        get() = if (developers.isEmpty()) null else developers[0]
-        set(value) { developers = if (value == null) mutableListOf() else mutableListOf(value) }
-
-    var contributor: People?
-        get() = if (contributors.isEmpty()) null else contributors[0]
-        set(value) { contributors = if (value == null) mutableListOf() else mutableListOf(value) }
-
-    private fun List<License>.mergeLicenses(others: List<License>): List<License> {
-        others.forEach { otherLicense ->
-            find { it.name == otherLicense.name }?.merge(otherLicense)
+    companion object {
+        fun overlayToLicenses(me: List<License>, other: MutableList<License>) {
+            me.forEach { meItem ->
+                val found = false
+                other.find { otherItem -> meItem.name == otherItem.name }?.apply {
+                    meItem.overlayTo(this)
+                }
+                if (!found) other.add(meItem)
+            }
         }
-        return this
-    }
-
-    private fun List<People>.mergePeople(others: List<People>): List<People> {
-        others.forEach { otherPeople ->
-            find { it.name == otherPeople.name }?.merge(otherPeople)
+        fun overlayToPeople(me: List<People>, other: MutableList<People>) {
+            me.forEach { meItem ->
+                val found = false
+                other.find { otherItem -> meItem.name == otherItem.name }?.apply {
+                    meItem.overlayTo(this)
+                }
+                if (!found) other.add(meItem)
+            }
         }
-        return this
     }
 
-    fun merge(other: Pom) {
-        group = group ?: other.group
-        name = name ?: other.name
-        version = version ?: other.version
-        year = if (year != -1) year else other.year
-        packaging = packaging ?: other.packaging
-        url = url ?: other.url
-        description = description ?: other.description
+    @Suppress("DuplicatedCode")
+    fun overlayTo(other: Pom) {
 
-        licenses.mergeLicenses(other.licenses)
-        developers.mergePeople(other.developers)
-        contributors.mergePeople(other.contributors)
+        group?.let { other.group = group }
+        name?.let { other.name = name }
+        version?.let { other.version = version }
+        if (inceptionYear != -1) { other.inceptionYear = inceptionYear }
+        packaging?.let { other.packaging = packaging }
+        url?.let { other.url = url }
+        description?.let { other.description = description }
 
-        web.merge(other.web)
-        scm.merge(other.scm)
+        overlayToLicenses(licenses, other.licenses)
+        overlayToPeople(developers, other.developers)
+        overlayToPeople(contributors, other.contributors)
+
+        organization.overlayTo(other.organization)
+        web.overlayTo(other.web)
+        scm.overlayTo(other.scm)
+
+        bintrayLabels?.let { other.bintrayLabels = bintrayLabels }
     }
 
-    fun getFrom(project: Project) {
+    private fun lookupLicenseLink(licenses: List<License>) {
+        for (lic in licenses) {
+            lic.url = lic.url ?: LICENSE_MAP[lic.name!!]
+        }
+    }
 
+    @Suppress("DuplicatedCode")
+    private fun expandScmGit(scm: Scm) {
+        if (scm.repoType!=null && scm.repoName!=null) {
+            with(scm) {
+                url = url ?: "https://$repoType/$repoName"
+                connection = connection ?: "scm:git@$repoType:$repoName.git"
+                developerConnection = developerConnection ?: "scm:git@@repoType:$repoName.git"
+                tag = tag ?: scm.tag
+                issueType = issueType ?: repoType
+                issueUrl = issueUrl ?: "https://$repoType/$repoName/issues"
+            }
+        }
+    }
+
+    fun syncWith(project: Project) {
+
+        group?.let { project.group = it }
         group = group ?: project.group.toString()
+
+        // we are not going to change the project name here.
         name = name ?: project.name
-        version = name ?: project.version.toString()
-        year = if (year != -1) year else GregorianCalendar.getInstance().get(Calendar.YEAR)
+
+        version?.let { project.version = it }
+        version = version ?: project.version.toString()
+
+        inceptionYear = if (inceptionYear != -1) inceptionYear else GregorianCalendar.getInstance().get(Calendar.YEAR)
         packaging = packaging ?: "jar"
         description = description ?: project.description
 
+        lookupLicenseLink(licenses)
+
+        // TODO handle SVN/HG/etc
+        expandScmGit(scm)
+
         web.apply {
-            url = url ?: scm.githubRepo?.let { "https://github.com/$it" }
+            url = url ?: scm.url
             description = description ?: this@Pom.description
         }
 
-        scm.apply {
-            url = url ?: githubRepo?.let { "https://github.com/$it" }
-            connection = connection ?: githubRepo?.let { "scm:git@github.com:$it.git" }
-            developerConnection = developerConnection ?: githubRepo?.let { "scm:git@github.com:$it.git" }
-            issueUrl = issueUrl ?: githubRepo?.let { "https://github.com/$githubRepo/issues" }
-        }
-
         url = url ?: scm.url
-    }
-
-    fun fillTo(mavenPom: MavenPom) {
-
-        mavenPom.name.set(name)
-        mavenPom.description.set(description)
-        mavenPom.url.set(url)
-        mavenPom.licenses {
-            for (lic in licenses) {
-                license {
-                    name.set(lic.name)
-                    url.set(lic.url)
-                }
-            }
-        }
-        mavenPom.developers {
-            for (dev in developers) {
-                developer {
-                    id.set(dev.id)
-                    name.set(dev.name)
-                    email.set(dev.email)
-                }
-            }
-        }
-        mavenPom.contributors {
-            for (cont in contributors) {
-                contributor {
-                    name.set(cont.name)
-                    email.set(cont.email)
-                }
-            }
-        }
-        mavenPom.scm {
-            connection.set(scm.connection)
-            developerConnection.set(scm.developerConnection)
-            url.set(scm.url)
-        }
     }
 }

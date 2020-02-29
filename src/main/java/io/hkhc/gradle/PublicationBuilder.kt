@@ -50,10 +50,10 @@ import java.time.format.DateTimeFormatter
 class PublicationBuilder(
     private val extension: SimplePublisherExtension,
     private val project: Project,
-    param: PublishParam
+    param: PublishParam,
+    private val pom: Pom
 ) {
 
-    private val pom = PomFactory().resolvePom(project)
     private val pubConfig = PublishConfig(project)
     private val variantCap = param.variant.capitalize()
     private val pubName = "${param.pubName}$variantCap"
@@ -71,7 +71,7 @@ class PublicationBuilder(
                 "publish${pubName}${variantCap}ToMavenLocal"
          */
 
-        // Without this sign will fail. may be gradle 6.2 will fix this?
+        // TODO Without this sign will fail. may be gradle 6.2 will fix this?
         // https://discuss.gradle.org/t/unable-to-publish-artifact-to-mavencentral/33727/3
         project.tasks.withType<GenerateModuleMetadata> {
             enabled = false
@@ -113,8 +113,6 @@ class PublicationBuilder(
     @Suppress("unused")
     private fun BintrayExtension.config() {
 
-        val labelList = pubConfig.bintrayLabels?.split(',')?.toTypedArray() ?: arrayOf()
-
         override = true
         dryRun = false
         publish = true
@@ -123,23 +121,7 @@ class PublicationBuilder(
         key = pubConfig.bintrayApiKey
         setPublications(pubName)
 
-        pkg.apply {
-            repo = "maven"
-            name = pom.name
-            desc = pom.description
-            setLicenses(*pom.licenses.map { it.name }.toTypedArray())
-            websiteUrl = pom.web.url ?: ""
-            vcsUrl = pom.scm.url ?: ""
-            githubRepo = pom.scm.githubRepo ?: ""
-            issueTrackerUrl = pom.scm.issueUrl ?: ""
-            version.apply {
-                name = pom.version
-                desc = pom.description
-                released = currentZonedDateTime()
-                vcsTag = pom.version
-            }
-            setLabels(*labelList)
-        }
+        pom.fill(pkg)
 
         // Bintray requires our private key in order to sign archives for us. I don't want to share
         // the key and hence specify the signature files manually and upload them.
@@ -159,7 +141,7 @@ class PublicationBuilder(
 
     private fun ArtifactoryPluginConvention.config() {
 
-        setContextUrl("http://oss.jfrog.org")
+        setContextUrl("https://oss.jfrog.org")
         publish(delegateClosureOf<PublisherConfig> {
             repository(delegateClosureOf<GroovyObject> {
                 setProperty("repoKey", "oss-snapshot-local")
@@ -169,7 +151,6 @@ class PublicationBuilder(
             })
             defaults(delegateClosureOf<GroovyObject> {
                 invokeMethod("publications", pubName)
-                setProperty("publishArtifacts", true)
                 setProperty("publishArtifacts", true)
                 setProperty("publishPom", true)
             })
@@ -267,9 +248,6 @@ class PublicationBuilder(
             }
         }
     }
-
-    private fun currentZonedDateTime(): String =
-        ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
 
     private val Project.sourceSets: SourceSetContainer get() =
         ext.getByName("sourceSets") as SourceSetContainer

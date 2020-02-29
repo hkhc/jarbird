@@ -19,8 +19,12 @@
 package io.hkhc.gradle
 
 import com.charleskorn.kaml.Yaml
+import com.jfrog.bintray.gradle.BintrayExtension
 import org.gradle.api.Project
+import org.gradle.api.publish.maven.MavenPom
 import java.io.File
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 class PomFactory {
 
@@ -40,19 +44,26 @@ class PomFactory {
      * resolve POM spec via a series of possible location and accumulate the details
      */
     fun resolvePom(project: Project): Pom {
-        var pom = Pom()
-        pom = System.getProperty("pomFile")?.let {
-            pom.apply { merge(readPom(it)) }
-        } ?: pom
+        val pom = Pom()
+
+        val pomFilename = "pom.yaml"
 
         val gradleUserHomePath = System.getenv("GRADLE_USER_HOME") ?: "~/.gradle"
         val homePomFile = "$gradleUserHomePath/pom.yaml"
 
-        pom.merge(readPom("$homePomFile/pom.yaml"))
-        pom.merge(readPom("${project.buildDir}/pom.yaml"))
-        pom.merge(readPom("${project.rootDir}/pom.yaml"))
+        System.getProperty("pomFile")?.let {
+            readPom(it).overlayTo(pom)
+        }
+        readPom("$homePomFile/$pomFilename").overlayTo(pom)
+        readPom("${project.rootDir}/$pomFilename").overlayTo(pom)
+        readPom("${project.buildDir}/$pomFilename").overlayTo(pom)
 
-        pom.getFrom(project)
+        pom.syncWith(project)
+
+        val yaml = Yaml.default.stringify(Pom.serializer(), pom)
+        System.out.println("-----POM Start-----")
+        System.out.println(yaml)
+        System.out.println("-----POM End-----")
 
         return pom
     }
@@ -65,3 +76,90 @@ class PomFactory {
 
     }
 }
+
+fun Pom.fillTo(mavenPom: MavenPom) {
+
+    mavenPom.name.set(name)
+    mavenPom.description.set(description)
+    mavenPom.inceptionYear.set(inceptionYear.toString())
+    mavenPom.url.set(url)
+    mavenPom.licenses {
+        for (lic in licenses) {
+            license {
+                name.set(lic.name)
+                url.set(lic.url)
+                comments.set(lic.comments)
+            }
+        }
+    }
+    mavenPom.developers {
+        for (dev in developers) {
+            developer {
+                id.set(dev.id)
+                name.set(dev.name)
+                email.set(dev.email)
+                organization.set(dev.organization)
+                organizationUrl.set(dev.organizationUrl)
+                timezone.set(dev.timeZone)
+                url.set(dev.url)
+            }
+        }
+    }
+    mavenPom.contributors {
+        for (cont in contributors) {
+            contributor {
+                name.set(cont.name)
+                email.set(cont.email)
+                organization.set(cont.organization)
+                organizationUrl.set(cont.organizationUrl)
+                timezone.set(cont.timeZone)
+                url.set(cont.url)
+            }
+        }
+    }
+    mavenPom.organization {
+        name.set(organization.name)
+        url.set(organization.url)
+    }
+    mavenPom.scm {
+        connection.set(scm.connection)
+        developerConnection.set(scm.developerConnection)
+        url.set(scm.url)
+        tag.set(scm.tag)
+    }
+    mavenPom.issueManagement {
+        if (scm.issueType != null && scm.issueUrl != null)
+        system.set(scm.issueType)
+        url.set(scm.issueUrl)
+    }
+}
+
+fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
+
+    val labelList = bintrayLabels?.split(',')?.toTypedArray() ?: arrayOf()
+
+    val pom = this
+    pkg.apply {
+        repo = "maven"
+        name = pom.name
+        desc = pom.description
+        setLicenses(*pom.licenses.map { it.name }.toTypedArray())
+        websiteUrl = pom.web.url ?: ""
+        vcsUrl = pom.scm.url ?: ""
+        if (pom.scm.repoType=="github.com") {
+            githubRepo = pom.scm.repoName ?: ""
+        }
+        issueTrackerUrl = pom.scm.issueUrl ?: ""
+        version.apply {
+            name = pom.version
+            desc = pom.description
+            released = currentZonedDateTime()
+            vcsTag = pom.version
+        }
+        setLabels(*labelList)
+    }
+}
+
+private fun currentZonedDateTime(): String =
+    ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
+

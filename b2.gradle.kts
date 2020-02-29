@@ -51,6 +51,7 @@ plugins {
     `kotlin-dsl`
     kotlin("plugin.serialization") version "1.3.61"
     `maven-publish`
+    id("com.gradle.plugin-publish") version "0.10.1"
 }
 
 val compileKotlin: KotlinCompile by tasks
@@ -97,6 +98,18 @@ publishing {
         }
     }
 }
+
+gradlePlugin {
+    plugins {
+        create("simplepublisher") {
+            id = "io.hkhc.simplepublisher"
+            displayName = "Plugin to make publishing artifacts easy."
+            description = "Wrapping build script for major repositories and make simple things as simple as possible"
+            implementationClass = "io.hkhc.gradle.SimplePublisherPlugin"
+        }
+    }
+}
+
 
 dependencies {
 
