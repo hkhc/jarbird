@@ -20,22 +20,17 @@ package io.hkhc.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.apply
-import org.gradle.kotlin.dsl.closureOf
 
+@Suppress("unused")
 class SimplePublisherPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
 
         with(project.pluginManager) {
-
             apply("org.gradle.maven-publish")
             apply("org.gradle.signing")
             apply("com.jfrog.bintray")
             apply("com.jfrog.artifactory")
-//            apply("com.gradle.plugin-publish")
-//            apply("com.gradle.plugin-publish")
-//            apply("java-gradle-plugin")
         }
 
         project.extensions.create("simplyPublish", SimplePublisherExtension::class.java, project)

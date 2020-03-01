@@ -178,7 +178,7 @@ data class Pom(
 
     @Suppress("DuplicatedCode")
     private fun expandScmGit(scm: Scm) {
-        if (scm.repoType!=null && scm.repoName!=null) {
+        if (scm.repoType != null && scm.repoName != null) {
             with(scm) {
                 url = url ?: "https://$repoType/$repoName"
                 connection = connection ?: "scm:git@$repoType:$repoName.git"

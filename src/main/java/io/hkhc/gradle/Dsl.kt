@@ -20,6 +20,7 @@ package io.hkhc.gradle
 
 import org.gradle.api.Project
 
+@Suppress("unused")
 fun Project.simplyPublish(configure: SimplePublisherExtension.() -> Unit) {
     extensions.configure("simplyPublish", configure)
 }

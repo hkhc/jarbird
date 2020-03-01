@@ -44,8 +44,6 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
 import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 class PublicationBuilder(
     private val extension: SimplePublisherExtension,
