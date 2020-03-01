@@ -2,15 +2,20 @@
   <dictionary name="hc">
     <words>
       <w>artifactory</w>
+      <w>arturbosch</w>
       <w>bintray</w>
       <w>buildinfo</w>
       <w>charleskorn</w>
+      <w>detekt</w>
       <w>dokka</w>
       <w>hkhc</w>
       <w>jcenter</w>
       <w>jfrog</w>
+      <w>jlleitschuh</w>
       <w>kaml</w>
+      <w>kotest</w>
       <w>kotlinx</w>
+      <w>ktlint</w>
       <w>simplepublisher</w>
     </words>
   </dictionary>

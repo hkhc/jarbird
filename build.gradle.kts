@@ -40,6 +40,9 @@ buildscript {
 repositories {
     mavenCentral()
     jcenter()
+    maven {
+        url = uri("https://plugins.gradle.org/m2/")
+    }
 
 //    maven {
 //        url = uri("http://oss.jfrog.org/oss-snapshot-local")
@@ -52,12 +55,8 @@ plugins {
     id("org.jetbrains.dokka") version "0.10.1"
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("io.gitlab.arturbosch.detekt") version "1.5.1"
-    `maven-publish`
-    signing
-    id("com.jfrog.bintray") version "1.8.4"
-    id("com.jfrog.artifactory") version "4.13.0"
     id("com.gradle.plugin-publish") version "0.10.1"
-    id("java-gradle-plugin")
+    `java-gradle-plugin`
 }
 
 apply(plugin = "io.hkhc.simplepublisher")
@@ -131,6 +130,7 @@ dependencies {
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
+    implementation("com.gradle.publish:plugin-publish-plugin:0.10.1")
     implementation("com.charleskorn.kaml:kaml:0.15.0")
 
 //    testImplementation("junit:junit:4.12")
