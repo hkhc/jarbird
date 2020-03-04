@@ -27,22 +27,22 @@ buildscript {
         mavenCentral()
         jcenter()
 
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
+//        maven {
+//            url = uri("https://plugins.gradle.org/m2/")
+//        }
     }
     dependencies {
 
-        classpath("io.hkhc.gradle:simplepublisher:0.2")
+        classpath("io.hkhc.gradle:simplepublisher:0.3-2003041-SNAPSHOT")
     }
 }
 
 repositories {
     mavenCentral()
     jcenter()
-    maven {
-        url = uri("https://plugins.gradle.org/m2/")
-    }
+//    maven {
+//        url = uri("https://plugins.gradle.org/m2/")
+//    }
 
 //    maven {
 //        url = uri("http://oss.jfrog.org/oss-snapshot-local")
@@ -102,12 +102,12 @@ dependencies {
 }
 
 simplyPublish {
+    System.out.println("simplypublish")
     pluginBundle {
         website = pom.url
         vcsUrl = pom.url
         tags = listOf("publish")
     }
-    publish()
 }
 
 
@@ -130,8 +130,10 @@ dependencies {
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
-    implementation("com.gradle.publish:plugin-publish-plugin:0.10.1")
+//    implementation("com.gradle.publish:plugin-publish-plugin:0.10.1")
     implementation("com.charleskorn.kaml:kaml:0.15.0")
+//    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61")
+//    implementation("org.jetbrains.kotlin:kotlin-serialization:1.3.61")
 
 //    testImplementation("junit:junit:4.12")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.0-BETA1")

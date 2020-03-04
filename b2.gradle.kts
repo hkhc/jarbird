@@ -17,7 +17,7 @@
  */
 
 /*
-This is a bootstrap script to do minimal thing to deploy the plugin to mavel local repository, so that
+This is a bootstrap script to do minimal thing to deploy the plugin to maven local repository, so that
 the build.gradle.kts script can make use of itself to do full feature publishing
 
 run the following to publish bootstrap plugin

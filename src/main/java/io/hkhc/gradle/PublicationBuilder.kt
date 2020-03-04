@@ -55,7 +55,7 @@ class PublicationBuilder(
     private val pubConfig = PublishConfig(project)
     private val variantCap = param.variant.capitalize()
     private val pubName = "${param.pubName}$variantCap"
-    private val dokka = param.dokka ?: project.tasks.named("dokka")
+    private var dokka = param.dokka
     private val pubComponent = param.pubComponent
     private val sourceSetName = param.sourceSetName
     private val ext = (project as ExtensionAware).extensions
@@ -75,15 +75,33 @@ class PublicationBuilder(
             enabled = false
         }
 
-        ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
-        if (extension.signing) {
-            ext.findByType(SigningExtension::class.java)?.config()
-        }
-        if (extension.bintray) {
-            ext.findByType(BintrayExtension::class.java)?.config()
-        }
-        if (extension.ossArtifactory) {
-            project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+        if (project == project.rootProject && project.childProjects.size != 0) {
+            System.out.println("Project name ${project.name}. It is root project")
+            if (!project.rootProject.pluginManager.hasPlugin("io.hkhc.simplepublisher")) {
+                System.out.println("Project name ${project.name}, SimplePublisher has not applied, do it now")
+                if (extension.ossArtifactory) {
+                    project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+                }
+            }
+            else {
+                System.out.println("SimplePublisher has already applied")
+            }
+        } else {
+            System.out.println("Project name ${project.name}. It is not root project")
+
+            if (dokka == null) dokka = project.tasks.named("dokka")
+
+            ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
+            if (extension.signing) {
+                ext.findByType(SigningExtension::class.java)?.config()
+            }
+            if (extension.bintray) {
+                ext.findByType(BintrayExtension::class.java)?.config()
+            }
+            if (extension.ossArtifactory) {
+                System.out.println("Project name ${project.name} is about configure artifactory")
+                project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+            }
         }
     }
 
@@ -153,12 +171,16 @@ class PublicationBuilder(
                 setProperty("publishPom", true)
             })
         })
+
         resolve(delegateClosureOf<ResolverConfig> {
             setProperty("repoKey", "jcenter")
         })
 
         project.tasks.register("artifactory${pubName.capitalize()}Publish", ArtifactoryTask::class) {
             publications(pubName)
+            if (project.rootProject==project && project.childProjects.isNotEmpty()) {
+                skip = true
+            }
         }
     }
 
@@ -199,6 +221,8 @@ class PublicationBuilder(
     }
 
     private fun PublicationContainer.createPublication(pubComponent: String) {
+
+        System.out.println("CreatePublication ${pubComponent}")
 
         val dokkaJar = setupDokkaJar()
         val sourcesJar = setupSourcesJar(sourceSetName)

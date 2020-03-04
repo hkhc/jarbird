@@ -48,22 +48,24 @@ open class SimplePublisherExtension(private val project: Project) {
 
     val pom = PomFactory().resolvePom(project)
 
-    @Suppress("unused")
-    fun publish(block: (PublishParam.() -> (Unit))? = null) {
+    var param = PublishParam()
 
-        if (publisherHasSetup) {
-            throw SImplyPublisherException("Publisher can be setup once only.")
-        }
-
-        val param = PublishParam()
-        block?.invoke(param)
-        val builder = PublicationBuilder(
-            this,
-            project,
-            param,
-            pom
-        )
-        builder.build()
-        publisherHasSetup = true
-    }
+//    @Suppress("unused")
+//    fun publish(block: (PublishParam.() -> (Unit))? = null) {
+//
+//        if (publisherHasSetup) {
+//            throw SImplyPublisherException("Publisher can be setup once only.")
+//        }
+//
+//        val param = PublishParam()
+//        block?.invoke(param)
+//        val builder = PublicationBuilder(
+//            this,
+//            project,
+//            param,
+//            pom
+//        )
+//        builder.build()
+//        publisherHasSetup = true
+//    }
 }

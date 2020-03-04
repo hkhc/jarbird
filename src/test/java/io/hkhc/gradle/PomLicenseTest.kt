@@ -26,7 +26,7 @@ class PomLicenseTest : StringSpec( {
     "Empty license can merge from another" {
         val l1 = License("lic_name", "lic_url", "lic_dist")
         val l2 = License()
-        l2.merge(l1)
+        l1.overlayTo(l2)
 
         with(l2) {
             name shouldBe "lic_name"
@@ -38,7 +38,7 @@ class PomLicenseTest : StringSpec( {
     "Partially filled license merge to another and get missing value" {
         val l1 = License("lic_name", "lic_url", "lic_dist")
         val l2 = License("lic_name_2", "lic_url_2")
-        l2.merge(l1)
+        l1.overlayTo(l2)
 
         with(l2) {
             name shouldBe "lic_name_2"
@@ -50,7 +50,7 @@ class PomLicenseTest : StringSpec( {
     "Filled field in license is not updated during merging" {
         val l1 = License("lic_name", "lic_url", "lic_dist")
         val l2 = License("lic_name_2", "lic_url_2")
-        l2.merge(l1)
+        l1.overlayTo(l2)
 
         with(l2) {
             name shouldBe "lic_name_2"
@@ -69,7 +69,7 @@ class PomLicenseTest : StringSpec( {
             License("lic_name_3", "lic_url_3", "lic_dist_3")
         )
 
-        with(Pom.mergeLicenses(list1, list2)) {
+        with(Pom.overlayToLicenses(list2, list1)) {
             size shouldBe 3
             this shouldBe listOf(
                 License("lic_name_1", "lic_url_1", "lic_dist_1"),
@@ -90,7 +90,7 @@ class PomLicenseTest : StringSpec( {
             License("lic_name_3", "lic_url_3", "lic_dist_3")
         )
 
-        with(Pom.mergeLicenses(list1, list2)) {
+        with(Pom.overlayToLicenses(list2, list1)) {
             size shouldBe 3
             this shouldBe listOf(
                 License("lic_name_1", "lic_url_1", "lic_dist_1"),
@@ -99,6 +99,4 @@ class PomLicenseTest : StringSpec( {
             )
         }
     }
-
-
 })

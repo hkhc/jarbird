@@ -18,11 +18,20 @@
 
 package io.hkhc.gradle
 
+import org.gradle.BuildListener
+import org.gradle.BuildResult
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.ProjectEvaluationListener
+import org.gradle.api.ProjectState
+import org.gradle.api.initialization.Settings
+import org.gradle.api.invocation.Gradle
+import org.gradle.kotlin.dsl.get
 
 @Suppress("unused")
 class SimplePublisherPlugin : Plugin<Project> {
+
+    private lateinit var extension: SimplePublisherExtension
 
     override fun apply(project: Project) {
 
@@ -33,6 +42,20 @@ class SimplePublisherPlugin : Plugin<Project> {
             apply("com.jfrog.artifactory")
         }
 
-        project.extensions.create("simplyPublish", SimplePublisherExtension::class.java, project)
+        extension = project.extensions.create("simplyPublish", SimplePublisherExtension::class.java, project)
+
+        val pom = PomFactory().resolvePom(project)
+
+        project.afterEvaluate {
+            System.out.println("afterEvaluate")
+            PublicationBuilder(
+                extension,
+                project,
+                extension.param,
+                pom
+            ).build()
+
+        }
+
     }
 }

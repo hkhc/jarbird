@@ -128,7 +128,7 @@ data class Pom(
 ) {
 
     companion object {
-        fun overlayToLicenses(me: List<License>, other: MutableList<License>) {
+        fun overlayToLicenses(me: List<License>, other: MutableList<License>): MutableList<License> {
             me.forEach { meItem ->
                 val found = false
                 other.find { otherItem -> meItem.name == otherItem.name }?.apply {
@@ -136,8 +136,9 @@ data class Pom(
                 }
                 if (!found) other.add(meItem)
             }
+            return other
         }
-        fun overlayToPeople(me: List<People>, other: MutableList<People>) {
+        fun overlayToPeople(me: List<People>, other: MutableList<People>): MutableList<People> {
             me.forEach { meItem ->
                 val found = false
                 other.find { otherItem -> meItem.name == otherItem.name }?.apply {
@@ -145,6 +146,7 @@ data class Pom(
                 }
                 if (!found) other.add(meItem)
             }
+            return other
         }
     }
 
