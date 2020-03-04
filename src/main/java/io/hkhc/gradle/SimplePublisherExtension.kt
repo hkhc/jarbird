@@ -23,8 +23,7 @@ import org.gradle.api.Project
 // Gradle plugin extensions must be open class so that Gradle system can "decorate" it.
 open class SimplePublisherExtension(private val project: Project) {
 
-    // TODO limitation shall not be global, but on per-publication-name basis
-    private var publisherHasSetup = false
+    val pom = PomFactory().resolvePom(project)
 
     /**
      * Configure for bintray publishing or not
@@ -46,26 +45,31 @@ open class SimplePublisherExtension(private val project: Project) {
      */
     var signing = true
 
-    val pom = PomFactory().resolvePom(project)
+    /**
+     * the publication name, that affect the task names for publishing
+     */
+    var pubName: String = "lib"
 
-    var param = PublishParam()
+    /**
+     * the variant is string that as suffix of pubName to form a final publication name. It is also used
+     * to suffix the dokka jar task and soruce set jar task.
+     */
+    var variant: String = ""
 
-//    @Suppress("unused")
-//    fun publish(block: (PublishParam.() -> (Unit))? = null) {
-//
-//        if (publisherHasSetup) {
-//            throw SImplyPublisherException("Publisher can be setup once only.")
-//        }
-//
-//        val param = PublishParam()
-//        block?.invoke(param)
-//        val builder = PublicationBuilder(
-//            this,
-//            project,
-//            param,
-//            pom
-//        )
-//        builder.build()
-//        publisherHasSetup = true
-//    }
+    /**
+     * The name of component to to be published
+     */
+    var pubComponent: String = "java"
+
+    /**
+     * the dokka task provider object for documentation. If it is not speified, the default dokka task will be used.
+     */
+    var dokka: Any? = null
+
+    /**
+     * The name of sourceset for archiving.
+     */
+    var sourceSetName: String = "main"
+
+
 }

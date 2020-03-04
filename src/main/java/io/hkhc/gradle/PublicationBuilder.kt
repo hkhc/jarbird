@@ -24,6 +24,7 @@ import groovy.lang.GroovyObject
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.publish.PublicationContainer
@@ -48,16 +49,15 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 class PublicationBuilder(
     private val extension: SimplePublisherExtension,
     private val project: Project,
-    param: PublishParam,
     private val pom: Pom
 ) {
 
     private val pubConfig = PublishConfig(project)
-    private val variantCap = param.variant.capitalize()
-    private val pubName = "${param.pubName}$variantCap"
-    private var dokka = param.dokka
-    private val pubComponent = param.pubComponent
-    private val sourceSetName = param.sourceSetName
+    private val variantCap = extension.variant.capitalize()
+    private val pubName = "${extension.pubName}$variantCap"
+    private var dokka = extension.dokka
+    private val pubComponent = extension.pubComponent
+    private val sourceSetName = extension.sourceSetName
     private val ext = (project as ExtensionAware).extensions
 
     @Suppress("unused")
@@ -76,30 +76,35 @@ class PublicationBuilder(
         }
 
         if (project == project.rootProject && project.childProjects.size != 0) {
-            System.out.println("Project name ${project.name}. It is root project")
+
+            project.logger.debug("Configure root project '${project.name}' for multi-project publishing")
+
             if (!project.rootProject.pluginManager.hasPlugin("io.hkhc.simplepublisher")) {
-                System.out.println("Project name ${project.name}, SimplePublisher has not applied, do it now")
                 if (extension.ossArtifactory) {
                     project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
                 }
             }
-            else {
-                System.out.println("SimplePublisher has already applied")
-            }
         } else {
-            System.out.println("Project name ${project.name}. It is not root project")
 
-            if (dokka == null) dokka = project.tasks.named("dokka")
+            if (project == project.rootProject) {
+                project.logger.debug("Configure project '${project.name}' for single-project publishing")
+            } else {
+                project.logger.debug("Configure child project '${project.name}' for multi-project publishing")
+            }
+
+            if (dokka == null) {
+                dokka = project.tasks.named("dokka")
+            }
 
             ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
             if (extension.signing) {
+
                 ext.findByType(SigningExtension::class.java)?.config()
             }
             if (extension.bintray) {
                 ext.findByType(BintrayExtension::class.java)?.config()
             }
             if (extension.ossArtifactory) {
-                System.out.println("Project name ${project.name} is about configure artifactory")
                 project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
             }
         }
@@ -221,8 +226,6 @@ class PublicationBuilder(
     }
 
     private fun PublicationContainer.createPublication(pubComponent: String) {
-
-        System.out.println("CreatePublication ${pubComponent}")
 
         val dokkaJar = setupDokkaJar()
         val sourcesJar = setupSourcesJar(sourceSetName)

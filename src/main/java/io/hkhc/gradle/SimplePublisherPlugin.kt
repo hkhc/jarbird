@@ -47,11 +47,9 @@ class SimplePublisherPlugin : Plugin<Project> {
         val pom = PomFactory().resolvePom(project)
 
         project.afterEvaluate {
-            System.out.println("afterEvaluate")
             PublicationBuilder(
                 extension,
                 project,
-                extension.param,
                 pom
             ).build()
 
