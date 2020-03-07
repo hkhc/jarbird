@@ -71,5 +71,10 @@ open class SimplePublisherExtension(private val project: Project) {
      */
     var sourceSetName: String = "main"
 
+    /**
+     * True if publish a gradle plugin. False if publish a library (reserve for future use)
+     */
+    var plugin = false
+
 
 }

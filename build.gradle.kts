@@ -16,27 +16,36 @@
  *
  */
 
-import io.hkhc.gradle.simplyPublish
+//import io.hkhc.gradle.simplyPublish
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
-buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        jcenter()
-    }
+//buildscript {
+//    repositories {
+//        mavenLocal()
+//        gradlePluginPortal()
+//        mavenCentral()
+//        jcenter()
+//    }
+//}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
 }
 
 plugins {
+    kotlin("jvm") version "1.3.70"
     `kotlin-dsl`
-    kotlin("plugin.serialization") version "1.3.61"
     id("org.jetbrains.dokka") version "0.10.1"
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("io.gitlab.arturbosch.detekt") version "1.5.1"
     id("com.gradle.plugin-publish") version "0.10.1"
     `java-gradle-plugin`
-    id("io.hkhc.simplepublisher") version "0.3-2003051-SNAPSHOT"
+    id("com.dorongold.task-tree") version "1.5"
+
+    id("io.hkhc.simplepublisher") version "0.3.2-2003051-SNAPSHOT"
 }
 
 tasks {
@@ -70,11 +79,12 @@ compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
+//tasks.withType<Test> {
+//    useJUnitPlatform()
+//}
 
 simplyPublish {
+
     pluginBundle {
         website = pom.url
         vcsUrl = pom.url
@@ -100,10 +110,9 @@ dependencies {
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
-    implementation("com.charleskorn.kaml:kaml:0.15.0")
+    implementation("org.yaml:snakeyaml:1.25")
 
-//    testImplementation("junit:junit:4.12")
+    testImplementation("junit:junit:4.12")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.0-BETA1")
 
 }

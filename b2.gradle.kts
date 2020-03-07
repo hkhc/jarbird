@@ -28,15 +28,20 @@ run the following to publish bootstrap plugin
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+buildscript {
+    dependencies {
+        classpath("org.yaml:snakeyaml:1.25")
+    }
+}
+
 repositories {
     mavenCentral()
     jcenter()
 }
 
 plugins {
-    kotlin("jvm") version "1.3.61"
+    kotlin("jvm") version "1.3.70"
     `kotlin-dsl`
-    kotlin("plugin.serialization") version "1.3.61"
     `maven-publish`
     id("com.gradle.plugin-publish") version "0.10.1"
 }
@@ -105,6 +110,5 @@ dependencies {
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
-    implementation("com.charleskorn.kaml:kaml:0.15.0")
+    implementation("org.yaml:snakeyaml:1.25")
 }

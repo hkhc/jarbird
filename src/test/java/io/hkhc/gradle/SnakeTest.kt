@@ -16,13 +16,26 @@
  *
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        gradlePluginPortal()
-        mavenCentral()
-        jcenter()
+package io.hkhc.gradle
+
+import org.junit.Test
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.Constructor
+import java.io.File
+
+class SnakeTest {
+
+    @Test
+    fun `test1`() {
+
+        val yaml = Yaml(Constructor(Pom::class.java))
+
+        val pomStr = File("./pom.yaml").readText()
+
+        val pom: Pom = yaml.load(pomStr)
+
+        System.out.println(pom)
+
+
     }
 }
-
-rootProject.name = "simplepublisher"

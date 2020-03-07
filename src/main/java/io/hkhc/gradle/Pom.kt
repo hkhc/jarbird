@@ -18,11 +18,9 @@
 
 package io.hkhc.gradle
 
-import kotlinx.serialization.Serializable
 import org.gradle.api.Project
 import java.util.*
 
-@Serializable
 data class License(
     var name: String? = null,
     var url: String? = null,
@@ -37,7 +35,6 @@ data class License(
     }
 }
 
-@Serializable
 // TODO missed Properties, Roles
 // see https://docs.gradle.org/current/javadoc/org/gradle/api/publish/maven/MavenPomDeveloper.html
 data class People(
@@ -60,7 +57,6 @@ data class People(
     }
 }
 
-@Serializable
 data class Organization(
     var name: String? = null,
     var url: String? = null
@@ -71,7 +67,6 @@ data class Organization(
     }
 }
 
-@Serializable
 data class Web(
     var url: String? = null,
     var description: String? = null
@@ -82,7 +77,6 @@ data class Web(
     }
 }
 
-@Serializable
 data class Scm(
     var url: String? = null,
     var connection: String? = null,
@@ -108,7 +102,6 @@ data class Scm(
 
 // See https://maven.apache.org/pom.html for POM definitions
 
-@Serializable
 data class Pom(
     var group: String? = null,
     var name: String? = null,

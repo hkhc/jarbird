@@ -18,10 +18,11 @@
 
 package io.hkhc.gradle
 
-import com.charleskorn.kaml.Yaml
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPom
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.Constructor
 import java.io.File
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -34,7 +35,8 @@ class PomFactory {
     fun readPom(path: String): Pom {
         val file = File(path)
         return if (file.exists()) {
-            Yaml.default.parse(Pom.serializer(), File(path).readText())
+            val yaml = Yaml(Constructor(Pom::class.java))
+            return yaml.load(file.readText())
         } else {
             Pom()
         }
