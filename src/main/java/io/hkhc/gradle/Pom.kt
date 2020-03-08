@@ -28,10 +28,10 @@ data class License(
     var comments: String? = null
 ) {
     fun overlayTo(other: License) {
-        name?.let { other.name = name }
-        url?.let { other.url = url }
-        dist?.let { other.dist = dist }
-        comments?.let { other.comments = comments }
+        name?.let { other.name = it }
+        url?.let { other.url = it }
+        dist?.let { other.dist = it }
+        comments?.let { other.comments = it }
     }
 }
 
@@ -47,12 +47,12 @@ data class People(
     var url: String? = null
 ) {
     fun overlayTo(other: People) {
-        id?.let { other.id = id }
-        name?.let { other.name = name }
-        email?.let { other.email = email }
-        organization?.let { other.organization = organization }
-        organizationUrl?.let { other.organizationUrl = organizationUrl }
-        timeZone?.let { other.timeZone = timeZone }
+        id?.let { other.id = it }
+        name?.let { other.name = it }
+        email?.let { other.email = it }
+        organization?.let { other.organization = it }
+        organizationUrl?.let { other.organizationUrl = it }
+        timeZone?.let { other.timeZone = it }
         url?.let { other.url = url }
     }
 }
@@ -62,8 +62,8 @@ data class Organization(
     var url: String? = null
 ) {
     fun overlayTo(other: Organization) {
-        name?.let { other.name = name }
-        url?.let { other.url = url }
+        name?.let { other.name = it }
+        url?.let { other.url = it }
     }
 }
 
@@ -72,8 +72,8 @@ data class Web(
     var description: String? = null
 ) {
     fun overlayTo(other: Web) {
-        url?.let { other.url = url }
-        description?.let { other.description = description }
+        url?.let { other.url = it }
+        description?.let { other.description = it }
     }
 }
 
@@ -89,14 +89,14 @@ data class Scm(
 ) {
     @Suppress("DuplicatedCode")
     fun overlayTo(other: Scm) {
-        url?.let { other.url = url }
-        connection?.let { other.connection = connection }
-        developerConnection?.let { other.developerConnection = developerConnection }
-        repoType?.let { other.repoType = repoType }
-        repoName?.let { other.repoName = repoName }
-        issueType?.let { other.issueType = issueType }
-        issueUrl?.let { other.issueUrl = issueUrl }
-        tag?.let { other.tag = tag }
+        url?.let { other.url = it }
+        connection?.let { other.connection = it }
+        developerConnection?.let { other.developerConnection = it }
+        repoType?.let { other.repoType = it }
+        repoName?.let { other.repoName = it }
+        issueType?.let { other.issueType = it }
+        issueUrl?.let { other.issueUrl = it }
+        tag?.let { other.tag = it }
     }
 }
 

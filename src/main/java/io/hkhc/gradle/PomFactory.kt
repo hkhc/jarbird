@@ -62,6 +62,9 @@ class PomFactory {
 
         pom.syncWith(project)
 
+        project.logger.debug("Preceived POM")
+        project.logger.debug(pom.toString())
+
 //        val yaml = Yaml.default.stringify(Pom.serializer(), pom)
 //        System.out.println("-----POM Start-----")
 //        System.out.println(yaml)
