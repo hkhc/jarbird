@@ -23,7 +23,7 @@ import org.gradle.api.Project
 // Gradle plugin extensions must be open class so that Gradle system can "decorate" it.
 open class SimplePublisherExtension(private val project: Project) {
 
-    val pom = PomFactory().resolvePom(project)
+    lateinit var pom: Pom
 
     /**
      * Configure for bintray publishing or not
@@ -53,6 +53,7 @@ open class SimplePublisherExtension(private val project: Project) {
     /**
      * the variant is string that as suffix of pubName to form a final publication name. It is also used
      * to suffix the dokka jar task and soruce set jar task.
+     * It is usually used for building Android artifact
      */
     var variant: String = ""
 
@@ -72,9 +73,9 @@ open class SimplePublisherExtension(private val project: Project) {
     var sourceSetName: String = "main"
 
     /**
-     * True if publish a gradle plugin. False if publish a library (reserve for future use)
+     * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
+     * We will need useGpg=true if we use new keybox (.kbx) format for pur signing key.
      */
-    var plugin = false
-
+    var useGpg = false
 
 }

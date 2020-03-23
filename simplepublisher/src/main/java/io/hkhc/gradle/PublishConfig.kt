@@ -16,16 +16,18 @@
  *
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        gradlePluginPortal()
-        mavenCentral()
-        jcenter()
-    }
+package io.hkhc.gradle
+
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.provideDelegate
+
+class PublishConfig(private val project: Project) {
+
+    val nexusSnapshotRepositoryUrl: String? by project
+    val nexusReleaseRepositoryUrl: String? by project
+    val nexusUsername: String? by project
+    val nexusPassword: String? by project
+
+    val bintrayUser: String? by project
+    val bintrayApiKey: String? by project
 }
-
-include(":simplepublisher")
-//include(":simplepublisher", ":simplepublisherTestLib")
-
-rootProject.name = "simplepublisher"

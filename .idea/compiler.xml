@@ -3,7 +3,17 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
       <module name="simplePublisher.buildSrc.main" target="1.8" />
+      <module name="simplepublisher.buildSrc.main" target="1.8" />
       <module name="simplePublisher.buildSrc.test" target="1.8" />
+      <module name="simplepublisher.buildSrc.test" target="1.8" />
+      <module name="simplepublisher.main" target="1.8" />
+      <module name="simplepublisher.plugin.main" target="1.8" />
+      <module name="simplepublisher.plugin.test" target="1.8" />
+      <module name="simplepublisher.simplepublisherTestLib.main" target="1.8" />
+      <module name="simplepublisher.simplepublisherTestLib.test" target="1.8" />
+      <module name="simplepublisher.test" target="1.8" />
+      <module name="simplepublisher.testlib.main" target="1.8" />
+      <module name="simplepublisher.testlib.test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

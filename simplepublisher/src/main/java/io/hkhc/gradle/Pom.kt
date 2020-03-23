@@ -100,6 +100,32 @@ data class Scm(
     }
 }
 
+data class PluginInfo(
+    var id: String? = null,
+    var displayName: String? = null,
+    var description: String? = null,
+    var implementationClass: String? = null,
+    var tags: MutableList<String> = mutableListOf()
+) {
+
+    companion object {
+        fun overlayToTags(me: List<String>, other: MutableList<String>): MutableList<String> {
+            me.forEach { meItem ->
+                other.find { otherItem -> meItem == otherItem } ?: other.add(meItem)
+            }
+            return other
+        }
+    }
+
+    fun overlayTo(other: PluginInfo) {
+        id?.let { other.id = it }
+        displayName?.let { other.displayName = it }
+        description?.let { other.description = it }
+        implementationClass?.let { other.implementationClass = it }
+        overlayToTags(tags, other.tags)
+    }
+}
+
 // See https://maven.apache.org/pom.html for POM definitions
 
 data class Pom(
@@ -117,7 +143,10 @@ data class Pom(
     var organization: Organization = Organization(),
     var web: Web = Web(),
     var scm: Scm = Scm(),
-    var bintrayLabels: String? = null
+    var bintrayLabels: String? = null,
+
+    var plugin: PluginInfo? = null
+
 ) {
 
     companion object {
@@ -163,6 +192,14 @@ data class Pom(
         scm.overlayTo(other.scm)
 
         bintrayLabels?.let { other.bintrayLabels = bintrayLabels }
+
+        plugin?.let {
+            if (other.plugin == null) {
+                other.plugin = it
+            } else {
+                it.overlayTo(other.plugin!!)
+            }
+        }
     }
 
     private fun lookupLicenseLink(licenses: List<License>) {
@@ -184,6 +221,8 @@ data class Pom(
             }
         }
     }
+
+    fun isSnapshot() = version!!.endsWith("-SNAPSHOT")
 
     fun syncWith(project: Project) {
 

@@ -32,12 +32,13 @@ class PomFactory {
     /**
      * read POM spec from a YAML file
      */
-    fun readPom(path: String): Pom {
+    fun Project.readPom(path: String): Pom {
         val file = File(path)
         return if (file.exists()) {
             val yaml = Yaml(Constructor(Pom::class.java))
             return yaml.load(file.readText())
         } else {
+            logger.info("file '${file.absolutePath}' does not exist")
             Pom()
         }
     }
@@ -46,29 +47,26 @@ class PomFactory {
      * resolve POM spec via a series of possible location and accumulate the details
      */
     fun resolvePom(project: Project): Pom {
+
         val pom = Pom()
 
         val pomFilename = "pom.yaml"
 
-        val gradleUserHomePath = System.getenv("GRADLE_USER_HOME") ?: "~/.gradle"
-        val homePomFile = "$gradleUserHomePath/pom.yaml"
+        val gradleUserHomePath = System.getenv("GRADLE_USER_HOME") ?: "${System.getProperty("user.home")}/.gradle"
 
-        System.getProperty("pomFile")?.let {
-            readPom(it).overlayTo(pom)
+        with(project) {
+            readPom("$gradleUserHomePath/$pomFilename").overlayTo(pom)
+            readPom("${project.rootDir}/$pomFilename").overlayTo(pom)
+            readPom("${project.projectDir}/$pomFilename").overlayTo(pom)
+            System.getProperty("pomFile")?.let {
+                readPom(it).overlayTo(pom)
+            }
         }
-        readPom("$homePomFile/$pomFilename").overlayTo(pom)
-        readPom("${project.rootDir}/$pomFilename").overlayTo(pom)
-        readPom("${project.buildDir}/$pomFilename").overlayTo(pom)
 
         pom.syncWith(project)
 
         project.logger.debug("Preceived POM")
         project.logger.debug(pom.toString())
-
-//        val yaml = Yaml.default.stringify(Pom.serializer(), pom)
-//        System.out.println("-----POM Start-----")
-//        System.out.println(yaml)
-//        System.out.println("-----POM End-----")
 
         return pom
     }
@@ -78,7 +76,6 @@ class PomFactory {
 //        with(pom) {
 //
 //        }
-
     }
 }
 

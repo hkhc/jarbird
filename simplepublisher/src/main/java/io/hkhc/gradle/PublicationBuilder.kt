@@ -18,15 +18,14 @@
 
 package io.hkhc.gradle
 
+import com.gradle.publish.PluginBundleExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import groovy.lang.GroovyObject
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.dsl.RepositoryHandler
-import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -40,6 +39,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getPluginByName
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
+import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 import org.gradle.plugins.signing.SigningExtension
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
@@ -63,6 +63,8 @@ class PublicationBuilder(
     @Suppress("unused")
     fun build() {
 
+        System.out.println("start PublicationBuilder.build")
+
         /*
             Create a publication tasks
                 "publish${pubName}${variantCap}ToMaven${pubName}${variantCap}Repository"
@@ -75,7 +77,7 @@ class PublicationBuilder(
             enabled = false
         }
 
-        if (project == project.rootProject && project.childProjects.size != 0) {
+        if (project == project.rootProject && project.childProjects.isNotEmpty()) {
 
             project.logger.debug("Configure root project '${project.name}' for multi-project publishing")
 
@@ -98,14 +100,45 @@ class PublicationBuilder(
 
             ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
             if (extension.signing) {
-
-                ext.findByType(SigningExtension::class.java)?.config()
+                ext.findByType(SigningExtension::class.java)?.config(extension.useGpg)
             }
             if (extension.bintray) {
                 ext.findByType(BintrayExtension::class.java)?.config()
+                project.tasks.named("bintrayUpload").get().apply {
+                    dependsOn("_bintrayRecordingCopy")
+                }
             }
             if (extension.ossArtifactory) {
                 project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+            }
+
+            if (extension.gradlePlugin) {
+                ext.findByType(PluginBundleExtension::class.java)?.config()
+                ext.findByType(GradlePluginDevelopmentExtension::class.java)?.config()
+            }
+
+            updatePluginPublication()
+
+            TaskBuilder(project, pom, extension, pubName).build()
+
+        }
+
+        project.logger.warn("POM = $pom")
+
+    }
+
+    /**
+        The gradle publish plugin hardcoded to use project name as publication artifact name.
+        We further customize that publication here and replace it with pom.name
+        The default value of pom.name is still project.name so we are not violating the Gradle convention.
+     */
+    private fun updatePluginPublication() {
+
+        project.extensions.configure(PublishingExtension::class.java) {
+            publications.find { it.name.startsWith("publishPluginMavenPublication") }?.let {
+                if (it is MavenPublication) {
+                    it.artifactId = pom.name
+                }
             }
         }
     }
@@ -123,11 +156,20 @@ class PublicationBuilder(
         }
     }
 
-    private fun SigningExtension.config() {
+    private fun SigningExtension.config(useGpg: Boolean) {
+
+        if (useGpg) {
+            useGpgCmd()
+        }
 
         val publishingExtension = ext.findByType(PublishingExtension::class.java)
 
-        isRequired = !pom.version!!.endsWith("-SNAPSHOT")
+        if (pom.isSnapshot()) {
+            project.logger.info("Not performing signing for SNAPSHOT artifact")
+        }
+
+        isRequired = !pom.isSnapshot()
+
         publishingExtension?.let { sign(it.publications[pubName]) }
     }
 
@@ -135,14 +177,21 @@ class PublicationBuilder(
     private fun BintrayExtension.config() {
 
         override = true
-        dryRun = false
+        dryRun = true
         publish = true
 
         user = pubConfig.bintrayUser
         key = pubConfig.bintrayApiKey
-        setPublications(pubName)
+
+        if (extension.gradlePlugin) {
+            setPublications(pubName, "${pubName}PluginMarkerMaven")
+        } else {
+            setPublications(pubName)
+        }
 
         pom.fill(pkg)
+
+        System.out.println("bintray filesSpec ${project.buildDir}/libs")
 
         // Bintray requires our private key in order to sign archives for us. I don't want to share
         // the key and hence specify the signature files manually and upload them.
@@ -151,6 +200,7 @@ class PublicationBuilder(
                 include("*.aar.asc")
                 include("*.jar.asc")
             }
+
             from("${project.buildDir}/publications/$pubName").apply {
                 include("pom-default.xml.asc")
                 rename("pom-default.xml.asc",
@@ -171,7 +221,11 @@ class PublicationBuilder(
                 setProperty("maven", true)
             })
             defaults(delegateClosureOf<GroovyObject> {
-                invokeMethod("publications", pubName)
+                if (extension.gradlePlugin) {
+                    invokeMethod("publications", listOf(pubName, "${pubName}PluginMarkerMaven"))
+                } else {
+                    invokeMethod("publications", pubName)
+                }
                 setProperty("publishArtifacts", true)
                 setProperty("publishPom", true)
             })
@@ -183,7 +237,7 @@ class PublicationBuilder(
 
         project.tasks.register("artifactory${pubName.capitalize()}Publish", ArtifactoryTask::class) {
             publications(pubName)
-            if (project.rootProject==project && project.childProjects.isNotEmpty()) {
+            if (project.rootProject == project && project.childProjects.isNotEmpty()) {
                 skip = true
             }
         }
@@ -194,12 +248,13 @@ class PublicationBuilder(
         val dokkaJarTaskName = "dokkaJar$variantCap"
         return try {
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {
+                group = "Publishing"
                 archiveClassifier.set("javadoc")
             }
         } catch (e: UnknownTaskException) {
             // TODO add error message here if dokka is null
             project.tasks.register(dokkaJarTaskName, Jar::class.java) {
-                group = JavaBasePlugin.DOCUMENTATION_GROUP
+                group = "Publishing"
                 description = "Assembles Kotlin docs with Dokka to Jar"
                 archiveClassifier.set("javadoc")
                 from(dokka)
@@ -218,6 +273,7 @@ class PublicationBuilder(
             }
         } catch (e: UnknownTaskException) {
             project.tasks.register(sourcesTaskName, Jar::class.java) {
+                group = "Publishing"
                 description = "Create archive of source code for the binary"
                 archiveClassifier.set("sources")
                 from(project.sourceSets.getByName(sourceSetName).allSource)
@@ -236,7 +292,6 @@ class PublicationBuilder(
 
             groupId = pomSpec.group
 
-            // The default artifactId is project.name
             artifactId = pomSpec.name
             // version is gotten from an external plugin
             //            version = project.versioning.info.display
@@ -250,16 +305,17 @@ class PublicationBuilder(
                 // And sources
                 sourcesJar?.let { artifact(it.get()) }
             }
+
             pom { pomSpec.fillTo(this) }
         }
     }
 
     private fun RepositoryHandler.createRepository() {
         maven {
-            name = "Maven$pubName"
+            name = "Maven${pubName.capitalize()}"
             with(pubConfig) {
                 url = project.uri(
-                    if (pom.version!!.endsWith("SNAPSHOT")) {
+                    if (pom.isSnapshot()) {
                         nexusSnapshotRepositoryUrl!!
                     } else {
                         nexusReleaseRepositoryUrl!!
@@ -269,6 +325,27 @@ class PublicationBuilder(
                 credentials {
                     username = nexusUsername!!
                     password = nexusPassword!!
+                }
+            }
+        }
+    }
+
+    private fun PluginBundleExtension.config() {
+        website = pom.web.url
+        vcsUrl = pom.scm.url ?: website
+        description = pom.plugin?.description ?: pom.description
+        tags = pom.plugin?.tags ?: listOf()
+    }
+
+    private fun GradlePluginDevelopmentExtension.config() {
+
+        plugins {
+            create(pubName) {
+                pom.plugin?.let { plugin ->
+                    id = plugin.id
+                    displayName = plugin.displayName
+                    description = plugin.description
+                    implementationClass = plugin.implementationClass
                 }
             }
         }

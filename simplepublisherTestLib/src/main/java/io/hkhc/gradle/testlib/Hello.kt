@@ -16,16 +16,10 @@
  *
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        gradlePluginPortal()
-        mavenCentral()
-        jcenter()
-    }
+package io.hkhc.gradle.testlib
+
+class Hello {
+
+    fun sayHello(name: String) = "Hello $name"
+
 }
-
-include(":simplepublisher")
-//include(":simplepublisher", ":simplepublisherTestLib")
-
-rootProject.name = "simplepublisher"

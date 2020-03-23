@@ -29,3 +29,16 @@ include(":simplepublisher")
 //include(":simplepublisher", ":simplepublisherTestLib")
 
 rootProject.name = "simplepublisher"
+project(":simplepublisher").apply {
+    name="simplepublisherbootstrap"
+    buildFileName="b2.build.gradle.kts"
+    /*
+        There is not any error message when the file name of buildFileName is not valid.
+        So we check it by ourself.
+     */
+    File("$projectDir${File.separatorChar}$buildFileName").also { file ->
+        if (!file.exists()) {
+            throw GradleException("Build file '${file.absolutePath}' does not exist")
+        }
+    }
+}

@@ -16,16 +16,4 @@
  *
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        gradlePluginPortal()
-        mavenCentral()
-        jcenter()
-    }
-}
-
-include(":simplepublisher")
-//include(":simplepublisher", ":simplepublisherTestLib")
-
-rootProject.name = "simplepublisher"
+includeBuild("../simplepublisher")

@@ -16,20 +16,15 @@
  *
  */
 
-package io.hkhc.gradle
+plugins {
+    id 'java'
+    id 'org.jetbrains.dokka' version "0.10.1"
+    id 'io.hkhc.simplepublisher'
+}
 
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.provideDelegate
-
-class PublishConfig(private val project: Project) {
-
-    val nexusSnapshotRepositoryUrl : String? by project
-    val nexusReleaseRepositoryUrl : String? by project
-    val nexusUsername : String? by project
-    val nexusPassword : String? by project
-
-    val bintrayUser: String? by project
-    val bintrayApiKey: String? by project
-    val bintrayLabels: String? by project // comma delimited
-
+tasks {
+    dokka {
+        outputFormat = "html"
+//        outputDirectory = "${tempProjectDir.root.absolutePath}/build/dokka"
+    }
 }
