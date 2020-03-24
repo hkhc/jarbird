@@ -89,5 +89,4 @@ open class SimplePublisherExtension(private val project: Project) {
      * We will need useGpg=true if we use new keybox (.kbx) format for pur signing key.
      */
     var useGpg = false
-
 }

@@ -18,8 +18,8 @@
 
 package io.hkhc.gradle
 
-import org.gradle.api.Project
 import java.util.*
+import org.gradle.api.Project
 
 data class License(
     var name: String? = null,

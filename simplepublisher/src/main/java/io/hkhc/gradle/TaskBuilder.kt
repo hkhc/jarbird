@@ -36,7 +36,7 @@ class TaskBuilder(
 
     private fun TaskContainer.registerMavenLocalTask() {
 
-        register("spPublishTo${mavenLocal}") {
+        register("spPublishTo$mavenLocal") {
             group = SP_GROUP
 
             if (extension.gradlePlugin) {
@@ -46,10 +46,10 @@ class TaskBuilder(
                 description = "Publish Maven publication '$pubName' to the local Maven Repository"
             }
 
-            dependsOn("publish${pubId}To${mavenLocal}")
+            dependsOn("publish${pubId}To$mavenLocal")
 
             if (extension.gradlePlugin) {
-                dependsOn("publish${markerPubId}To${mavenLocal}")
+                dependsOn("publish${markerPubId}To$mavenLocal")
             }
         }
     }
@@ -68,12 +68,11 @@ class TaskBuilder(
                 description = "Publish Maven publication '$pubName' to the 'Maven$pubNameCap' Repository"
             }
 
-            dependsOn("publish${pubId}To${mavenRepo}")
+            dependsOn("publish${pubId}To$mavenRepo")
 
             if (extension.gradlePlugin) {
-                dependsOn("publish${markerPubId}To${mavenRepo}")
+                dependsOn("publish${markerPubId}To$mavenRepo")
             }
-
         }
     }
 
@@ -101,7 +100,6 @@ class TaskBuilder(
             } else {
                 dependsOn("bintrayUpload")
             }
-
         }
     }
 
@@ -120,7 +118,7 @@ class TaskBuilder(
             // assemble a list of repositories
             val repoList = kotlin.collections.mutableListOf<String>()
             repoList.add("Maven Local")
-            repoList.add("'Maven${pubName}' Repository")
+            repoList.add("'Maven$pubName' Repository")
             if (extension.bintray) {
                 repoList.add("Bintray")
             }
@@ -136,15 +134,14 @@ class TaskBuilder(
                 description = "Publish Maven publication '$pubNameCap' to $repoListStr"
             }
 
-            dependsOn("spPublishTo${mavenLocal}")
-            dependsOn("spPublishTo${mavenRepo}")
+            dependsOn("spPublishTo$mavenLocal")
+            dependsOn("spPublishTo$mavenRepo")
             if (extension.bintray) {
                 dependsOn("spPublishToBintray")
             }
             if (extension.gradlePlugin) {
                 dependsOn("spPublishToGradlePortal")
             }
-
         }
     }
 

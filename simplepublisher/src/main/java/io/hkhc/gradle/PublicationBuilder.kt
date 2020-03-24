@@ -27,7 +27,6 @@ import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -141,8 +140,6 @@ class PublicationBuilder(
                 }
             }
         }
-
-
     }
 
     @Suppress("unused")
@@ -187,7 +184,7 @@ class PublicationBuilder(
 
         if (isMultiProjectRoot()) {
 
-            logger.debug("Configure root project '${name}' for multi-project publishing")
+            logger.debug("Configure root project '$name' for multi-project publishing")
 
             if (!rootProject.pluginManager.hasPlugin("io.hkhc.simplepublisher")) {
                 if (extension.ossArtifactory) {
@@ -197,9 +194,9 @@ class PublicationBuilder(
         } else {
 
             if (this == rootProject) {
-                logger.info("Configure project '${name}' for single-project publishing")
+                logger.info("Configure project '$name' for single-project publishing")
             } else {
-                logger.info("Configure child project '${name}' for multi-project publishing")
+                logger.info("Configure child project '$name' for multi-project publishing")
             }
 
             if (extension.bintray) {
@@ -216,7 +213,6 @@ class PublicationBuilder(
                 convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
             }
         }
-
     }
 
     private fun Project.setupPublisher2() {
@@ -225,13 +221,11 @@ class PublicationBuilder(
             ext.findByType(PluginBundleExtension::class.java)?.config()
             ext.findByType(GradlePluginDevelopmentExtension::class.java)?.config()
             updatePluginPublication(this, pom.name!!)
-
         }
 
         if (!isMultiProjectRoot()) {
             // do nothing intentionally as a placeholder for future enhancement
         }
-
     }
 
     private fun Project.setupPublisher3() {
@@ -245,8 +239,7 @@ class PublicationBuilder(
             if (dokka == null) {
                 try {
                     dokka = tasks.named("dokka")
-                }
-                catch (e: UnknownTaskException) {
+                } catch (e: UnknownTaskException) {
                     printHelpForMissingDokka(this)
                     throw GradleException("Failed to found 'dokka' task")
                 }
@@ -257,8 +250,6 @@ class PublicationBuilder(
             if (extension.signing) {
                 ext.findByType(SigningExtension::class.java)?.config(extension.useGpg)
             }
-
-
         }
     }
 

@@ -18,14 +18,10 @@
 
 package io.hkhc.gradle
 
-import org.gradle.BuildListener
-import org.gradle.BuildResult
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectEvaluationListener
 import org.gradle.api.ProjectState
-import org.gradle.api.initialization.Settings
-import org.gradle.api.invocation.Gradle
 
 @Suppress("unused")
 class SimplePublisherPlugin : Plugin<Project> {
@@ -82,9 +78,7 @@ class SimplePublisherPlugin : Plugin<Project> {
                             PublicationBuilder(extension, project, pom).buildPhase1()
                         }
                     }
-
                 }
-
             })
 
         // Build phase 3
@@ -121,13 +115,12 @@ class SimplePublisherPlugin : Plugin<Project> {
                     PublicationBuilder(extension, project, pom).buildPhase2()
                 }
             }
-
         })
+
         // Build phase 4
         project.afterEvaluate {
             PublicationBuilder(extension, project, pom).buildPhase4()
             PublicationBuilder(extension, project, pom).buildPhase5()
         }
-
     }
 }
