@@ -22,10 +22,12 @@ import com.gradle.publish.PluginBundleExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import groovy.lang.GroovyObject
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -46,6 +48,46 @@ import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
 import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 
+/**
+ *
+ *
+ * Build phases:
+ *
+ * phase 1: before all project evaluation listeners (after evaluate)
+ *  - bintray extension
+ * - setup ossArtifactory
+ *
+ *  **** bintray plugin project evaluation listener (after evaluate)
+ *      - set task dependency
+ *      - assign file spec to bintrayUpload tasks
+ * phase 2: after all project evaluation listeners (after evaluate)
+ *  - setup gradle plugin portal
+ *  - setup version of  pluginMavenPublication task
+ *
+ * ------
+ * Script execution
+ * configure android library extension
+ * ------
+ *
+ * phase 3: before all project.afterEvaluate
+ *  **** android sourcesset and component creation
+ *  **** configure android library variant
+ *  **** configure simply publisher variant
+ *  **** configure gradle plugin portal
+ *
+ * phase 4: after all project.afterEvaluate
+ * - setup dokka task
+ * - setup publishing extension
+ *   - setup publications
+ *      - setup dokkaJar task
+ *      - setup sourcessetJar task
+ *   - setup repository
+ * - setup signing
+ *
+ * phase 5: project evaluated
+ *  **** bintray plugin project evaluation listener (project evaluated)
+ *  - Create facade tasks
+ */
 class PublicationBuilder(
     private val extension: SimplePublisherExtension,
     private val project: Project,
@@ -57,90 +99,171 @@ class PublicationBuilder(
     private val pubName = "${extension.pubName}$variantCap"
     private var dokka = extension.dokka
     private val pubComponent = extension.pubComponent
-    private val sourceSetName = extension.sourceSetName
+//    private val sourceSetName = extension.sourceSetName
     private val ext = (project as ExtensionAware).extensions
 
-    @Suppress("unused")
-    fun build() {
+    companion object {
 
-        System.out.println("start PublicationBuilder.build")
+        private fun Project.isMultiProjectRoot() =
+            rootProject == this && childProjects.isNotEmpty()
+
+        private fun printHelpForMissingDokka(project: Project) {
+            project.logger.warn("""
+            We cannot find a dokka task in project '${project.name}'.
+            By default, we will look for the declaration like this: 
+                tasks {
+                    dokka {
+                        ...
+                    }
+                }
+            If you defined a dokka with different name, you may specify it in $SP_EXT_NAME block:
+                $SP_EXT_NAME {
+                    ...
+                    dokka = myDokkaTask
+                    ...
+                }
+        """.trimIndent())
+        }
 
         /*
-            Create a publication tasks
-                "publish${pubName}${variantCap}ToMaven${pubName}${variantCap}Repository"
-                "publish${pubName}${variantCap}ToMavenLocal"
+            The gradle publish plugin hardcoded to use project name as publication artifact name.
+            We further customize that publication here and replace it with pom.name
+            The default value of pom.name is still project.name so we are not violating the Gradle convention.
+            "publishPluginMavenPublication*" task is created by gradle plugin publish plugin.
          */
+        private fun updatePluginPublication(project: Project, artifactId: String) {
+
+            project.extensions.configure(PublishingExtension::class.java) {
+                publications.find { it.name.startsWith("publishPluginMavenPublication") }?.let {
+                    if (it is MavenPublication) {
+                        it.artifactId = artifactId
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    @Suppress("unused")
+    fun buildPhase1() {
+        project.logger.debug("BimplePublisher Builder phase 1")
+        project.setupPublisher1()
+    }
+
+    @Suppress("unused")
+    fun buildPhase2() {
+        project.logger.debug("BimplePublisher Builder phase 2")
+        project.setupPublisher2()
+    }
+
+    @Suppress("unused")
+    fun buildPhase3() {
+        project.logger.debug("BimplePublisher Builder phase 3")
+        project.setupPublisher3()
+    }
+
+    @Suppress("unused")
+    fun buildPhase4() {
+        project.logger.debug("BimplePublisher Builder phase 4")
+        project.setupPublisher4()
+    }
+
+    @Suppress("unused")
+    fun buildPhase5() {
+        project.logger.debug("BimplePublisher Builder phase 5")
+        project.setupPublisher5()
+    }
+
+    private fun Project.setupPublisher1() {
 
         // TODO Without this sign will fail. may be gradle 6.2 will fix this?
         // https://discuss.gradle.org/t/unable-to-publish-artifact-to-mavencentral/33727/3
-        project.tasks.withType<GenerateModuleMetadata> {
+        // TODO 2 shall we add .configureEach after withType as suggested by
+        // https://blog.gradle.org/preview-avoiding-task-configuration-time
+        tasks.withType<GenerateModuleMetadata> {
             enabled = false
         }
 
-        if (project == project.rootProject && project.childProjects.isNotEmpty()) {
+        if (isMultiProjectRoot()) {
 
-            project.logger.debug("Configure root project '${project.name}' for multi-project publishing")
+            logger.debug("Configure root project '${name}' for multi-project publishing")
 
-            if (!project.rootProject.pluginManager.hasPlugin("io.hkhc.simplepublisher")) {
+            if (!rootProject.pluginManager.hasPlugin("io.hkhc.simplepublisher")) {
                 if (extension.ossArtifactory) {
-                    project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+                    convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
                 }
             }
         } else {
 
-            if (project == project.rootProject) {
-                project.logger.debug("Configure project '${project.name}' for single-project publishing")
+            if (this == rootProject) {
+                logger.info("Configure project '${name}' for single-project publishing")
             } else {
-                project.logger.debug("Configure child project '${project.name}' for multi-project publishing")
+                logger.info("Configure child project '${name}' for multi-project publishing")
             }
 
-            if (dokka == null) {
-                dokka = project.tasks.named("dokka")
-            }
-
-            ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
-            if (extension.signing) {
-                ext.findByType(SigningExtension::class.java)?.config(extension.useGpg)
-            }
             if (extension.bintray) {
                 ext.findByType(BintrayExtension::class.java)?.config()
-                project.tasks.named("bintrayUpload").get().apply {
+                /*
+                    Why does bintrayUpload not depends on _bintrayRecordingCopy by default?
+                 */
+                tasks.named("bintrayUpload").get().apply {
                     dependsOn("_bintrayRecordingCopy")
                 }
             }
+
             if (extension.ossArtifactory) {
-                project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+                convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
             }
-
-            if (extension.gradlePlugin) {
-                ext.findByType(PluginBundleExtension::class.java)?.config()
-                ext.findByType(GradlePluginDevelopmentExtension::class.java)?.config()
-            }
-
-            updatePluginPublication()
-
-            TaskBuilder(project, pom, extension, pubName).build()
-
         }
-
-        project.logger.warn("POM = $pom")
 
     }
 
-    /**
-        The gradle publish plugin hardcoded to use project name as publication artifact name.
-        We further customize that publication here and replace it with pom.name
-        The default value of pom.name is still project.name so we are not violating the Gradle convention.
-     */
-    private fun updatePluginPublication() {
+    private fun Project.setupPublisher2() {
 
-        project.extensions.configure(PublishingExtension::class.java) {
-            publications.find { it.name.startsWith("publishPluginMavenPublication") }?.let {
-                if (it is MavenPublication) {
-                    it.artifactId = pom.name
+        if (extension.gradlePlugin) {
+            ext.findByType(PluginBundleExtension::class.java)?.config()
+            ext.findByType(GradlePluginDevelopmentExtension::class.java)?.config()
+            updatePluginPublication(this, pom.name!!)
+
+        }
+
+        if (!isMultiProjectRoot()) {
+            // do nothing intentionally as a placeholder for future enhancement
+        }
+
+    }
+
+    private fun Project.setupPublisher3() {
+        // nothing
+    }
+
+    private fun Project.setupPublisher4() {
+
+        if (!isMultiProjectRoot()) {
+
+            if (dokka == null) {
+                try {
+                    dokka = tasks.named("dokka")
+                }
+                catch (e: UnknownTaskException) {
+                    printHelpForMissingDokka(this)
+                    throw GradleException("Failed to found 'dokka' task")
                 }
             }
+
+            ext.findByType(PublishingExtension::class.java)?.config(pubComponent)
+
+            if (extension.signing) {
+                ext.findByType(SigningExtension::class.java)?.config(extension.useGpg)
+            }
+
+
         }
+    }
+
+    private fun Project.setupPublisher5() {
+        TaskBuilder(this, pom, extension, pubName).build()
     }
 
     private fun PublishingExtension.config(
@@ -191,8 +314,6 @@ class PublicationBuilder(
 
         pom.fill(pkg)
 
-        System.out.println("bintray filesSpec ${project.buildDir}/libs")
-
         // Bintray requires our private key in order to sign archives for us. I don't want to share
         // the key and hence specify the signature files manually and upload them.
         filesSpec(closureOf<RecordingCopyTask> {
@@ -236,8 +357,12 @@ class PublicationBuilder(
         })
 
         project.tasks.register("artifactory${pubName.capitalize()}Publish", ArtifactoryTask::class) {
-            publications(pubName)
-            if (project.rootProject == project && project.childProjects.isNotEmpty()) {
+            if (extension.gradlePlugin) {
+                publications(pubName, "${pubName}PluginMarkerMaven")
+            } else {
+                publications(pubName)
+            }
+            if (project.isMultiProjectRoot()) {
                 skip = true
             }
         }
@@ -248,15 +373,15 @@ class PublicationBuilder(
         val dokkaJarTaskName = "dokkaJar$variantCap"
         return try {
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {
-                group = "Publishing"
-                archiveClassifier.set("javadoc")
+                group = PUBLISH_GROUP
+                archiveClassifier.set(CLASSIFIER_JAVADOC)
             }
         } catch (e: UnknownTaskException) {
             // TODO add error message here if dokka is null
             project.tasks.register(dokkaJarTaskName, Jar::class.java) {
-                group = "Publishing"
+                group = PUBLISH_GROUP
                 description = "Assembles Kotlin docs with Dokka to Jar"
-                archiveClassifier.set("javadoc")
+                archiveClassifier.set(CLASSIFIER_JAVADOC)
                 from(dokka)
                 dependsOn(dokka)
             }
@@ -264,19 +389,27 @@ class PublicationBuilder(
     }
 
     @Suppress("UnstableApiUsage")
-    private fun setupSourcesJar(sourceSetName: String): TaskProvider<Jar>? {
+    private fun setupSourcesJar(): TaskProvider<Jar>? {
 
-        val sourcesTaskName = "sourcesJar$variantCap"
+        val sourcesJarTaskName = "sourcesJar$variantCap"
         return try {
-            project.tasks.named(sourcesTaskName, Jar::class.java) {
-                archiveClassifier.set("sources")
+            project.tasks.named(sourcesJarTaskName, Jar::class.java) {
+                archiveClassifier.set(CLASSIFIER_SOURCE)
             }
         } catch (e: UnknownTaskException) {
-            project.tasks.register(sourcesTaskName, Jar::class.java) {
-                group = "Publishing"
-                description = "Create archive of source code for the binary"
-                archiveClassifier.set("sources")
-                from(project.sourceSets.getByName(sourceSetName).allSource)
+            val desc = if (extension.variant == "") {
+                "Create archive of source code for the binary"
+            } else {
+                "Create archive of source code for the binary of variant '${extension.variant}' "
+            }
+
+            val path = extension.sourcesPath ?: project.sourceSets.getByName(extension.sourceSetName).allSource
+
+            project.tasks.register(sourcesJarTaskName, Jar::class.java) {
+                group = PUBLISH_GROUP
+                description = desc
+                archiveClassifier.set(CLASSIFIER_SOURCE)
+                from(path)
             }
         }
     }
@@ -284,7 +417,7 @@ class PublicationBuilder(
     private fun PublicationContainer.createPublication(pubComponent: String) {
 
         val dokkaJar = setupDokkaJar()
-        val sourcesJar = setupSourcesJar(sourceSetName)
+        val sourcesJar = setupSourcesJar()
 
         val pomSpec = pom
 

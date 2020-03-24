@@ -28,13 +28,16 @@ class TaskBuilder(
     private val pubName: String
 ) {
 
-    private val simplePublisherGroup = "SimplePublisher"
     private val pubNameCap = pubName.capitalize()
+    private val pubId = "${pubNameCap}Publication"
+    private val markerPubId = "${pubNameCap}PluginMarkerMavenPublication"
+    private val mavenRepo = "Maven${pubNameCap}Repository"
+    private val mavenLocal = "MavenLocal"
 
     private fun TaskContainer.registerMavenLocalTask() {
 
-        register("spPublishToMavenLocal") {
-            group = simplePublisherGroup
+        register("spPublishTo${mavenLocal}") {
+            group = SP_GROUP
 
             if (extension.gradlePlugin) {
                 description = "Publish Maven publication '$pubName' " +
@@ -43,10 +46,10 @@ class TaskBuilder(
                 description = "Publish Maven publication '$pubName' to the local Maven Repository"
             }
 
-            dependsOn("publish${pubNameCap}PublicationToMavenLocal")
+            dependsOn("publish${pubId}To${mavenLocal}")
 
             if (extension.gradlePlugin) {
-                dependsOn("publish${pubNameCap}PluginMarkerMavenPublicationToMavenLocal")
+                dependsOn("publish${markerPubId}To${mavenLocal}")
             }
         }
     }
@@ -54,7 +57,7 @@ class TaskBuilder(
     private fun TaskContainer.registerMavenRepositoryTask() {
 
         register("spPublishToMavenRepository") {
-            group = simplePublisherGroup
+            group = SP_GROUP
 
             // I don't know why the maven repository name in the task name is not capitalized
 
@@ -65,10 +68,10 @@ class TaskBuilder(
                 description = "Publish Maven publication '$pubName' to the 'Maven$pubNameCap' Repository"
             }
 
-            dependsOn("publish${pubNameCap}PublicationToMaven${pubNameCap}Repository")
+            dependsOn("publish${pubId}To${mavenRepo}")
 
             if (extension.gradlePlugin) {
-                dependsOn("publish${pubNameCap}PluginMarkerMavenPublicationToMaven${pubNameCap}Repository")
+                dependsOn("publish${markerPubId}To${mavenRepo}")
             }
 
         }
@@ -76,7 +79,7 @@ class TaskBuilder(
 
     private fun TaskContainer.registerBintrayTask() {
         register("spPublishToBintray") {
-            group = simplePublisherGroup
+            group = SP_GROUP
 
             val target = if (pom.isSnapshot()) "OSS JFrog" else "Bintray"
 
@@ -104,7 +107,7 @@ class TaskBuilder(
 
     private fun TaskContainer.registerGradlePortalTask() {
         register("spPublishToGradlePortal") {
-            group = simplePublisherGroup
+            group = SP_GROUP
             description = "Publish plugin '${pom.plugin?.id}' to the Gradle plugin portal"
             dependsOn("publishPlugins")
         }
@@ -112,7 +115,7 @@ class TaskBuilder(
 
     private fun TaskContainer.registerPublishTask() {
         register("spPublish") {
-            group = simplePublisherGroup
+            group = SP_GROUP
 
             // assemble a list of repositories
             val repoList = kotlin.collections.mutableListOf<String>()
@@ -133,8 +136,8 @@ class TaskBuilder(
                 description = "Publish Maven publication '$pubNameCap' to $repoListStr"
             }
 
-            dependsOn("spPublishToMavenLocal")
-            dependsOn("spPublishToMavenlibRepository")
+            dependsOn("spPublishTo${mavenLocal}")
+            dependsOn("spPublishTo${mavenRepo}")
             if (extension.bintray) {
                 dependsOn("spPublishToBintray")
             }

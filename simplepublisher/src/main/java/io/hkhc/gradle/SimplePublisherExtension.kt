@@ -23,6 +23,10 @@ import org.gradle.api.Project
 // Gradle plugin extensions must be open class so that Gradle system can "decorate" it.
 open class SimplePublisherExtension(private val project: Project) {
 
+    init {
+        System.out.println("Construct SimplePublisherExtension [${project.name}]")
+    }
+
     lateinit var pom: Pom
 
     /**
@@ -69,8 +73,16 @@ open class SimplePublisherExtension(private val project: Project) {
 
     /**
      * The name of sourceset for archiving.
+     * if sourcesPath is not provided, the plugin try to get the sources set named [sourceSetName] for source jar task
      */
     var sourceSetName: String = "main"
+
+    /**
+     * The path of sourceset for archiving.
+     * as specified in from(...) of Jar task
+     * if sourcesPath is provided, sourceSetName will be ignored
+     */
+    var sourcesPath: Any? = null
 
     /**
      * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
