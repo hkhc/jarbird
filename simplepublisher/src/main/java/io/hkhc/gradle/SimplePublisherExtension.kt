@@ -18,14 +18,11 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.pom.Pom
 import org.gradle.api.Project
 
 // Gradle plugin extensions must be open class so that Gradle system can "decorate" it.
-open class SimplePublisherExtension(private val project: Project) {
-
-    init {
-        System.out.println("Construct SimplePublisherExtension [${project.name}]")
-    }
+open class SimplePublisherExtension(@Suppress("unused") private val project: Project) {
 
     lateinit var pom: Pom
 
@@ -56,7 +53,7 @@ open class SimplePublisherExtension(private val project: Project) {
 
     /**
      * the variant is string that as suffix of pubName to form a final publication name. It is also used
-     * to suffix the dokka jar task and soruce set jar task.
+     * to suffix the dokka jar task and souruce set jar task.
      * It is usually used for building Android artifact
      */
     var variant: String = ""
@@ -67,7 +64,7 @@ open class SimplePublisherExtension(private val project: Project) {
     var pubComponent: String = "java"
 
     /**
-     * the dokka task provider object for documentation. If it is not speified, the default dokka task will be used.
+     * the dokka task provider object for documentation. If it is not specified, the default dokka task will be used.
      */
     var dokka: Any? = null
 
@@ -89,4 +86,6 @@ open class SimplePublisherExtension(private val project: Project) {
      * We will need useGpg=true if we use new keybox (.kbx) format for pur signing key.
      */
     var useGpg = false
+
+    var mavenRepository: MavenEndpoint = project.mavenCentral()
 }

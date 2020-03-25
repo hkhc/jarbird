@@ -16,8 +16,11 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.builder
 
+import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.SP_GROUP
+import io.hkhc.gradle.SimplePublisherExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
 
@@ -39,11 +42,11 @@ class TaskBuilder(
         register("spPublishTo$mavenLocal") {
             group = SP_GROUP
 
-            if (extension.gradlePlugin) {
-                description = "Publish Maven publication '$pubName' " +
+            description = if (extension.gradlePlugin) {
+                "Publish Maven publication '$pubName' " +
                         "and plugin '${pom.plugin?.id}' to the local Maven Repository"
             } else {
-                description = "Publish Maven publication '$pubName' to the local Maven Repository"
+                "Publish Maven publication '$pubName' to the local Maven Repository"
             }
 
             dependsOn("publish${pubId}To$mavenLocal")
@@ -61,11 +64,11 @@ class TaskBuilder(
 
             // I don't know why the maven repository name in the task name is not capitalized
 
-            if (extension.gradlePlugin) {
-                description = "Publish Maven publication '$pubName' " +
+            description = if (extension.gradlePlugin) {
+                "Publish Maven publication '$pubName' " +
                         "and plugin '${pom.plugin?.id}' to the 'Maven$pubNameCap' Repository"
             } else {
-                description = "Publish Maven publication '$pubName' to the 'Maven$pubNameCap' Repository"
+                "Publish Maven publication '$pubName' to the 'Maven$pubNameCap' Repository"
             }
 
             dependsOn("publish${pubId}To$mavenRepo")
@@ -82,11 +85,11 @@ class TaskBuilder(
 
             val target = if (pom.isSnapshot()) "OSS JFrog" else "Bintray"
 
-            if (extension.gradlePlugin) {
-                description = "Publish Maven publication '$pubName' " +
+            description = if (extension.gradlePlugin) {
+                "Publish Maven publication '$pubName' " +
                         "and plugin '${pom.plugin?.id}' to $target"
             } else {
-                description = "Publish Maven publication '$pubName' to $target"
+                "Publish Maven publication '$pubName' to $target"
             }
 
             /*
@@ -116,7 +119,7 @@ class TaskBuilder(
             group = SP_GROUP
 
             // assemble a list of repositories
-            val repoList = kotlin.collections.mutableListOf<String>()
+            val repoList = mutableListOf<String>()
             repoList.add("Maven Local")
             repoList.add("'Maven$pubName' Repository")
             if (extension.bintray) {
@@ -135,7 +138,7 @@ class TaskBuilder(
             }
 
             dependsOn("spPublishTo$mavenLocal")
-            dependsOn("spPublishTo$mavenRepo")
+            dependsOn("spPublishToMavenRepository")
             if (extension.bintray) {
                 dependsOn("spPublishToBintray")
             }

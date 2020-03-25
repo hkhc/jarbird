@@ -19,3 +19,23 @@
 //plugins {
 //    id("io.hkhc.simplepublisher") version "0.3.3.0"
 //}
+
+buildscript {
+    repositories {
+        jcenter()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
+    }
+}
+
+//plugins {
+//    id("io.gitlab.arturbosch.detekt") version "1.7.0"
+//}
+
+//subprojects {
+//    detekt {
+//        toolVersion = "1.7.0"
+//    }
+//}

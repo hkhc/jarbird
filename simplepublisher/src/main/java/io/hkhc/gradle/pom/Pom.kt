@@ -16,10 +16,11 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.pom
 
-import java.util.*
+import io.hkhc.gradle.LICENSE_MAP
 import org.gradle.api.Project
+import java.util.*
 
 data class License(
     var name: String? = null,
@@ -82,7 +83,7 @@ data class Scm(
     var connection: String? = null,
     var developerConnection: String? = null,
     var repoType: String? = null, // "github.com" / "gitlab.com" / "bitbucket.org"
-    var repoName: String? = null, // "user/repo": preferbly give this only and the system try to fill others in Scm
+    var repoName: String? = null, // "user/repo": preferably give this only and the system try to fill others in Scm
     var issueType: String? = null, // may be same as repoType or others
     var issueUrl: String? = null,
     var tag: String? = null
@@ -152,9 +153,10 @@ data class Pom(
     companion object {
         fun overlayToLicenses(me: List<License>, other: MutableList<License>): MutableList<License> {
             me.forEach { meItem ->
-                val found = false
+                var found = false
                 other.find { otherItem -> meItem.name == otherItem.name }?.apply {
                     meItem.overlayTo(this)
+                    found = true
                 }
                 if (!found) other.add(meItem)
             }
@@ -162,9 +164,10 @@ data class Pom(
         }
         fun overlayToPeople(me: List<People>, other: MutableList<People>): MutableList<People> {
             me.forEach { meItem ->
-                val found = false
+                var found = false
                 other.find { otherItem -> meItem.name == otherItem.name }?.apply {
                     meItem.overlayTo(this)
+                    found = true
                 }
                 if (!found) other.add(meItem)
             }

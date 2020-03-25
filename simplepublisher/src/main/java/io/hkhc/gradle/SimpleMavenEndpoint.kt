@@ -18,11 +18,9 @@
 
 package io.hkhc.gradle
 
-class PublishParam {
-
-    var pubName: String = "lib"
-    var variant: String = ""
-    var pubComponent: String = "java"
-    var dokka: Any? = null
-    var sourceSetName: String = "main"
-}
+data class SimpleMavenEndpoint(
+    override val releaseUrl: String,
+    override val snapshotUrl: String,
+    override val username: String,
+    override val password: String
+) : MavenEndpoint

@@ -18,6 +18,8 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.pom.License
+import io.hkhc.gradle.pom.Pom
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 

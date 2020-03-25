@@ -19,26 +19,38 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
+buildscript {
+    repositories {
+        jcenter()
+        // It is needed by detekt
+        maven { url = uri("http://dl.bintray.com/arturbosch/code-analysis") }
+    }
+}
+
 repositories {
     mavenLocal()
+    // normal project don't need this in repositories block.
+    // We need this because we need to access the plugin code directly.
     gradlePluginPortal()
     mavenCentral()
     jcenter()
 }
 
-val kotlin_version = "1.3.70"
+val kotlin_version = "1.3.71"
 
 plugins {
-    kotlin("jvm") version "1.3.70"
+    kotlin("jvm") version "1.3.71"
     `kotlin-dsl`
     id("org.jetbrains.dokka") version "0.10.1"
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
-    id("io.gitlab.arturbosch.detekt") version "1.5.1"
+    id("io.gitlab.arturbosch.detekt") version "1.7.0"
     id("com.gradle.plugin-publish") version "0.10.1"
     `java-gradle-plugin`
     id("com.dorongold.task-tree") version "1.5"
     id("io.hkhc.simplepublisher.bootstrap") version "1.0.0"
 }
+
+// TODO Simplify functional test creation
 
 val functionalTestSourceSetName = "testFunctional"
 
@@ -72,6 +84,12 @@ tasks {
     }
 }
 
+detekt {
+    toolVersion="1.7.0"
+    buildUponDefaultConfig = true
+    config = files("${project.projectDir}/detekt-config.yml")
+}
+
 ktlint {
     debug.set(true)
     verbose.set(true)
@@ -79,11 +97,6 @@ ktlint {
     reporters {
         setOf(ReporterType.CHECKSTYLE, ReporterType.PLAIN)
     }
-}
-
-detekt {
-    buildUponDefaultConfig = true
-    config = files("detekt-config.yml")
 }
 
 val compileKotlin: KotlinCompile by tasks
@@ -110,6 +123,11 @@ gradlePlugin {
     testSourceSets(sourceSets[functionalTestSourceSetName])
 }
 
+configurations {
+    detekt
+}
+
+
 dependencies {
 
     implementation(kotlin("stdlib-jdk8", kotlin_version))
@@ -126,10 +144,17 @@ dependencies {
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.yaml:snakeyaml:1.25")
     implementation("com.gradle.publish:plugin-publish-plugin:0.10.1")
+//    implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
 
     testImplementation("junit:junit:4.12")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.0-BETA1")
 
     "${functionalTestSourceSetName}Implementation"("junit:junit:4.12")
     "${functionalTestSourceSetName}Implementation"(gradleTestKit())
+
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.0")
+
+//    detekt("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.0")
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
+//    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.0")
 }

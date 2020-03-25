@@ -18,6 +18,8 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.builder.PublicationBuilder
+import io.hkhc.gradle.pom.PomFactory
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectEvaluationListener
@@ -72,7 +74,7 @@ class SimplePublisherPlugin : Plugin<Project> {
                         if (extension.gradlePlugin) {
                             project.pluginManager.apply("com.gradle.plugin-publish")
                         }
-                        if (extension.gradlePlugin && !p.pluginManager.hasPlugin("com.gradle.plugin-publish")) {
+                        if (extension.gradlePlugin && !project.pluginManager.hasPlugin("com.gradle.plugin-publish")) {
                             project.pluginManager.apply("com.gradle.plugin-publish")
                         } else {
                             PublicationBuilder(extension, project, pom).buildPhase1()

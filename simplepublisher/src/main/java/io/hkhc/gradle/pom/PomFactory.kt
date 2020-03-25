@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.pom
 
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.gradle.api.Project
@@ -140,13 +140,15 @@ fun Pom.fillTo(mavenPom: MavenPom) {
 fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
 
     val labelList = bintrayLabels?.split(',')?.toTypedArray() ?: arrayOf()
+    val licenseList = licenses.map { it.name }.toTypedArray()
 
     val pom = this
+    @Suppress("SpreadOperator")
     pkg.apply {
         repo = "maven"
         name = pom.name
         desc = pom.description
-        setLicenses(*pom.licenses.map { it.name }.toTypedArray())
+        setLicenses(*licenseList)
         websiteUrl = pom.web.url ?: ""
         vcsUrl = pom.scm.url ?: ""
         if (pom.scm.repoType == "github.com") {

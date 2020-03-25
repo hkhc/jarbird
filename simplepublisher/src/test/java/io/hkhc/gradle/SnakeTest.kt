@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.pom.Pom
 import org.junit.Test
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor

@@ -18,12 +18,23 @@
 
 package io.hkhc.gradle
 
+import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.provideDelegate
 
-class PublishConfig(project: Project) {
+class PropertyMavenEndpoint(private val project: Project, private val key: String) : MavenEndpoint {
 
+    private val keyPrefix = "repository"
 
-    val bintrayUser: String? by project
-    val bintrayApiKey: String? by project
+    override val releaseUrl: String
+        get() = resolveProperty(project, "$keyPrefix.$key.release")
+
+    override val snapshotUrl: String
+        get() = resolveProperty(project, "$keyPrefix.$key.snapshot")
+
+    override val username: String
+        get() = resolveProperty(project, "$keyPrefix.$key.username")
+
+    override val password: String
+        get() = resolveProperty(project, "$keyPrefix.$key.password")
+
 }

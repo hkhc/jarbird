@@ -4,6 +4,7 @@
     <enableDetekt>true</enableDetekt>
     <enableFormatting>true</enableFormatting>
     <buildUponDefaultConfig>true</buildUponDefaultConfig>
-    <rulesPath>detekt-config.yml</rulesPath>
+    <rulesPath>$PROJECT_DIR$/simplepublisher/detekt-config.yml</rulesPath>
+    <pluginPaths>$PROJECT_DIR$/detekt/detekt-formatting-1.7.0.jar</pluginPaths>
   </component>
 </project>

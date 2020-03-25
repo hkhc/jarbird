@@ -33,7 +33,7 @@ repositories {
 }
 
 plugins {
-    kotlin("jvm") version "1.3.70"
+    kotlin("jvm") version "1.3.71"
     `kotlin-dsl`
     `maven-publish`
     id("com.dorongold.task-tree") version "1.5"
@@ -67,7 +67,7 @@ dependencies {
 
     // These are the dependencies needed to build the plugin code
 
-    implementation(kotlin("stdlib-jdk8", "1.3.70"))
+    implementation(kotlin("stdlib-jdk8", "1.3.71"))
 
     // TODO extract common dependencies to a separate file
 
