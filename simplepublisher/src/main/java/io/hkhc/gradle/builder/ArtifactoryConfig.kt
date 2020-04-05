@@ -56,7 +56,7 @@ class ArtifactoryConfig(
             })
             defaults(delegateClosureOf<GroovyObject> {
                 if (extension.gradlePlugin) {
-                    invokeMethod("publications", listOf(pubName, "${pubName}PluginMarkerMaven"))
+                    invokeMethod("publications", arrayOf(pubName, "${pubName}PluginMarkerMaven"))
                 } else {
                     invokeMethod("publications", pubName)
                 }
