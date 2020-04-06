@@ -109,9 +109,9 @@ compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
 
-// tasks.withType<Test> {
-//     useJUnitPlatform()
-// }
+tasks.withType<Test> {
+ useJUnitPlatform()
+}
 
 simplyPublish {
     useGpg = true
@@ -126,7 +126,6 @@ gradlePlugin {
 configurations {
     detekt
 }
-
 
 dependencies {
 
@@ -144,17 +143,16 @@ dependencies {
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.yaml:snakeyaml:1.25")
     implementation("com.gradle.publish:plugin-publish-plugin:0.10.1")
-//    implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
 
+    // TODO Do we still need 4.1.2 when using kotest?
     testImplementation("junit:junit:4.12")
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.0-BETA1")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.2")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.2")
 
     "${functionalTestSourceSetName}Implementation"("junit:junit:4.12")
     "${functionalTestSourceSetName}Implementation"(gradleTestKit())
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.0")
 
-//    detekt("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.0")
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
-//    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.0")
 }

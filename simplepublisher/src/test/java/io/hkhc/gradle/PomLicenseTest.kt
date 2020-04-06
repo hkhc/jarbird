@@ -20,58 +20,44 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.License
 import io.hkhc.gradle.pom.Pom
+import io.hkhc.utils.test.`Field perform overlay properly`
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 
-class PomLicenseTest : StringSpec( {
+class PomLicenseTest : StringSpec({
 
-    "Empty license can merge from another" {
-        val l1 = License("lic_name", "lic_url", "lic_dist")
-        val l2 = License()
-        l1.overlayTo(l2)
-
-        with(l2) {
-            name shouldBe "lic_name"
-            url shouldBe "lic_url"
-            dist shouldBe "lic_dist"
-        }
+    "License shall be a data class so that we may assume 'equals' logic is provided" {
+        License::class.isData.shouldBeTrue()
     }
 
-    "Partially filled license merge to another and get missing value" {
-        val l1 = License("lic_name", "lic_url", "lic_dist")
-        val l2 = License("lic_name_2", "lic_url_2")
-        l1.overlayTo(l2)
+    // Have one line per property in the class
+    "License shall overlay properly" {
 
-        with(l2) {
-            name shouldBe "lic_name_2"
-            url shouldBe "lic_url_2"
-            dist shouldBe "lic_dist"
-        }
-    }
-
-    "Filled field in license is not updated during merging" {
-        val l1 = License("lic_name", "lic_url", "lic_dist")
-        val l2 = License("lic_name_2", "lic_url_2")
-        l1.overlayTo(l2)
-
-        with(l2) {
-            name shouldBe "lic_name_2"
-            url shouldBe "lic_url"
-            dist shouldBe "lic_dist"
-        }
+        `Field perform overlay properly`(::License, License::name, "value")
+        `Field perform overlay properly`(::License, License::url, "value")
+        `Field perform overlay properly`(::License, License::dist, "value")
+        `Field perform overlay properly`(::License, License::comments, "value")
     }
 
     "Merging list of licenses and obtain new item" {
+
+        // GIVEN list of two licenses with different names
         val list1 = mutableListOf(
-            License("lic_name_1", "lic_url_1", "lic_dist_1"),
-            License("lic_name_2", "lic_url_2", "lic_dist_2")
+            License(name = "lic_name_1", url = "lic_url_1", dist = "lic_dist_1"),
+            License(name = "lic_name_2", url = "lic_url_2", dist = "lic_dist_2")
         )
 
+        // AND a different list of licenses with different names
         val list2 = listOf(
-            License("lic_name_3", "lic_url_3", "lic_dist_3")
+            License(name = "lic_name_3", url = "lic_url_3", dist = "lic_dist_3")
         )
 
-        with(Pom.overlayToLicenses(list2, list1)) {
+        // WHEN merging two lists together
+        val list3 = Pom.overlayToLicenses(list2, list1)
+
+        // THEN the list becomes ...
+        with(list3) {
             size shouldBe 3
             this shouldBe listOf(
                 License("lic_name_1", "lic_url_1", "lic_dist_1"),
@@ -82,17 +68,24 @@ class PomLicenseTest : StringSpec( {
     }
 
     "Merging list of licenses and update existing item" {
+
+        // GIVEN list of two licenses with different names
         val list1 = mutableListOf(
             License("lic_name_1", "lic_url_1", "lic_dist_1"),
             License("lic_name_2")
         )
 
+        // AND a different list of licenses with some items' name in first list
         val list2 = listOf(
             License("lic_name_2", "lic_url_2", "lic_dist_2"),
             License("lic_name_3", "lic_url_3", "lic_dist_3")
         )
 
-        with(Pom.overlayToLicenses(list2, list1)) {
+        // WHEN merging two lists together
+        val list3 = Pom.overlayToLicenses(list2, list1)
+
+        // THEN the items in the second list overlay the items in the first list
+        with(list3) {
             size shouldBe 3
             this shouldBe listOf(
                 License("lic_name_1", "lic_url_1", "lic_dist_1"),

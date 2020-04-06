@@ -22,17 +22,34 @@ import io.hkhc.gradle.LICENSE_MAP
 import org.gradle.api.Project
 import java.util.*
 
+/**
+ * Overlayable interface provide a common protocol for the class that can combine together
+ * by providing "overlayTo" method.
+ *
+ * The method that implements the interface shall merge each field of the class such that
+ * - The field in receiver shall overwrite the ine in parameter, if former is not null
+ *
+ * For collection fields, the item in former field and not in later field shall be appended to the later collection
+ *
+ *
+ */
+interface Overlayable {
+    fun overlayTo(other: Overlayable)
+}
+
 data class License(
     var name: String? = null,
     var url: String? = null,
     var dist: String? = null,
     var comments: String? = null
-) {
-    fun overlayTo(other: License) {
-        name?.let { other.name = it }
-        url?.let { other.url = it }
-        dist?.let { other.dist = it }
-        comments?.let { other.comments = it }
+) : Overlayable  {
+    override fun overlayTo(other: Overlayable) {
+        if (other is License) {
+            name?.let { other.name = it }
+            url?.let { other.url = it }
+            dist?.let { other.dist = it }
+            comments?.let { other.comments = it }
+        }
     }
 }
 
@@ -46,35 +63,41 @@ data class People(
     var organizationUrl: String? = null,
     var timeZone: String? = null,
     var url: String? = null
-) {
-    fun overlayTo(other: People) {
-        id?.let { other.id = it }
-        name?.let { other.name = it }
-        email?.let { other.email = it }
-        organization?.let { other.organization = it }
-        organizationUrl?.let { other.organizationUrl = it }
-        timeZone?.let { other.timeZone = it }
-        url?.let { other.url = url }
+) : Overlayable {
+    override fun overlayTo(other: Overlayable) {
+        if (other is People) {
+            id?.let { other.id = it }
+            name?.let { other.name = it }
+            email?.let { other.email = it }
+            organization?.let { other.organization = it }
+            organizationUrl?.let { other.organizationUrl = it }
+            timeZone?.let { other.timeZone = it }
+            url?.let { other.url = url }
+        }
     }
 }
 
 data class Organization(
     var name: String? = null,
     var url: String? = null
-) {
-    fun overlayTo(other: Organization) {
-        name?.let { other.name = it }
-        url?.let { other.url = it }
+) : Overlayable {
+    override fun overlayTo(other: Overlayable) {
+        if (other is Organization) {
+            name?.let { other.name = it }
+            url?.let { other.url = it }
+        }
     }
 }
 
 data class Web(
     var url: String? = null,
     var description: String? = null
-) {
-    fun overlayTo(other: Web) {
-        url?.let { other.url = it }
-        description?.let { other.description = it }
+) : Overlayable {
+    override fun overlayTo(other: Overlayable) {
+        if (other is Web) {
+            url?.let { other.url = it }
+            description?.let { other.description = it }
+        }
     }
 }
 
@@ -87,17 +110,19 @@ data class Scm(
     var issueType: String? = null, // may be same as repoType or others
     var issueUrl: String? = null,
     var tag: String? = null
-) {
+) : Overlayable {
     @Suppress("DuplicatedCode")
-    fun overlayTo(other: Scm) {
-        url?.let { other.url = it }
-        connection?.let { other.connection = it }
-        developerConnection?.let { other.developerConnection = it }
-        repoType?.let { other.repoType = it }
-        repoName?.let { other.repoName = it }
-        issueType?.let { other.issueType = it }
-        issueUrl?.let { other.issueUrl = it }
-        tag?.let { other.tag = it }
+    override fun overlayTo(other: Overlayable) {
+        if (other is Scm) {
+            url?.let { other.url = it }
+            connection?.let { other.connection = it }
+            developerConnection?.let { other.developerConnection = it }
+            repoType?.let { other.repoType = it }
+            repoName?.let { other.repoName = it }
+            issueType?.let { other.issueType = it }
+            issueUrl?.let { other.issueUrl = it }
+            tag?.let { other.tag = it }
+        }
     }
 }
 
@@ -107,7 +132,7 @@ data class PluginInfo(
     var description: String? = null,
     var implementationClass: String? = null,
     var tags: MutableList<String> = mutableListOf()
-) {
+) : Overlayable {
 
     companion object {
         fun overlayToTags(me: List<String>, other: MutableList<String>): MutableList<String> {
@@ -118,12 +143,14 @@ data class PluginInfo(
         }
     }
 
-    fun overlayTo(other: PluginInfo) {
-        id?.let { other.id = it }
-        displayName?.let { other.displayName = it }
-        description?.let { other.description = it }
-        implementationClass?.let { other.implementationClass = it }
-        overlayToTags(tags, other.tags)
+    override fun overlayTo(other: Overlayable) {
+        if (other is PluginInfo) {
+            id?.let { other.id = it }
+            displayName?.let { other.displayName = it }
+            description?.let { other.description = it }
+            implementationClass?.let { other.implementationClass = it }
+            overlayToTags(tags, other.tags)
+        }
     }
 }
 
@@ -148,7 +175,7 @@ data class Pom(
 
     var plugin: PluginInfo? = null
 
-) {
+) : Overlayable {
 
     companion object {
         fun overlayToLicenses(me: List<License>, other: MutableList<License>): MutableList<License> {
@@ -176,31 +203,32 @@ data class Pom(
     }
 
     @Suppress("DuplicatedCode")
-    fun overlayTo(other: Pom) {
+    override fun overlayTo(other: Overlayable) {
+        if (other is Pom) {
+            group?.let { other.group = group }
+            name?.let { other.name = name }
+            version?.let { other.version = version }
+            if (inceptionYear != -1) { other.inceptionYear = inceptionYear }
+            packaging?.let { other.packaging = packaging }
+            url?.let { other.url = url }
+            description?.let { other.description = description }
 
-        group?.let { other.group = group }
-        name?.let { other.name = name }
-        version?.let { other.version = version }
-        if (inceptionYear != -1) { other.inceptionYear = inceptionYear }
-        packaging?.let { other.packaging = packaging }
-        url?.let { other.url = url }
-        description?.let { other.description = description }
+            overlayToLicenses(licenses, other.licenses)
+            overlayToPeople(developers, other.developers)
+            overlayToPeople(contributors, other.contributors)
 
-        overlayToLicenses(licenses, other.licenses)
-        overlayToPeople(developers, other.developers)
-        overlayToPeople(contributors, other.contributors)
+            organization.overlayTo(other.organization)
+            web.overlayTo(other.web)
+            scm.overlayTo(other.scm)
 
-        organization.overlayTo(other.organization)
-        web.overlayTo(other.web)
-        scm.overlayTo(other.scm)
+            bintrayLabels?.let { other.bintrayLabels = bintrayLabels }
 
-        bintrayLabels?.let { other.bintrayLabels = bintrayLabels }
-
-        plugin?.let {
-            if (other.plugin == null) {
-                other.plugin = it
-            } else {
-                it.overlayTo(other.plugin!!)
+            plugin?.let {
+                if (other.plugin == null) {
+                    other.plugin = it
+                } else {
+                    it.overlayTo(other.plugin!!)
+                }
             }
         }
     }
