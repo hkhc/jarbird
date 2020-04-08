@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle
 
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 class PropertyMavenEndpoint(private val project: Project, private val key: String) : MavenEndpoint {
@@ -36,5 +35,4 @@ class PropertyMavenEndpoint(private val project: Project, private val key: Strin
 
     override val password: String
         get() = resolveProperty(project, "$keyPrefix.$key.password")
-
 }

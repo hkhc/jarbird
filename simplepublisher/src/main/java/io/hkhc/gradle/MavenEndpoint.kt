@@ -46,15 +46,15 @@ fun Project.mavenCentral(): MavenEndpoint {
     )
 }
 
-fun resolveProperty(project: Project, keyName: String): String {
+fun resolveProperty(project: Project, propertyName: String): String {
 
-    val value: String? = project.properties[keyName] as String?
+    val value: String? = project.properties[propertyName] as String?
     if (value == null) {
         project.logger.error("""
-                Failed to find property '$keyName'.
-                It could be in one of the gradle.properties, or come with -D$keyName command line option.
+                Failed to find property '$propertyName'.
+                It could be in one of the gradle.properties, or come with -D$propertyName command line option.
             """.trimIndent())
-        throw GradleException("Failed to find property '$keyName'")
+        throw GradleException("Failed to find property '$propertyName'")
     }
     return value
 }

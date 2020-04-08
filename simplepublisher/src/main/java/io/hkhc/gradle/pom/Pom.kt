@@ -42,7 +42,7 @@ data class License(
     var url: String? = null,
     var dist: String? = null,
     var comments: String? = null
-) : Overlayable  {
+) : Overlayable {
     override fun overlayTo(other: Overlayable) {
         if (other is License) {
             name?.let { other.name = it }
@@ -200,6 +200,12 @@ data class Pom(
             }
             return other
         }
+
+        var dataHandler: () -> Calendar = { GregorianCalendar.getInstance() }
+
+        fun setDateHandler(block: () -> Calendar) {
+            dataHandler = block
+        }
     }
 
     @Suppress("DuplicatedCode")
@@ -233,20 +239,19 @@ data class Pom(
         }
     }
 
-    private fun lookupLicenseLink(licenses: List<License>) {
+    internal fun lookupLicenseLink(licenses: List<License>) {
         for (lic in licenses) {
             lic.url = lic.url ?: LICENSE_MAP[lic.name!!]
         }
     }
 
     @Suppress("DuplicatedCode")
-    private fun expandScmGit(scm: Scm) {
+    internal fun expandScmGit(scm: Scm) {
         if (scm.repoType != null && scm.repoName != null) {
             with(scm) {
                 url = url ?: "https://$repoType/$repoName"
                 connection = connection ?: "scm:git@$repoType:$repoName.git"
-                developerConnection = developerConnection ?: "scm:git@@repoType:$repoName.git"
-                tag = tag ?: scm.tag
+                developerConnection = developerConnection ?: "scm:git@$repoType:$repoName.git"
                 issueType = issueType ?: repoType
                 issueUrl = issueUrl ?: "https://$repoType/$repoName/issues"
             }
@@ -257,24 +262,37 @@ data class Pom(
 
     fun syncWith(project: Project) {
 
+        // two-way sync with project.group
+        // so that the artifact can be build according the setting here.
         group?.let { project.group = it }
         group = group ?: project.group.toString()
 
-        // we are not going to change the project name here.
+        // but we are not going to change the project name, because that may distrub the
+        // execution of gradle script.
         name = name ?: project.name
 
+        // two-way sync with project.version
         version?.let { project.version = it }
         version = version ?: project.version.toString()
 
-        inceptionYear = if (inceptionYear != -1) inceptionYear else GregorianCalendar.getInstance().get(Calendar.YEAR)
+        // set default inception year if we don't provide one
+        inceptionYear = if (inceptionYear != -1) inceptionYear else dataHandler().get(Calendar.YEAR)
+
+        // default packaging is "jar"
         packaging = packaging ?: "jar"
+
+        // we get the project description as artifact description,
+        // but it seems useless to change he project description here, so we don't do that.
         description = description ?: project.description
 
+        // resolve license link by the name.
         lookupLicenseLink(licenses)
 
         // TODO handle SVN/HG/etc
+        // resolve scm details by repoType and repoName
         expandScmGit(scm)
 
+        // resolve web details if we don't provide it.
         web.apply {
             url = url ?: scm.url
             description = description ?: this@Pom.description

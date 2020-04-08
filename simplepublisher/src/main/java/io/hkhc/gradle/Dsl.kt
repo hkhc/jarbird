@@ -19,7 +19,6 @@
 package io.hkhc.gradle
 
 import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
 
 @Suppress("unused")
 fun Project.simplyPublish(configure: SimplePublisherExtension.() -> Unit) {
