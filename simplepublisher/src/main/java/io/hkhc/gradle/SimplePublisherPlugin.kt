@@ -101,7 +101,9 @@ class SimplePublisherPlugin : Plugin<Project> {
 
         with(project.pluginManager) {
             apply("org.gradle.maven-publish")
-            apply("org.gradle.signing")
+            if (extension.signing) {
+                apply("org.gradle.signing")
+            }
             apply("com.jfrog.bintray")
             apply("com.jfrog.artifactory")
         }

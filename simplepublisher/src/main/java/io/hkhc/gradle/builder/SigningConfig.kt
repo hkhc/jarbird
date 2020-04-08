@@ -20,6 +20,7 @@ package io.hkhc.gradle.builder
 
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.SimplePublisherExtension
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
@@ -37,8 +38,39 @@ class SigningConfig(
     private val pubName = "${extension.pubName}$variantCap"
 
     fun config() {
+
+        if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
+//            project.logger.error(
+//                """
+//                Signing configuration is not complete. The combined properies of all gradle.properties shall specifies
+//                one of the following groups of properties:
+//                For GNUPG v1 (if you have .gpg file)
+//                - signing.keyId : the short form if ID of the key pair for signing
+//                - signing.passphrase : the passphrase to unlock the key store (.gpg file)
+//                - signing.secretKeyRingFile : the full path to the .gpg file with private key for signing
+//                For GNU PG v2 (if you have .kbx file. gnu pg must be installed on the system)
+//                - signing.gnupg.keyName : the short form if ID of the key pair for signing
+//                - signing.gnupg.passphrase : the passphrase to unlock the key store (.kbx file)
+//            """.trimIndent())
+//            throw GradleException("Incomplete signing config")
+            project.logger.warn("Signing configuration is not complete. Signing operation is ignored.")
+            project.logger.warn("Maven Central publishing cannot be done without signing the artifacts.")
+            return
+        } else {
+            project.logger.info("Signing info complete")
+        }
+
         ext.findByType(SigningExtension::class.java)?.config()
     }
+
+    private fun isV1ConfigPresents() =
+            project.properties["signing.keyId"] != null &&
+            project.properties["signing.password"] != null &&
+            project.properties["signing.secretKeyRingFile"] != null
+
+    private fun isV2ConfigPresents() =
+            project.properties["signing.gnupg.keyName"] != null &&
+            project.properties["signing.gnupg.passphrase"] != null
 
     private fun SigningExtension.config() {
 
