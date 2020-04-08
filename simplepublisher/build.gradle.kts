@@ -148,6 +148,7 @@ dependencies {
     testImplementation("junit:junit:4.12")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.2")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.2")
+    testImplementation("io.mockk:mockk:1.9")
 
     "${functionalTestSourceSetName}Implementation"("junit:junit:4.12")
     "${functionalTestSourceSetName}Implementation"(gradleTestKit())
