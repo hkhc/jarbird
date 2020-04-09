@@ -158,10 +158,11 @@ data class PluginInfo(
 
 data class Pom(
     var group: String? = null,
-    var name: String? = null,
+    var artifactId: String? = null,
     var version: String? = null,
     var inceptionYear: Int = -1,
     var packaging: String? = null,
+    var name: String? = null,
     var url: String? = null,
     var description: String? = null,
     // Thw following 3 fields are use for YAML to setting it in serializable way.
@@ -211,13 +212,14 @@ data class Pom(
     @Suppress("DuplicatedCode")
     override fun overlayTo(other: Overlayable) {
         if (other is Pom) {
-            group?.let { other.group = group }
-            name?.let { other.name = name }
-            version?.let { other.version = version }
+            group?.let { other.group = it }
+            artifactId?.let { other.artifactId = it }
+            version?.let { other.version = it }
             if (inceptionYear != -1) { other.inceptionYear = inceptionYear }
-            packaging?.let { other.packaging = packaging }
-            url?.let { other.url = url }
-            description?.let { other.description = description }
+            packaging?.let { other.packaging = it }
+            name?.let { other.name = it }
+            url?.let { other.url = it }
+            description?.let { other.description = it }
 
             overlayToLicenses(licenses, other.licenses)
             overlayToPeople(developers, other.developers)
@@ -227,7 +229,7 @@ data class Pom(
             web.overlayTo(other.web)
             scm.overlayTo(other.scm)
 
-            bintrayLabels?.let { other.bintrayLabels = bintrayLabels }
+            bintrayLabels?.let { other.bintrayLabels = it }
 
             plugin?.let {
                 if (other.plugin == null) {
@@ -250,7 +252,7 @@ data class Pom(
         if (scm.repoType != null && scm.repoName != null) {
             with(scm) {
                 url = url ?: "https://$repoType/$repoName"
-                connection = connection ?: "scm:git@$repoType:$repoName.git"
+                connection = connection ?: "scm:git@$repoType:$repoName"
                 developerConnection = developerConnection ?: "scm:git@$repoType:$repoName.git"
                 issueType = issueType ?: repoType
                 issueUrl = issueUrl ?: "https://$repoType/$repoName/issues"
@@ -260,6 +262,11 @@ data class Pom(
 
     fun isSnapshot() = version!!.endsWith("-SNAPSHOT")
 
+    /**
+     * See https://central.sonatype.org/pages/requirements.html#sufficient-metadata
+     * for the detail accounts of POM metadata needs to publish to Maven Central.
+     * That should be more than enough for Bintray
+     */
     fun syncWith(project: Project) {
 
         // two-way sync with project.group
@@ -267,9 +274,11 @@ data class Pom(
         group?.let { project.group = it }
         group = group ?: project.group.toString()
 
+        artifactId = artifactId ?: project.name
+
         // but we are not going to change the project name, because that may distrub the
         // execution of gradle script.
-        name = name ?: project.name
+        name = name ?: "$group:${project.name}"
 
         // two-way sync with project.version
         version?.let { project.version = it }

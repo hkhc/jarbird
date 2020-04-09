@@ -21,15 +21,13 @@ package io.hkhc.gradle.builder
 import io.hkhc.gradle.CLASSIFIER_JAVADOC
 import io.hkhc.gradle.CLASSIFIER_SOURCE
 import io.hkhc.gradle.PUBLISH_GROUP
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.PublishConfig
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.fillTo
 import io.hkhc.util.LOG_PREFIX
-import io.hkhc.util.detailMessage
 import io.hkhc.util.detailMessageWarning
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.dsl.RepositoryHandler
@@ -115,7 +113,8 @@ class PublishingConfig(
 
             groupId = pomSpec.group
 
-            artifactId = pomSpec.name
+            artifactId = pomSpec.artifactId
+
             // version is gotten from an external plugin
             //            version = project.versioning.info.display
             version = pomSpec.version

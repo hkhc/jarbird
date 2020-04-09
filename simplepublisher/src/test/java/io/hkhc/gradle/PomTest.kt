@@ -57,7 +57,7 @@ class PomTest : StringSpec({
     "Pom shall overlay properly" {
 
         `Field perform overlay properly`(::Pom, Pom::group, "value")
-        `Field perform overlay properly`(::Pom, Pom::name, "value")
+        `Field perform overlay properly`(::Pom, Pom::artifactId, "value")
         `Field perform overlay properly`(::Pom, Pom::version, "value")
         `Int field is overlay properly`(::Pom, Pom::inceptionYear)
         `Field perform overlay properly`(::Pom, Pom::packaging, "value")
@@ -187,7 +187,7 @@ class PomTest : StringSpec({
         // THEN
         with (p1.scm) {
             url shouldBe "https://github.com/hkhc/abc"
-            connection shouldBe "scm:git@github.com:hkhc/abc.git"
+            connection shouldBe "scm:git@github.com:hkhc/abc"
             developerConnection shouldBe "scm:git@github.com:hkhc/abc.git"
             issueType shouldBe "github.com"
             issueUrl shouldBe "https://github.com/hkhc/abc/issues"
@@ -213,7 +213,7 @@ class PomTest : StringSpec({
 
         // THEN
         pom.group shouldBe "io.hkhc"
-        pom.name shouldBe "mylib"
+        pom.name shouldBe "io.hkhc:mylib"
         pom.version shouldBe "1.0"
         pom.description shouldBe "desc"
 
@@ -232,15 +232,16 @@ class PomTest : StringSpec({
         // GIVEN
         Pom.setDateHandler { GregorianCalendar.getInstance().apply { set(Calendar.YEAR, 1999) } }
         every { project.name } returns "mylib"
-        every { project.name } returns "mylib"
-        val pom = Pom(version="1.0")
+        val pom = Pom(group="io.hkhc", version="1.0")
 
         // WHEN
         pom.syncWith(project)
 
         // THEN
 
-        verify { project.group = "io.hkhc" }
+        verify {
+            project.group = "io.hkhc"
+            project.name }
     }
 
 }) {
