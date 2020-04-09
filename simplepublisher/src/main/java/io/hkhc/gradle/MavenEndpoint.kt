@@ -18,7 +18,6 @@
 package io.hkhc.gradle
 
 import io.hkhc.util.LOG_PREFIX
-import io.hkhc.util.detailMessage
 import io.hkhc.util.detailMessageError
 import org.gradle.api.GradleException
 import org.gradle.api.Project

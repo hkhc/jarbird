@@ -21,19 +21,18 @@ package io.hkhc.util
 import org.gradle.api.logging.Logger
 
 fun detailMessageError(logger: Logger, title: String, detail: String) {
-    detailMessage(logger::error, "ERROR", title, detail)
+    detailMessage(logger, logger::error, "ERROR", title, detail)
 }
 
 fun detailMessageWarning(logger: Logger, title: String, detail: String) {
-    detailMessage(logger::warn, "WARNING", title, detail)
+    detailMessage(logger, logger::warn, "WARNING", title, detail)
 }
 
-fun detailMessage(logger: (String) -> Unit, levelTag: String, title: String, detail: String) {
-    logger.invoke("$LOG_PREFIX ------ Problem")
-    logger.invoke("$levelTag: $LOG_PREFIX $title")
-    logger.invoke("$LOG_PREFIX ------ Solution")
+fun detailMessage(logger: Logger, loggerBlock: (String) -> Unit, levelTag: String, title: String, detail: String) {
+    loggerBlock.invoke("$levelTag: $LOG_PREFIX $title")
+    logger.info("$LOG_PREFIX ------ Proposed action")
     detail.lineSequence().forEach { line ->
-        logger.invoke("$LOG_PREFIX $line")
+        logger.info("$LOG_PREFIX $line")
     }
-    logger.invoke("$LOG_PREFIX ------")
+    logger.info("$LOG_PREFIX ------")
 }

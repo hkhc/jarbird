@@ -21,7 +21,6 @@ package io.hkhc.gradle
 import io.hkhc.gradle.builder.PublicationBuilder
 import io.hkhc.gradle.pom.PomFactory
 import io.hkhc.util.LOG_PREFIX
-import io.hkhc.util.detailMessage
 import io.hkhc.util.detailMessageError
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -42,7 +41,7 @@ class SimplePublisherPlugin : Plugin<Project> {
     private lateinit var project: Project
 
     private fun precheck(project: Project) {
-        with (project) {
+        with(project) {
             if (group.toString().isBlank()) {
                 detailMessageError(project.logger,
                     "Group naame is not specified",
@@ -68,7 +67,7 @@ class SimplePublisherPlugin : Plugin<Project> {
         extension = project.extensions.create(SP_EXT_NAME, SimplePublisherExtension::class.java, project)
         extension.pom = pom
 
-        project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: ${pom}")
+        project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pom")
 
         /*
             ProjectEvaluationListener is invoked before any project.afterEvaluate.
@@ -128,11 +127,20 @@ class SimplePublisherPlugin : Plugin<Project> {
 
         with(project.pluginManager) {
             apply("org.gradle.maven-publish")
+            apply("org.jetbrains.dokka")
             if (extension.signing) {
                 apply("org.gradle.signing")
             }
-            apply("com.jfrog.bintray")
-            apply("com.jfrog.artifactory")
+            if (extension.bintray) {
+                apply("com.jfrog.bintray")
+            }
+            if (extension.ossArtifactory) {
+                apply("com.jfrog.artifactory")
+            }
+            if (extension.gradlePlugin) {
+                apply("com.gradle.plugin-publish")
+                apply("org.gradle.java-gradle-plugin")
+            }
         }
 
         project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {

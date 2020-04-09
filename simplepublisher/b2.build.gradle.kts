@@ -75,5 +75,6 @@ dependencies {
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.yaml:snakeyaml:1.25")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
     implementation("com.gradle.publish:plugin-publish-plugin:0.10.1")
 }

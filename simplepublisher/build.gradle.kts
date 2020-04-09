@@ -41,11 +41,8 @@ val kotlin_version = "1.3.71"
 plugins {
     kotlin("jvm") version "1.3.71"
     `kotlin-dsl`
-    id("org.jetbrains.dokka") version "0.10.1"
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("io.gitlab.arturbosch.detekt") version "1.7.0"
-    id("com.gradle.plugin-publish") version "0.10.1"
-    `java-gradle-plugin`
     id("com.dorongold.task-tree") version "1.5"
     id("io.hkhc.simplepublisher.bootstrap") version "1.0.0"
 }
@@ -85,7 +82,7 @@ tasks {
 }
 
 detekt {
-    toolVersion="1.7.0"
+    toolVersion = "1.7.0"
     buildUponDefaultConfig = true
     config = files("${project.projectDir}/detekt-config.yml")
 }
@@ -110,7 +107,7 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks.withType<Test> {
- useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 simplyPublish {
@@ -129,19 +126,13 @@ configurations {
 
 dependencies {
 
-    implementation(kotlin("stdlib-jdk8", kotlin_version))
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
-    embeddedKotlin(kotlin("stdlib-jdk8", kotlin_version))
-    embeddedKotlin("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
-    detekt(kotlin("stdlib-jdk8", kotlin_version))
-    compileOnlyDependenciesMetadata("org.jetbrains.kotlin:kotlin-reflect", kotlin_version)
-
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.yaml:snakeyaml:1.25")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
     implementation("com.gradle.publish:plugin-publish-plugin:0.10.1")
 
     // TODO Do we still need 4.1.2 when using kotest?
