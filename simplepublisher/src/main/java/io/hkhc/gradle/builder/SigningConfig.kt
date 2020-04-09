@@ -18,10 +18,9 @@
 
 package io.hkhc.gradle.builder
 
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.pom.Pom
 import io.hkhc.util.LOG_PREFIX
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
@@ -49,7 +48,7 @@ class SigningConfig(
 
         if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
             project.logger.warn("WARNING: $LOG_PREFIX No signing setting is provided. " +
-                    "Signing operation is ignored. "+
+                    "Signing operation is ignored. " +
                     "Maven Central publishing cannot be done without signing the artifacts.")
             return
         }
@@ -61,20 +60,20 @@ class SigningConfig(
         }
 
         if (!isV1ConfigPresents() && isV2ConfigPresents() && !extension.useGpg) {
-            project.logger.warn("WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox "+
+            project.logger.warn("WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox " +
                     " configuration is found. Switch to use gpg keybox")
             extension.useGpg = true
         }
 
         if (!extension.useGpg && !isV1ConfigPresents()) {
             project.logger.warn("WARNING: $LOG_PREFIX Signing configuration for gpg keyring is not complete. " +
-                    "Signing operation is ignored. "+
+                    "Signing operation is ignored. " +
                     "Maven Central publishing cannot be done without signing the artifacts.")
         }
 
         if (extension.useGpg && !isV2ConfigPresents()) {
             project.logger.warn("WARNING: $LOG_PREFIX Signing configuration for keybox file is not complete. " +
-                    "Signing operation is ignored. "+
+                    "Signing operation is ignored. " +
                     "Maven Central publishing cannot be done without signing the artifacts.")
         } else {
             project.logger.debug("$LOG_PREFIX Signing info complete")
