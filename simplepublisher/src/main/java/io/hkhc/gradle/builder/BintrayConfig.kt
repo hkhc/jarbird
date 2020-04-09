@@ -24,6 +24,7 @@ import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.PublishConfig
 import io.hkhc.gradle.SimplePublisherExtension
 import io.hkhc.gradle.pom.fill
+import io.hkhc.util.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.kotlin.dsl.closureOf
@@ -40,6 +41,7 @@ class BintrayConfig(
     private val ext = (project as ExtensionAware).extensions
 
     fun config() {
+        project.logger.debug("$LOG_PREFIX configure Bintray plugin")
         ext.findByType(BintrayExtension::class.java)?.config()
 
         /*

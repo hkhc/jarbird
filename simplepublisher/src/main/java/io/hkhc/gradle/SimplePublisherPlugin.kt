@@ -20,6 +20,10 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.builder.PublicationBuilder
 import io.hkhc.gradle.pom.PomFactory
+import io.hkhc.util.LOG_PREFIX
+import io.hkhc.util.detailMessage
+import io.hkhc.util.detailMessageError
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectEvaluationListener
@@ -37,14 +41,34 @@ class SimplePublisherPlugin : Plugin<Project> {
      */
     private lateinit var project: Project
 
+    private fun precheck(project: Project) {
+        with (project) {
+            if (group.toString().isBlank()) {
+                detailMessageError(project.logger,
+                    "Group naame is not specified",
+                    "Add 'group' value to build script or pom.xml")
+                throw GradleException("$LOG_PREFIX Group name is not specified")
+            }
+            if (version.toString().isBlank()) {
+                detailMessageError(project.logger,
+                    "Version naame is not specified",
+                    "Add 'version' value to build script or pom.xml")
+                throw GradleException("$LOG_PREFIX Version is not specified")
+            }
+        }
+    }
+
     override fun apply(p: Project) {
 
         project = p
+        project.logger.debug("$LOG_PREFIX Start applying simplepublisher plugin")
 
         val pom = PomFactory().resolvePom(project)
 
         extension = project.extensions.create(SP_EXT_NAME, SimplePublisherExtension::class.java, project)
         extension.pom = pom
+
+        project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: ${pom}")
 
         /*
             ProjectEvaluationListener is invoked before any project.afterEvaluate.
@@ -60,28 +84,31 @@ class SimplePublisherPlugin : Plugin<Project> {
             has change to create the components and source sets.
 
          */
-            project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {
-                override fun beforeEvaluate(project: Project) {
-                    // Do nothing intentionally
-                }
+        project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {
+            override fun beforeEvaluate(project: Project) {
+                // Do nothing intentionally
+            }
 
-                // Build Phase 1
-                override fun afterEvaluate(p: Project, projectState: ProjectState) {
+            // Build Phase 1
+            override fun afterEvaluate(p: Project, projectState: ProjectState) {
 
-                    if (project == p) {
-                        // Gradle plugin publish plugin is not compatible with Android plugin.
-                        // apply it only if needed
-                        if (extension.gradlePlugin) {
-                            project.pluginManager.apply("com.gradle.plugin-publish")
-                        }
-                        if (extension.gradlePlugin && !project.pluginManager.hasPlugin("com.gradle.plugin-publish")) {
-                            project.pluginManager.apply("com.gradle.plugin-publish")
-                        } else {
-                            PublicationBuilder(extension, project, pom).buildPhase1()
-                        }
+                if (project == p) {
+
+                    pom.syncWith(p)
+
+                    // pre-check of final data
+                    precheck(p)
+
+                    // Gradle plugin publish plugin is not compatible with Android plugin.
+                    // apply it only if needed
+                    if (extension.gradlePlugin && !project.pluginManager.hasPlugin("com.gradle.plugin-publish")) {
+                        project.pluginManager.apply("com.gradle.plugin-publish")
+                    } else {
+                        PublicationBuilder(extension, project, pom).buildPhase1()
                     }
                 }
-            })
+            }
+        })
 
         // Build phase 3
         project.afterEvaluate {

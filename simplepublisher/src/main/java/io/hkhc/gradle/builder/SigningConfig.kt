@@ -20,6 +20,7 @@ package io.hkhc.gradle.builder
 
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.util.LOG_PREFIX
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
@@ -39,25 +40,44 @@ class SigningConfig(
 
     fun config() {
 
-        if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
-//            project.logger.error(
-//                """
-//                Signing configuration is not complete. The combined properies of all gradle.properties shall specifies
-//                one of the following groups of properties:
-//                For GNUPG v1 (if you have .gpg file)
-//                - signing.keyId : the short form if ID of the key pair for signing
-//                - signing.passphrase : the passphrase to unlock the key store (.gpg file)
-//                - signing.secretKeyRingFile : the full path to the .gpg file with private key for signing
-//                For GNU PG v2 (if you have .kbx file. gnu pg must be installed on the system)
-//                - signing.gnupg.keyName : the short form if ID of the key pair for signing
-//                - signing.gnupg.passphrase : the passphrase to unlock the key store (.kbx file)
-//            """.trimIndent())
-//            throw GradleException("Incomplete signing config")
-            project.logger.warn("Signing configuration is not complete. Signing operation is ignored.")
-            project.logger.warn("Maven Central publishing cannot be done without signing the artifacts.")
+        project.logger.debug("$LOG_PREFIX configure Signing plugin")
+
+        if (pom.isSnapshot()) {
+            project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pom.version}')")
             return
+        }
+
+        if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
+            project.logger.warn("WARNING: $LOG_PREFIX No signing setting is provided. " +
+                    "Signing operation is ignored. "+
+                    "Maven Central publishing cannot be done without signing the artifacts.")
+            return
+        }
+
+        if (isV1ConfigPresents() && !isV2ConfigPresents() && extension.useGpg) {
+            project.logger.warn("WARNING: $LOG_PREFIX Setting to use keybox file but signing gpg keyring " +
+                    "configuration is found. Fall back to use gpg keyring")
+            extension.useGpg = false
+        }
+
+        if (!isV1ConfigPresents() && isV2ConfigPresents() && !extension.useGpg) {
+            project.logger.warn("WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox "+
+                    " configuration is found. Switch to use gpg keybox")
+            extension.useGpg = true
+        }
+
+        if (!extension.useGpg && !isV1ConfigPresents()) {
+            project.logger.warn("WARNING: $LOG_PREFIX Signing configuration for gpg keyring is not complete. " +
+                    "Signing operation is ignored. "+
+                    "Maven Central publishing cannot be done without signing the artifacts.")
+        }
+
+        if (extension.useGpg && !isV2ConfigPresents()) {
+            project.logger.warn("WARNING: $LOG_PREFIX Signing configuration for keybox file is not complete. " +
+                    "Signing operation is ignored. "+
+                    "Maven Central publishing cannot be done without signing the artifacts.")
         } else {
-            project.logger.info("Signing info complete")
+            project.logger.debug("$LOG_PREFIX Signing info complete")
         }
 
         ext.findByType(SigningExtension::class.java)?.config()
@@ -79,10 +99,6 @@ class SigningConfig(
         }
 
         val publishingExtension = ext.findByType(PublishingExtension::class.java)
-
-        if (pom.isSnapshot()) {
-            project.logger.info("Not performing signing for SNAPSHOT artifact")
-        }
 
         isRequired = !pom.isSnapshot()
 

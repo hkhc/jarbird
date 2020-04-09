@@ -19,6 +19,7 @@
 package io.hkhc.gradle.pom
 
 import com.jfrog.bintray.gradle.BintrayExtension
+import io.hkhc.util.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPom
 import org.yaml.snakeyaml.Yaml
@@ -35,10 +36,11 @@ class PomFactory {
     fun Project.readPom(path: String): Pom {
         val file = File(path)
         return if (file.exists()) {
+            logger.debug("$LOG_PREFIX File '${file.absolutePath}' found")
             val yaml = Yaml(Constructor(Pom::class.java))
             return yaml.load(file.readText())
         } else {
-            logger.info("file '${file.absolutePath}' does not exist")
+            logger.debug("$LOG_PREFIX File '${file.absolutePath}' does not exist")
             Pom()
         }
     }
@@ -62,11 +64,6 @@ class PomFactory {
                 readPom(it).overlayTo(pom)
             }
         }
-
-        pom.syncWith(project)
-
-        project.logger.debug("Preceived POM")
-        project.logger.debug(pom.toString())
 
         return pom
     }

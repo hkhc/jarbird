@@ -34,6 +34,7 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.gradle.api.Project
 import java.util.*
 
@@ -45,7 +46,7 @@ class PomTest : StringSpec({
     lateinit var project: Project
 
     beforeTest {
-        project = mockk()
+        project = mockk(relaxed=true)
     }
 
     "Pom shall be a data class so that we may assume 'equals' logic is provided" {
@@ -224,6 +225,22 @@ class PomTest : StringSpec({
         pom.url shouldBe "https://github.com/hkhc/mylib"
         pom.web.url shouldBe "https://github.com/hkhc/mylib"
 
+    }
+
+    "Pom shall be sync with project object and update project object"() {
+
+        // GIVEN
+        Pom.setDateHandler { GregorianCalendar.getInstance().apply { set(Calendar.YEAR, 1999) } }
+        every { project.name } returns "mylib"
+        every { project.name } returns "mylib"
+        val pom = Pom(version="1.0")
+
+        // WHEN
+        pom.syncWith(project)
+
+        // THEN
+
+        verify { project.group = "io.hkhc" }
     }
 
 }) {

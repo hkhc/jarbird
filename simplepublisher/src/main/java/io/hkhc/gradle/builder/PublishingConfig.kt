@@ -26,6 +26,9 @@ import io.hkhc.gradle.PublishConfig
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.SimplePublisherExtension
 import io.hkhc.gradle.pom.fillTo
+import io.hkhc.util.LOG_PREFIX
+import io.hkhc.util.detailMessage
+import io.hkhc.util.detailMessageWarning
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
@@ -53,32 +56,35 @@ class PublishingConfig(
 
     companion object {
         private fun printHelpForMissingDokka(project: Project) {
-            project.logger.warn("""
-            We cannot find a dokka task in project '${project.name}'.
-            By default, we will look for the declaration like this: 
-                tasks {
-                    dokka {
-                        ...
-                    }
-                }
-            If you defined a dokka with different name, you may specify it in $SP_EXT_NAME block:
-                $SP_EXT_NAME {
-                    ...
-                    dokka = myDokkaTask
-                    ...
-                }
-        """.trimIndent())
+            detailMessageWarning(
+                project.logger,
+                "No dokka task is found in project '${project.name}'. Maven publishing cannot be done.",
+                """
+                    We cannot find a dokka task in project '${project.name}'.
+                    You may need to apply the dokka plugin like this
+                        id("org.jetbrains.dokka") version "0.10.1"
+
+                    It create a default dokka task that simplepublisher recognize 
+                    If you defined a dokka with different name, you may specify it in $SP_EXT_NAME block:
+                        $SP_EXT_NAME {
+                            ...
+                            dokka = myDokkaTask
+                            ...
+                        }
+                """.trimIndent()
+            )
         }
     }
 
     fun config() {
+
+        project.logger.debug("$LOG_PREFIX configure Publishing extension")
 
         if (dokka == null) {
             try {
                 dokka = project.tasks.named("dokka")
             } catch (e: UnknownTaskException) {
                 printHelpForMissingDokka(project)
-                throw GradleException("Failed to found 'dokka' task")
             }
         }
 
@@ -148,6 +154,7 @@ class PublishingConfig(
 
     @Suppress("UnstableApiUsage")
     private fun setupDokkaJar(): TaskProvider<Jar>? {
+        if (dokka == null) return null
         val dokkaJarTaskName = "dokkaJar$variantCap"
         return try {
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {

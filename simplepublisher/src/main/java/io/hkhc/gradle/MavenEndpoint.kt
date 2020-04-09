@@ -17,6 +17,9 @@
  */
 package io.hkhc.gradle
 
+import io.hkhc.util.LOG_PREFIX
+import io.hkhc.util.detailMessage
+import io.hkhc.util.detailMessageError
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -50,11 +53,12 @@ fun resolveProperty(project: Project, propertyName: String): String {
 
     val value: String? = project.properties[propertyName] as String?
     if (value == null) {
-        project.logger.error("""
-                Failed to find property '$propertyName'.
-                It could be in one of the gradle.properties, or come with -D$propertyName command line option.
-            """.trimIndent())
-        throw GradleException("Failed to find property '$propertyName'")
+        detailMessageError(
+            project.logger,
+            "Failed to find property '$propertyName'.",
+            "Add it to one of the gradle.properties, or specify -D$propertyName command line option."
+        )
+        throw GradleException("$LOG_PREFIX Failed to find property '$propertyName'")
     }
     return value
 }

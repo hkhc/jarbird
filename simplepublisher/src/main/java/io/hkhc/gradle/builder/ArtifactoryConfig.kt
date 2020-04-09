@@ -22,6 +22,7 @@ import groovy.lang.GroovyObject
 import io.hkhc.gradle.PublishConfig
 import io.hkhc.gradle.SimplePublisherExtension
 import io.hkhc.gradle.isMultiProjectRoot
+import io.hkhc.util.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName
@@ -45,6 +46,8 @@ class ArtifactoryConfig(
     }
 
     private fun ArtifactoryPluginConvention.config() {
+
+        project.logger.debug("$LOG_PREFIX configure Artifactory plugin")
 
         setContextUrl("https://oss.jfrog.org")
         publish(delegateClosureOf<PublisherConfig> {
