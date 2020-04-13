@@ -16,6 +16,7 @@
  *
  */
 
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
@@ -36,13 +37,13 @@ repositories {
     jcenter()
 }
 
-val kotlin_version = "1.3.71"
+val kotlinVersion = "1.3.71"
 
 plugins {
-    kotlin("jvm") version "1.3.71"
+    kotlin("jvm")
     `kotlin-dsl`
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
-    id("io.gitlab.arturbosch.detekt") version "1.7.0"
+    id("io.gitlab.arturbosch.detekt") version "1.7.4"
     id("com.dorongold.task-tree") version "1.5"
     id("io.hkhc.simplepublisher.bootstrap") version "1.0.0"
 }
@@ -62,6 +63,22 @@ val functionalTestSourceSet = sourceSets.create(functionalTestSourceSetName) {
     runtimeClasspath = output + compileClasspath
 }
 
+/*
+ It is needed to make sure every version of java compiler to generate same kind of bytecode.
+ Without it and build this with java 8+ compiler, then the project build with java 8
+ will get error like this:
+   > Unable to find a matching variant of <your-artifact>:
+      - Variant 'apiElements' capability <your-artifact>:
+          - Incompatible attributes:
+              - Required org.gradle.jvm.version '8' and found incompatible value '13'.
+              - Required org.gradle.usage 'java-runtime' and found incompatible value 'java-api'.
+              ...
+ */
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 tasks {
 
     val functionalTestTask = register<Test>("functionalTest") {
@@ -75,14 +92,29 @@ tasks {
 
     check { dependsOn(get("functionalTest")) }
 
+    /*
+    Without this Kotlin generate java 6 bytecode, which is hardly fatal.
+    There are multiple KotlinCompile tasks, for main and test source sets
+     */
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+
     dokka {
         outputFormat = "html"
         outputDirectory = "$buildDir/dokka"
     }
+
+    withType<Detekt> {
+        jvmTarget = "1.8"
+    }
+
+    withType<Test> {
+        useJUnitPlatform()
+    }
 }
 
 detekt {
-    toolVersion = "1.7.0"
     buildUponDefaultConfig = true
     config = files("${project.projectDir}/detekt-config.yml")
 }
@@ -96,22 +128,7 @@ ktlint {
     }
 }
 
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 simplyPublish {
-    useGpg = true
     gradlePlugin = true
 }
 
@@ -133,7 +150,7 @@ dependencies {
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.yaml:snakeyaml:1.25")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
-    implementation("com.gradle.publish:plugin-publish-plugin:0.10.1")
+    implementation("com.gradle.publish:plugin-publish-plugin:0.11.0")
 
     // TODO Do we still need 4.1.2 when using kotest?
     testImplementation("junit:junit:4.12")
@@ -144,7 +161,7 @@ dependencies {
     "${functionalTestSourceSetName}Implementation"("junit:junit:4.12")
     "${functionalTestSourceSetName}Implementation"(gradleTestKit())
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.0")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.4")
 
-    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.7.4")
 }

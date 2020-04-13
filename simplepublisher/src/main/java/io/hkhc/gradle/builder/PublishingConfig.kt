@@ -30,6 +30,7 @@ import io.hkhc.util.LOG_PREFIX
 import io.hkhc.util.detailMessageWarning
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
+import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublicationContainer
@@ -100,6 +101,9 @@ class PublishingConfig(
         }
     }
 
+    private fun PublishArtifact.getString() =
+        "PublishArtifact(name=$name,file=$file,classifier=$classifier,date=$date,extension=$extension,type=$type)"
+
     private fun PublicationContainer.createPublication() {
 
         val dokkaJar = setupDokkaJar()
@@ -108,6 +112,30 @@ class PublishingConfig(
         val pomSpec = pom
 
         val pubComponent = extension.pubComponent
+
+//        project.components[pubComponent].also {
+//            if (it is SoftwareComponentInternal) {
+//                it.usages.forEach {usageContext ->
+//                    project.logger.info("COMPONENT usages: ${usageContext}")
+//                    project.logger.info("COMPONENT     name : ${usageContext.name}")
+//                    usageContext.artifacts.forEach { artifact ->
+//                        project.logger.info("COMPONENT     artifact: ${artifact.getString()}")
+//                    }
+//                    usageContext.attributes.also { attributes ->
+//                        project.logger.info("COMPONENT     attributes: ${attributes}")
+//                    }
+//                    usageContext.capabilities.forEach { capability ->
+//                        project.logger.info("COMPONENT     capability: ${capability}")
+//                    }
+//                    usageContext.dependencies.forEach {dependency ->
+//                        project.logger.info("COMPONENT     dependency: ${dependency}")
+//                    }
+//                    usageContext.dependencyConstraints.forEach { constraint ->
+//                        project.logger.info("COMPONENT     constraint: ${constraint}")
+//                    }
+//                }
+//            }
+//        }
 
         register(pubName, MavenPublication::class.java) {
 

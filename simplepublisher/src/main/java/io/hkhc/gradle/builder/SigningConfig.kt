@@ -37,47 +37,48 @@ class SigningConfig(
     private val variantCap = extension.variant.capitalize()
     private val pubName = "${extension.pubName}$variantCap"
 
+    private val signingIgnoredMessage = "Signing operation is ignored. " +
+            "Maven Central publishing cannot be done without signing the artifacts."
+
     fun config() {
 
         project.logger.debug("$LOG_PREFIX configure Signing plugin")
 
-        if (pom.isSnapshot()) {
+        if (pom.isSnapshot() && extension.signing) {
             project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pom.version}')")
             return
         }
 
         if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
-            project.logger.warn("WARNING: $LOG_PREFIX No signing setting is provided. " +
-                    "Signing operation is ignored. " +
-                    "Maven Central publishing cannot be done without signing the artifacts.")
+            project.logger.warn("WARNING: $LOG_PREFIX " +
+                    "No signing setting is provided. $signingIgnoredMessage")
             return
         }
 
-        if (isV1ConfigPresents() && !isV2ConfigPresents() && extension.useGpg) {
-            project.logger.warn("WARNING: $LOG_PREFIX Setting to use keybox file but signing gpg keyring " +
-                    "configuration is found. Fall back to use gpg keyring")
-            extension.useGpg = false
-        }
-
-        if (!isV1ConfigPresents() && isV2ConfigPresents() && !extension.useGpg) {
-            project.logger.warn("WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox " +
-                    " configuration is found. Switch to use gpg keybox")
-            extension.useGpg = true
-        }
-
-        if (!extension.useGpg && !isV1ConfigPresents()) {
-            project.logger.warn("WARNING: $LOG_PREFIX Signing configuration for gpg keyring is not complete. " +
-                    "Signing operation is ignored. " +
-                    "Maven Central publishing cannot be done without signing the artifacts.")
-        }
-
-        if (extension.useGpg && !isV2ConfigPresents()) {
-            project.logger.warn("WARNING: $LOG_PREFIX Signing configuration for keybox file is not complete. " +
-                    "Signing operation is ignored. " +
-                    "Maven Central publishing cannot be done without signing the artifacts.")
+        if (extension.useGpg) {
+            if (isV1ConfigPresents() && !isV2ConfigPresents()) {
+                project.logger.warn("WARNING: $LOG_PREFIX Setting to use keybox file but signing gpg keyring " +
+                        "configuration is found. Fall back to use gpg keyring")
+                extension.useGpg = false
+            }
         } else {
-            project.logger.debug("$LOG_PREFIX Signing info complete")
+            if (!isV1ConfigPresents() && isV2ConfigPresents()) {
+                project.logger.warn("WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox " +
+                        " configuration is found. Switch to use gpg keybox")
+                extension.useGpg = true
+            }
         }
+
+        val incomplete = (extension.useGpg && !isV2ConfigPresents()) ||
+                (!extension.useGpg && !isV1ConfigPresents())
+
+        if (incomplete) {
+            project.logger.warn("WARNING: $LOG_PREFIX " +
+                    "Signing configuration for keybox file is not complete. $signingIgnoredMessage")
+        }
+//        else {
+//            project.logger.debug("$LOG_PREFIX Signing info complete")
+//        }
 
         ext.findByType(SigningExtension::class.java)?.config()
     }

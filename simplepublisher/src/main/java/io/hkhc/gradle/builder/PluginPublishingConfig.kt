@@ -69,7 +69,7 @@ class PluginPublishingConfig(
 
     /*
         The gradle publish plugin hardcoded to use project name as publication artifact name.
-        We further customize that publication here and replace it with pom.name
+        We further customize that publication here and replace it with pom.artifactId
         The default value of pom.name is still project.name so we are not violating the Gradle convention.
         "publishPluginMavenPublication*" task is created by gradle plugin publish plugin.
      */

@@ -77,27 +77,24 @@ class PublicationBuilder(
     fun buildPhase1() {
         with(project) {
 
-            logger.debug("$LOG_PREFIX SimplePublisher Builder phase 1 of 5")
+            logger.debug("$LOG_PREFIX SimplePublisher Builder phase 1 of 4")
 
             // TODO 2 shall we add .configureEach after withType as suggested by
             // https://blog.gradle.org/preview-avoiding-task-configuration-time
 
             if (isMultiProjectRoot()) {
-
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
-                if (!rootProject.pluginManager.hasPlugin("io.hkhc.simplepublisher")) {
-                    if (extension.ossArtifactory) {
-                        ArtifactoryConfig(this, extension).config()
-                    }
+                if (!rootProject.pluginManager.hasPlugin("io.hkhc.simplepublisher") &&
+                    extension.ossArtifactory) {
+                    ArtifactoryConfig(this, extension).config()
                 }
             } else {
-
-                if (this == rootProject) {
-                    logger.info("$LOG_PREFIX Configure project '$name' for single-project publishing")
+                logger.info(if (this == rootProject) {
+                    "$LOG_PREFIX Configure project '$name' for single-project publishing"
                 } else {
-                    logger.info("$LOG_PREFIX Configure child project '$name' for multi-project publishing")
-                }
+                    "$LOG_PREFIX Configure child project '$name' for multi-project publishing"
+                })
 
                 if (extension.bintray) {
                     BintrayConfig(this, extension, pom).config()
@@ -112,7 +109,7 @@ class PublicationBuilder(
 
     @Suppress("unused")
     fun buildPhase2() {
-        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 2 of 5")
+        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 2 of 4")
         if (extension.gradlePlugin) {
             PluginPublishingConfig(project, extension, pom).config()
         }
@@ -120,23 +117,18 @@ class PublicationBuilder(
 
     @Suppress("unused")
     fun buildPhase3() {
-        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 3 of 5")
+        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 3 of 4")
     }
 
     @Suppress("unused")
     fun buildPhase4() {
-        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 4 of 5")
+        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 4 of 4")
         if (!project.isMultiProjectRoot()) {
             PublishingConfig(project, extension, pom).config()
             if (extension.signing) {
                 SigningConfig(project, extension, pom).config()
             }
         }
-    }
-
-    @Suppress("unused")
-    fun buildPhase5() {
-        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 5 of 5")
         TaskBuilder(project, pom, extension, pubName).build()
     }
 }

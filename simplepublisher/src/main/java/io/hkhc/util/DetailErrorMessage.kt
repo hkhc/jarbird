@@ -18,6 +18,8 @@
 
 package io.hkhc.util
 
+import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 
 fun detailMessageError(logger: Logger, title: String, detail: String) {
@@ -35,4 +37,9 @@ fun detailMessage(logger: Logger, loggerBlock: (String) -> Unit, levelTag: Strin
         logger.info("$LOG_PREFIX $line")
     }
     logger.info("$LOG_PREFIX ------")
+}
+
+fun fatalMessage(project: Project, msg: String) {
+    project.logger.error("ERROR: $LOG_PREFIX $msg")
+    throw GradleException(msg)
 }
