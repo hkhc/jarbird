@@ -29,6 +29,7 @@ run the following to publish bootstrap plugin
  */
 
 repositories {
+    mavenLocal()
     mavenCentral()
     jcenter()
     gradlePluginPortal()

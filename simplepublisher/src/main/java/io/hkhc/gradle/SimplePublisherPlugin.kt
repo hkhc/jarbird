@@ -140,6 +140,22 @@ class SimplePublisherPlugin : Plugin<Project> {
             has change to create the components and source sets.
 
          */
+
+        with(project.pluginManager) {
+
+            /**
+             * @see org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+             * no evaluation listener
+             */
+            apply("org.gradle.maven-publish")
+
+            /**
+             * @see org.jetbrains.dokka.gradle.DokkaPlugin
+             * no evaluation listener
+             */
+            apply("org.jetbrains.dokka")
+        }
+
         project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {
             override fun beforeEvaluate(project: Project) {
                 // Do nothing intentionally
@@ -155,14 +171,77 @@ class SimplePublisherPlugin : Plugin<Project> {
                     // pre-check of final data
                     precheck(p)
 
-                    // Gradle plugin publish plugin is not compatible with Android plugin.
-                    // apply it only if needed, otherwise android aar build will fail
-                    if (!extension.gradlePlugin) {
-                        PublicationBuilder(extension, project, pom).buildPhase1()
+                    if (extension.signing) {
+                        /**
+                         * @see org.gradle.plugins.signing.SigningPlugin
+                         * no evaluation listener
+                         */
+                        project.pluginManager.apply("org.gradle.signing")
+                    }
+
+                    if (extension.gradlePlugin) {
+
+                        /**
+                         * @see com.gradle.publish.PublishPlugin
+                         *      project.afterEvaluate
+                         *          setup sourcejar docjar tasks
+                         */
+                        project.pluginManager.apply("com.gradle.plugin-publish")
+
+                        /**
+                         * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
+                         * project.afterEvaluate
+                         *      add testkit dependency
+                         * project.afterEvaluate
+                         *      validate plugin declaration
+                         */
+                        project.pluginManager.apply("org.gradle.java-gradle-plugin")
                     }
                 }
             }
         })
+
+        project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {
+
+            override fun beforeEvaluate(project: Project) {
+                // do nothing intentionally
+            }
+            override fun afterEvaluate(p: Project, state: ProjectState) {
+                // Gradle plugin publish plugin is not compatible with Android plugin.
+                // apply it only if needed, otherwise android aar build will fail
+                if (p == project) {
+                    PublicationBuilder(extension, project, pom).buildPhase1()
+                }
+            }
+        })
+
+        /*
+        We don't apply bintray and artifactory plugin conditionally, because it make use of
+        projectEvaluationListener, but we cannot get the flag from extenstion until we run
+        afterEvaluate event. This is a conflict. So we just let go and apply these two
+        plugin anyway. However we will configure the relevant extensions according to
+        the flags in our extension. (@see PublicationBuilder)
+         */
+        with(project.pluginManager) {
+            /**
+             * @see com.jfrog.bintray.gradle.BintrayPlugin
+             * ProjectsEvaluationListener
+             *     afterEvaluate:
+             *         bintrayUpload task depends on subProject bintrayUpload
+             *     projectEvaluated:
+             *         bintrayUpload task depends on publishToMavenLocal
+             */
+            apply("com.jfrog.bintray")
+
+            /**
+             * @see org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
+             *     afterEvaluate:
+             *         artifactoryTasks task depends on subProject
+             *     projectEvaluated:
+             *         finialize artifactoryTasks task
+             */
+            apply("com.jfrog.artifactory")
+        }
 
         // Build phase 3
         project.afterEvaluate {
@@ -179,62 +258,6 @@ class SimplePublisherPlugin : Plugin<Project> {
             https://plugins.gradle.org/m2/com/gradle/plugin-publish/
                 com.gradle.plugin-publish.gradle.plugin/0.10.1/com.gradle.plugin-publish.gradle.plugin-0.10.1.pom
          */
-
-        with(project.pluginManager) {
-
-            /**
-             * @see org.gradle.api.publish.maven.plugins.MavenPublishPlugin
-             * no evaluation listener
-             */
-            apply("org.gradle.maven-publish")
-
-            /**
-             * @see org.jetbrains.dokka.gradle.DokkaPlugin
-             * no evaluation listener
-             */
-            apply("org.jetbrains.dokka")
-
-            if (extension.signing) {
-                /**
-                 * @see org.gradle.plugins.signing.SigningPlugin
-                 * no evaluation listener
-                 */
-                apply("org.gradle.signing")
-            }
-            if (extension.bintray) {
-                /**
-                 * @see com.jfrog.bintray.gradle.BintrayPlugin
-                 * ProjectsEvaluationListener
-                 *     afterEvaluate:
-                 *         bintrayUpload task depends on subProject bintrayUpload
-                 *     projectEvaluated:
-                 *         bintrayUpload task depends on publishToMavenLocal
-                 */
-                apply("com.jfrog.bintray")
-            }
-            if (extension.ossArtifactory) {
-                apply("com.jfrog.artifactory")
-            }
-            if (extension.gradlePlugin) {
-
-                /**
-                 * @see com.gradle.publish.PublishPlugin
-                 *      project.afterEvaluate
-                 *          setup sourcejar docjar tasks
-                 */
-                apply("com.gradle.plugin-publish")
-
-                /**
-                 * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
-                 * project.afterEvaluate
-                 *      add testkit dependency
-                 * project.afterEvaluate
-                 *      validate plugin declaration
-                 */
-                apply("org.gradle.java-gradle-plugin")
-            }
-        }
-
         project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {
             override fun beforeEvaluate(project: Project) {
                 // Do nothing intentionally

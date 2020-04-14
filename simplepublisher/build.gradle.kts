@@ -22,6 +22,7 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
         // It is needed by detekt
         maven { url = uri("http://dl.bintray.com/arturbosch/code-analysis") }
@@ -133,7 +134,6 @@ simplyPublish {
 }
 
 gradlePlugin {
-
     testSourceSets(sourceSets[functionalTestSourceSetName])
 }
 

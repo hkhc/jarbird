@@ -87,5 +87,8 @@ open class SimplePublisherExtension(@Suppress("unused") private val project: Pro
      */
     var useGpg = false
 
+    /**
+     * Specify maven repository for publishing.
+     */
     var mavenRepository: MavenEndpoint = project.mavenCentral()
 }
