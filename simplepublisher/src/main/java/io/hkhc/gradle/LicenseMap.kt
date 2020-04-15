@@ -25,5 +25,7 @@ package io.hkhc.gradle
 var LICENSE_MAP = mapOf(
     "Apache-2.0" to "http://www.apache.org/licenses/LICENSE-2.0.txt",
     "BSD-3-Clause" to "https://https://opensource.org/licenses/BSD-3-Clause",
-    "MIT" to "http://www.opensource.org/licenses/mit-license.php"
+    "MIT" to "http://www.opensource.org/licenses/mit-license.php",
+    "GPLv3" to "https://www.gnu.org/licenses/gpl-3.0.html",
+    "LGPLv3" to "https://www.gnu.org/licenses/lgpl-3.0.html"
 )

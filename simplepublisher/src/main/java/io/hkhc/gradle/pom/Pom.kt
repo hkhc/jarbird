@@ -40,7 +40,7 @@ interface Overlayable {
 data class License(
     var name: String? = null,
     var url: String? = null,
-    var dist: String? = null,
+    var dist: String? = "repo",
     var comments: String? = null
 ) : Overlayable {
     override fun overlayTo(other: Overlayable) {

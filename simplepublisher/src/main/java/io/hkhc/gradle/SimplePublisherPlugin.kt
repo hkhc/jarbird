@@ -45,6 +45,7 @@ class SimplePublisherPlugin : Plugin<Project> {
 
     // TODO check if POM fulfill minimal requirements for publishing
     // TODO maven publishing dry-run
+    // TODO accept both pom.yml or pom.yaml
 
     @Suppress("ThrowsCount")
     private fun precheck(project: Project) {
