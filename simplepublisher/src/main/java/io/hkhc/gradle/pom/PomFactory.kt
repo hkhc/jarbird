@@ -143,7 +143,7 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
     @Suppress("SpreadOperator")
     pkg.apply {
         repo = "maven"
-        name = pom.name
+        name = pom.artifactId
         desc = pom.description
         setLicenses(*licenseList)
         websiteUrl = pom.web.url ?: ""
@@ -151,6 +151,7 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
         if (pom.scm.repoType == "github.com") {
             githubRepo = pom.scm.repoName ?: ""
         }
+        // TODO githhubReleaseNotesFile
         issueTrackerUrl = pom.scm.issueUrl ?: ""
         version.apply {
             name = pom.version

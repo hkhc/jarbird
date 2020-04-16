@@ -1,3 +1,8 @@
+[![jCenter](https://api.bintray.com/packages/hermancheung/maven/simplepublisher/images/download.svg) ](https://bintray.com/hermancheung/maven/simplepublisher/_latestVersion)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.hkhc.gradle/simplepublisher/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.hkhc.gradle/simplepublisher)
+[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/io/hkhc/simplepublisher/io.hkhc.simplepublisher.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=gradlePluginPortal)](https://plugins.gradle.org/plugin/io.hkhc.simplepublisher)
+
+
 # SimplePublisher Gradle Plugin
 
 ## Introduction
