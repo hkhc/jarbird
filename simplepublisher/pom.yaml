@@ -1,5 +1,5 @@
 group: io.hkhc.gradle
-name: simplepublisher
+artifactId: simplepublisher
 version: 0.3.3.2
 description: Wrapping boilerplate code of publishing artifact to maven repository
 packaging: jar
@@ -11,7 +11,7 @@ licenses:
 developers:
 - id: hkhc
   name: Herman Cheung
-  email: herman.kh.cheung+simplepublisher@gmail.com
+  email: herman.kh.cheung@gmail.com
 
 scm:
   repoType: github.com
