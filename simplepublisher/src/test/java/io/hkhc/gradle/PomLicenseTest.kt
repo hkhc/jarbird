@@ -21,6 +21,7 @@ package io.hkhc.gradle
 import io.hkhc.gradle.pom.License
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.`Field perform overlay properly`
+import io.hkhc.utils.test.`check non-null will overlay anything`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe

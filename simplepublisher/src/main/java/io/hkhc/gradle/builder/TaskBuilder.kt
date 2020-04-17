@@ -73,9 +73,9 @@ class TaskBuilder(
 
             dependsOn("publish${pubId}To$mavenRepo")
 
-            if (extension.gradlePlugin) {
-                dependsOn("publish${markerPubId}To$mavenRepo")
-            }
+//            if (extension.gradlePlugin) {
+//                dependsOn("publish${markerPubId}To$mavenRepo")
+//            }
         }
     }
 

@@ -40,7 +40,7 @@ interface Overlayable {
 data class License(
     var name: String? = null,
     var url: String? = null,
-    var dist: String? = "repo",
+    var dist: String? = null,
     var comments: String? = null
 ) : Overlayable {
     override fun overlayTo(other: Overlayable) {
@@ -296,6 +296,10 @@ data class Pom(
 
         // resolve license link by the name.
         lookupLicenseLink(licenses)
+
+        licenses.forEach {
+            if (it.dist == null) it.dist = "repo"
+        }
 
         // TODO handle SVN/HG/etc
         // resolve scm details by repoType and repoName

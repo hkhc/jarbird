@@ -76,9 +76,9 @@ class SigningConfig(
             project.logger.warn("WARNING: $LOG_PREFIX " +
                     "Signing configuration for keybox file is not complete. $signingIgnoredMessage")
         }
-//        else {
-//            project.logger.debug("$LOG_PREFIX Signing info complete")
-//        }
+        else {
+            project.logger.debug("$LOG_PREFIX Signing info complete")
+        }
 
         ext.findByType(SigningExtension::class.java)?.config()
     }
