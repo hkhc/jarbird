@@ -19,6 +19,8 @@
 package io.hkhc.gradle
 
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -27,24 +29,45 @@ import java.io.File
 
 class FuncTestOne {
 
+    fun dumpFileTree(file: File, level: Int) {
+        for(i in 0..level) {
+            System.out.print("  ")
+        }
+        System.out.println(file.name)
+        if (file.isDirectory()) {
+            file.listFiles().forEach {
+                dumpFileTree(it, level+1)
+            }
+        }
+    }
+
+    fun dumpFileTree(file: File) = dumpFileTree(file, 0)
+
     @get:Rule
     var tempProjectDir: TemporaryFolder = TemporaryFolder()
+
+    lateinit var localRepoDir: File
 
     @Before
     fun setUp() {
         File("functionalTestData/testOne").copyRecursively(tempProjectDir.root)
         File("functionalTestData/common").copyRecursively(tempProjectDir.root)
+        localRepoDir = File(tempProjectDir.root, "localRepo")
+        localRepoDir.mkdirs()
+        System.setProperty("maven.repo.local", localRepoDir.absolutePath)
     }
 
     @Test
-    fun testOne() {
-
+    fun `Normal publish to Maven Local`() {
         val result = GradleRunner.create()
             .withProjectDir(tempProjectDir.root)
             .withArguments("publishLibPublicationToMavenLocal")
             .withPluginClasspath()
             .withDebug(true)
             .build()
+
+        Assert.assertEquals(TaskOutcome.SUCCESS, result.task(":publishLibPublicationToMavenLocal")?.outcome)
+        ArtifactChecker().verifyRepostory(localRepoDir, "test.group", "test.artifact", "0.1", "jar")
 
     }
 }
