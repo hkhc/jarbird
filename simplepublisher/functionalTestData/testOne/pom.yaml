@@ -1,5 +1,5 @@
-group: io.hkhc.gradle
-name: simplepublisherxx
+group: test.group
+artifactId: test.artifact
 version: 0.1
 description: Wrapping boilerplate code of publishing artifact to maven repository
 packaging: jar

@@ -27,7 +27,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 
-class FuncTestOne {
+class BuildTest {
 
     fun dumpFileTree(file: File, level: Int) {
         for(i in 0..level) {

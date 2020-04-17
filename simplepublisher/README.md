@@ -1,7 +1,6 @@
-[![jCenter](https://api.bintray.com/packages/hermancheung/maven/simplepublisher/images/download.svg) ](https://bintray.com/hermancheung/maven/simplepublisher/_latestVersion)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.hkhc.gradle/simplepublisher/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.hkhc.gradle/simplepublisher)
+[![jCenter](https://img.shields.io/maven-metadata/v/https/jcenter.bintray.com/io/hkhc/gradle/simplepublisher/maven-metadata.xml.svg?label=jCenter)](https://bintray.com/hermancheung/maven/io.hkhc.gradle:simplepublisher/_latestVersion)
+[![Maven Central](https://img.shields.io/maven-central/v/io.hkhc.gradle/simplepublisher.svg)](https://search.maven.org/artifact/io.hkhc.gradle/simplepublisher)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/io/hkhc/simplepublisher/io.hkhc.simplepublisher.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=gradlePluginPortal)](https://plugins.gradle.org/plugin/io.hkhc.simplepublisher)
-
 
 # SimplePublisher Gradle Plugin
 
@@ -414,3 +413,33 @@ The project has its url field. If it is omitted, the Scm.url field is used.
 ## Minimal requirement of POM for Maven Central
 
 While the information in pom.yml are mostly optional, we need them all such that Maven Central repository accept our submission.
+
+## Publishing Gradle Plugin
+
+Simple Publisher can also help build and publish Gradle plugin to Gradle Plugin Portal and other repositories. We need some more information about the plugin. Add the following section to pom.xml
+
+```yaml
+plugin:
+  id: <your "new style" plugin ID>
+  displayName: <Descriptive name of the plugin>
+  implementationClass: <Implementation class of the plugin>
+  tags: 
+    - <tags to be shown in Gradle Plugin Portal page>
+```
+
+Then add the following to Gradle script:
+
+```kotlin
+simplyPublish {
+    gradlePlugin = true
+}
+```
+
+Of course we still need the Gradle Plugin Portal account setting in `gradle.properties`, which is be available at your profile page at Gradle Plugin Portal. 
+
+```
+gradle.publish.key=API Key
+gradle.publish.secret=API Secret
+```
+
+When all of these are presents, the plugin add a task `spPublishToGradlePortal`  that you can publish the plugin to gradle portal.

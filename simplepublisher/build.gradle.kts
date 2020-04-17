@@ -153,13 +153,18 @@ dependencies {
     implementation("com.gradle.publish:plugin-publish-plugin:0.11.0")
 
     // TODO Do we still need 4.1.2 when using kotest?
-    testImplementation("junit:junit:4.12")
+//    testImplementation("junit:junit:4.12")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.6.1")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.2")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.2")
     testImplementation("io.mockk:mockk:1.9")
 
-    "${functionalTestSourceSetName}Implementation"("junit:junit:4.12")
+    "${functionalTestSourceSetName}Implementation"("junit:junit:4.13")
     "${functionalTestSourceSetName}Implementation"(gradleTestKit())
+    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-api:5.6.1")
+    "${functionalTestSourceSetName}Implementation"("org.junit.vintage:junit-vintage-engine:5.6.1")
+
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.4")
 
