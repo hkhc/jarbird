@@ -29,20 +29,6 @@ import java.io.File
 
 class BuildTest {
 
-    fun dumpFileTree(file: File, level: Int) {
-        for(i in 0..level) {
-            System.out.print("  ")
-        }
-        System.out.println(file.name)
-        if (file.isDirectory()) {
-            file.listFiles().forEach {
-                dumpFileTree(it, level+1)
-            }
-        }
-    }
-
-    fun dumpFileTree(file: File) = dumpFileTree(file, 0)
-
     @get:Rule
     var tempProjectDir: TemporaryFolder = TemporaryFolder()
 
@@ -66,8 +52,9 @@ class BuildTest {
             .withDebug(true)
             .build()
 
+        FileTree().dump(tempProjectDir.root, System.out::println)
+
         Assert.assertEquals(TaskOutcome.SUCCESS, result.task(":publishLibPublicationToMavenLocal")?.outcome)
         ArtifactChecker().verifyRepostory(localRepoDir, "test.group", "test.artifact", "0.1", "jar")
-
     }
 }
