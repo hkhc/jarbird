@@ -20,11 +20,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /*
 This is a bootstrap script to do minimal thing to deploy the plugin to maven local repository, so that
-the build.gradle.kts script can make use of itself to do full feature publishing
+the build.gradle.x.kts script can make use of itself to do full feature publishing
 
 run the following to publish bootstrap plugin
 
-./gradlew -b b2.build.gradle.kts publishLibToMavenLocal
+./gradlew -b b2.build.gradle.x.kts publishLibToMavenLocal
 
  */
 

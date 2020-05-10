@@ -443,3 +443,15 @@ gradle.publish.secret=API Secret
 ```
 
 When all of these are presents, the plugin add a task `spPublishToGradlePortal`  that you can publish the plugin to gradle portal.
+
+Gradle find the location of local repository in the following order:
+
+-  System property `maven.repo.local`
+
+- The `<localRepository>` maven [setting](http://maven.apache.org/settings.html#Settings_Details)
+  
+  - at `$M2_HOME/conf/setting.xml` where `M2_HOME` is environment variable. 
+  
+  - at `~/.m2/conf/settings.xml`
+
+- If all of above are not found, the default is `~/.m2/repository`

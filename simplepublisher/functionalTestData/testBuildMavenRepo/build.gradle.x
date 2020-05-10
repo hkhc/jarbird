@@ -16,27 +16,23 @@
  *
  */
 
-package io.hkhc.gradle
+plugins {
+    id 'java'
+    id 'org.jetbrains.dokka' version "0.10.1"
+    id 'io.hkhc.simplepublisher'
+}
 
-import io.hkhc.gradle.pom.Pom
-import org.junit.jupiter.api.Test
-import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.Constructor
-import java.io.File
+import io.hkhc.gradle.*
 
-class SnakeTest {
+simplyPublish {
+    System.out.println("simplyPublish before")
+    mavenRepository = PropertyMavenEndpoint(project, "mock")
+    System.out.println("simplyPublish after ${mavenRepository}")
+}
 
-    @Test
-    fun `test1`() {
-
-        val yaml = Yaml(Constructor(Pom::class.java))
-
-        val pomStr = File("./pom.yaml").readText()
-
-        val pom: Pom = yaml.load(pomStr)
-
-        System.out.println(pom)
-
-
+tasks {
+    dokka {
+        outputFormat = "html"
+//        outputDirectory = "${tempProjectDir.root.absolutePath}/build/dokka"
     }
 }

@@ -24,6 +24,7 @@ import io.hkhc.gradle.PUBLISH_GROUP
 import io.hkhc.gradle.PublishConfig
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.mavenCentral
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.fillTo
 import io.hkhc.util.LOG_PREFIX
@@ -161,19 +162,22 @@ class PublishingConfig(
     }
 
     private fun RepositoryHandler.createRepository() {
+
+        val endpoint = extension.mavenRepository ?: project.mavenCentral()
+
         maven {
             name = "Maven${pubName.capitalize()}"
             with(pubConfig) {
                 url = project.uri(
                     if (pom.isSnapshot()) {
-                        extension.mavenRepository.snapshotUrl
+                        endpoint.snapshotUrl
                     } else {
-                        extension.mavenRepository.releaseUrl
+                        endpoint.releaseUrl
                     }
                 )
                 credentials {
-                    username = extension.mavenRepository.username
-                    password = extension.mavenRepository.password
+                    username = endpoint.username
+                    password = endpoint.password
                 }
             }
         }

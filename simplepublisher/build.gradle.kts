@@ -29,7 +29,7 @@ buildscript {
     }
 }
 
-repositories {
+ repositories {
     mavenLocal()
     // normal project don't need this in repositories block.
     // We need this because we need to access the plugin code directly.
@@ -44,7 +44,7 @@ plugins {
     kotlin("jvm")
     `kotlin-dsl`
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
-    id("io.gitlab.arturbosch.detekt") version "1.7.4"
+    id("io.gitlab.arturbosch.detekt") version "1.8.0"
     id("com.dorongold.task-tree") version "1.5"
     id("io.hkhc.simplepublisher.bootstrap") version "1.0.0"
 }
@@ -131,6 +131,14 @@ ktlint {
 
 simplyPublish {
     gradlePlugin = true
+    this.mavenRepository = io.hkhc.gradle.MavenEndpoint.Companion.create(
+        "http://localhost:8080/base",
+        "http://localhost:8080/base",
+        "username",
+        "password"
+    )
+//    mavenRepository = io.hkhc.gradle.PropertyMavenEndpoint(project, "mock")
+
 }
 
 gradlePlugin {
@@ -160,13 +168,15 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.2")
     testImplementation("io.mockk:mockk:1.9")
 
-    "${functionalTestSourceSetName}Implementation"("junit:junit:4.13")
+//    "${functionalTestSourceSetName}Implementation"("junit:junit:4.13")
     "${functionalTestSourceSetName}Implementation"(gradleTestKit())
     "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-api:5.6.1")
-    "${functionalTestSourceSetName}Implementation"("org.junit.vintage:junit-vintage-engine:5.6.1")
+    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-engine:5.6.1")
+    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-params:5.6.1")
+//    "${functionalTestSourceSetName}Implementation"("org.junit.vintage:junit-vintage-engine:5.6.1")
+    "${functionalTestSourceSetName}Implementation"("com.squareup.okhttp3:mockwebserver:4.5.0")
 
-
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.7.4")
-
-    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.7.4")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.8.0")
+1
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.8.0")
 }

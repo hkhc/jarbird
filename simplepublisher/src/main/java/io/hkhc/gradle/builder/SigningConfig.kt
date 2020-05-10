@@ -75,8 +75,7 @@ class SigningConfig(
         if (incomplete) {
             project.logger.warn("WARNING: $LOG_PREFIX " +
                     "Signing configuration for keybox file is not complete. $signingIgnoredMessage")
-        }
-        else {
+        } else {
             project.logger.debug("$LOG_PREFIX Signing info complete")
         }
 

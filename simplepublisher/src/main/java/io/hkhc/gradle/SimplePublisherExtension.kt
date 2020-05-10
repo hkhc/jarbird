@@ -90,5 +90,13 @@ open class SimplePublisherExtension(@Suppress("unused") private val project: Pro
     /**
      * Specify maven repository for publishing.
      */
-    var mavenRepository: MavenEndpoint = project.mavenCentral()
+    var mavenRepository: MavenEndpoint? = null
+
+    fun withMavenCentral() {
+        mavenRepository = MavenCentralEndpoint(project)
+    }
+
+    fun withMavenByProperties(key: String) {
+        mavenRepository = PropertyMavenEndpoint(project, key)
+    }
 }

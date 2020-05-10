@@ -220,7 +220,7 @@ class SimplePublisherPlugin : Plugin<Project> {
         We don't apply bintray and artifactory plugin conditionally, because it make use of
         projectEvaluationListener, but we cannot get the flag from extenstion until we run
         afterEvaluate event. This is a conflict. So we just let go and apply these two
-        plugin anyway. However we will configure the relevant extensions according to
+        plugins anyway. However we will configure the relevant extensions according to
         the flags in our extension. (@see PublicationBuilder)
          */
         with(project.pluginManager) {

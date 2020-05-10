@@ -40,17 +40,11 @@ fun Project.byProperty(key: String): MavenEndpoint {
     return PropertyMavenEndpoint(this, key)
 }
 fun Project.mavenCentral(): MavenEndpoint {
-    return SimpleMavenEndpoint(
-        "https://oss.sonatype.org/service/local/staging/deploy/maven2",
-        "https://oss.sonatype.org/content/repositories/snapshots",
-        resolveProperty(this, "repository.mavenCentral.username"),
-        resolveProperty(this, "repository.mavenCentral.password")
-    )
+    return MavenCentralEndpoint(this)
 }
 
 fun resolveProperty(project: Project, propertyName: String): String {
-
-    val value: String? = project.properties[propertyName] as String?
+    var value: String? = project.properties[propertyName] as String?
     if (value == null) {
         detailMessageError(
             project.logger,

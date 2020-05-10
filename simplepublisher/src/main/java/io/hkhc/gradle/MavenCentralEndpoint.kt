@@ -18,28 +18,36 @@
 
 package io.hkhc.gradle
 
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 
-class PropertyMavenEndpoint(private val project: Project, private val key: String) : MavenEndpoint {
-
-    init {
-        Exception("PropertyMavenEndpoint constructor").printStackTrace()
-    }
+class MavenCentralEndpoint(val project: Project) : MavenEndpoint {
 
     private val keyPrefix = "repository"
 
     override val releaseUrl: String
-        get() {
-            Exception("PropertyMavenEndpoint release get").printStackTrace()
-            return resolveProperty(project, "$keyPrefix.$key.release")
-        }
+        get() = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
 
     override val snapshotUrl: String
-        get() = resolveProperty(project, "$keyPrefix.$key.snapshot")
+        get() = "https://oss.sonatype.org/content/repositories/snapshots"
 
     override val username: String
-        get() = resolveProperty(project, "$keyPrefix.$key.username")
+        get() {
+            try {
+                return resolveProperty(project, "repository.mavencentral.username")
+            } catch (g: GradleException) {
+                project.logger.warn("maven central username is not found.")
+                return ""
+            }
+        }
 
     override val password: String
-        get() = resolveProperty(project, "$keyPrefix.$key.password")
+        get() {
+            try {
+                return resolveProperty(project, "repository.mavencentral.password")
+            } catch (g: GradleException) {
+                project.logger.warn("maven central password is not found.")
+                return ""
+            }
+        }
 }
