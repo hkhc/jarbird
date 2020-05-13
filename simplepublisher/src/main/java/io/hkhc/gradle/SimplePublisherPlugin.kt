@@ -169,8 +169,11 @@ class SimplePublisherPlugin : Plugin<Project> {
 
                     pom.syncWith(p)
 
-                    // pre-check of final data
-                    precheck(p)
+                    // pre-check of final data, for child project
+                    // TODO handle multiple level child project?
+                    if (!project.isMultiProjectRoot()) {
+                        precheck(p)
+                    }
 
                     if (extension.signing) {
                         /**

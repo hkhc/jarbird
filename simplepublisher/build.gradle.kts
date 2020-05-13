@@ -131,14 +131,6 @@ ktlint {
 
 simplyPublish {
     gradlePlugin = true
-    this.mavenRepository = io.hkhc.gradle.MavenEndpoint.Companion.create(
-        "http://localhost:8080/base",
-        "http://localhost:8080/base",
-        "username",
-        "password"
-    )
-//    mavenRepository = io.hkhc.gradle.PropertyMavenEndpoint(project, "mock")
-
 }
 
 gradlePlugin {

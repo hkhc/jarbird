@@ -21,7 +21,10 @@ package io.hkhc.gradle.builder
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.SP_GROUP
 import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.isMultiProjectRoot
+import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 
 class TaskBuilder(
@@ -37,118 +40,158 @@ class TaskBuilder(
     private val mavenRepo = "Maven${pubNameCap}Repository"
     private val mavenLocal = "MavenLocal"
 
+    private fun registerRootProjectTasks(taskPath: String) {
+
+        project.tasks.register(taskPath) {
+            group = SP_GROUP
+            project.childProjects.forEach { name, child ->
+                val rootTask = this
+                child.tasks.findByPath(taskPath)?.let { childTask ->
+                    rootTask.dependsOn(childTask.path)
+                }
+            }
+        }
+    }
+
     private fun TaskContainer.registerMavenLocalTask() {
 
-        register("spPublishTo$mavenLocal") {
-            group = SP_GROUP
+        if (project.isMultiProjectRoot()) {
+            registerRootProjectTasks("spPublishTo$mavenLocal")
+        } else {
 
-            description = if (extension.gradlePlugin) {
-                "Publish Maven publication '$pubName' " +
-                        "and plugin '${pom.plugin?.id}' to the local Maven Repository"
-            } else {
-                "Publish Maven publication '$pubName' to the local Maven Repository"
+            register("spPublishTo$mavenLocal") {
+                group = SP_GROUP
+
+                description = if (extension.gradlePlugin) {
+                    "Publish Maven publication '$pubName' " +
+                            "and plugin '${pom.plugin?.id}' to the local Maven Repository"
+                } else {
+                    "Publish Maven publication '$pubName' to the local Maven Repository"
+                }
+
+                dependsOn("publish${pubId}To$mavenLocal")
+
+                if (extension.gradlePlugin) {
+                    dependsOn("publish${markerPubId}To$mavenLocal")
+                }
             }
 
-            dependsOn("publish${pubId}To$mavenLocal")
-
-            if (extension.gradlePlugin) {
-                dependsOn("publish${markerPubId}To$mavenLocal")
-            }
         }
     }
 
     private fun TaskContainer.registerMavenRepositoryTask() {
 
-        register("spPublishToMavenRepository") {
-            group = SP_GROUP
+        if (project.isMultiProjectRoot()) {
+            registerRootProjectTasks("spPublishToMavenRepository")
+        } else {
 
-            // I don't know why the maven repository name in the task name is not capitalized
+            register("spPublishToMavenRepository") {
+                group = SP_GROUP
 
-            description = if (extension.gradlePlugin) {
-                "Publish Maven publication '$pubName' " +
-                        "and plugin '${pom.plugin?.id}' to the 'Maven$pubNameCap' Repository"
-            } else {
-                "Publish Maven publication '$pubName' to the 'Maven$pubNameCap' Repository"
+                // I don't know why the maven repository name in the task name is not capitalized
+
+                description = if (extension.gradlePlugin) {
+                    "Publish Maven publication '$pubName' " +
+                            "and plugin '${pom.plugin?.id}' to the 'Maven$pubNameCap' Repository"
+                } else {
+                    "Publish Maven publication '$pubName' to the 'Maven$pubNameCap' Repository"
+                }
+
+                dependsOn("publish${pubId}To$mavenRepo")
+
+                //            if (extension.gradlePlugin) {
+                //                dependsOn("publish${markerPubId}To$mavenRepo")
+                //            }
             }
-
-            dependsOn("publish${pubId}To$mavenRepo")
-
-//            if (extension.gradlePlugin) {
-//                dependsOn("publish${markerPubId}To$mavenRepo")
-//            }
         }
     }
 
     private fun TaskContainer.registerBintrayTask() {
-        register("spPublishToBintray") {
-            group = SP_GROUP
 
-            val target = if (pom.isSnapshot()) "OSS JFrog" else "Bintray"
+        if (project.isMultiProjectRoot()) {
+            registerRootProjectTasks("spPublishToBintray")
+        } else {
+            register("spPublishToBintray") {
+                group = SP_GROUP
 
-            description = if (extension.gradlePlugin) {
-                "Publish Maven publication '$pubName' " +
-                        "and plugin '${pom.plugin?.id}' to $target"
-            } else {
-                "Publish Maven publication '$pubName' to $target"
-            }
+                val target = if (pom.isSnapshot()) "OSS JFrog" else "Bintray"
 
-            /*
-                bintray repository does not allow publishing SNAPSHOT artifacts, it has to be published
-                to the OSS JFrog repository
-             */
-            if (pom.isSnapshot()) {
-                if (extension.ossArtifactory) {
-                    dependsOn("artifactory${pubNameCap}Publish")
+                description = if (extension.gradlePlugin) {
+                    "Publish Maven publication '$pubName' " +
+                            "and plugin '${pom.plugin?.id}' to $target"
+                } else {
+                    "Publish Maven publication '$pubName' to $target"
                 }
-            } else {
-                dependsOn("bintrayUpload")
+
+                /*
+                    bintray repository does not allow publishing SNAPSHOT artifacts, it has to be published
+                    to the OSS JFrog repository
+                 */
+                if (pom.isSnapshot()) {
+                    if (extension.ossArtifactory) {
+                        dependsOn("artifactory${pubNameCap}Publish")
+                    }
+                } else {
+                    dependsOn("bintrayUpload")
+                }
             }
         }
     }
 
     private fun TaskContainer.registerGradlePortalTask() {
-        register("spPublishToGradlePortal") {
-            group = SP_GROUP
-            description = "Publish plugin '${pom.plugin?.id}' to the Gradle plugin portal"
-            dependsOn("publishPlugins")
+
+        if (project.isMultiProjectRoot()) {
+            registerRootProjectTasks("spPublishToGradlePortal")
+        } else {
+            register("spPublishToGradlePortal") {
+                group = SP_GROUP
+                description = "Publish plugin '${pom.plugin?.id}' to the Gradle plugin portal"
+                dependsOn("publishPlugins")
+            }
         }
     }
 
     private fun TaskContainer.registerPublishTask() {
-        register("spPublish") {
-            group = SP_GROUP
 
-            // assemble a list of repositories
-            val repoList = mutableListOf<String>()
-            repoList.add("Maven Local")
-            repoList.add("'Maven$pubName' Repository")
-            if (extension.bintray) {
-                repoList.add("Bintray")
-            }
-            if (extension.gradlePlugin) {
-                repoList.add("Gradle Plugin Portal")
-            }
-            val repoListStr = repoList.joinToString()
+        if (project.isMultiProjectRoot()) {
+            registerRootProjectTasks("spPublish")
+        } else {
+            register("spPublish") {
+                group = SP_GROUP
 
-            if (extension.gradlePlugin) {
-                description = "Publish Maven publication '$pubNameCap' " +
-                        "and plugin '${pom.plugin?.id}' to $repoListStr"
-            } else {
-                description = "Publish Maven publication '$pubNameCap' to $repoListStr"
-            }
+                // assemble a list of repositories
+                val repoList = mutableListOf<String>()
+                repoList.add("Maven Local")
+                repoList.add("'Maven$pubName' Repository")
+                if (extension.bintray) {
+                    repoList.add("Bintray")
+                }
+                if (extension.gradlePlugin) {
+                    repoList.add("Gradle Plugin Portal")
+                }
+                val repoListStr = repoList.joinToString()
 
-            dependsOn("spPublishTo$mavenLocal")
-            dependsOn("spPublishToMavenRepository")
-            if (extension.bintray) {
-                dependsOn("spPublishToBintray")
-            }
-            if (extension.gradlePlugin) {
-                dependsOn("spPublishToGradlePortal")
+                if (extension.gradlePlugin) {
+                    description = "Publish Maven publication '$pubNameCap' " +
+                            "and plugin '${pom.plugin?.id}' to $repoListStr"
+                } else {
+                    description = "Publish Maven publication '$pubNameCap' to $repoListStr"
+                }
+
+                dependsOn("spPublishTo$mavenLocal")
+                dependsOn("spPublishToMavenRepository")
+                if (extension.bintray) {
+                    dependsOn("spPublishToBintray")
+                }
+                if (extension.gradlePlugin) {
+                    dependsOn("spPublishToGradlePortal")
+                }
             }
         }
     }
 
     fun build() {
+
         with(project.tasks) {
             registerMavenLocalTask()
             registerMavenRepositoryTask()
