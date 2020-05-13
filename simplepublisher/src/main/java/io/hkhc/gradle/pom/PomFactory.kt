@@ -38,7 +38,10 @@ class PomFactory {
         return if (file.exists()) {
             logger.debug("$LOG_PREFIX File '${file.absolutePath}' found")
             val yaml = Yaml(Constructor(Pom::class.java))
-            return yaml.load(file.readText())
+            // it is possible that yaml.load return null even if file exist and
+            // is a valid yaml file. For example, a YAML file could be fill of comment
+            // and have no real tag.
+            return yaml.load(file.readText())?: Pom()
         } else {
             logger.debug("$LOG_PREFIX File '${file.absolutePath}' does not exist")
             Pom()
