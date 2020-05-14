@@ -1,6 +1,6 @@
 group: io.hkhc.gradle
 artifactId: simplepublisher
-version: 0.4.1.1
+version: 0.4.1.2
 description: Wrapping boilerplate code of publishing artifact to maven repository
 packaging: jar
 
