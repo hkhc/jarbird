@@ -146,7 +146,7 @@ dependencies {
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
+    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
     implementation("org.yaml:snakeyaml:1.25")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
@@ -169,6 +169,6 @@ dependencies {
     "${functionalTestSourceSetName}Implementation"("com.squareup.okhttp3:mockwebserver:4.5.0")
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.8.0")
-1
+
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.8.0")
 }
