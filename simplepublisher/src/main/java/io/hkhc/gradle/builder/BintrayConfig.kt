@@ -72,8 +72,8 @@ class BintrayConfig(
         // the key and hence specify the signature files manually and upload them.
         filesSpec(closureOf<RecordingCopyTask> {
             from("${project.buildDir}/libs").apply {
-                include("*.aar.asc")
-                include("*.jar.asc")
+                include("${pom.name}-${pom.version}-*.aar.asc")
+                include("${pom.name}-${pom.version}-*.jar.asc")
             }
 
             from("${project.buildDir}/publications/$pubName").apply {
