@@ -29,7 +29,7 @@ buildscript {
     }
 }
 
- repositories {
+repositories {
     mavenLocal()
     // normal project don't need this in repositories block.
     // We need this because we need to access the plugin code directly.
