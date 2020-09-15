@@ -68,7 +68,7 @@ tasks {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    create("spPublishToMavenLocal") {
+    create("jbPublishToMavenLocal") {
         dependsOn(
             "publishPluginMavenPublicationToMavenLocal",
             "publishSpPluginMarkerMavenPublicationToMavenLocal"

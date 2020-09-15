@@ -56,10 +56,10 @@ class TaskBuilder(
     private fun TaskContainer.registerMavenLocalTask() {
 
         if (project.isMultiProjectRoot()) {
-            registerRootProjectTasks("spPublishTo$mavenLocal")
+            registerRootProjectTasks("jbPublishTo$mavenLocal")
         } else {
 
-            register("spPublishTo$mavenLocal") {
+            register("jbPublishTo$mavenLocal") {
                 group = SP_GROUP
 
                 description = if (extension.gradlePlugin) {
@@ -82,10 +82,10 @@ class TaskBuilder(
     private fun TaskContainer.registerMavenRepositoryTask() {
 
         if (project.isMultiProjectRoot()) {
-            registerRootProjectTasks("spPublishToMavenRepository")
+            registerRootProjectTasks("jbPublishToMavenRepository")
         } else {
 
-            register("spPublishToMavenRepository") {
+            register("jbPublishToMavenRepository") {
                 group = SP_GROUP
 
                 // I don't know why the maven repository name in the task name is not capitalized
@@ -109,9 +109,9 @@ class TaskBuilder(
     private fun TaskContainer.registerBintrayTask() {
 
         if (project.isMultiProjectRoot()) {
-            registerRootProjectTasks("spPublishToBintray")
+            registerRootProjectTasks("jbPublishToBintray")
         } else {
-            register("spPublishToBintray") {
+            register("jbPublishToBintray") {
                 group = SP_GROUP
 
                 val target = if (pom.isSnapshot()) "OSS JFrog" else "Bintray"
@@ -141,9 +141,9 @@ class TaskBuilder(
     private fun TaskContainer.registerGradlePortalTask() {
 
         if (project.isMultiProjectRoot()) {
-            registerRootProjectTasks("spPublishToGradlePortal")
+            registerRootProjectTasks("jbPublishToGradlePortal")
         } else {
-            register("spPublishToGradlePortal") {
+            register("jbPublishToGradlePortal") {
                 group = SP_GROUP
                 description = "Publish plugin '${pom.plugin?.id}' to the Gradle plugin portal"
                 dependsOn("publishPlugins")
@@ -154,9 +154,9 @@ class TaskBuilder(
     private fun TaskContainer.registerPublishTask() {
 
         if (project.isMultiProjectRoot()) {
-            registerRootProjectTasks("spPublish")
+            registerRootProjectTasks("jbPublish")
         } else {
-            register("spPublish") {
+            register("jbPublish") {
                 group = SP_GROUP
 
                 // assemble a list of repositories
@@ -178,13 +178,13 @@ class TaskBuilder(
                     description = "Publish Maven publication '$pubNameCap' to $repoListStr"
                 }
 
-                dependsOn("spPublishTo$mavenLocal")
-                dependsOn("spPublishToMavenRepository")
+                dependsOn("jbPublishTo$mavenLocal")
+                dependsOn("jbPublishToMavenRepository")
                 if (extension.bintray) {
-                    dependsOn("spPublishToBintray")
+                    dependsOn("jbPublishToBintray")
                 }
                 if (extension.gradlePlugin) {
-                    dependsOn("spPublishToGradlePortal")
+                    dependsOn("jbPublishToGradlePortal")
                 }
             }
         }

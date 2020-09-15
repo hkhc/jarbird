@@ -66,12 +66,12 @@ class BuildMavenRepoTest {
     fun `Normal publish to Maven Repository`() {
         val result = GradleRunner.create()
             .withProjectDir(tempProjectDir)
-            .withArguments("spPublishToMavenRepository")
+            .withArguments("jbPublishToMavenRepository")
             .withPluginClasspath()
             .withDebug(true)
             .build()
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":spPublishToMavenRepository")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result.task(":jbPublishToMavenRepository")?.outcome)
         assertEquals(10, server.requestCount)
     }
 }

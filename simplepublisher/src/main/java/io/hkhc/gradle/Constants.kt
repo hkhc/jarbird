@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle
 
-internal const val SP_GROUP = "SimplePublisher"
+internal const val SP_GROUP = "Jarbird publishing"
 internal const val PUBLISH_GROUP = "Publishing"
 
 internal const val SP_EXT_NAME = "simplyPublish"

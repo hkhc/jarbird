@@ -118,15 +118,15 @@ The plugin creates the `publishing` configuration, the corresponding `publicatio
 
 | Task                         | Description                                                                     |
 | ---------------------------- | ------------------------------------------------------------------------------- |
-| `spPublish`                  | Publish Maven publication 'Lib' to Maven Local, 'Mavenlib' Repository, Bintray. |
-| `spPublishToBintray`         | Publish Maven publication 'lib' to Bintray                                      |
-| `spPublishToMavenLocal`      | Publish Maven publication 'lib' to the local Maven Repository                   |
-| `spPublishToMavenRepository` | Publish Maven publication 'lib' to the 'MavenLib' Repository                    |
+| `jbPublish`                  | Publish Maven publication 'Lib' to Maven Local, 'Mavenlib' Repository, Bintray. |
+| `jbPublishToBintray`         | Publish Maven publication 'lib' to Bintray                                      |
+| `jbPublishToMavenLocal`      | Publish Maven publication 'lib' to the local Maven Repository                   |
+| `jbPublishToMavenRepository` | Publish Maven publication 'lib' to the 'MavenLib' Repository                    |
 
 So we may just issue the command to publish artefacts to Maven local repository. That should include the jar file of the library, the jar file of source code archive, and a minimal POM file for the artefacts.
 
 ```bash
-./gradlew spPublishToMavenLocal
+./gradlew jbPublishToMavenLocal
 ```
 
 One can check the published files under  `~/.m2/repository/io/github/myusername/1.0-SNAPSHOT` directory.
@@ -228,7 +228,7 @@ The artefact ID will be the project name if we don't specify one. The plugin gen
 So we can just start building our artefacts with this.
 
 ```
-./gradlew spPublishToMavenLocal
+./gradlew jbPublishToMavenLocal
 ```
 
 and we can find the component we build at `~/.m2/repository`
@@ -442,7 +442,7 @@ gradle.publish.key=API Key
 gradle.publish.secret=API Secret
 ```
 
-When all of these are presents, the plugin adds a task `spPublishToGradlePortal`  that you can publish the plugin to Gradle Portal.
+When all of these are presents, the plugin adds a task `jbPublishToGradlePortal`  that you can publish the plugin to Gradle Portal.
 
 Gradle find the location of the local repository in the following order:
 
