@@ -20,7 +20,7 @@ package io.hkhc.gradle.builder
 
 import groovy.lang.GroovyObject
 import io.hkhc.gradle.PublishConfig
-import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.util.LOG_PREFIX
 import org.gradle.api.Project
@@ -34,7 +34,7 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 
 class ArtifactoryConfig(
     private val project: Project,
-    private val extension: SimplePublisherExtension
+    private val extension: JarbirdExtension
 ) {
 
     private val pubConfig = PublishConfig(project)

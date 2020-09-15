@@ -18,4 +18,4 @@
 
 package io.hkhc.gradle
 
-class SImplyPublisherException(msg: String) : Exception(msg)
+class JarbirdException(msg: String) : Exception(msg)

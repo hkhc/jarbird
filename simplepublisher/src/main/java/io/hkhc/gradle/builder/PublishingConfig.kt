@@ -23,7 +23,7 @@ import io.hkhc.gradle.CLASSIFIER_SOURCE
 import io.hkhc.gradle.PUBLISH_GROUP
 import io.hkhc.gradle.PublishConfig
 import io.hkhc.gradle.SP_EXT_NAME
-import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.mavenCentral
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.fillTo
@@ -44,7 +44,7 @@ import org.gradle.kotlin.dsl.get
 
 class PublishingConfig(
     private val project: Project,
-    private val extension: SimplePublisherExtension,
+    private val extension: JarbirdExtension,
     private val pom: Pom
 ) {
 

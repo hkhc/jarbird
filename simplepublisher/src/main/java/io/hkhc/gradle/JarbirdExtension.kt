@@ -22,7 +22,7 @@ import io.hkhc.gradle.pom.Pom
 import org.gradle.api.Project
 
 // Gradle plugin extensions must be open class so that Gradle system can "decorate" it.
-open class SimplePublisherExtension(@Suppress("unused") private val project: Project) {
+open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     lateinit var pom: Pom
 

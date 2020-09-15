@@ -20,17 +20,15 @@ package io.hkhc.gradle.builder
 
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.SP_GROUP
-import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.isMultiProjectRoot
-import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 
 class TaskBuilder(
     private val project: Project,
     private val pom: Pom,
-    private val extension: SimplePublisherExtension,
+    private val extension: JarbirdExtension,
     private val pubName: String
 ) {
 

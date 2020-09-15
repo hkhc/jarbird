@@ -29,12 +29,11 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectEvaluationListener
 import org.gradle.api.ProjectState
-import org.gradle.api.plugins.BasePluginConvention
 
 @Suppress("unused")
-class SimplePublisherPlugin : Plugin<Project> {
+class JarbirdPlugin : Plugin<Project> {
 
-    private lateinit var extension: SimplePublisherExtension
+    private lateinit var extension: JarbirdExtension
     private var androidPluginAppliedBeforeUs = false
 
     /*
@@ -93,7 +92,7 @@ class SimplePublisherPlugin : Plugin<Project> {
 
         val pom = PomFactory().resolvePom(project)
 
-        extension = project.extensions.create(SP_EXT_NAME, SimplePublisherExtension::class.java, project)
+        extension = project.extensions.create(SP_EXT_NAME, JarbirdExtension::class.java, project)
         extension.pom = pom
 
         project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pom")

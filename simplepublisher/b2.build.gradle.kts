@@ -81,7 +81,7 @@ gradlePlugin {
         create("sp") {
             id = "io.hkhc.simplepublisher.bootstrap"
             displayName = "Bootstrap plugin for io.hkhc.simplepublisher"
-            implementationClass = "io.hkhc.gradle.SimplePublisherPlugin"
+            implementationClass = "io.hkhc.gradle.JarbirdPlugin"
         }
     }
 }

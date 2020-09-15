@@ -20,7 +20,7 @@ package io.hkhc.gradle.builder
 
 import com.gradle.publish.PluginBundleExtension
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.util.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
@@ -30,7 +30,7 @@ import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 
 class PluginPublishingConfig(
     private val project: Project,
-    extension: SimplePublisherExtension,
+    extension: JarbirdExtension,
     private val pom: Pom
 ) {
 

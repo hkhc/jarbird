@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle.builder
 
-import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.util.LOG_PREFIX
@@ -65,7 +65,7 @@ import org.gradle.api.Project
  *  - Create facade tasks
  */
 class PublicationBuilder(
-    private val extension: SimplePublisherExtension,
+    private val extension: JarbirdExtension,
     private val project: Project,
     private val pom: Pom
 ) {

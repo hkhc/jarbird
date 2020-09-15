@@ -19,7 +19,7 @@ scm:
 
 plugin:
   id: io.hkhc.simplepublisher
-  displayName: Simple Publisher
-  implementationClass: io.hkhc.gradle.SimplePublisherPlugin
+  displayName: Jarbird
+  implementationClass: io.hkhc.gradle.JarbirdPlugin
   tags:
   - publish

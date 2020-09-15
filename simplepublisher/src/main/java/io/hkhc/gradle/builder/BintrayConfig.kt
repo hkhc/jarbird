@@ -22,7 +22,7 @@ import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.PublishConfig
-import io.hkhc.gradle.SimplePublisherExtension
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.pom.fill
 import io.hkhc.util.LOG_PREFIX
 import org.gradle.api.Project
@@ -31,7 +31,7 @@ import org.gradle.kotlin.dsl.closureOf
 
 class BintrayConfig(
     private val project: Project,
-    private val extension: SimplePublisherExtension,
+    private val extension: JarbirdExtension,
     private val pom: Pom
 ) {
 
