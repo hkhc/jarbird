@@ -145,8 +145,8 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
     val pom = this
     @Suppress("SpreadOperator")
     pkg.apply {
-        repo = bintray.repo?:"maven"
-        bintray.userOrg?.let { userOrg = it}
+        repo = bintray.repo ?: "maven"
+        bintray.userOrg?.let { userOrg = it }
         name = pom.artifactId
         desc = pom.description
         setLicenses(*licenseList)
@@ -156,7 +156,6 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
             githubRepo = pom.scm.repoName ?: ""
             pom.scm.githubReleaseNoteFile?.let { githubReleaseNotesFile = it }
         }
-        // TODO githhubReleaseNotesFile
         issueTrackerUrl = pom.scm.issueUrl ?: ""
         version.apply {
             name = pom.version
