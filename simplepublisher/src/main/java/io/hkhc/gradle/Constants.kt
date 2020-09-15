@@ -21,7 +21,7 @@ package io.hkhc.gradle
 internal const val SP_GROUP = "Jarbird publishing"
 internal const val PUBLISH_GROUP = "Publishing"
 
-internal const val SP_EXT_NAME = "simplyPublish"
+internal const val SP_EXT_NAME = "jarbird"
 
 internal const val CLASSIFIER_JAVADOC = "javadoc"
 internal const val CLASSIFIER_SOURCE = "sources"

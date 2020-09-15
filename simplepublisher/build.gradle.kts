@@ -131,7 +131,7 @@ ktlint {
     }
 }
 
-simplyPublish {
+jarbird {
     gradlePlugin = true
 }
 
