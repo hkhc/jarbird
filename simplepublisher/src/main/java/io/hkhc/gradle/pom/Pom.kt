@@ -110,7 +110,8 @@ data class Scm(
     var repoName: String? = null, // "user/repo": preferably give this only and the system try to fill others in Scm
     var issueType: String? = null, // may be same as repoType or others
     var issueUrl: String? = null,
-    var tag: String? = null
+    var tag: String? = null,
+    var githubReleaseNoteFile: String? = null
 ) : Overlayable {
     @Suppress("DuplicatedCode")
     override fun overlayTo(other: Overlayable) {
@@ -123,6 +124,7 @@ data class Scm(
             issueType?.let { other.issueType = it }
             issueUrl?.let { other.issueUrl = it }
             tag?.let { other.tag = it }
+            githubReleaseNoteFile?.let { other.githubReleaseNoteFile = it }
         }
     }
 }

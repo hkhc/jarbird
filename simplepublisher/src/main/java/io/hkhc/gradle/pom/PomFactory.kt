@@ -145,7 +145,7 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
     val pom = this
     @Suppress("SpreadOperator")
     pkg.apply {
-        bintray.repo?.let { repo = it}
+        repo = bintray.repo?:"maven"
         bintray.userOrg?.let { userOrg = it}
         name = pom.artifactId
         desc = pom.description
@@ -154,6 +154,7 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
         vcsUrl = pom.scm.url ?: ""
         if (pom.scm.repoType == "github.com") {
             githubRepo = pom.scm.repoName ?: ""
+            pom.scm.githubReleaseNoteFile?.let { githubReleaseNotesFile = it }
         }
         // TODO githhubReleaseNotesFile
         issueTrackerUrl = pom.scm.issueUrl ?: ""
