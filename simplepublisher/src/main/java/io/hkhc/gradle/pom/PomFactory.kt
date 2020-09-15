@@ -139,13 +139,14 @@ fun Pom.fillTo(mavenPom: MavenPom) {
 
 fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
 
-    val labelList = bintrayLabels?.split(',')?.toTypedArray() ?: arrayOf()
+    val labelList = bintray.labels?.split(',')?.toTypedArray() ?: arrayOf()
     val licenseList = licenses.map { it.name }.toTypedArray()
 
     val pom = this
     @Suppress("SpreadOperator")
     pkg.apply {
-        repo = "maven"
+        bintray.repo?.let { repo = it}
+        bintray.userOrg?.let { userOrg = it}
         name = pom.artifactId
         desc = pom.description
         setLicenses(*licenseList)

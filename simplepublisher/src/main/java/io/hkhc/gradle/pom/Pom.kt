@@ -126,6 +126,21 @@ data class Scm(
     }
 }
 
+data class Bintray(
+    var labels: String? = null,
+    var repo: String? = null,
+    var userOrg: String? = null
+): Overlayable {
+
+    override fun overlayTo(other: Overlayable) {
+        if (other is Bintray) {
+            labels?.let { other.labels = it }
+            repo?.let { other.repo = it }
+            userOrg?.let { other.userOrg = it }
+        }
+    }
+}
+
 data class PluginInfo(
     var id: String? = null,
     var displayName: String? = null,
@@ -172,7 +187,7 @@ data class Pom(
     var organization: Organization = Organization(),
     var web: Web = Web(),
     var scm: Scm = Scm(),
-    var bintrayLabels: String? = null,
+    var bintray: Bintray = Bintray(),
 
     var plugin: PluginInfo? = null
 
@@ -229,7 +244,7 @@ data class Pom(
             web.overlayTo(other.web)
             scm.overlayTo(other.scm)
 
-            bintrayLabels?.let { other.bintrayLabels = it }
+            bintray.overlayTo(other.bintray)
 
             plugin?.let {
                 if (other.plugin == null) {
