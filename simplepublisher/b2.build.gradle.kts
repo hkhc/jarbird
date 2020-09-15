@@ -78,9 +78,9 @@ tasks {
 
 gradlePlugin {
     plugins {
-        create("sp") {
-            id = "io.hkhc.simplepublisher.bootstrap"
-            displayName = "Bootstrap plugin for io.hkhc.simplepublisher"
+        create("jb") {
+            id = "io.hkhc.jarbird.bootstrap"
+            displayName = "Bootstrap plugin for io.hkhc.jarbird"
             implementationClass = "io.hkhc.gradle.JarbirdPlugin"
         }
     }

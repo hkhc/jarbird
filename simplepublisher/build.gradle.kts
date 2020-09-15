@@ -48,7 +48,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("io.gitlab.arturbosch.detekt") version "1.8.0"
     id("com.dorongold.task-tree") version "1.5"
-    id("io.hkhc.simplepublisher.bootstrap") version "1.0.0"
+    id("io.hkhc.jarbird.bootstrap") version "1.0.0"
 }
 
 // TODO Simplify functional test creation
