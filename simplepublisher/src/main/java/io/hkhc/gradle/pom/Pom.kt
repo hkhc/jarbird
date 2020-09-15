@@ -20,6 +20,7 @@ package io.hkhc.gradle.pom
 
 import io.hkhc.gradle.LICENSE_MAP
 import org.gradle.api.Project
+import org.gradle.api.plugins.BasePluginConvention
 import java.util.*
 
 /**
@@ -294,6 +295,9 @@ data class Pom(
         // but we are not going to change the project name, because that may distrub the
         // execution of gradle script.
         name = name ?: "$group:${project.name}"
+
+        val convention = project.convention.plugins["base"] as BasePluginConvention
+        artifactId?.let { convention.archivesBaseName = it }
 
         // two-way sync with project.version
         version?.let { project.version = it }

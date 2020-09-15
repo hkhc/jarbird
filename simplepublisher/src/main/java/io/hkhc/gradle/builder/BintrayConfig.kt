@@ -50,6 +50,14 @@ class BintrayConfig(
         project.tasks.named("bintrayUpload").get().apply {
             dependsOn("_bintrayRecordingCopy")
         }
+
+        /*
+            Make sure the build has finished before performing the copying task.
+         */
+        project.tasks.named("_bintrayRecordingCopy").get().apply {
+            dependsOn("publish${pubName.capitalize()}PublicationToMavenLocal")
+        }
+
     }
 
     private fun BintrayExtension.config() {
@@ -71,17 +79,17 @@ class BintrayConfig(
         // Bintray requires our private key in order to sign archives for us. I don't want to share
         // the key and hence specify the signature files manually and upload them.
         filesSpec(closureOf<RecordingCopyTask> {
-            from("${project.buildDir}/libs").apply {
-                include("${pom.name}-${pom.version}-*.aar.asc")
-                include("${pom.name}-${pom.version}-*.jar.asc")
+            from("${project.buildDir}/libs")
+            {
+                include(
+                    "${pom.artifactId}-${pom.version}*.aar.asc",
+                    "${pom.artifactId}-${pom.version}*.jar.asc")
             }
-
-            from("${project.buildDir}/publications/$pubName").apply {
+            from("${project.buildDir}/publications/$pubName") {
                 include("pom-default.xml.asc")
-                rename("pom-default.xml.asc",
-                    "${pom.name}-${pom.version}.pom.asc")
+                rename("pom-default.xml.asc", "${pom.artifactId}-${pom.version}.pom.asc")
             }
-            into("${pom.group!!.replace('.', '/')}/${pom.name}/${pom.version}")
+            into("${pom.group!!.replace('.', '/')}/${pom.artifactId}/${pom.version}")
         })
     }
 }
