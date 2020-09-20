@@ -19,7 +19,7 @@
 plugins {
     id 'java'
     id 'org.jetbrains.dokka' version "0.10.1"
-    id 'io.hkhc.simplepublisher'
+    id 'io.hkhc.jarbird'
 }
 
 import io.hkhc.gradle.*

@@ -11,8 +11,8 @@ licenses:
 developers:
   - id: hkhc
     name: Herman Cheung
-    email: herman.kh.cheung+simplepublisher@gmail.com
+    email: herman.kh.cheung+jarbird@gmail.com
 
 scm:
   repoType: github.com
-  repoName: hkhc/simplepublisher
+  repoName: hkhc/jarbird

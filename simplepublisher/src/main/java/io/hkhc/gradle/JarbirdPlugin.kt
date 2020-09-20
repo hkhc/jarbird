@@ -29,6 +29,10 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectEvaluationListener
 import org.gradle.api.ProjectState
+import org.gradle.api.component.SoftwareComponent
+import org.gradle.api.plugins.internal.DefaultAdhocSoftwareComponent
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
 
 @Suppress("unused")
 class JarbirdPlugin : Plugin<Project> {
@@ -51,21 +55,27 @@ class JarbirdPlugin : Plugin<Project> {
     private fun precheck(project: Project) {
         with(project) {
             if (group.toString().isBlank()) {
-                detailMessageError(project.logger,
+                detailMessageError(
+                    project.logger,
                     "Group name is not specified",
-                    "Add 'group' value to build script or pom.xml")
+                    "Add 'group' value to build script or pom.xml"
+                )
                 throw GradleException("$LOG_PREFIX Group name is not specified")
             }
             if (version.toString().isBlank()) {
-                detailMessageError(project.logger,
+                detailMessageError(
+                    project.logger,
                     "Version name is not specified",
-                    "Add 'version' value to build script or pom.xml")
+                    "Add 'version' value to build script or pom.xml"
+                )
                 throw GradleException("$LOG_PREFIX Version is not specified")
             }
             if (pluginManager.hasPlugin(ANDROID_LIBRARY_PLUGIN_ID)) {
                 if (!androidPluginAppliedBeforeUs) {
-                    fatalMessage(project, "io.hkhc.simplepublisher should not " +
-                            "applied before $ANDROID_LIBRARY_PLUGIN_ID")
+                    fatalMessage(
+                        project, "${PLUGIN_ID} should not " +
+                                "applied before $ANDROID_LIBRARY_PLUGIN_ID"
+                    )
                 }
                 if (extension.gradlePlugin) {
                     fatalMessage(project, "Cannot build Gradle plugin in Android project")
@@ -85,10 +95,14 @@ class JarbirdPlugin : Plugin<Project> {
         }
     }
 
+    /**
+     * The order of applying plugins and whether they are deferred by the two kind of afterEvaluate listener, are
+     * important. So mess around them without know exactly the consequence.
+     */
     override fun apply(p: Project) {
 
         project = p
-        project.logger.debug("$LOG_PREFIX Start applying simplepublisher plugin")
+        project.logger.debug("$LOG_PREFIX Start applying ${PLUGIN_FRIENDLY_NAME}")
 
         val pom = PomFactory().resolvePom(project)
 
@@ -162,6 +176,12 @@ class JarbirdPlugin : Plugin<Project> {
                 // Do nothing intentionally
             }
 
+
+            /* Under the following situation we need plugins to be applied within the Gradle-scope afterEvaluate method
+                We need the corresponding extension ready before apply it, and we might actually generate that
+                extension within plugin, so we need to defer the application of the plugin (e.g. SigningPlugin)
+             */
+
             // Build Phase 1
             override fun afterEvaluate(p: Project, projectState: ProjectState) {
 
@@ -201,6 +221,7 @@ class JarbirdPlugin : Plugin<Project> {
                          */
                         project.pluginManager.apply("org.gradle.java-gradle-plugin")
                     }
+
                 }
             }
         })
@@ -210,9 +231,12 @@ class JarbirdPlugin : Plugin<Project> {
             override fun beforeEvaluate(project: Project) {
                 // do nothing intentionally
             }
+
             override fun afterEvaluate(p: Project, state: ProjectState) {
                 // Gradle plugin publish plugin is not compatible with Android plugin.
                 // apply it only if needed, otherwise android aar build will fail
+                // Defer the configuration with afterEvaluate so that Android plugin has a chance
+                // to setup itself before we configure the bintray plugin
                 if (p == project) {
                     PublicationBuilder(extension, project, pom).buildPhase1()
                 }

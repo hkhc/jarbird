@@ -19,6 +19,8 @@
 package io.hkhc.gradle.builder
 
 import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.PLUGIN_FRIENDLY_NAME
+import io.hkhc.gradle.PLUGIN_ID
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.util.LOG_PREFIX
@@ -77,7 +79,7 @@ class PublicationBuilder(
     fun buildPhase1() {
         with(project) {
 
-            logger.debug("$LOG_PREFIX SimplePublisher Builder phase 1 of 4")
+            logger.debug("$LOG_PREFIX ${PLUGIN_FRIENDLY_NAME} Builder phase 1 of 4")
 
             // TODO 2 shall we add .configureEach after withType as suggested by
             // https://blog.gradle.org/preview-avoiding-task-configuration-time
@@ -85,7 +87,7 @@ class PublicationBuilder(
             if (isMultiProjectRoot()) {
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
-                if (!rootProject.pluginManager.hasPlugin("io.hkhc.simplepublisher") &&
+                if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) &&
                     extension.ossArtifactory) {
                     ArtifactoryConfig(this, extension).config()
                 }
@@ -109,7 +111,7 @@ class PublicationBuilder(
 
     @Suppress("unused")
     fun buildPhase2() {
-        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 2 of 4")
+        project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 2 of 4")
         if (extension.gradlePlugin) {
             PluginPublishingConfig(project, extension, pom).config()
         }
@@ -117,12 +119,15 @@ class PublicationBuilder(
 
     @Suppress("unused")
     fun buildPhase3() {
-        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 3 of 4")
+        project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 3 of 4")
+        if (extension.gradlePlugin) {
+            PluginPublishingConfig(project, extension, pom).config2()
+        }
     }
 
     @Suppress("unused")
     fun buildPhase4() {
-        project.logger.debug("$LOG_PREFIX SimplePublisher Builder phase 4 of 4")
+        project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 4 of 4")
         if (!project.isMultiProjectRoot()) {
             PublishingConfig(project, extension, pom).config()
             if (extension.signing) {

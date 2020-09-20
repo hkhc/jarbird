@@ -41,6 +41,11 @@ class PluginPublishingConfig(
     fun config() {
         ext.findByType(PluginBundleExtension::class.java)?.config()
         ext.findByType(GradlePluginDevelopmentExtension::class.java)?.config()
+//        updatePluginPublication(project, pom.name!!)
+//        config2()
+    }
+
+    fun config2() {
         updatePluginPublication(project, pom.name!!)
     }
 
@@ -75,8 +80,11 @@ class PluginPublishingConfig(
      */
     private fun updatePluginPublication(project: Project, artifactId: String) {
 
+        System.out.println("updatePluginPublication");
+
         project.extensions.configure(PublishingExtension::class.java) {
-            publications.find { it.name.startsWith("publishPluginMavenPublication") }?.let {
+            publications.find { it.name.startsWith("pluginMaven") }?.let {
+                System.out.println("updatePluginPublication found");
                 if (it is MavenPublication) {
                     it.artifactId = artifactId
                 }

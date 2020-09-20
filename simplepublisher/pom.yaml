@@ -1,6 +1,6 @@
 group: io.hkhc.gradle
-artifactId: simplepublisher
-version: 0.4.2.0
+artifactId: jarbird
+version: 0.4.2.1
 description: Wrapping boilerplate code of publishing artifact to maven repository
 packaging: jar
 
@@ -15,10 +15,10 @@ developers:
 
 scm:
   repoType: github.com
-  repoName: hkhc/simplepublisher
+  repoName: hkhc/jarbird
 
 plugin:
-  id: io.hkhc.simplepublisher
+  id: io.hkhc.jarbird
   displayName: Jarbird
   implementationClass: io.hkhc.gradle.JarbirdPlugin
   tags:

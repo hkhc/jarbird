@@ -30,7 +30,7 @@ include(":simplepublisher")
 
 rootProject.name = "simplepublisher"
 project(":simplepublisher").apply {
-    name="simplepublisherbootstrap"
+    name="jarbirdbootstrap"
     buildFileName="b2.build.gradle.kts"
     /*
         There is not any error message when the file name of buildFileName is not valid.

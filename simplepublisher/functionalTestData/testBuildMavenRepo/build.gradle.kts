@@ -20,7 +20,7 @@ plugins {
     kotlin("jvm") version "1.3.71"
 //    `kotlin-dsl`
     id("org.jetbrains.dokka") version "0.10.1"
-    id("io.hkhc.simplepublisher")
+    id("io.hkhc.jarbird")
 }
 
 //import io.hkhc.gradle.PropertyMavenEndpoint

@@ -42,7 +42,7 @@ class TaskBuilder(
 
         project.tasks.register(taskPath) {
             group = SP_GROUP
-            project.childProjects.forEach { name, child ->
+            project.childProjects.forEach { (_, child) ->
                 val rootTask = this
                 child.tasks.findByPath(taskPath)?.let { childTask ->
                     rootTask.dependsOn(childTask.path)
@@ -73,7 +73,6 @@ class TaskBuilder(
                     dependsOn("publish${markerPubId}To$mavenLocal")
                 }
             }
-
         }
     }
 
@@ -169,11 +168,10 @@ class TaskBuilder(
                 }
                 val repoListStr = repoList.joinToString()
 
-                if (extension.gradlePlugin) {
-                    description = "Publish Maven publication '$pubNameCap' " +
-                            "and plugin '${pom.plugin?.id}' to $repoListStr"
+                description = if (extension.gradlePlugin) {
+                    "Publish Maven publication '$pubNameCap' and plugin '${pom.plugin?.id}' to $repoListStr"
                 } else {
-                    description = "Publish Maven publication '$pubNameCap' to $repoListStr"
+                    "Publish Maven publication '$pubNameCap' to $repoListStr"
                 }
 
                 dependsOn("jbPublishTo$mavenLocal")

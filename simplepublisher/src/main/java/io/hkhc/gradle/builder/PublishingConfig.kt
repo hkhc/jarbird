@@ -64,7 +64,7 @@ class PublishingConfig(
                     You may need to apply the dokka plugin like this
                         id("org.jetbrains.dokka") version "0.10.1"
 
-                    It create a default dokka task that simplepublisher recognize 
+                    It create a default dokka task that jarbird recognize 
                     If you defined a dokka with different name, you may specify it in $SP_EXT_NAME block:
                         $SP_EXT_NAME {
                             ...

@@ -296,7 +296,8 @@ data class Pom(
 
         // but we are not going to change the project name, because that may distrub the
         // execution of gradle script.
-        name = name ?: "$group:${project.name}"
+//        name = name ?: "$group:${project.name}"
+        name = artifactId
 
         val convention = project.convention.plugins["base"] as BasePluginConvention
         artifactId?.let { convention.archivesBaseName = it }

@@ -23,7 +23,7 @@ plugins {
 }
 
 //plugins {
-//    id("io.hkhc.simplepublisher") version "0.3.3.0"
+//    id("io.hkhc.jarbird") version "0.3.3.0"
 //}
 
 buildscript {

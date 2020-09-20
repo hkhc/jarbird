@@ -18,5 +18,7 @@
 @file:JvmName("Constants")
 package io.hkhc.util
 
-const val LOG_PREFIX = "[simplepublisher]"
+import io.hkhc.gradle.PLUGIN_ID
+
+const val LOG_PREFIX = "[${PLUGIN_ID}]"
 const val ANDROID_LIBRARY_PLUGIN_ID = "com.android.library"
