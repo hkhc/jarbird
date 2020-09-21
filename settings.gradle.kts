@@ -27,7 +27,7 @@ pluginManagement {
     }
 }
 
-include(":simplepublisher")
-//include(":simplepublisher", ":simplepublisherTestLib")
+include(":gradlePlugin")
+//include(":gradlePlugin", ":simplepublisherTestLib")
 
 rootProject.name = "simplepublisher"
