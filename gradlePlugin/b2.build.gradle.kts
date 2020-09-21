@@ -50,8 +50,8 @@ version = "1.0.0"
  It is needed to make sure every version of java compiler to generate same kind of bytecode.
  Without it and build bootstrap with java 8+ compiler, then the Jarbird build with java 8
  will get error like this:
-   > Unable to find a matching variant of io.hkhc.gradle:jarbirdbootstrap:1.0.0:
-      - Variant 'apiElements' capability io.hkhc.gradle:jarbirdbootstrap:1.0.0:
+   > Unable to find a matching variant of io.hkhc.gradle:jarbird-bootstrap:1.0.0:
+      - Variant 'apiElements' capability io.hkhc.gradle:jarbird-bootstrap:1.0.0:
           - Incompatible attributes:
               - Required org.gradle.jvm.version '8' and found incompatible value '13'.
               - Required org.gradle.usage 'java-runtime' and found incompatible value 'java-api'.
