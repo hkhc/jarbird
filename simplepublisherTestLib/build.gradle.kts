@@ -1,7 +1,7 @@
 plugins {
     java
-    kotlin("jvm") version "1.3.71"
-    id("org.jetbrains.dokka") version "0.10.1"
+    kotlin("jvm")
+    id("org.jetbrains.dokka") version dokkaVersion
     id("io.hkhc.jarbird")
 }
 
@@ -22,7 +22,7 @@ tasks {
 
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib-jdk8", kotlinVersion))
     testCompile("junit", "junit", "4.12")
 }
 

@@ -36,9 +36,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.gradle.api.Project
-import java.util.*
+import java.util.Calendar
+import java.util.GregorianCalendar
 
-//@ExtendWith(MockKExtension::class)
+// @ExtendWith(MockKExtension::class)
 class PomTest : StringSpec({
 
     var spec = this
@@ -46,7 +47,7 @@ class PomTest : StringSpec({
     lateinit var project: Project
 
     beforeTest {
-        project = mockk(relaxed=true)
+        project = mockk(relaxed = true)
     }
 
     "Pom shall be a data class so that we may assume 'equals' logic is provided" {
@@ -63,24 +64,28 @@ class PomTest : StringSpec({
         `Field perform overlay properly`(::Pom, Pom::packaging, "value")
         `Field perform overlay properly`(::Pom, Pom::url, "value")
         `Field perform overlay properly`(::Pom, Pom::description, "value")
-        `Field perform overlay properly`(::Pom, Pom::bintrayLabels, "value")
+//        `Field perform overlay properly`(::Pom, Pom::bintrayLabels, "value")
 
         `Field perform overlay properly`(::Pom, Pom::organization, Organization("name", "url_orgn"))
         `Field perform overlay properly`(::Pom, Pom::web, Web("url", "description"))
         `Field perform overlay properly`(::Pom, Pom::scm, Scm(url = "url", connection = "connection"))
-        `Field perform overlay properly`(::Pom, Pom::plugin, PluginInfo(id="123", displayName="name"))
+        `Field perform overlay properly`(::Pom, Pom::plugin, PluginInfo(id = "123", displayName = "name"))
     }
 
     "Pom shall merge licenses properly" {
 
         // GIVEN
-        val p1 = Pom(licenses = mutableListOf(
-            License(name = "A"),
-            License(name = "B")
-        ))
-        val p2 = Pom(licenses = mutableListOf(
-            License(name = "C")
-        ))
+        val p1 = Pom(
+            licenses = mutableListOf(
+                License(name = "A"),
+                License(name = "B")
+            )
+        )
+        val p2 = Pom(
+            licenses = mutableListOf(
+                License(name = "C")
+            )
+        )
 
         // WHEN
         p1.overlayTo(p2)
@@ -96,13 +101,17 @@ class PomTest : StringSpec({
     "Pom shall merge developers properly" {
 
         // GIVEN
-        val p1 = Pom(developers = mutableListOf(
-            People(name = "A"),
-            People(name = "B")
-        ))
-        val p2 = Pom(developers = mutableListOf(
-            People(name = "C")
-        ))
+        val p1 = Pom(
+            developers = mutableListOf(
+                People(name = "A"),
+                People(name = "B")
+            )
+        )
+        val p2 = Pom(
+            developers = mutableListOf(
+                People(name = "C")
+            )
+        )
 
         // WHEN
         p1.overlayTo(p2)
@@ -118,13 +127,17 @@ class PomTest : StringSpec({
     "Pom shall merge contributors properly" {
 
         // GIVEN
-        val p1 = Pom(contributors = mutableListOf(
-            People(name = "A"),
-            People(name = "B")
-        ))
-        val p2 = Pom(contributors = mutableListOf(
-            People(name = "C")
-        ))
+        val p1 = Pom(
+            contributors = mutableListOf(
+                People(name = "A"),
+                People(name = "B")
+            )
+        )
+        val p2 = Pom(
+            contributors = mutableListOf(
+                People(name = "C")
+            )
+        )
 
         // WHEN
         p1.overlayTo(p2)
@@ -137,10 +150,10 @@ class PomTest : StringSpec({
         )
     }
 
-    "Pom shall determine if it is snapshot by plugin info version"() {
+    "Pom shall determine if it is snapshot by plugin info version" {
 
         // GIVEN
-        val p1 = Pom(version="1.0")
+        val p1 = Pom(version = "1.0")
         // WHEN
         var isSnapshot = p1.isSnapshot()
         // THEN
@@ -161,41 +174,40 @@ class PomTest : StringSpec({
         isSnapshot.shouldBeFalse()
     }
 
-    "Pom shall expand license details based on license name"() {
+    "Pom shall expand license details based on license name" {
 
         // GIVEN non-existence license name
-        var p1 = Pom(licenses = mutableListOf(License(name="XXX")))
+        var p1 = Pom(licenses = mutableListOf(License(name = "XXX")))
         // WHEN
         p1.lookupLicenseLink(p1.licenses)
         // THEN
         p1.licenses[0].url.shouldBeNull()
 
         // GIVEN a known license name
-        p1 = Pom(licenses = mutableListOf(License(name="Apache-2.0")))
+        p1 = Pom(licenses = mutableListOf(License(name = "Apache-2.0")))
         // WHEN
         p1.lookupLicenseLink(p1.licenses)
         // THEN
         p1.licenses[0].url shouldBe "http://www.apache.org/licenses/LICENSE-2.0.txt"
     }
 
-    "Pom shall resolve git details by the repo ID"() {
+    "Pom shall resolve git details by the repo ID" {
 
         // GIVEN non-existence license name
-        var p1 = Pom(scm = Scm(repoType="github.com", repoName="hkhc/abc"))
+        var p1 = Pom(scm = Scm(repoType = "github.com", repoName = "hkhc/abc"))
         // WHEN
         p1.expandScmGit(p1.scm)
         // THEN
-        with (p1.scm) {
+        with(p1.scm) {
             url shouldBe "https://github.com/hkhc/abc"
             connection shouldBe "scm:git@github.com:hkhc/abc"
             developerConnection shouldBe "scm:git@github.com:hkhc/abc.git"
             issueType shouldBe "github.com"
             issueUrl shouldBe "https://github.com/hkhc/abc/issues"
         }
-
     }
 
-    "Pom shall be sync with project object"() {
+    "Pom shall be sync with project object" {
 
         // GIVEN
         Pom.setDateHandler { GregorianCalendar.getInstance().apply { set(Calendar.YEAR, 1999) } }
@@ -224,15 +236,14 @@ class PomTest : StringSpec({
         pom.scm.url shouldBe "https://github.com/hkhc/mylib"
         pom.url shouldBe "https://github.com/hkhc/mylib"
         pom.web.url shouldBe "https://github.com/hkhc/mylib"
-
     }
 
-    "Pom shall be sync with project object and update project object"() {
+    "Pom shall be sync with project object and update project object" {
 
         // GIVEN
         Pom.setDateHandler { GregorianCalendar.getInstance().apply { set(Calendar.YEAR, 1999) } }
         every { project.name } returns "mylib"
-        val pom = Pom(group="io.hkhc", version="1.0")
+        val pom = Pom(group = "io.hkhc", version = "1.0")
 
         // WHEN
         pom.syncWith(project)
@@ -241,10 +252,7 @@ class PomTest : StringSpec({
 
         verify {
             project.group = "io.hkhc"
-            project.name }
+            project.name
+        }
     }
-
-}) {
-
-
-}
+})

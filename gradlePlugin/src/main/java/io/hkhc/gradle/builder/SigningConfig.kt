@@ -21,8 +21,8 @@ package io.hkhc.gradle.builder
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.util.LOG_PREFIX
+import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.kotlin.dsl.get
 import org.gradle.plugins.signing.SigningExtension
@@ -33,62 +33,78 @@ class SigningConfig(
     private val pom: Pom
 ) {
 
-    private val ext = (project as ExtensionAware).extensions
-    private val variantCap = extension.variant.capitalize()
-    private val pubName = "${extension.pubName}$variantCap"
+    private val pubName = extension.pubNameWithVariant()
 
     private val signingIgnoredMessage = "Signing operation is ignored. " +
-            "Maven Central publishing cannot be done without signing the artifacts."
+        "Maven Central publishing cannot be done without signing the artifacts."
+
+    // return true if checking passed, otherwise failed
+    private fun validateConfig(project: Project, extension: JarbirdExtension, pom: Pom): Boolean {
+
+        var complete = if (pom.isSnapshot() && extension.signing) {
+            project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pom.version}')")
+            false
+        } else if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
+            project.logger.warn(
+                "WARNING: $LOG_PREFIX " +
+                    "No signing setting is provided. $signingIgnoredMessage"
+            )
+            false
+        } else {
+            true
+        }
+
+        if (complete) {
+            if (extension.useGpg) {
+                if (isV1ConfigPresents() && !isV2ConfigPresents()) {
+                    project.logger.warn(
+                        "WARNING: $LOG_PREFIX Setting to use keybox file but signing gpg keyring " +
+                            "configuration is found. Fall back to use gpg keyring"
+                    )
+                    extension.useGpg = false
+                }
+            } else if (!isV1ConfigPresents() && isV2ConfigPresents()) {
+                project.logger.warn(
+                    "WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox " +
+                        " configuration is found. Switch to use gpg keybox"
+                )
+                extension.useGpg = true
+            }
+            complete = (!extension.useGpg || isV2ConfigPresents()) &&
+                (extension.useGpg || isV1ConfigPresents())
+        }
+
+        return complete
+    }
 
     fun config() {
 
         project.logger.debug("$LOG_PREFIX configure Signing plugin")
 
-        if (pom.isSnapshot() && extension.signing) {
-            project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pom.version}')")
-            return
-        }
+        val complete = validateConfig(project, extension, pom)
 
-        if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
-            project.logger.warn("WARNING: $LOG_PREFIX " +
-                    "No signing setting is provided. $signingIgnoredMessage")
-            return
-        }
-
-        if (extension.useGpg) {
-            if (isV1ConfigPresents() && !isV2ConfigPresents()) {
-                project.logger.warn("WARNING: $LOG_PREFIX Setting to use keybox file but signing gpg keyring " +
-                        "configuration is found. Fall back to use gpg keyring")
-                extension.useGpg = false
-            }
-        } else {
-            if (!isV1ConfigPresents() && isV2ConfigPresents()) {
-                project.logger.warn("WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox " +
-                        " configuration is found. Switch to use gpg keybox")
-                extension.useGpg = true
-            }
-        }
-
-        val incomplete = (extension.useGpg && !isV2ConfigPresents()) ||
-                (!extension.useGpg && !isV1ConfigPresents())
-
-        if (incomplete) {
-            project.logger.warn("WARNING: $LOG_PREFIX " +
-                    "Signing configuration for keybox file is not complete. $signingIgnoredMessage")
+        if (!complete) {
+            project.logger.warn(
+                "WARNING: $LOG_PREFIX " +
+                    "Signing configuration for keybox file is not complete. $signingIgnoredMessage"
+            )
         } else {
             project.logger.debug("$LOG_PREFIX Signing info complete")
         }
 
-        ext.findByType(SigningExtension::class.java)?.config()
+        (
+            project.findByType(SigningExtension::class.java)
+                ?: throw GradleException("Signing extension is not found. May be Signing Plugin is not applied?")
+            ).config()
     }
 
     private fun isV1ConfigPresents() =
-            project.properties["signing.keyId"] != null &&
+        project.properties["signing.keyId"] != null &&
             project.properties["signing.password"] != null &&
             project.properties["signing.secretKeyRingFile"] != null
 
     private fun isV2ConfigPresents() =
-            project.properties["signing.gnupg.keyName"] != null &&
+        project.properties["signing.gnupg.keyName"] != null &&
             project.properties["signing.gnupg.passphrase"] != null
 
     private fun SigningExtension.config() {
@@ -97,10 +113,10 @@ class SigningConfig(
             useGpgCmd()
         }
 
-        val publishingExtension = ext.findByType(PublishingExtension::class.java)
-
         isRequired = !pom.isSnapshot()
 
-        publishingExtension?.let { sign(it.publications[pubName]) }
+        project.findByType(PublishingExtension::class.java)?.let {
+            sign(it.publications[pubName])
+        }
     }
 }

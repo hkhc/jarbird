@@ -21,7 +21,6 @@ package io.hkhc.gradle
 import io.hkhc.gradle.pom.License
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.`Field perform overlay properly`
-import io.hkhc.utils.test.`check non-null will overlay anything`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
@@ -34,7 +33,6 @@ class PomLicenseTest : StringSpec({
 
     // Have one line per property in the class
     "License shall overlay properly" {
-
         `Field perform overlay properly`(::License, License::name, "value")
         `Field perform overlay properly`(::License, License::url, "value")
         `Field perform overlay properly`(::License, License::dist, "value")

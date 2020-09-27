@@ -21,7 +21,8 @@ package io.hkhc.gradle.pom
 import io.hkhc.gradle.LICENSE_MAP
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePluginConvention
-import java.util.*
+import java.util.Calendar
+import java.util.GregorianCalendar
 
 /**
  * Overlayable interface provide a common protocol for the class that can combine together
@@ -133,7 +134,7 @@ data class Bintray(
     var labels: String? = null,
     var repo: String? = null,
     var userOrg: String? = null
-): Overlayable {
+) : Overlayable {
 
     override fun overlayTo(other: Overlayable) {
         if (other is Bintray) {
@@ -249,19 +250,17 @@ data class Pom(
 
             bintray.overlayTo(other.bintray)
 
-            plugin?.let {
-                if (other.plugin == null) {
-                    other.plugin = it
-                } else {
-                    it.overlayTo(other.plugin!!)
-                }
+            plugin?.let { thisPlugin ->
+                other.plugin = other.plugin?.also(thisPlugin::overlayTo) ?: thisPlugin
             }
         }
     }
 
     internal fun lookupLicenseLink(licenses: List<License>) {
         for (lic in licenses) {
-            lic.url = lic.url ?: LICENSE_MAP[lic.name!!]
+            lic.name?.let {
+                lic.url = lic.url ?: LICENSE_MAP[it]
+            }
         }
     }
 
@@ -278,13 +277,14 @@ data class Pom(
         }
     }
 
-    fun isSnapshot() = version!!.endsWith("-SNAPSHOT")
+    fun isSnapshot() = version?.endsWith("-SNAPSHOT") ?: false
 
     /**
      * See https://central.sonatype.org/pages/requirements.html#sufficient-metadata
      * for the detail accounts of POM metadata needs to publish to Maven Central.
      * That should be more than enough for Bintray
      */
+    @Suppress("ComplexMethod")
     fun syncWith(project: Project) {
 
         // two-way sync with project.group
@@ -299,6 +299,7 @@ data class Pom(
 //        name = name ?: "$group:${project.name}"
         name = artifactId
 
+        // TODO need a way to mock convention to make it testable
         val convention = project.convention.plugins["base"] as BasePluginConvention
         artifactId?.let { convention.archivesBaseName = it }
 

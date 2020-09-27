@@ -22,11 +22,11 @@ import java.io.File
 
 class FileTree {
 
-    fun dump(file: File, block: (String)->Unit) {
+    fun dump(file: File, block: (String) -> Unit) {
         if (file.isDirectory) {
             block.invoke(file.name)
             file.listFiles()?.let { list ->
-                val lastIndex = list.size-1
+                val lastIndex = list.size - 1
                 list.forEachIndexed { idx, it ->
                     val headPrefix = if (idx == lastIndex) "\\--- " else "+--- "
                     val tailPrefix = if (idx == lastIndex) "     " else "|    "
@@ -41,8 +41,7 @@ class FileTree {
                     }
                 }
             }
-        }
-        else {
+        } else {
             block.invoke("${file.name} (${file.length()})")
         }
     }

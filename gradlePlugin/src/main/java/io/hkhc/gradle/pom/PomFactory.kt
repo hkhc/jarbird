@@ -48,6 +48,10 @@ class PomFactory {
         }
     }
 
+    private fun pomPath(base: String): String {
+        return "${base}${File.separatorChar}${Companion.POM_FILENAME}"
+    }
+
     /**
      * resolve POM spec via a series of possible location and accumulate the details
      */
@@ -55,14 +59,20 @@ class PomFactory {
 
         val pom = Pom()
 
-        val pomFilename = "pom.yaml"
-
-        val gradleUserHomePath = System.getenv("GRADLE_USER_HOME") ?: "${System.getProperty("user.home")}/.gradle"
-
         with(project) {
-            readPom("$gradleUserHomePath/$pomFilename").overlayTo(pom)
-            readPom("${project.rootDir}/$pomFilename").overlayTo(pom)
-            readPom("${project.projectDir}/$pomFilename").overlayTo(pom)
+            System.getProperty("gradle.user.home")?.let {
+                readPom(pomPath(it)).overlayTo(pom)
+            }
+            System.getenv("GRADLE_USER_HOME")?.let {
+                readPom(pomPath(it)).overlayTo(pom)
+            }
+            File("${System.getProperty("user.home")}${File.separatorChar}.gradle").also {
+                if (it.exists()) {
+                    readPom(pomPath(it.absolutePath)).overlayTo(pom)
+                }
+            }
+            readPom(pomPath(project.rootDir.absolutePath)).overlayTo(pom)
+            readPom(pomPath(project.projectDir.absolutePath)).overlayTo(pom)
             System.getProperty("pomFile")?.let {
                 readPom(it).overlayTo(pom)
             }
@@ -76,6 +86,10 @@ class PomFactory {
 //        with(pom) {
 //
 //        }
+    }
+
+    companion object {
+        const val POM_FILENAME = "pom.yaml"
     }
 }
 
@@ -145,8 +159,8 @@ fun Pom.fill(pkg: BintrayExtension.PackageConfig) {
     val pom = this
     @Suppress("SpreadOperator")
     pkg.apply {
-        repo = bintray.repo?:"maven"
-        bintray.userOrg?.let { userOrg = it}
+        repo = bintray.repo ?: "maven"
+        bintray.userOrg?.let { userOrg = it }
         name = pom.artifactId
         desc = pom.description
         setLicenses(*licenseList)

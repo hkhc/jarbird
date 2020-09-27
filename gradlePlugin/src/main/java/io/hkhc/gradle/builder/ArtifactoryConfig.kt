@@ -38,8 +38,7 @@ class ArtifactoryConfig(
 ) {
 
     private val pubConfig = PublishConfig(project)
-    private val variantCap = extension.variant.capitalize()
-    private val pubName = "${extension.pubName}$variantCap"
+    private val pubName = extension.pubNameWithVariant()
 
     fun config() {
         project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
@@ -50,30 +49,41 @@ class ArtifactoryConfig(
         project.logger.debug("$LOG_PREFIX configure Artifactory plugin")
 
         setContextUrl("https://oss.jfrog.org")
-        publish(delegateClosureOf<PublisherConfig> {
-            repository(delegateClosureOf<GroovyObject> {
-                setProperty("repoKey", "oss-snapshot-local")
-                setProperty("username", pubConfig.bintrayUser)
-                setProperty("password", pubConfig.bintrayApiKey)
-                setProperty("maven", true)
-            })
-            defaults(delegateClosureOf<GroovyObject> {
-                if (extension.gradlePlugin) {
-                    invokeMethod("publications", arrayOf(
-                        pubName as Any,
-                        "${pubName}PluginMarkerMaven" as Any
-                    ))
-                } else {
-                    invokeMethod("publications", pubName)
-                }
-                setProperty("publishArtifacts", true)
-                setProperty("publishPom", true)
-            })
-        })
+        publish(
+            delegateClosureOf<PublisherConfig> {
+                repository(
+                    delegateClosureOf<GroovyObject> {
+                        setProperty("repoKey", "oss-snapshot-local")
+                        setProperty("username", pubConfig.bintrayUser)
+                        setProperty("password", pubConfig.bintrayApiKey)
+                        setProperty("maven", true)
+                    }
+                )
+                defaults(
+                    delegateClosureOf<GroovyObject> {
+                        if (extension.gradlePlugin) {
+                            invokeMethod(
+                                "publications",
+                                arrayOf(
+                                    pubName as Any,
+                                    "${pubName}PluginMarkerMaven" as Any
+                                )
+                            )
+                        } else {
+                            invokeMethod("publications", pubName)
+                        }
+                        setProperty("publishArtifacts", true)
+                        setProperty("publishPom", true)
+                    }
+                )
+            }
+        )
 
-        resolve(delegateClosureOf<ResolverConfig> {
-            setProperty("repoKey", "jcenter")
-        })
+        resolve(
+            delegateClosureOf<ResolverConfig> {
+                setProperty("repoKey", "jcenter")
+            }
+        )
 
         project.tasks.register("artifactory${pubName.capitalize()}Publish", ArtifactoryTask::class) {
             if (extension.gradlePlugin) {

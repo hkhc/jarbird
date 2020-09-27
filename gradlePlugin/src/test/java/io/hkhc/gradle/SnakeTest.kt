@@ -36,7 +36,5 @@ class SnakeTest {
         val pom: Pom = yaml.load(pomStr)
 
         System.out.println(pom)
-
-
     }
 }

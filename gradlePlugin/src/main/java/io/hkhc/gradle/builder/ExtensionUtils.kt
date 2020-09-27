@@ -16,25 +16,15 @@
  *
  */
 
-plugins {
-    kotlin("jvm")
-//    `kotlin-dsl`
-    id("org.jetbrains.dokka") version "0.10.1"
-    id("io.hkhc.jarbird")
+package io.hkhc.gradle.builder
+
+import io.hkhc.gradle.JarbirdExtension
+import org.gradle.api.Project
+
+internal fun JarbirdExtension.pubNameWithVariant(pubName: String = this.pubName): String {
+    return "${pubName}${variant.capitalize()}"
 }
 
-//import io.hkhc.gradle.PropertyMavenEndpoint
-
-simplyPublish {
-    Exception().printStackTrace()
-//    setMavenRepository(io.hkhc.gradle.PropertyMavenEndpoint(project, "mock"))
-//    this.mavenRepository = io.hkhc.gradle.PropertyMavenEndpoint(project, "mock")
-    System.out.println("simplyPublish after ")
-}
-
-tasks {
-    dokka {
-        outputFormat = "html"
-//        outputDirectory = "${tempProjectDir.root.absolutePath}/build/dokka"
-    }
+internal fun <T> Project.findByType(type: Class<T>): T? {
+    return extensions.findByType(type)
 }

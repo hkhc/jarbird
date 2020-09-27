@@ -27,12 +27,6 @@ import io.hkhc.util.fatalMessage
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.ProjectEvaluationListener
-import org.gradle.api.ProjectState
-import org.gradle.api.component.SoftwareComponent
-import org.gradle.api.plugins.internal.DefaultAdhocSoftwareComponent
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 
 @Suppress("unused")
 class JarbirdPlugin : Plugin<Project> {
@@ -73,8 +67,8 @@ class JarbirdPlugin : Plugin<Project> {
             if (pluginManager.hasPlugin(ANDROID_LIBRARY_PLUGIN_ID)) {
                 if (!androidPluginAppliedBeforeUs) {
                     fatalMessage(
-                        project, "${PLUGIN_ID} should not " +
-                                "applied before $ANDROID_LIBRARY_PLUGIN_ID"
+                        project,
+                        "$PLUGIN_ID should not applied before $ANDROID_LIBRARY_PLUGIN_ID"
                     )
                 }
                 if (extension.gradlePlugin) {
@@ -102,12 +96,12 @@ class JarbirdPlugin : Plugin<Project> {
     override fun apply(p: Project) {
 
         project = p
-        project.logger.debug("$LOG_PREFIX Start applying ${PLUGIN_FRIENDLY_NAME}")
-
-        val pom = PomFactory().resolvePom(project)
+        project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
+        val pom = PomFactory().resolvePom(p)
 
         extension = project.extensions.create(SP_EXT_NAME, JarbirdExtension::class.java, project)
         extension.pom = pom
+        val pubCreator = PublicationBuilder(extension, project, pom)
 
         project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pom")
 
@@ -146,6 +140,12 @@ class JarbirdPlugin : Plugin<Project> {
             So we use projectEvaluateListener to make sure our setup has done before the projectEvaluationListener
             in other plugins.
 
+            Further, the ProjectEvaluationListener added by Gradle.addProjectEvaluationListener() within
+            project.afterEvaluate will not be executed, as the ProjectEvaluateListeners have been executed
+            before callback of project.afterEvaluate and will not go back to run again. So if a plugin needs to invoke
+            project.afterEvaluate, then it should not be applied within another project.afterEvaluate. However it is
+            OK to apply it in ProjectEvaluationListener.
+
             Setup bintrayExtension before bintray's ProjectEvaluationListener.afterEvaluate
             which expect bintray extension to be ready.
             The bintray task has been given publication names and it is fine the the publication
@@ -171,84 +171,65 @@ class JarbirdPlugin : Plugin<Project> {
             apply("org.jetbrains.dokka")
         }
 
-        project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {
-            override fun beforeEvaluate(project: Project) {
-                // Do nothing intentionally
+        /* Under the following situation we need plugins to be applied within the Gradle-scope afterEvaluate
+            method. We need the corresponding extension ready before apply it, and we might actually generate
+            that extension within plugin, so we need to defer the application of the plugin (e.g. SigningPlugin)
+         */
+
+        // Build Phase 1
+        project.gradleAfterEvaluate { _ ->
+            pom.syncWith(p)
+
+            // pre-check of final data, for child project
+            // TODO handle multiple level child project?
+            if (!project.isMultiProjectRoot()) {
+                precheck(p)
             }
 
+            with(p.pluginManager) {
+                if (extension.signing) {
+                    /**
+                     * @see org.gradle.plugins.signing.SigningPlugin
+                     * no evaluation listener
+                     */
+                    apply("org.gradle.signing")
+                }
 
-            /* Under the following situation we need plugins to be applied within the Gradle-scope afterEvaluate method
-                We need the corresponding extension ready before apply it, and we might actually generate that
-                extension within plugin, so we need to defer the application of the plugin (e.g. SigningPlugin)
-             */
+                if (extension.gradlePlugin) {
 
-            // Build Phase 1
-            override fun afterEvaluate(p: Project, projectState: ProjectState) {
+                    /**
+                     * @see com.gradle.publish.PublishPlugin
+                     *      project.afterEvaluate
+                     *          setup sourcejar docjar tasks
+                     */
+                    apply("com.gradle.plugin-publish")
 
-                if (project == p) {
-
-                    pom.syncWith(p)
-
-                    // pre-check of final data, for child project
-                    // TODO handle multiple level child project?
-                    if (!project.isMultiProjectRoot()) {
-                        precheck(p)
-                    }
-
-                    if (extension.signing) {
-                        /**
-                         * @see org.gradle.plugins.signing.SigningPlugin
-                         * no evaluation listener
-                         */
-                        project.pluginManager.apply("org.gradle.signing")
-                    }
-
-                    if (extension.gradlePlugin) {
-
-                        /**
-                         * @see com.gradle.publish.PublishPlugin
-                         *      project.afterEvaluate
-                         *          setup sourcejar docjar tasks
-                         */
-                        project.pluginManager.apply("com.gradle.plugin-publish")
-
-                        /**
-                         * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
-                         * project.afterEvaluate
-                         *      add testkit dependency
-                         * project.afterEvaluate
-                         *      validate plugin declaration
-                         */
-                        project.pluginManager.apply("org.gradle.java-gradle-plugin")
-                    }
-
+                    /**
+                     * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
+                     * project.afterEvaluate
+                     *      add testkit dependency
+                     * project.afterEvaluate
+                     *      validate plugin declaration
+                     */
+                    apply("org.gradle.java-gradle-plugin")
                 }
             }
-        })
+        }
 
-        project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {
-
-            override fun beforeEvaluate(project: Project) {
-                // do nothing intentionally
-            }
-
-            override fun afterEvaluate(p: Project, state: ProjectState) {
-                // Gradle plugin publish plugin is not compatible with Android plugin.
-                // apply it only if needed, otherwise android aar build will fail
-                // Defer the configuration with afterEvaluate so that Android plugin has a chance
-                // to setup itself before we configure the bintray plugin
-                if (p == project) {
-                    PublicationBuilder(extension, project, pom).buildPhase1()
-                }
-            }
-        })
+        // Gradle plugin publish plugin is not compatible with Android plugin.
+        // apply it only if needed, otherwise android aar build will fail
+        // Defer the configuration with afterEvaluate so that Android plugin has a chance
+        // to setup itself before we configure the bintray plugin
+        project.gradleAfterEvaluate { _ ->
+            pubCreator.buildPhase1()
+        }
 
         /*
         We don't apply bintray and artifactory plugin conditionally, because it make use of
-        projectEvaluationListener, but we cannot get the flag from extenstion until we run
+        projectEvaluationListener, but we cannot get the flag from extension until we run
         afterEvaluate event. This is a conflict. So we just let go and apply these two
-        plugins anyway. However we will configure the relevant extensions according to
-        the flags in our extension. (@see PublicationBuilder)
+        plugins anyway. We put the bintray extension configuration code at PublicationBuilder.buildPhase1, which is
+        executed in another ProjectEvaluationListener setup before Bintray's. (@see PublicationBuilder)
          */
         with(project.pluginManager) {
             /**
@@ -273,35 +254,17 @@ class JarbirdPlugin : Plugin<Project> {
 
         // Build phase 3
         project.afterEvaluate {
-            PublicationBuilder(extension, project, pom).buildPhase3()
+            pubCreator.buildPhase3()
         }
 
-        /*
-            The following plugins shall be declared as dependencies in build.gradle.kts.
-            The exact dependency identifier can be find by accessing the plugin POM file at
-            https://plugins.gradle.org/m2/[path-by-id]/[plugin-id].gradle.plugin/[version]/
-                [plugin-id].gradle.plugin-[version].pom
-
-            e.g. for plugin com.gradle.plugin-publish, check the depndency section of POM at
-            https://plugins.gradle.org/m2/com/gradle/plugin-publish/
-                com.gradle.plugin-publish.gradle.plugin/0.10.1/com.gradle.plugin-publish.gradle.plugin-0.10.1.pom
-         */
-        project.gradle.addProjectEvaluationListener(object : ProjectEvaluationListener {
-            override fun beforeEvaluate(project: Project) {
-                // Do nothing intentionally
-            }
-
-            // Build Phase 2
-            override fun afterEvaluate(p: Project, projectState: ProjectState) {
-                if (project == p) {
-                    PublicationBuilder(extension, project, pom).buildPhase2()
-                }
-            }
-        })
+        // Build phase 2
+        project.gradleAfterEvaluate {
+            pubCreator.buildPhase2()
+        }
 
         // Build phase 4
         project.afterEvaluate {
-            PublicationBuilder(extension, project, pom).buildPhase4()
+            pubCreator.buildPhase4()
         }
     }
 }

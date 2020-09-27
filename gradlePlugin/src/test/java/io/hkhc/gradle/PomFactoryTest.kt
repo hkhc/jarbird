@@ -22,12 +22,11 @@ import io.kotest.core.spec.style.StringSpec
 import io.mockk.mockk
 import org.gradle.api.Project
 
-class PomFactoryTest: StringSpec( {
+class PomFactoryTest : StringSpec({
 
     lateinit var project: Project
 
     beforeTest {
         project = mockk()
     }
-
 })

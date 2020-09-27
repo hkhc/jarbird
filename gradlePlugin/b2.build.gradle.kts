@@ -90,7 +90,7 @@ dependencies {
 
     // These are the dependencies needed to build the plugin code
 
-    implementation(kotlin("stdlib-jdk8", "1.3.71"))
+    implementation(kotlin("stdlib-jdk8", kotlinVersion))
 
     // TODO extract common dependencies to a separate file
 

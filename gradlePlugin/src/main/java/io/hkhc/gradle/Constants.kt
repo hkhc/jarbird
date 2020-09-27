@@ -29,4 +29,3 @@ internal const val PLUGIN_FRIENDLY_NAME = "Jarbird Plugin"
 
 internal const val CLASSIFIER_JAVADOC = "javadoc"
 internal const val CLASSIFIER_SOURCE = "sources"
-

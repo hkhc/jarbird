@@ -27,13 +27,13 @@ class ArtifactChecker {
 
         Assert.assertTrue(repoDir.exists())
         val artifactPath =
-            groupId.replace('.','/') + "/" +
-                    artifactId + "/" +
-                    version
+            groupId.replace('.', '/') + "/" +
+                artifactId + "/" +
+                version
 
         val artifactDir = File(repoDir, artifactPath)
 
-        System.out.println("artifactDir ${artifactDir}")
+        System.out.println("artifactDir $artifactDir")
         Assert.assertTrue(artifactDir.exists())
 
         val fileSet = artifactDir.listFiles().toMutableSet()
@@ -50,7 +50,7 @@ class ArtifactChecker {
     fun verifyArtifact(fileList: MutableSet<File>, file: File) {
 
         Assert.assertTrue(file.exists())
-        val signature = File(file.absolutePath+".asc")
+        val signature = File(file.absolutePath + ".asc")
         Assert.assertTrue(signature.exists())
 
         fileList.remove(file)

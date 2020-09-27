@@ -29,6 +29,7 @@ import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.fillTo
 import io.hkhc.util.LOG_PREFIX
 import io.hkhc.util.detailMessageWarning
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.PublishArtifact
@@ -49,8 +50,7 @@ class PublishingConfig(
 ) {
 
     private val pubConfig = PublishConfig(project)
-    private val variantCap = extension.variant.capitalize()
-    private val pubName = "${extension.pubName}$variantCap"
+    private val pubName = extension.pubNameWithVariant()
     private val ext = (project as ExtensionAware).extensions
     private var dokka = extension.dokka
 
@@ -88,7 +88,13 @@ class PublishingConfig(
             }
         }
 
-        ext.findByType(PublishingExtension::class.java)?.config()
+        (
+            project.findByType(PublishingExtension::class.java)
+                ?: throw GradleException(
+                    "\"publishing\" extension is not found. " +
+                        "Maybe \"org.gradle.maven-publish\" is not applied?"
+                )
+            ).config()
     }
 
     private fun PublishingExtension.config() {
@@ -113,30 +119,6 @@ class PublishingConfig(
         val pomSpec = pom
 
         val pubComponent = extension.pubComponent
-
-//        project.components[pubComponent].also {
-//            if (it is SoftwareComponentInternal) {
-//                it.usages.forEach {usageContext ->
-//                    project.logger.info("COMPONENT usages: ${usageContext}")
-//                    project.logger.info("COMPONENT     name : ${usageContext.name}")
-//                    usageContext.artifacts.forEach { artifact ->
-//                        project.logger.info("COMPONENT     artifact: ${artifact.getString()}")
-//                    }
-//                    usageContext.attributes.also { attributes ->
-//                        project.logger.info("COMPONENT     attributes: ${attributes}")
-//                    }
-//                    usageContext.capabilities.forEach { capability ->
-//                        project.logger.info("COMPONENT     capability: ${capability}")
-//                    }
-//                    usageContext.dependencies.forEach {dependency ->
-//                        project.logger.info("COMPONENT     dependency: ${dependency}")
-//                    }
-//                    usageContext.dependencyConstraints.forEach { constraint ->
-//                        project.logger.info("COMPONENT     constraint: ${constraint}")
-//                    }
-//                }
-//            }
-//        }
 
         register(pubName, MavenPublication::class.java) {
 
@@ -186,7 +168,7 @@ class PublishingConfig(
     @Suppress("UnstableApiUsage")
     private fun setupDokkaJar(): TaskProvider<Jar>? {
         if (dokka == null) return null
-        val dokkaJarTaskName = "dokkaJar$variantCap"
+        val dokkaJarTaskName = extension.pubNameWithVariant("dokkaJar")
         return try {
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {
                 group = PUBLISH_GROUP
@@ -207,7 +189,7 @@ class PublishingConfig(
     @Suppress("UnstableApiUsage")
     private fun setupSourcesJar(): TaskProvider<Jar>? {
 
-        val sourcesJarTaskName = "sourcesJar$variantCap"
+        val sourcesJarTaskName = extension.pubNameWithVariant("sourcesJar")
         return try {
             project.tasks.named(sourcesJarTaskName, Jar::class.java) {
                 archiveClassifier.set(CLASSIFIER_SOURCE)

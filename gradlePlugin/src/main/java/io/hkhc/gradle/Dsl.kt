@@ -19,12 +19,24 @@
 package io.hkhc.gradle
 
 import org.gradle.api.Project
-
-@Suppress("unused")
-fun Project.simplyPublish(configure: JarbirdExtension.() -> Unit) {
-    extensions.configure("simplyPublish", configure)
-}
+import org.gradle.api.ProjectEvaluationListener
+import org.gradle.api.ProjectState
 
 @Suppress("unused")
 fun Project.isMultiProjectRoot() =
     rootProject == this && childProjects.isNotEmpty()
+
+fun Project.gradleAfterEvaluate(action: (ProjectState) -> Unit) {
+    gradle.addProjectEvaluationListener(
+        object : ProjectEvaluationListener {
+            override fun afterEvaluate(project: Project, state: ProjectState) {
+                if (project == this@gradleAfterEvaluate) {
+                    action.invoke(state)
+                }
+            }
+            override fun beforeEvaluate(project: Project) {
+                // doing nothing intentionally
+            }
+        }
+    )
+}

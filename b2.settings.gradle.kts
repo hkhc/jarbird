@@ -28,7 +28,7 @@ pluginManagement {
 include(":gradlePlugin")
 //include(":gradlePlugin", ":simplepublisherTestLib")
 
-rootProject.name = "simplepublisher"
+//rootProject.name = "simplepublisher"
 project(":gradlePlugin").apply {
     name="jarbird-bootstrap"
     buildFileName="b2.build.gradle.kts"

@@ -1,0 +1,10 @@
+style:
+  MaxLineLength:
+    active: true
+    excludeCommentStatements: true
+#  WildcardImport:
+#    excludeImports: 'java.util.*'
+formatting:
+  WildcardImport:
+    excludeImports: 'java.util.*'
+    active: true

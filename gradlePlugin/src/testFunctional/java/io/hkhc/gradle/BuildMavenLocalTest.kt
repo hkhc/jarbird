@@ -72,5 +72,4 @@ class BuildMavenLocalTest {
 //        Assert.assertEquals(TaskOutcome.SUCCESS, result.task(":publishLibPublicationToMavenLocal")?.outcome)
 //        ArtifactChecker().verifyRepostory(localRepoDir, "test.group", "test.artifact", "0.1", "jar")
 //    }
-
 }

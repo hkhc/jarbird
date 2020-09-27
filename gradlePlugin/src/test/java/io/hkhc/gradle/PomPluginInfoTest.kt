@@ -47,7 +47,6 @@ class PomPluginInfoTest : StringSpec({
         p2.id shouldBe "1"
         p2.tags shouldHaveSize 3
         p2.tags shouldBe mutableListOf("tag1", "tag3", "tag2")
-
     }
 
     "Merging list of tags and obtain new item" {
@@ -67,5 +66,4 @@ class PomPluginInfoTest : StringSpec({
             this shouldBe listOf("tag1", "tag2", "tag3")
         }
     }
-
 })

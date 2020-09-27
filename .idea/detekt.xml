@@ -4,7 +4,6 @@
     <enableDetekt>true</enableDetekt>
     <enableFormatting>true</enableFormatting>
     <buildUponDefaultConfig>true</buildUponDefaultConfig>
-    <rulesPath>$PROJECT_DIR$/simplepublisher/detekt-config.yml</rulesPath>
-    <pluginPaths>$PROJECT_DIR$/detekt/detekt-formatting-1.7.0.jar</pluginPaths>
+    <rulesPath>$PROJECT_DIR$/gradlePlugin/config/detekt/detekt.yml</rulesPath>
   </component>
 </project>

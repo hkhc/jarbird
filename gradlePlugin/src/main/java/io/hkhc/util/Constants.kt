@@ -20,5 +20,5 @@ package io.hkhc.util
 
 import io.hkhc.gradle.PLUGIN_ID
 
-const val LOG_PREFIX = "[${PLUGIN_ID}]"
+const val LOG_PREFIX = "[$PLUGIN_ID]"
 const val ANDROID_LIBRARY_PLUGIN_ID = "com.android.library"

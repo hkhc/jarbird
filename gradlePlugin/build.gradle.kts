@@ -38,16 +38,12 @@ repositories {
     jcenter()
 }
 
-val kotlinVersion = "1.3.71"
-
-
-
 plugins {
     kotlin("jvm")
     `kotlin-dsl`
-    id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
-    id("io.gitlab.arturbosch.detekt") version "1.8.0"
-    id("com.dorongold.task-tree") version "1.5"
+    id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
+    id("io.gitlab.arturbosch.detekt") version "1.11.2"
+    id("com.dorongold.task-tree") version taskTreeVersion
     id("io.hkhc.jarbird.bootstrap") version "1.0.0"
 }
 
@@ -62,7 +58,7 @@ val functionalTestSourceSet = sourceSets.create(functionalTestSourceSetName) {
     java.srcDir("src/$functionalTestSourceSetName/java")
     resources.srcDirs("src/$functionalTestSourceSetName/resources", "build/pluginUnderTestMetadata")
     compileClasspath = sourceSets["main"].output +
-            configurations.named("${functionalTestSourceSetName}CompileClasspath")
+        configurations.named("${functionalTestSourceSetName}CompileClasspath")
     runtimeClasspath = output + compileClasspath
 }
 
@@ -99,8 +95,12 @@ tasks {
     Without this Kotlin generate java 6 bytecode, which is hardly fatal.
     There are multiple KotlinCompile tasks, for main and test source sets
      */
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
+//    withType<KotlinCompile> {
+    withType(KotlinCompile::class) {
+        kotlinOptions {
+            jvmTarget = "1.8"
+//            freeCompilerArgs = freeCompilerArgs.plus("-XXLanguage:+NewInference")
+        }
     }
 
     dokka {
@@ -119,12 +119,12 @@ tasks {
 
 detekt {
     buildUponDefaultConfig = true
-    config = files("${project.projectDir}/detekt-config.yml")
+    config = files("${project.projectDir}/config/detekt/detekt.yml")
 }
 
 ktlint {
-    debug.set(true)
-    verbose.set(true)
+    debug.set(false)
+    verbose.set(false)
     coloredOutput.set(true)
     reporters {
         setOf(ReporterType.CHECKSTYLE, ReporterType.PLAIN)
@@ -170,7 +170,7 @@ dependencies {
 //    "${functionalTestSourceSetName}Implementation"("org.junit.vintage:junit-vintage-engine:5.6.1")
     "${functionalTestSourceSetName}Implementation"("com.squareup.okhttp3:mockwebserver:4.5.0")
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.8.0")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.11.2")
 
-    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.8.0")
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.11.2")
 }

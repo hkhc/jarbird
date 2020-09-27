@@ -1,3 +1,9 @@
+# https://editorconfig.org/
+
+[*]
+insert_final_newline = true
+
 #ktlint
 [*.{kt,kts}]
-disabled_rules = import-ordering
+disabled_rules = no-wildcard-imports,import-ordering
+indent_size = 4

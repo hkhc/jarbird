@@ -29,9 +29,9 @@ fun <T : Overlayable, Field> `check null cannot overlay non-null`(
 ) {
 
     // GIVEN
-    val l0 = cstr.invoke()
-    val l1 = cstr.invoke()
-    val l2 = cstr.invoke()
+    val l0 = cstr()
+    val l1 = cstr()
+    val l2 = cstr()
     mutableProp.setter.call(l2, testValue)
 
     // WHEN
@@ -49,9 +49,9 @@ fun <T : Overlayable, Field> `check non-null will overlay anything`(
 ) {
 
     // GIVEN
-    val l1 = cstr.invoke()
-    val l2 = cstr.invoke()
-    val l3 = cstr.invoke()
+    val l1 = cstr()
+    val l2 = cstr()
+    val l3 = cstr()
     mutableProp.setter.call(l1, testValue)
     mutableProp.setter.call(l3, testValue)
 

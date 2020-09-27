@@ -72,14 +72,13 @@ class PublicationBuilder(
     private val pom: Pom
 ) {
 
-    private val variantCap = extension.variant.capitalize()
-    private val pubName = "${extension.pubName}$variantCap"
+    private val pubName = extension.pubNameWithVariant()
 
     @Suppress("unused")
     fun buildPhase1() {
         with(project) {
 
-            logger.debug("$LOG_PREFIX ${PLUGIN_FRIENDLY_NAME} Builder phase 1 of 4")
+            logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 1 of 4")
 
             // TODO 2 shall we add .configureEach after withType as suggested by
             // https://blog.gradle.org/preview-avoiding-task-configuration-time
@@ -88,15 +87,18 @@ class PublicationBuilder(
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
                 if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) &&
-                    extension.ossArtifactory) {
+                    extension.ossArtifactory
+                ) {
                     ArtifactoryConfig(this, extension).config()
                 }
             } else {
-                logger.info(if (this == rootProject) {
-                    "$LOG_PREFIX Configure project '$name' for single-project publishing"
-                } else {
-                    "$LOG_PREFIX Configure child project '$name' for multi-project publishing"
-                })
+                logger.info(
+                    if (this == rootProject) {
+                        "$LOG_PREFIX Configure project '$name' for single-project publishing"
+                    } else {
+                        "$LOG_PREFIX Configure child project '$name' for multi-project publishing"
+                    }
+                )
 
                 if (extension.bintray) {
                     BintrayConfig(this, extension, pom).config()

@@ -19,11 +19,11 @@
 package io.hkhc.gradle.builder
 
 import com.gradle.publish.PluginBundleExtension
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.pom.Pom
 import io.hkhc.util.LOG_PREFIX
+import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
@@ -34,19 +34,41 @@ class PluginPublishingConfig(
     private val pom: Pom
 ) {
 
-    private val variantCap = extension.variant.capitalize()
-    private val pubName = "${extension.pubName}$variantCap"
-    private val ext = (project as ExtensionAware).extensions
+    private val pubName = extension.pubNameWithVariant()
+
+    /*
+        The following plugins shall be declared as dependencies in build.gradle.kts.
+        The exact dependency identifier can be find by accessing the plugin POM file at
+        https://plugins.gradle.org/m2/[path-by-id]/[plugin-id].gradle.plugin/[version]/
+            [plugin-id].gradle.plugin-[version].pom
+
+        e.g. for plugin com.gradle.plugin-publish, check the dependency section of POM at
+        https://plugins.gradle.org/m2/com/gradle/plugin-publish/
+            com.gradle.plugin-publish.gradle.plugin/0.10.1/com.gradle.plugin-publish.gradle.plugin-0.10.1.pom
+     */
 
     fun config() {
-        ext.findByType(PluginBundleExtension::class.java)?.config()
-        ext.findByType(GradlePluginDevelopmentExtension::class.java)?.config()
-//        updatePluginPublication(project, pom.name!!)
-//        config2()
+        (
+            project.findByType(PluginBundleExtension::class.java)
+                ?: throw GradleException(
+                    "\"pluginBundle\" extension is not found, may be " +
+                        "\"com.gradle.plugin-publish\" plugin is not applied?"
+                )
+            ).config()
+
+        (
+            project.findByType(GradlePluginDevelopmentExtension::class.java)
+                ?: throw GradleException(
+                    "\"gradlePlugin\" extension is not found, may be " +
+                        "\"plugin org.gradle.java-gradle-plugin\" is not applied?"
+                )
+            ).config()
     }
 
     fun config2() {
-        updatePluginPublication(project, pom.name!!)
+        pom.name ?.let {
+            updatePluginPublication(project, it)
+        }
     }
 
     private fun PluginBundleExtension.config() {
@@ -80,11 +102,8 @@ class PluginPublishingConfig(
      */
     private fun updatePluginPublication(project: Project, artifactId: String) {
 
-        System.out.println("updatePluginPublication");
-
         project.extensions.configure(PublishingExtension::class.java) {
             publications.find { it.name.startsWith("pluginMaven") }?.let {
-                System.out.println("updatePluginPublication found");
                 if (it is MavenPublication) {
                     it.artifactId = artifactId
                 }

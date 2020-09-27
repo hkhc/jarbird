@@ -62,7 +62,7 @@ class TaskBuilder(
 
                 description = if (extension.gradlePlugin) {
                     "Publish Maven publication '$pubName' " +
-                            "and plugin '${pom.plugin?.id}' to the local Maven Repository"
+                        "and plugin '${pom.plugin?.id}' to the local Maven Repository"
                 } else {
                     "Publish Maven publication '$pubName' to the local Maven Repository"
                 }
@@ -89,7 +89,7 @@ class TaskBuilder(
 
                 description = if (extension.gradlePlugin) {
                     "Publish Maven publication '$pubName' " +
-                            "and plugin '${pom.plugin?.id}' to the 'Maven$pubNameCap' Repository"
+                        "and plugin '${pom.plugin?.id}' to the 'Maven$pubNameCap' Repository"
                 } else {
                     "Publish Maven publication '$pubName' to the 'Maven$pubNameCap' Repository"
                 }
@@ -115,7 +115,7 @@ class TaskBuilder(
 
                 description = if (extension.gradlePlugin) {
                     "Publish Maven publication '$pubName' " +
-                            "and plugin '${pom.plugin?.id}' to $target"
+                        "and plugin '${pom.plugin?.id}' to $target"
                 } else {
                     "Publish Maven publication '$pubName' to $target"
                 }
