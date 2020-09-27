@@ -16,42 +16,25 @@
  *
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package io.hkhc.gradle
 
+import io.hkhc.gradle.pom.Pom
+import org.junit.jupiter.api.Test
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.Constructor
+import java.io.File
 
-plugins {
-    kotlin("jvm") version kotlinVersion
-}
+class SnakeTest {
 
-//plugins {
-//    id("io.hkhc.jarbird") version "0.3.3.0"
-//}
+    @Test
+    fun `test1`() {
 
-buildscript {
+        val yaml = Yaml(Constructor(Pom::class.java))
 
-    repositories {
-        jcenter()
-        gradlePluginPortal()
+        val pomStr = File("./pom.yaml").readText()
+
+        val pom: Pom = yaml.load(pomStr)
+
+        System.out.println(pom)
     }
-    dependencies {
-        classpath("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
-    }
 }
-
-//plugins {
-//    id("io.gitlab.arturbosch.detekt") version "1.7.0"
-//}
-
-//subprojects {
-//    detekt {
-//        toolVersion = "1.7.0"
-//    }
-//}
-dependencies {
-    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-}
-repositories {
-    mavenCentral()
-}
-
-

@@ -16,19 +16,9 @@
  *
  */
 
-pluginManagement {
-    repositories {
-        // we need mavenaLocal repo here so that we can get the bootstrap plugin
-        mavenLocal()
-        gradlePluginPortal()
-        // I wonder if we really need these two if we don't use old style plugin declaration at all
-        mavenCentral()
-        jcenter()
-    }
-}
+const val kotlinVersion = "1.3.72"
 
-include(":gradlePlugin")
-//include(":gradlePlugin", ":simplepublisherTestLib")
-
-// If you want the root project name to be different from the directory name
-//rootProject.name = "your-project-name"
+// plugins
+const val dokkaVersion = "0.10.1"
+const val ktlintVersion = "9.4.0"
+const val taskTreeVersion = "1.5"

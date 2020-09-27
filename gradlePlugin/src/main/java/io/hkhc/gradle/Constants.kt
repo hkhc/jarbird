@@ -16,42 +16,16 @@
  *
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package io.hkhc.gradle
 
+internal const val SP_GROUP = "Jarbird publishing"
+internal const val PUBLISH_GROUP = "Publishing"
 
-plugins {
-    kotlin("jvm") version kotlinVersion
-}
+internal const val SP_EXT_NAME = "jarbird"
 
-//plugins {
-//    id("io.hkhc.jarbird") version "0.3.3.0"
-//}
+internal const val PLUGIN_ID = "io.hkhc.jarbird"
 
-buildscript {
+internal const val PLUGIN_FRIENDLY_NAME = "Jarbird Plugin"
 
-    repositories {
-        jcenter()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
-    }
-}
-
-//plugins {
-//    id("io.gitlab.arturbosch.detekt") version "1.7.0"
-//}
-
-//subprojects {
-//    detekt {
-//        toolVersion = "1.7.0"
-//    }
-//}
-dependencies {
-    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-}
-repositories {
-    mavenCentral()
-}
-
-
+internal const val CLASSIFIER_JAVADOC = "javadoc"
+internal const val CLASSIFIER_SOURCE = "sources"

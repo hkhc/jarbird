@@ -15,20 +15,10 @@
  *
  *
  */
+@file:JvmName("Constants")
+package io.hkhc.util
 
-pluginManagement {
-    repositories {
-        // we need mavenaLocal repo here so that we can get the bootstrap plugin
-        mavenLocal()
-        gradlePluginPortal()
-        // I wonder if we really need these two if we don't use old style plugin declaration at all
-        mavenCentral()
-        jcenter()
-    }
-}
+import io.hkhc.gradle.PLUGIN_ID
 
-include(":gradlePlugin")
-//include(":gradlePlugin", ":simplepublisherTestLib")
-
-// If you want the root project name to be different from the directory name
-//rootProject.name = "your-project-name"
+const val LOG_PREFIX = "[$PLUGIN_ID]"
+const val ANDROID_LIBRARY_PLUGIN_ID = "com.android.library"

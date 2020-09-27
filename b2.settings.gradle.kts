@@ -25,12 +25,12 @@ pluginManagement {
     }
 }
 
-include(":simplepublisher")
-//include(":simplepublisher", ":simplepublisherTestLib")
+include(":gradlePlugin")
+//include(":gradlePlugin", ":simplepublisherTestLib")
 
-rootProject.name = "simplepublisher"
-project(":simplepublisher").apply {
-    name="simplepublisherbootstrap"
+//rootProject.name = "simplepublisher"
+project(":gradlePlugin").apply {
+    name="jarbird-bootstrap"
     buildFileName="b2.build.gradle.kts"
     /*
         There is not any error message when the file name of buildFileName is not valid.

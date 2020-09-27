@@ -16,42 +16,23 @@
  *
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-
 plugins {
-    kotlin("jvm") version kotlinVersion
+    id 'java'
+    id 'org.jetbrains.dokka' version "0.10.1"
+    id 'io.hkhc.jarbird'
 }
 
-//plugins {
-//    id("io.hkhc.jarbird") version "0.3.3.0"
-//}
+import io.hkhc.gradle.*
 
-buildscript {
+simplyPublish {
+    System.out.println("simplyPublish before")
+    mavenRepository = PropertyMavenEndpoint(project, "mock")
+    System.out.println("simplyPublish after ${mavenRepository}")
+}
 
-    repositories {
-        jcenter()
-        gradlePluginPortal()
+tasks {
+    dokka {
+        outputFormat = "html"
+//        outputDirectory = "${tempProjectDir.root.absolutePath}/build/dokka"
     }
-    dependencies {
-        classpath("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
-    }
 }
-
-//plugins {
-//    id("io.gitlab.arturbosch.detekt") version "1.7.0"
-//}
-
-//subprojects {
-//    detekt {
-//        toolVersion = "1.7.0"
-//    }
-//}
-dependencies {
-    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-}
-repositories {
-    mavenCentral()
-}
-
-

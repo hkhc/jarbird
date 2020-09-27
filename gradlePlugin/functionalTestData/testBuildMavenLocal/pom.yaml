@@ -1,0 +1,18 @@
+group: test.group
+artifactId: test.artifact
+version: 0.1
+description: Wrapping boilerplate code of publishing artifact to maven repository
+packaging: jar
+
+licenses:
+  - name: Apache-2.0
+    dist: repo
+
+developers:
+  - id: hkhc
+    name: Herman Cheung
+    email: herman.kh.cheung+jarbird@gmail.com
+
+scm:
+  repoType: github.com
+  repoName: hkhc/jarbird

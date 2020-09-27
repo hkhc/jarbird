@@ -16,42 +16,15 @@
  *
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-
 plugins {
-    kotlin("jvm") version kotlinVersion
+    id 'java'
+    id 'org.jetbrains.dokka' version "0.10.1"
+    id 'io.hkhc.jarbird'
 }
 
-//plugins {
-//    id("io.hkhc.jarbird") version "0.3.3.0"
-//}
-
-buildscript {
-
-    repositories {
-        jcenter()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
+tasks {
+    dokka {
+        outputFormat = "html"
+//        outputDirectory = "${tempProjectDir.root.absolutePath}/build/dokka"
     }
 }
-
-//plugins {
-//    id("io.gitlab.arturbosch.detekt") version "1.7.0"
-//}
-
-//subprojects {
-//    detekt {
-//        toolVersion = "1.7.0"
-//    }
-//}
-dependencies {
-    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-}
-repositories {
-    mavenCentral()
-}
-
-

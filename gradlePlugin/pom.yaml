@@ -1,0 +1,25 @@
+group: io.hkhc.gradle
+artifactId: jarbird
+version: 0.4.2.1
+description: Wrapping boilerplate code of publishing artifact to maven repository
+packaging: jar
+
+licenses:
+- name: Apache-2.0
+  dist: repo
+
+developers:
+- id: hkhc
+  name: Herman Cheung
+  email: herman.kh.cheung@gmail.com
+
+scm:
+  repoType: github.com
+  repoName: hkhc/jarbird
+
+plugin:
+  id: io.hkhc.jarbird
+  displayName: Jarbird
+  implementationClass: io.hkhc.gradle.JarbirdPlugin
+  tags:
+  - publish

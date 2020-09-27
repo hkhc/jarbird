@@ -1,8 +1,8 @@
-[![jCenter](https://img.shields.io/maven-metadata/v/https/jcenter.bintray.com/io/hkhc/gradle/simplepublisher/maven-metadata.xml.svg?label=jCenter)](https://bintray.com/hermancheung/maven/io.hkhc.gradle:simplepublisher/_latestVersion)
-[![Maven Central](https://img.shields.io/maven-central/v/io.hkhc.gradle/simplepublisher.svg)](https://search.maven.org/artifact/io.hkhc.gradle/simplepublisher)
-[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/io/hkhc/simplepublisher/io.hkhc.simplepublisher.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=gradlePluginPortal)](https://plugins.gradle.org/plugin/io.hkhc.simplepublisher)
+[![jCenter](https://img.shields.io/maven-metadata/v/https/jcenter.bintray.com/io/hkhc/gradle/jarbird/maven-metadata.xml.svg?label=jCenter)](https://bintray.com/hermancheung/maven/io.hkhc.gradle:jarbird/_latestVersion)
+[![Maven Central](https://img.shields.io/maven-central/v/io.hkhc.gradle/jarbird.svg)](https://search.maven.org/artifact/io.hkhc.gradle/jarbird)
+[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/io/hkhc/jarbird/io.hkhc.jarbird.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=gradlePluginPortal)](https://plugins.gradle.org/plugin/io.hkhc.jarbird)
 
-# SimplePublisher Gradle Plugin
+# Jarbird Gradle Plugin
 
 ## Introduction
 
@@ -12,7 +12,7 @@ Worst still, the code to publish artefacts to maven is quite different from that
 
 The result Gradle script is filled with boilerplate code. It is hard to read and the project-specific details are buried in the jungle of tasks and configurations.
 
-“SimplePublisher” Gradle plugin is designed to make these things simple. Simply speaking, this plugin wraps up the boilerplate code to publish components to major public repositories, including Maven Central, Bintray/JCenter, Gradle’s own plugin repository. Its aim is making simple thing simple, so undoubtedly there are things that can be done by hand-coding the publishing code in Gradle build script, but cannot be done by this plugin. However, if things are really complicated, they deserve effort to do it in the good old way.
+“Jarbird” Gradle plugin is designed to make these things simple. Simply speaking, this plugin wraps up the boilerplate code to publish components to major public repositories, including Maven Central, Bintray/JCenter, Gradle’s own plugin repository. Its aim is making simple thing simple, so undoubtedly there are things that can be done by hand-coding the publishing code in Gradle build script, but cannot be done by this plugin. However, if things are really complicated, they deserve effort to do it in the good old way.
 
 ## You need the following before you start
 
@@ -51,7 +51,7 @@ New style with Kotlin script:
 
 ```kotlin
 plugins {
-    id("io.hkhc.simplepublisher") 
+    id("io.hkhc.jarbird") 
 }
 ```
 
@@ -59,7 +59,7 @@ New style with Groovy script
 
 ```groovy
 plugins {
-    id "io.hkhc.simplepublisher"
+    id "io.hkhc.jarbird"
 }
 ```
 
@@ -70,10 +70,10 @@ buildscript {
     // either one of mavenCentral or jcenter. The plugin is deployed to both repositories.
     mavenCentral()
     // jcenter()
-    classpath("io.hkhc.gradle:simplepublisher:0.2")
+    classpath("io.hkhc.gradle:jarbird:0.2")
 }
 
-apply(plugin = "io.hkhc.simplepublisher")
+apply(plugin = "io.hkhc.jarbird")
 ```
 
 Old style with Groovy script
@@ -83,10 +83,10 @@ buildscript {
     // either one of mavenCentral or jcenter. The plugin is deployed to both repositories.
     mavenCentral()
     // jcenter()
-    classpath "io.hkhc.gradle:simplepublisher:0.2"
+    classpath "io.hkhc.gradle:jarbird:0.2"
 }
 
-apply plugin "io.hkhc.simplepublisher"
+apply plugin "io.hkhc.jarbird"
 ```
 
 ## Tutorial
@@ -114,19 +114,19 @@ group = "io.github.myusername"
 version = "1.0-SNAPSHOT"
 ```
 
-The plugin creates the `publishing` configuration, the corresponding `publication` and a number of tasks with prefix `sp` and under the group "SimplePublisher".
+The plugin creates the `publishing` configuration, the corresponding `publication` and a number of tasks with prefix `jb` and under the group "Jarbird Publishing".
 
 | Task                         | Description                                                                     |
 | ---------------------------- | ------------------------------------------------------------------------------- |
-| `spPublish`                  | Publish Maven publication 'Lib' to Maven Local, 'Mavenlib' Repository, Bintray. |
-| `spPublishToBintray`         | Publish Maven publication 'lib' to Bintray                                      |
-| `spPublishToMavenLocal`      | Publish Maven publication 'lib' to the local Maven Repository                   |
-| `spPublishToMavenRepository` | Publish Maven publication 'lib' to the 'MavenLib' Repository                    |
+| `jbPublish`                  | Publish Maven publication 'Lib' to Maven Local, 'Mavenlib' Repository, Bintray. |
+| `jbPublishToBintray`         | Publish Maven publication 'lib' to Bintray                                      |
+| `jbPublishToMavenLocal`      | Publish Maven publication 'lib' to the local Maven Repository                   |
+| `jbPublishToMavenRepository` | Publish Maven publication 'lib' to the 'MavenLib' Repository                    |
 
 So we may just issue the command to publish artefacts to Maven local repository. That should include the jar file of the library, the jar file of source code archive, and a minimal POM file for the artefacts.
 
 ```bash
-./gradlew spPublishToMavenLocal
+./gradlew jbPublishToMavenLocal
 ```
 
 One can check the published files under  `~/.m2/repository/io/github/myusername/1.0-SNAPSHOT` directory.
@@ -146,7 +146,7 @@ buildscript {
 You may notice that there are two warnings during publishing with such minimal configuration like this:
 
 ```
-WARNING: [simplepublisher] No signing setting is provided. Signing operation is ignored. Maven Central publishing cannot be done without signing the artifacts.
+WARNING: [jarbird] No signing setting is provided. Signing operation is ignored. Maven Central publishing cannot be done without signing the artifacts.
 ```
 
 It would be technically fine for a locally used component without documentation archive and signature of artefacts. But they are mandatory for Maven Central publishing.
@@ -201,7 +201,7 @@ We set up the singing details in gradle.properties as specify in Gradle [doc]([T
   The plugin try to examine the setting in `gradle.properties` if one of the configuration types is available and it does not match what we set in `simplyPlugin` block, the plugin overrides it and show a warning like this:
   
   ```
-  WARNING: [simplepublisher] Setting to use gpg keyring file but signing gpg keybox  configuration is found. Switch to use gpg keybox
+  WARNING: [jarbird] Setting to use gpg keyring file but signing gpg keybox  configuration is found. Switch to use gpg keybox
   ```
   
   if we have `--info` option in Gradle command line.
@@ -209,7 +209,7 @@ We set up the singing details in gradle.properties as specify in Gradle [doc]([T
   If signing information is incomplete, the signing operation is ignored and we get the following warning
   
   ```
-  WARNING: [simplepublisher] No signing setting is provided. Signing operation is ignored. Maven Central publishing cannot be done without signing the artifacts.
+  WARNING: [jarbird] No signing setting is provided. Signing operation is ignored. Maven Central publishing cannot be done without signing the artifacts.
   ```
 
 ## POM Declaration
@@ -228,7 +228,7 @@ The artefact ID will be the project name if we don't specify one. The plugin gen
 So we can just start building our artefacts with this.
 
 ```
-./gradlew spPublishToMavenLocal
+./gradlew jbPublishToMavenLocal
 ```
 
 and we can find the component we build at `~/.m2/repository`
@@ -273,7 +273,7 @@ This is the pom.yml from the Simple Publisher source code. Yes, it makes use of 
 ```yaml
 # group name of the artifact, use project.group if omitted
 group: io.hkhc.gradle
-artifactId: simplepublisher
+artifactId: jarbird
 name: Simple Publisher
 version: 0.3.3.2
 description: Wrapping boilerplate code of publishing artefact to maven repository
@@ -285,16 +285,16 @@ licenses:
 developers:
 - id: hkhc
   name: Herman Cheung
-  email: herman.kh.cheung+simplepublisher@gmail.com
+  email: herman.kh.cheung+jarbird@gmail.com
 
 scm:
   repoType: github.com
-  repoName: hkhc/simplepublisher
+  repoName: hkhc/jarbird
 
 plugin:
-  id: io.hkhc.simplepublisher
-  displayName: Simple Publisher
-  implementationClass: io.hkhc.gradle.SimplePublisherPlugin
+  id: io.hkhc.jarbird
+  displayName: Jarbird Plugin
+  implementationClass: io.hkhc.gradle.JarbirdPlugin
   tags:
   - publish
 ```
@@ -442,7 +442,7 @@ gradle.publish.key=API Key
 gradle.publish.secret=API Secret
 ```
 
-When all of these are presents, the plugin adds a task `spPublishToGradlePortal`  that you can publish the plugin to Gradle Portal.
+When all of these are presents, the plugin adds a task `jbPublishToGradlePortal`  that you can publish the plugin to Gradle Portal.
 
 Gradle find the location of the local repository in the following order:
 

@@ -16,42 +16,17 @@
  *
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package io.hkhc.gradle
 
+import io.kotest.core.spec.style.StringSpec
+import io.mockk.mockk
+import org.gradle.api.Project
 
-plugins {
-    kotlin("jvm") version kotlinVersion
-}
+class PomFactoryTest : StringSpec({
 
-//plugins {
-//    id("io.hkhc.jarbird") version "0.3.3.0"
-//}
+    lateinit var project: Project
 
-buildscript {
-
-    repositories {
-        jcenter()
-        gradlePluginPortal()
+    beforeTest {
+        project = mockk()
     }
-    dependencies {
-        classpath("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
-    }
-}
-
-//plugins {
-//    id("io.gitlab.arturbosch.detekt") version "1.7.0"
-//}
-
-//subprojects {
-//    detekt {
-//        toolVersion = "1.7.0"
-//    }
-//}
-dependencies {
-    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-}
-repositories {
-    mavenCentral()
-}
-
-
+})

@@ -16,42 +16,15 @@
  *
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package io.hkhc.gradle.builder
 
+import io.hkhc.gradle.JarbirdExtension
+import org.gradle.api.Project
 
-plugins {
-    kotlin("jvm") version kotlinVersion
+internal fun JarbirdExtension.pubNameWithVariant(pubName: String = this.pubName): String {
+    return "${pubName}${variant.capitalize()}"
 }
 
-//plugins {
-//    id("io.hkhc.jarbird") version "0.3.3.0"
-//}
-
-buildscript {
-
-    repositories {
-        jcenter()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath("io.gitlab.arturbosch.detekt:detekt-cli:1.7.0")
-    }
+internal fun <T> Project.findByType(type: Class<T>): T? {
+    return extensions.findByType(type)
 }
-
-//plugins {
-//    id("io.gitlab.arturbosch.detekt") version "1.7.0"
-//}
-
-//subprojects {
-//    detekt {
-//        toolVersion = "1.7.0"
-//    }
-//}
-dependencies {
-    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-}
-repositories {
-    mavenCentral()
-}
-
-
