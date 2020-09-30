@@ -19,7 +19,7 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.Organization
-import io.hkhc.utils.test.`Field perform overlay properly`
+import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 
@@ -31,8 +31,6 @@ class PomOrganizationTest : StringSpec({
 
     // Have one line per property in the class
     "Organization shall overlay properly" {
-
-        `Field perform overlay properly`(::Organization, Organization::name, "value")
-        `Field perform overlay properly`(::Organization, Organization::url, "value")
+        `Fields overlay properly`(Organization::class, ::Organization)
     }
 })

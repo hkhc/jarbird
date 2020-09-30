@@ -20,7 +20,7 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.License
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.utils.test.`Field perform overlay properly`
+import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
@@ -33,10 +33,7 @@ class PomLicenseTest : StringSpec({
 
     // Have one line per property in the class
     "License shall overlay properly" {
-        `Field perform overlay properly`(::License, License::name, "value")
-        `Field perform overlay properly`(::License, License::url, "value")
-        `Field perform overlay properly`(::License, License::dist, "value")
-        `Field perform overlay properly`(::License, License::comments, "value")
+        `Fields overlay properly`(License::class, ::License)
     }
 
     "Merging list of licenses and obtain new item" {

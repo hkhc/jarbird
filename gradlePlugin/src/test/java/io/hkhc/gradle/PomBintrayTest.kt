@@ -18,19 +18,19 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.pom.Scm
+import io.hkhc.gradle.pom.Bintray
 import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
 
-class PomScmTest : StringSpec({
+class PomBintrayTest : StringSpec({
 
-    "Scm shall be a data class so that we may assume 'equals' logic is provided" {
-        Scm::class.isData.shouldBeTrue()
+    "Bintray shall be a data class so that we may assume 'equals' logic is provided" {
+        Bintray::class.isData.shouldBeTrue()
     }
 
     // Have one line per property in the class
-    "Scm shall overlay properly" {
-        `Fields overlay properly`(Scm::class, ::Scm)
+    "Bintray shall overlay properly" {
+        `Fields overlay properly`(Bintray::class, ::Bintray)
     }
 })

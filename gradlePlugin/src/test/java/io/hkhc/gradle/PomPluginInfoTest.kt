@@ -19,11 +19,10 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.PluginInfo
-import io.hkhc.utils.test.`Field perform overlay properly`
+import io.hkhc.utils.test.`Array Fields merged properly when overlaying`
+import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.shouldBe
 
 class PomPluginInfoTest : StringSpec({
 
@@ -34,36 +33,15 @@ class PomPluginInfoTest : StringSpec({
     // Have one line per property in the class
     "PluginInfo shall overlay properly" {
 
-        `Field perform overlay properly`(::PluginInfo, PluginInfo::id, "value")
-        `Field perform overlay properly`(::PluginInfo, PluginInfo::displayName, "value")
-        `Field perform overlay properly`(::PluginInfo, PluginInfo::description, "value")
-        `Field perform overlay properly`(::PluginInfo, PluginInfo::implementationClass, "value")
+        val nonStringFields = arrayOf(
+            `Array Fields merged properly when overlaying`(
+                ::PluginInfo,
+                PluginInfo::tags,
+                listOf("tag1", "tag2"),
+                listOf("tag3")
+            )
+        )
 
-        val p1 = PluginInfo(id = "1", tags = mutableListOf("tag1", "tag2"))
-        val p2 = PluginInfo(id = "1", tags = mutableListOf("tag1", "tag3"))
-
-        p1.overlayTo(p2)
-
-        p2.id shouldBe "1"
-        p2.tags shouldHaveSize 3
-        p2.tags shouldBe mutableListOf("tag1", "tag3", "tag2")
-    }
-
-    "Merging list of tags and obtain new item" {
-
-        // GIVEN list of two tags with different names
-        val list1 = mutableListOf("tag1", "tag2")
-
-        // AND a different list of licenses with different names
-        val list2 = listOf("tag3", "tag2")
-
-        // WHEN merging two lists together
-        val list3 = PluginInfo.overlayToTags(list2, list1)
-
-        // THEN the list becomes ...
-        with(list3) {
-            size shouldBe 3
-            this shouldBe listOf("tag1", "tag2", "tag3")
-        }
+        `Fields overlay properly`(PluginInfo::class, ::PluginInfo, nonStringFields)
     }
 })

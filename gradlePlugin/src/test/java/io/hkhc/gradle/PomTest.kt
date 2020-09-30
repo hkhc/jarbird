@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.pom.Bintray
 import io.hkhc.gradle.pom.License
 import io.hkhc.gradle.pom.Organization
 import io.hkhc.gradle.pom.People
@@ -25,8 +26,9 @@ import io.hkhc.gradle.pom.PluginInfo
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.Scm
 import io.hkhc.gradle.pom.Web
+import io.hkhc.utils.test.`Array Fields merged properly when overlaying`
 import io.hkhc.utils.test.`Field perform overlay properly`
-import io.hkhc.utils.test.`Int field is overlay properly`
+import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -35,7 +37,9 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.gradle.api.Project
+import org.gradle.api.internal.project.DefaultProject
+import org.gradle.api.plugins.Convention
+import org.gradle.api.plugins.internal.DefaultBasePluginConvention
 import java.util.Calendar
 import java.util.GregorianCalendar
 
@@ -44,10 +48,13 @@ class PomTest : StringSpec({
 
     var spec = this
 
-    lateinit var project: Project
+    lateinit var project: DefaultProject
 
     beforeTest {
         project = mockk(relaxed = true)
+        val convention: Convention = mockk(relaxed = true)
+        every { convention.plugins } returns mutableMapOf<String, Any>("base" to DefaultBasePluginConvention(project))
+        every { project.convention } returns convention
     }
 
     "Pom shall be a data class so that we may assume 'equals' logic is provided" {
@@ -57,97 +64,33 @@ class PomTest : StringSpec({
     // Have one line per property in the class
     "Pom shall overlay properly" {
 
-        `Field perform overlay properly`(::Pom, Pom::group, "value")
-        `Field perform overlay properly`(::Pom, Pom::artifactId, "value")
-        `Field perform overlay properly`(::Pom, Pom::version, "value")
-        `Int field is overlay properly`(::Pom, Pom::inceptionYear)
-        `Field perform overlay properly`(::Pom, Pom::packaging, "value")
-        `Field perform overlay properly`(::Pom, Pom::url, "value")
-        `Field perform overlay properly`(::Pom, Pom::description, "value")
-//        `Field perform overlay properly`(::Pom, Pom::bintrayLabels, "value")
-
-        `Field perform overlay properly`(::Pom, Pom::organization, Organization("name", "url_orgn"))
-        `Field perform overlay properly`(::Pom, Pom::web, Web("url", "description"))
-        `Field perform overlay properly`(::Pom, Pom::scm, Scm(url = "url", connection = "connection"))
-        `Field perform overlay properly`(::Pom, Pom::plugin, PluginInfo(id = "123", displayName = "name"))
-    }
-
-    "Pom shall merge licenses properly" {
-
-        // GIVEN
-        val p1 = Pom(
-            licenses = mutableListOf(
-                License(name = "A"),
-                License(name = "B")
-            )
-        )
-        val p2 = Pom(
-            licenses = mutableListOf(
-                License(name = "C")
+        val nonStringFields = arrayOf(
+            `Field perform overlay properly`(::Pom, Pom::bintray, Bintray("names", "repo", "org")),
+            `Field perform overlay properly`(::Pom, Pom::organization, Organization("name", "url_orgn")),
+            `Field perform overlay properly`(::Pom, Pom::web, Web("url", "description")),
+            `Field perform overlay properly`(::Pom, Pom::scm, Scm(url = "url", connection = "connection")),
+            `Field perform overlay properly`(::Pom, Pom::plugin, PluginInfo(id = "123", displayName = "name")),
+            `Array Fields merged properly when overlaying`(
+                ::Pom,
+                Pom::licenses,
+                listOf(License(name = "A"), License(name = "B")),
+                listOf(License(name = "C"))
+            ),
+            `Array Fields merged properly when overlaying`(
+                ::Pom,
+                Pom::developers,
+                listOf(People(name = "A"), People(name = "B")),
+                listOf(People(name = "C"))
+            ),
+            `Array Fields merged properly when overlaying`(
+                ::Pom,
+                Pom::contributors,
+                listOf(People(name = "A"), People(name = "B")),
+                listOf(People(name = "C"))
             )
         )
 
-        // WHEN
-        p1.overlayTo(p2)
-
-        // THEN
-        p2.licenses shouldBe mutableListOf(
-            License(name = "C"),
-            License(name = "A"),
-            License(name = "B")
-        )
-    }
-
-    "Pom shall merge developers properly" {
-
-        // GIVEN
-        val p1 = Pom(
-            developers = mutableListOf(
-                People(name = "A"),
-                People(name = "B")
-            )
-        )
-        val p2 = Pom(
-            developers = mutableListOf(
-                People(name = "C")
-            )
-        )
-
-        // WHEN
-        p1.overlayTo(p2)
-
-        // THEN
-        p2.developers shouldBe mutableListOf(
-            People(name = "C"),
-            People(name = "A"),
-            People(name = "B")
-        )
-    }
-
-    "Pom shall merge contributors properly" {
-
-        // GIVEN
-        val p1 = Pom(
-            contributors = mutableListOf(
-                People(name = "A"),
-                People(name = "B")
-            )
-        )
-        val p2 = Pom(
-            contributors = mutableListOf(
-                People(name = "C")
-            )
-        )
-
-        // WHEN
-        p1.overlayTo(p2)
-
-        // THEN
-        p2.contributors shouldBe mutableListOf(
-            People(name = "C"),
-            People(name = "A"),
-            People(name = "B")
-        )
+        `Fields overlay properly`(Pom::class, ::Pom, nonStringFields)
     }
 
     "Pom shall determine if it is snapshot by plugin info version" {
@@ -215,6 +158,7 @@ class PomTest : StringSpec({
         every { project.name } returns "mylib"
         every { project.version } returns "1.0"
         every { project.description } returns "desc"
+
         val pom = Pom()
         pom.licenses.add(License("Apache-2.0"))
         pom.scm.repoType = "github.com"
@@ -225,7 +169,7 @@ class PomTest : StringSpec({
 
         // THEN
         pom.group shouldBe "io.hkhc"
-        pom.name shouldBe "io.hkhc:mylib"
+        pom.name shouldBe "mylib"
         pom.version shouldBe "1.0"
         pom.description shouldBe "desc"
 

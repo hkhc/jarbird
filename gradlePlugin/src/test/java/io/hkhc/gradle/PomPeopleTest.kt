@@ -20,7 +20,7 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.People
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.utils.test.`Field perform overlay properly`
+import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -28,14 +28,7 @@ class PomPeopleTest : StringSpec({
 
     // Have one line per property in the class
     "People shall overlay properly" {
-
-        `Field perform overlay properly`(::People, People::id, "value")
-        `Field perform overlay properly`(::People, People::name, "value")
-        `Field perform overlay properly`(::People, People::email, "value")
-        `Field perform overlay properly`(::People, People::organization, "value")
-        `Field perform overlay properly`(::People, People::organizationUrl, "value")
-        `Field perform overlay properly`(::People, People::timeZone, "value")
-        `Field perform overlay properly`(::People, People::url, "value")
+        `Fields overlay properly`(People::class, ::People)
     }
 
     "Merging list of people and obtain new item" {
