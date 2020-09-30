@@ -23,10 +23,6 @@ plugins {
     kotlin("jvm") version kotlinVersion
 }
 
-//plugins {
-//    id("io.hkhc.jarbird") version "0.3.3.0"
-//}
-
 buildscript {
 
     repositories {
@@ -38,15 +34,6 @@ buildscript {
     }
 }
 
-//plugins {
-//    id("io.gitlab.arturbosch.detekt") version "1.7.0"
-//}
-
-//subprojects {
-//    detekt {
-//        toolVersion = "1.7.0"
-//    }
-//}
 dependencies {
     implementation(kotlin("stdlib-jdk8", kotlinVersion))
 }

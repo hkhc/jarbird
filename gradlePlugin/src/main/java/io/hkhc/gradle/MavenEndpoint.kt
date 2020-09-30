@@ -44,7 +44,7 @@ fun Project.mavenCentral(): MavenEndpoint {
 }
 
 fun resolveProperty(project: Project, propertyName: String): String {
-    var value: String? = project.properties[propertyName] as String?
+    var value: String? = project.property(propertyName) as String?
     if (value == null) {
         detailMessageError(
             project.logger,

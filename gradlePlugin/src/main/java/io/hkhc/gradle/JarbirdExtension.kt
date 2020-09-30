@@ -27,7 +27,12 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     lateinit var pom: Pom
 
     /**
-     * Configure for bintray publishing or not
+     * Configure for Maven publishing or not (No matter maven central or alternate maven repository)
+     */
+    var maven = true
+
+    /**
+     * Configure for Bintray publishing or not
      */
     var bintray = true
 
@@ -37,7 +42,7 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     var ossArtifactory = true
 
     /**
-     * Configure for gradle plugin publishing or not (reserve for future use)
+     * Configure for Gradle plugin publishing or not (reserve for future use)
      */
     var gradlePlugin = false
 
@@ -92,9 +97,9 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
      */
     var mavenRepository: MavenEndpoint? = null
 
-    fun withMavenCentral() {
-        mavenRepository = MavenCentralEndpoint(project)
-    }
+//    fun withMavenCentral() {
+//        mavenRepository = project.mavenCentral()
+//    }
 
     fun withMavenByProperties(key: String) {
         mavenRepository = PropertyMavenEndpoint(project, key)

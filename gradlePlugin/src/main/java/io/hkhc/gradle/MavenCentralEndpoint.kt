@@ -36,7 +36,7 @@ class MavenCentralEndpoint(val project: Project) : MavenEndpoint {
             try {
                 return resolveProperty(project, "repository.mavencentral.username")
             } catch (g: GradleException) {
-                project.logger.warn("maven central username is not found.")
+                project.logger.warn("Maven Central username is not found.")
                 return ""
             }
         }
@@ -46,7 +46,7 @@ class MavenCentralEndpoint(val project: Project) : MavenEndpoint {
             try {
                 return resolveProperty(project, "repository.mavencentral.password")
             } catch (g: GradleException) {
-                project.logger.warn("maven central password is not found.")
+                project.logger.warn("Maven Central password is not found.")
                 return ""
             }
         }

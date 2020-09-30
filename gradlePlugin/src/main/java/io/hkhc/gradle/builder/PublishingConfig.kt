@@ -103,8 +103,10 @@ class PublishingConfig(
             createPublication()
         }
 
-        repositories {
-            createRepository()
+        if (extension.maven) {
+            repositories {
+                createRepository()
+            }
         }
     }
 
@@ -145,18 +147,19 @@ class PublishingConfig(
 
     private fun RepositoryHandler.createRepository() {
 
+        // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
         val endpoint = extension.mavenRepository ?: project.mavenCentral()
 
         maven {
             name = "Maven${pubName.capitalize()}"
             with(pubConfig) {
-                url = project.uri(
+                val endpointUrl =
                     if (pom.isSnapshot()) {
                         endpoint.snapshotUrl
                     } else {
                         endpoint.releaseUrl
                     }
-                )
+                url = project.uri(endpointUrl)
                 credentials {
                     username = endpoint.username
                     password = endpoint.password
