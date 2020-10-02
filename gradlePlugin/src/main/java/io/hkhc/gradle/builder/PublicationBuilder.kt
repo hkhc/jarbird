@@ -112,7 +112,7 @@ class PublicationBuilder(
     }
 
     @Suppress("unused")
-    fun buildPhase2() {
+    fun buildPhase2(){
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 2 of 4")
         if (extension.gradlePlugin) {
             PluginPublishingConfig(project, extension, pom).config()

@@ -147,15 +147,17 @@ fun <T : Overlayable> `Fields overlay properly`(
         .filter { !nonStringFields.contains(it.name) }
         .forEach {
             try {
-                if (isClassOrNullableType(it, String::class))
+                if (isClassOrNullableType(it, String::class)) {
                     `Field perform overlay properly`(cstr, it as KMutableProperty1<T, String>, "value")
-                else if (isClassOrNullableType(it, Int::class))
+                } else if (isClassOrNullableType(it, Int::class)) {
                     `Field perform overlay properly`(cstr, it as KMutableProperty1<T, Int>, 123)
-                else {
-                    throw Exception("No test handler for field ${cls.qualifiedName} ${it.name} ${it.returnType}")
+                } else {
+                    throw JarbirdTestException(
+                        "No test handler for field ${cls.qualifiedName} ${it.name} ${it.returnType}"
+                    )
                 }
             } catch (t: Throwable) {
-                throw Exception("Field ${it.name} has error", t)
+                throw JarbirdTestException("Field ${it.name} has error", t)
             }
         }
 }

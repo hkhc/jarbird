@@ -22,45 +22,47 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 buildscript {
     repositories {
-        mavenLocal()
-        jcenter()
+//        mavenCentral()
+//        jcenter()
+//        mavenLocal()
         // It is needed by detekt
-        maven { url = uri("http://dl.bintray.com/arturbosch/code-analysis") }
+        //maven { url = uri("http://dl.bintray.com/arturbosch/code-analysis") }
+//        gradlePluginPortal()
     }
 }
 
 repositories {
-    mavenLocal()
-    // normal project don't need this in repositories block.
-    // We need this because we need to access the plugin code directly.
-    gradlePluginPortal()
     mavenCentral()
-    jcenter()
+    /* We need this to be in repositories block and not only the pluginManagement block,
+     because our plugin code applys other plugins, so that make those dependent plugins
+     part of the dependenciies */
+    gradlePluginPortal()
+//    mavenLocal()
 }
 
 plugins {
     kotlin("jvm")
     `kotlin-dsl`
+    id("io.gitlab.arturbosch.detekt")
     id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
-    id("io.gitlab.arturbosch.detekt") version "1.11.2"
     id("com.dorongold.task-tree") version taskTreeVersion
     id("io.hkhc.jarbird.bootstrap") version "1.0.0"
 }
 
 // TODO Simplify functional test creation
 
-val functionalTestSourceSetName = "testFunctional"
-
-val functionalTestSourceSet = sourceSets.create(functionalTestSourceSetName) {
-    withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-        kotlin.srcDir("src/$functionalTestSourceSetName/java")
-    }
-    java.srcDir("src/$functionalTestSourceSetName/java")
-    resources.srcDirs("src/$functionalTestSourceSetName/resources", "build/pluginUnderTestMetadata")
-    compileClasspath = sourceSets["main"].output +
-        configurations.named("${functionalTestSourceSetName}CompileClasspath")
-    runtimeClasspath = output + compileClasspath
-}
+//val functionalTestSourceSetName = "testFunctional"
+//
+//val functionalTestSourceSet = sourceSets.create(functionalTestSourceSetName) {
+//    withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
+//        kotlin.srcDir("src/$functionalTestSourceSetName/java")
+//    }
+//    java.srcDir("src/$functionalTestSourceSetName/java")
+//    resources.srcDirs("src/$functionalTestSourceSetName/resources", "build/pluginUnderTestMetadata")
+//    compileClasspath = sourceSets["main"].output +
+//        configurations.named("${functionalTestSourceSetName}CompileClasspath")
+//    runtimeClasspath = output + compileClasspath
+//}
 
 /*
  It is needed to make sure every version of java compiler to generate same kind of bytecode.
@@ -80,16 +82,16 @@ java {
 
 tasks {
 
-    val functionalTestTask = register<Test>("functionalTest") {
-        description = "Runs the functional tests."
-        group = "verification"
-        testClassesDirs = functionalTestSourceSet.output.classesDirs
-        classpath = functionalTestSourceSet.runtimeClasspath
-    }
+//    val functionalTestTask = register<Test>("functionalTest") {
+//        description = "Runs the functional tests."
+//        group = "verification"
+//        testClassesDirs = functionalTestSourceSet.output.classesDirs
+//        classpath = functionalTestSourceSet.runtimeClasspath
+//    }
+//
+//    functionalTestTask.get().dependsOn(get("pluginUnderTestMetadata"))
 
-    functionalTestTask.get().dependsOn(get("pluginUnderTestMetadata"))
-
-    check { dependsOn(get("functionalTest")) }
+//    check { dependsOn(get("functionalTest")) }
 
     /*
     Without this Kotlin generate java 6 bytecode, which is hardly fatal.
@@ -99,7 +101,7 @@ tasks {
     withType(KotlinCompile::class) {
         kotlinOptions {
             jvmTarget = "1.8"
-//            freeCompilerArgs = freeCompilerArgs.plus("-XXLanguage:+NewInference")
+            freeCompilerArgs = freeCompilerArgs.plus("-XXLanguage:+NewInference")
         }
     }
 
@@ -108,8 +110,8 @@ tasks {
         outputDirectory = "$buildDir/dokka"
     }
 
-    withType<Detekt> {
-        jvmTarget = "1.8"
+    withType<Detekt>().configureEach {
+        this.jvmTarget = "1.8"
     }
 
     withType<Test> {
@@ -118,8 +120,10 @@ tasks {
 }
 
 detekt {
+    debug = true
     buildUponDefaultConfig = true
     config = files("${project.projectDir}/config/detekt/detekt.yml")
+    System.out.println("main source set ${project.sourceSets["main"].compileClasspath}")
 }
 
 ktlint {
@@ -131,13 +135,18 @@ ktlint {
     }
 }
 
+tasks.detekt {
+    jvmTarget = "1.8"
+    languageVersion = "1.3"
+}
+
 jarbird {
     gradlePlugin = true
 }
 
-gradlePlugin {
-    testSourceSets(sourceSets[functionalTestSourceSetName])
-}
+//gradlePlugin {
+//    testSourceSets(sourceSets[functionalTestSourceSetName])
+//}
 
 configurations {
     detekt
@@ -162,15 +171,15 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.2")
     testImplementation("io.mockk:mockk:1.9")
 
-//    "${functionalTestSourceSetName}Implementation"("junit:junit:4.13")
-    "${functionalTestSourceSetName}Implementation"(gradleTestKit())
-    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-api:5.6.1")
-    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-engine:5.6.1")
-    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-params:5.6.1")
-//    "${functionalTestSourceSetName}Implementation"("org.junit.vintage:junit-vintage-engine:5.6.1")
-    "${functionalTestSourceSetName}Implementation"("com.squareup.okhttp3:mockwebserver:4.5.0")
+////    "${functionalTestSourceSetName}Implementation"("junit:junit:4.13")
+//    "${functionalTestSourceSetName}Implementation"(gradleTestKit())
+//    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-api:5.6.1")
+//    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-engine:5.6.1")
+//    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-params:5.6.1")
+////    "${functionalTestSourceSetName}Implementation"("org.junit.vintage:junit-vintage-engine:5.6.1")
+//    "${functionalTestSourceSetName}Implementation"("com.squareup.okhttp3:mockwebserver:4.5.0")
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.11.2")
-
-    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.11.2")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
+//
+//    detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
 }

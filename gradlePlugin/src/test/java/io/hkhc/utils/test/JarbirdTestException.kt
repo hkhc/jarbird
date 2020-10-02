@@ -16,32 +16,9 @@
  *
  */
 
-//import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+package io.hkhc.utils.test
 
-
-plugins {
-    kotlin("jvm") version kotlinVersion
-    id("io.gitlab.arturbosch.detekt") version detektVersion
+class JarbirdTestException : Exception {
+    constructor(msg: String) : super(msg)
+    constructor(msg: String, cause: Throwable) : super(msg, cause)
 }
-
-buildscript {
-
-    repositories {
-//        mavenCentral()
-//        jcenter()
-//        gradlePluginPortal()
-    }
-//    dependencies {
-//    }
-}
-
-repositories {
-    mavenCentral()
-//    gradlePluginPortal()
-}
-
-dependencies {
-//    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-
-}
-

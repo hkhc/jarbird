@@ -21,9 +21,12 @@ pluginManagement {
         // we need mavenaLocal repo here so that we can get the bootstrap plugin
         mavenLocal()
         gradlePluginPortal()
-        // I wonder if we really need these two if we don't use old style plugin declaration at all
+//        // I wonder if we really need these two if we don't use old style plugin declaration at all
         mavenCentral()
-        jcenter()
+//        jcenter()
+        // for detekt
+//        maven { url = uri("https://dl.bintray.com/kotlin/kotlinx") }
+//    }
     }
 }
 
