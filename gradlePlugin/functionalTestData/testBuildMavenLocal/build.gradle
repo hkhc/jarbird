@@ -18,7 +18,6 @@
 
 plugins {
     id 'java'
-    id 'org.jetbrains.dokka' version "0.10.1"
     id 'io.hkhc.jarbird'
 }
 

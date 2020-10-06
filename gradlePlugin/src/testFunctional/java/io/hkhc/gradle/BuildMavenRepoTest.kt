@@ -54,6 +54,7 @@ import java.util.Properties
  * gradle versions
  * signing v1 signing v2
  * groovy/kts script
+ * alternate project name
  *
  *
  */
@@ -82,6 +83,7 @@ class BuildMavenRepoTest {
 
         File("functionalTestData/testBuildMavenRepo").copyRecursively(tempProjectDir)
         File("functionalTestData/common").copyRecursively(tempProjectDir)
+        File("functionalTestData/src").copyRecursively(tempProjectDir)
 
         Properties().apply {
             load(FileReader("$tempProjectDir/gradle.properties"))
@@ -110,6 +112,7 @@ class BuildMavenRepoTest {
 
         File("functionalTestData/testBuildMavenRepoSnapshot").copyRecursively(tempProjectDir)
         File("functionalTestData/common").copyRecursively(tempProjectDir)
+        File("functionalTestData/src").copyRecursively(tempProjectDir)
 
         Properties().apply {
             load(FileReader("$tempProjectDir/gradle.properties"))

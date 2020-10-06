@@ -19,21 +19,9 @@
 plugins {
     kotlin("jvm") version "1.3.72"
 //    `kotlin-dsl`
-    id("org.jetbrains.dokka") version "0.10.1"
     id("io.hkhc.jarbird")
 }
 
-//import io.hkhc.gradle.PropertyMavenEndpoint
-
 jarbird {
-//    setMavenRepository(io.hkhc.gradle.PropertyMavenEndpoint(project, "mock"))
-    this.mavenRepository = io.hkhc.gradle.maven.PropertyMavenEndpoint(project, "mock")
-//    System.out.println("simplyPublish after ")
-}
-
-tasks {
-    dokka {
-        outputFormat = "html"
-//        outputDirectory = "${tempProjectDir.root.absolutePath}/build/dokka"
-    }
+    mavenRepository = io.hkhc.gradle.maven.PropertyMavenEndpoint(project, "mock")
 }
