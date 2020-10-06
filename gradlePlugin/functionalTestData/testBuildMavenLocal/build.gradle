@@ -20,10 +20,3 @@ plugins {
     id 'java'
     id 'io.hkhc.jarbird'
 }
-
-tasks {
-    dokka {
-        outputFormat = "html"
-//        outputDirectory = "${tempProjectDir.root.absolutePath}/build/dokka"
-    }
-}

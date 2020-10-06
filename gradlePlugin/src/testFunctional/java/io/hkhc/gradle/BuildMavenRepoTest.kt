@@ -82,7 +82,7 @@ class BuildMavenRepoTest {
         mockRepositoryServer.setUp("test.group", "test.artifact", "0.1", "/release")
 
         File("functionalTestData/testBuildMavenRepo").copyRecursively(tempProjectDir)
-        File("functionalTestData/common").copyRecursively(tempProjectDir)
+        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/src").copyRecursively(tempProjectDir)
 
         Properties().apply {
@@ -111,7 +111,7 @@ class BuildMavenRepoTest {
         mockRepositoryServer.setUp("test.group", "test.artifact", "0.1-SNAPSHOT", "/snapshot")
 
         File("functionalTestData/testBuildMavenRepoSnapshot").copyRecursively(tempProjectDir)
-        File("functionalTestData/common").copyRecursively(tempProjectDir)
+        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/src").copyRecursively(tempProjectDir)
 
         Properties().apply {

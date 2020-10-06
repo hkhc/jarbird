@@ -18,10 +18,10 @@
 
 plugins {
     kotlin("jvm") version "1.3.72"
-//    `kotlin-dsl`
+    `kotlin-dsl`
     id("io.hkhc.jarbird")
 }
 
 jarbird {
-    mavenRepository = io.hkhc.gradle.maven.PropertyMavenEndpoint(project, "mock")
+    withMavenByProperties("mock")
 }
