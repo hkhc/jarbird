@@ -16,20 +16,20 @@
  *
  */
 
-const val jvmTargetVersion = "1.8"
-const val kotlinVersion = "1.3.72"
-const val kotlinLanguageVersion = "1.3"
+package io.hkhc.gradle.pom
 
-// plugins
-const val dokkaVersion = "0.10.1"
-const val ktlintVersion = "9.4.0"
-const val taskTreeVersion = "1.5"
-const val detektVersion = "1.14.0"
-const val bintrayVersion = "1.8.5"
+import io.hkhc.utils.test.`Fields overlay properly`
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.booleans.shouldBeTrue
 
-// lib
-const val junit5Version = "5.6.1"
-const val snakeYamlVersion = "1.25"
-const val kotestVersion = "4.2.5"
-const val mockWebServerVersion = "4.5.0"
-const val mockkVersion = "1.9"
+class PomScmTest : StringSpec({
+
+    "Scm shall be a data class so that we may assume 'equals' logic is provided" {
+        Scm::class.isData.shouldBeTrue()
+    }
+
+    // Have one line per property in the class
+    "Scm shall overlay properly" {
+        `Fields overlay properly`(Scm::class, ::Scm)
+    }
+})

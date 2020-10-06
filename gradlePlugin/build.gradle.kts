@@ -20,17 +20,6 @@ import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
-buildscript {
-    repositories {
-//        mavenCentral()
-//        jcenter()
-//        mavenLocal()
-        // It is needed by detekt
-        //maven { url = uri("http://dl.bintray.com/arturbosch/code-analysis") }
-//        gradlePluginPortal()
-    }
-}
-
 repositories {
     mavenCentral()
     /* We need this to be in repositories block and not only the pluginManagement block,
@@ -51,18 +40,18 @@ plugins {
 
 // TODO Simplify functional test creation
 
-//val functionalTestSourceSetName = "testFunctional"
-//
-//val functionalTestSourceSet = sourceSets.create(functionalTestSourceSetName) {
-//    withConvention(org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet::class) {
-//        kotlin.srcDir("src/$functionalTestSourceSetName/java")
-//    }
-//    java.srcDir("src/$functionalTestSourceSetName/java")
-//    resources.srcDirs("src/$functionalTestSourceSetName/resources", "build/pluginUnderTestMetadata")
-//    compileClasspath = sourceSets["main"].output +
-//        configurations.named("${functionalTestSourceSetName}CompileClasspath")
-//    runtimeClasspath = output + compileClasspath
-//}
+sourceSets {
+    create("testFunctional") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+val testFunctionalImplementation by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+
+configurations["testFunctionalRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
 
 /*
  It is needed to make sure every version of java compiler to generate same kind of bytecode.
@@ -82,23 +71,23 @@ java {
 
 tasks {
 
-//    val functionalTestTask = register<Test>("functionalTest") {
-//        description = "Runs the functional tests."
-//        group = "verification"
-//        testClassesDirs = functionalTestSourceSet.output.classesDirs
-//        classpath = functionalTestSourceSet.runtimeClasspath
-//    }
-//
-//    functionalTestTask.get().dependsOn(get("pluginUnderTestMetadata"))
+    val functionalTestTask = register<Test>("functionalTest") {
+        description = "Runs the functional tests."
+        group = "verification"
+        testClassesDirs = sourceSets["testFunctional"].output.classesDirs
+        classpath = sourceSets["testFunctional"].runtimeClasspath
+        shouldRunAfter("test")
+    }
 
-//    check { dependsOn(get("functionalTest")) }
+    functionalTestTask.get().dependsOn(get("pluginUnderTestMetadata"))
+
+    check { dependsOn(get("functionalTest")) }
 
     /*
     Without this Kotlin generate java 6 bytecode, which is hardly fatal.
     There are multiple KotlinCompile tasks, for main and test source sets
      */
-//    withType<KotlinCompile> {
-    withType(KotlinCompile::class) {
+    withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
             freeCompilerArgs = freeCompilerArgs.plus("-XXLanguage:+NewInference")
@@ -111,7 +100,8 @@ tasks {
     }
 
     withType<Detekt>().configureEach {
-        this.jvmTarget = "1.8"
+        jvmTarget = jvmTargetVersion
+        languageVersion = kotlinLanguageVersion
     }
 
     withType<Test> {
@@ -123,7 +113,6 @@ detekt {
     debug = true
     buildUponDefaultConfig = true
     config = files("${project.projectDir}/config/detekt/detekt.yml")
-    System.out.println("main source set ${project.sourceSets["main"].compileClasspath}")
 }
 
 ktlint {
@@ -135,18 +124,13 @@ ktlint {
     }
 }
 
-tasks.detekt {
-    jvmTarget = "1.8"
-    languageVersion = "1.3"
-}
-
 jarbird {
     gradlePlugin = true
 }
 
-//gradlePlugin {
-//    testSourceSets(sourceSets[functionalTestSourceSetName])
-//}
+gradlePlugin {
+    testSourceSets(sourceSets["testFunctional"])
+}
 
 configurations {
     detekt
@@ -157,29 +141,21 @@ dependencies {
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5")
+    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
-    implementation("org.yaml:snakeyaml:1.25")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.1")
-    implementation("com.gradle.publish:plugin-publish-plugin:0.11.0")
+    implementation("org.yaml:snakeyaml:$snakeYamlVersion")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
+    implementation("com.gradle.publish:plugin-publish-plugin:0.12.0")
 
-    // TODO Do we still need 4.1.2 when using kotest?
-//    testImplementation("junit:junit:4.12")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.6.1")
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:4.0.2")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.2")
-    testImplementation("io.mockk:mockk:1.9")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junit5Version")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junit5Version")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-property:$kotestVersion")
+    testImplementation("io.mockk:mockk:$mockkVersion")
 
-////    "${functionalTestSourceSetName}Implementation"("junit:junit:4.13")
-//    "${functionalTestSourceSetName}Implementation"(gradleTestKit())
-//    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-api:5.6.1")
-//    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-engine:5.6.1")
-//    "${functionalTestSourceSetName}Implementation"("org.junit.jupiter:junit-jupiter-params:5.6.1")
-////    "${functionalTestSourceSetName}Implementation"("org.junit.vintage:junit-vintage-engine:5.6.1")
-//    "${functionalTestSourceSetName}Implementation"("com.squareup.okhttp3:mockwebserver:4.5.0")
+    testFunctionalImplementation(gradleTestKit())
+    testFunctionalImplementation("com.squareup.okhttp3:mockwebserver:$mockWebServerVersion")
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
-//
-//    detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
 }

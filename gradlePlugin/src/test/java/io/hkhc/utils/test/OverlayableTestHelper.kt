@@ -19,7 +19,11 @@
 package io.hkhc.utils.test
 
 import io.hkhc.gradle.pom.Overlayable
+import io.kotest.assertions.fail
 import io.kotest.matchers.shouldBe
+import io.kotest.property.checkAll
+import io.kotest.property.exhaustive.exhaustive
+import io.kotest.property.exhaustive.filter
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KMutableProperty1
@@ -136,30 +140,27 @@ fun isClassOrNullableType(prop: KProperty1<*, *>, cls: KClass<out Any>): Boolean
     return propType == matchingType || propType == matchingType.withNullability(true)
 }
 
-fun <T : Overlayable> `Fields overlay properly`(
+suspend fun <T : Overlayable> `Fields overlay properly`(
     cls: KClass<T>,
     cstr: () -> T,
     nonStringFields: Array<String> = arrayOf()
 ) {
 
-    @Suppress("UNCHECKED_CAST")
-    cls.memberProperties
-        .filter { !nonStringFields.contains(it.name) }
-        .forEach {
-            try {
-                if (isClassOrNullableType(it, String::class)) {
-                    `Field perform overlay properly`(cstr, it as KMutableProperty1<T, String>, "value")
-                } else if (isClassOrNullableType(it, Int::class)) {
-                    `Field perform overlay properly`(cstr, it as KMutableProperty1<T, Int>, 123)
-                } else {
-                    throw JarbirdTestException(
-                        "No test handler for field ${cls.qualifiedName} ${it.name} ${it.returnType}"
-                    )
-                }
-            } catch (t: Throwable) {
-                throw JarbirdTestException("Field ${it.name} has error", t)
-            }
+    val gen = mutableListOf<KProperty1<T, *>>().let {
+        it.addAll(cls.memberProperties)
+        it.exhaustive()
+            .filter { !nonStringFields.contains(it.name) }
+    }
+
+    checkAll(gen) {
+        if (isClassOrNullableType(it, String::class)) {
+            `Field perform overlay properly`(cstr, it as KMutableProperty1<T, String>, "value")
+        } else if (isClassOrNullableType(it, Int::class)) {
+            `Field perform overlay properly`(cstr, it as KMutableProperty1<T, Int>, 123)
+        } else {
+            fail("No test handler for field ${cls.qualifiedName} ${it.name} ${it.returnType}")
         }
+    }
 }
 
 fun <T : Overlayable> `check -1 cannot overlay non -1`(

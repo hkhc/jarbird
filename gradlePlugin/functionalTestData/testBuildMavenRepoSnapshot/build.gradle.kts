@@ -16,20 +16,24 @@
  *
  */
 
-const val jvmTargetVersion = "1.8"
-const val kotlinVersion = "1.3.72"
-const val kotlinLanguageVersion = "1.3"
+plugins {
+    kotlin("jvm") version "1.3.72"
+//    `kotlin-dsl`
+    id("org.jetbrains.dokka") version "0.10.1"
+    id("io.hkhc.jarbird")
+}
 
-// plugins
-const val dokkaVersion = "0.10.1"
-const val ktlintVersion = "9.4.0"
-const val taskTreeVersion = "1.5"
-const val detektVersion = "1.14.0"
-const val bintrayVersion = "1.8.5"
+//import io.hkhc.gradle.PropertyMavenEndpoint
 
-// lib
-const val junit5Version = "5.6.1"
-const val snakeYamlVersion = "1.25"
-const val kotestVersion = "4.2.5"
-const val mockWebServerVersion = "4.5.0"
-const val mockkVersion = "1.9"
+jarbird {
+//    setMavenRepository(io.hkhc.gradle.PropertyMavenEndpoint(project, "mock"))
+    this.mavenRepository = io.hkhc.gradle.maven.PropertyMavenEndpoint(project, "mock")
+//    System.out.println("simplyPublish after ")
+}
+
+tasks {
+    dokka {
+        outputFormat = "html"
+//        outputDirectory = "${tempProjectDir.root.absolutePath}/build/dokka"
+    }
+}

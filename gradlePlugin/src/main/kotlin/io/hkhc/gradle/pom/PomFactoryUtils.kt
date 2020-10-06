@@ -16,20 +16,18 @@
  *
  */
 
-const val jvmTargetVersion = "1.8"
-const val kotlinVersion = "1.3.72"
-const val kotlinLanguageVersion = "1.3"
+package io.hkhc.gradle.pom
 
-// plugins
-const val dokkaVersion = "0.10.1"
-const val ktlintVersion = "9.4.0"
-const val taskTreeVersion = "1.5"
-const val detektVersion = "1.14.0"
-const val bintrayVersion = "1.8.5"
+import java.io.File
 
-// lib
-const val junit5Version = "5.6.1"
-const val snakeYamlVersion = "1.25"
-const val kotestVersion = "4.2.5"
-const val mockWebServerVersion = "4.5.0"
-const val mockkVersion = "1.9"
+internal const val POM_FILENAME = "pom.yaml"
+
+internal fun pomPath(base: String): String {
+    return base + File.separatorChar + POM_FILENAME
+}
+
+internal fun getGradleUserHome(): String? {
+    return System.getProperty("gradle.user.home")
+        ?: System.getenv("GRADLE_USER_HOME")
+        ?: "${System.getProperty("user.home")}${File.separatorChar}.gradle"
+}
