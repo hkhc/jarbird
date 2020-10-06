@@ -110,6 +110,14 @@ tasks {
 }
 
 detekt {
+    input = files(
+        "src/main/java",
+        "src/main/kotlin",
+        "src/test/java",
+        "src/test/kotlin",
+        "src/testFunctional/java",
+        "src/testFunctional/kotlin"
+    )
     debug = true
     buildUponDefaultConfig = true
     config = files("${project.projectDir}/config/detekt/detekt.yml")
@@ -146,6 +154,27 @@ dependencies {
     implementation("org.yaml:snakeyaml:$snakeYamlVersion")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
     implementation("com.gradle.publish:plugin-publish-plugin:0.12.0")
+
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {
+        version {
+            strictly(kotlinVersion)
+        }
+    }
+    implementation("org.jetbrains.kotlin:kotlin-stdlib") {
+        version {
+            strictly(kotlinVersion)
+        }
+    }
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-common") {
+        version {
+            strictly(kotlinVersion)
+        }
+    }
+    implementation("org.jetbrains.kotlin:kotlin-reflect") {
+        version {
+            strictly(kotlinVersion)
+        }
+    }
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit5Version")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junit5Version")
