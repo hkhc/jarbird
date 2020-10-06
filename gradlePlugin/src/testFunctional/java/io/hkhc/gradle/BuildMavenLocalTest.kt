@@ -47,7 +47,7 @@ class BuildMavenLocalTest {
     fun `Normal publish to Maven Local`() {
         val result = GradleRunner.create()
             .withProjectDir(tempProjectDir)
-            .withArguments("publishLibPublicationToMavenLocal")
+            .withArguments("jbPublishToMavenLocal")
             .withPluginClasspath()
             .withDebug(true)
             .build()

@@ -1,6 +1,6 @@
 group: test.group
 artifactId: test.artifact
-version: 0.1
+version: 0.1-SNAPSHOT
 description: Test artifact
 packaging: jar
 

@@ -18,52 +18,80 @@
 
 package io.hkhc.gradle
 
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import java.util.Properties
+
+/**
+ * snapshot / release
+ * - MavenLocal
+ * - MavenRepository
+ * - Bintray
+ * - artifactory
+ * - Android AAR
+ * - multivariant Android AAR
+ *
+ * Multi-project
+ *
+ * snapshot / release
+ * plugin gradle plugin portal
+ * plugin mavenLocal
+ * plugin mavenrepository
+ * plugin bintray
+ * plugin artifactory
+ *
+ * all - mavenrepository
+ * all - bintray
+ *
+ * gradle versions
+ * signing v1 signing v2
+ * groovy/kts script
+ *
+ *
+ */
 
 class BuildMavenRepoTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
     lateinit var tempProjectDir: File
-
-    // we still need local repo for building purpose
-    lateinit var localRepoDir: File
-    lateinit var server: MockWebServer
+    lateinit var mockRepositoryServer: MockRepositoryServer
 
     @BeforeEach
     fun setUp() {
-        File("functionalTestData/testBuildMavenRepo").copyRecursively(tempProjectDir)
-        File("functionalTestData/common").copyRecursively(tempProjectDir)
+        mockRepositoryServer = MockRepositoryServer()
+    }
 
-        localRepoDir = File(tempProjectDir, "localRepo")
-        localRepoDir.mkdirs()
-        System.setProperty("maven.repo.local", localRepoDir.absolutePath)
-
-        server = MockWebServer()
-
-        server.enqueue(MockResponse().setResponseCode(200))
-        server.enqueue(MockResponse().setResponseCode(200))
-
-        server.start()
-
-        System.out.println("setUp")
-
-        System.setProperty("repository.mock.release", server.url("/base").toString())
-        System.setProperty("repository.mock.snapshot", server.url("/base").toString())
-        System.setProperty("repository.mock.username", "username")
-        System.setProperty("repository.mock.password", "password")
+    @AfterEach
+    fun teardown() {
+        mockRepositoryServer.teardown()
     }
 
     @Test
-    fun `Normal publish to Maven Repository`() {
+    fun `Normal publish to Maven Repository to release repository`() {
+
+        mockRepositoryServer.setUp("test.group", "test.artifact", "0.1", "/release")
+
+        File("functionalTestData/testBuildMavenRepo").copyRecursively(tempProjectDir)
+        File("functionalTestData/common").copyRecursively(tempProjectDir)
+
+        Properties().apply {
+            load(FileReader("$tempProjectDir/gradle.properties"))
+            setProperty("repository.mock.release", mockRepositoryServer.getServerUrl())
+            setProperty("repository.mock.snapshot", "${mockRepositoryServer.getServerUrl()}-snapshot")
+            setProperty("repository.mock.username", "username")
+            setProperty("repository.mock.password", "password")
+            store(FileWriter("$tempProjectDir/gradle.properties"), "")
+        }
+
         val result = GradleRunner.create()
             .withProjectDir(tempProjectDir)
             .withArguments("jbPublishToMavenRepository")
@@ -72,6 +100,34 @@ class BuildMavenRepoTest {
             .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":jbPublishToMavenRepository")?.outcome)
-        assertEquals(10, server.requestCount)
+        mockRepositoryServer.assertReleaseArtifacts()
+    }
+
+    @Test
+    fun `Normal publish to Maven Repository to snapshot repository`() {
+
+        mockRepositoryServer.setUp("test.group", "test.artifact", "0.1-SNAPSHOT", "/snapshot")
+
+        File("functionalTestData/testBuildMavenRepoSnapshot").copyRecursively(tempProjectDir)
+        File("functionalTestData/common").copyRecursively(tempProjectDir)
+
+        Properties().apply {
+            load(FileReader("$tempProjectDir/gradle.properties"))
+            setProperty("repository.mock.release", "${mockRepositoryServer.getServerUrl()}-release")
+            setProperty("repository.mock.snapshot", mockRepositoryServer.getServerUrl())
+            setProperty("repository.mock.username", "username")
+            setProperty("repository.mock.password", "password")
+            store(FileWriter("$tempProjectDir/gradle.properties"), "")
+        }
+
+        val result = GradleRunner.create()
+            .withProjectDir(tempProjectDir)
+            .withArguments("jbPublishToMavenRepository")
+            .withPluginClasspath()
+            .withDebug(true)
+            .build()
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":jbPublishToMavenRepository")?.outcome)
+        mockRepositoryServer.assertSnapshotArtifacts()
     }
 }

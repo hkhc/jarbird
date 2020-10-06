@@ -17,18 +17,17 @@
  */
 
 plugins {
-    kotlin("jvm") version "1.3.72"
-//    `kotlin-dsl`
-    id("org.jetbrains.dokka") version "0.10.1"
-    id("io.hkhc.jarbird")
+    id 'java'
+    id 'org.jetbrains.dokka' version "0.10.1"
+    id 'io.hkhc.jarbird'
 }
 
-//import io.hkhc.gradle.PropertyMavenEndpoint
+import io.hkhc.gradle.*
 
-jarbird {
-//    setMavenRepository(io.hkhc.gradle.PropertyMavenEndpoint(project, "mock"))
-    this.mavenRepository = io.hkhc.gradle.maven.PropertyMavenEndpoint(project, "mock")
-//    System.out.println("simplyPublish after ")
+simplyPublish {
+    System.out.println("simplyPublish before")
+    mavenRepository = PropertyMavenEndpoint(project, "mock")
+    System.out.println("simplyPublish after ${mavenRepository}")
 }
 
 tasks {
