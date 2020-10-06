@@ -16,9 +16,8 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.pom
 
-import io.hkhc.gradle.pom.Bintray
 import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeTrue
