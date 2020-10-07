@@ -22,19 +22,24 @@ import java.io.File
 
 class FileTree {
 
+    // Box drawing characters https://en.wikipedia.org/wiki/Box-drawing_character
     fun dump(file: File, block: (String) -> Unit) {
         if (file.isDirectory) {
             block.invoke(file.name)
             file.listFiles()?.let { list ->
                 val lastIndex = list.size - 1
                 list.forEachIndexed { idx, it ->
-                    val headPrefix = if (idx == lastIndex) "\\--- " else "+--- "
-                    val tailPrefix = if (idx == lastIndex) "     " else "|    "
-                    var first = true
+                    val headPrefix = if (idx == lastIndex)
+                        "\u2570\u2500\u2500\u2500 " /* L--- */
+                    else
+                        "\u251C\u2500\u2500\u2500 " /* +--- */
+                    val tailPrefix = if (idx == lastIndex)
+                        "     "
+                    else
+                        "\u2502    " /* | */
                     dump(it) {
-                        if (first) {
+                        if (idx==0) {
                             block.invoke(headPrefix + it)
-                            first = false
                         } else {
                             block.invoke(tailPrefix + it)
                         }
