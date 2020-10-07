@@ -16,12 +16,10 @@
  *
  */
 
-plugins {
-    kotlin("jvm") version "1.3.72"
-    `kotlin-dsl`
-    id("io.hkhc.jarbird")
-}
+package io.hkhc.test.utils
 
-jarbird {
-    withMavenByProperties("mock")
+class PropertiesSpec {
+
+
+
 }

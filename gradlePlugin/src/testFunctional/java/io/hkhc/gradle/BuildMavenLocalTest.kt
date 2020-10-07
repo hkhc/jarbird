@@ -18,6 +18,9 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.test.ArtifactChecker
+import io.hkhc.test.utils.FileTree
+import io.hkhc.test.utils.PropertiesEditor
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,7 +39,6 @@ class BuildMavenLocalTest {
 
     @BeforeEach
     fun setUp() {
-        File("functionalTestData/testBuildMavenLocal").copyRecursively(tempProjectDir)
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/src").copyRecursively(tempProjectDir)
         localRepoDir = File(tempProjectDir, "localRepo")
@@ -46,31 +48,39 @@ class BuildMavenLocalTest {
 
     @Test
     fun `Normal publish to Maven Local`() {
+
+        File("$tempProjectDir/pom.yaml")
+            .writeText(simplePom("test.group", "test.artifact", "0.1"))
+
+        File("$tempProjectDir/build.gradle").writeText(
+            """
+            plugins {
+                id 'java'
+                id 'io.hkhc.jarbird'
+            }
+            jarbird {
+                maven = false
+            }
+            """.trimIndent()
+        )
+
+        PropertiesEditor("$tempProjectDir/gradle.properties") {
+            setupKeyStore()
+        }
+
+        val task = "jbPublishToMavenLocal"
+
         val result = GradleRunner.create()
             .withProjectDir(tempProjectDir)
-            .withArguments("jbPublishToMavenLocal")
+            .withArguments(task)
             .withPluginClasspath()
             .withDebug(true)
             .build()
 
         FileTree().dump(tempProjectDir, System.out::println)
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":publishLibPublicationToMavenLocal")?.outcome)
-        ArtifactChecker().verifyRepostory(localRepoDir, "test.group", "test.artifact", "0.1", "jar")
+        assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+        ArtifactChecker()
+            .verifyRepostory(localRepoDir, "test.group", "test.artifact", "0.1", "jar")
     }
-
-//    @Test
-//    fun `Normal publish to Maven Repository`() {
-//        val result = GradleRunner.create()
-//            .withProjectDir(tempProjectDir.root)
-//            .withArguments("publishLibPublicationToMavenRepository")
-//            .withPluginClasspath()
-//            .withDebug(true)
-//            .build()
-//
-//        FileTree().dump(tempProjectDir.root, System.out::println)
-//
-//        Assert.assertEquals(TaskOutcome.SUCCESS, result.task(":publishLibPublicationToMavenLocal")?.outcome)
-//        ArtifactChecker().verifyRepostory(localRepoDir, "test.group", "test.artifact", "0.1", "jar")
-//    }
 }

@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.test
 
 import org.junit.Assert
 import java.io.File

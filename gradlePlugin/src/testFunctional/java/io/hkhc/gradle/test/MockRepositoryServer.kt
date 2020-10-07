@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.test
 
 import groovy.util.GroovyTestCase.assertEquals
 import io.kotest.assertions.fail

@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.test.utils
 
 import java.io.File
 
