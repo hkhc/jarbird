@@ -40,7 +40,7 @@ class BuildMavenLocalTest {
     @BeforeEach
     fun setUp() {
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/src").copyRecursively(tempProjectDir)
+        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
         localRepoDir = File(tempProjectDir, "localRepo")
         localRepoDir.mkdirs()
         System.setProperty("maven.repo.local", localRepoDir.absolutePath)

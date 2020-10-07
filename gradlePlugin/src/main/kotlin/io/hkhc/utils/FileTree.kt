@@ -37,9 +37,11 @@ class FileTree {
                         "     "
                     else
                         "\u2502    " /* | */
+                    var first = true
                     dump(it) {
-                        if (idx==0) {
+                        if (first) {
                             block.invoke(headPrefix + it)
+                            first = false
                         } else {
                             block.invoke(tailPrefix + it)
                         }

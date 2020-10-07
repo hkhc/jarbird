@@ -51,6 +51,15 @@ fun simplePom(group: String, artifactId: String, version: String): String {
     """.trimIndent()
 }
 
+fun pluginPom(id: String, className: String): String {
+    return """
+        plugin:
+            id: $id
+            displayName: Testing Plugin
+            implementationClass: $className
+    """.trimIndent()
+}
+
 fun buildGradle(): String {
     return """
         plugins {

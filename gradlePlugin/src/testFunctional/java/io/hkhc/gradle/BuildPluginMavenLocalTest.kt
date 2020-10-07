@@ -40,17 +40,20 @@ class BuildPluginMavenLocalTest {
     @BeforeEach
     fun setUp() {
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/src").copyRecursively(tempProjectDir)
+        File("functionalTestData/plugin/src").copyRecursively(tempProjectDir)
         localRepoDir = File(tempProjectDir, "localRepo")
         localRepoDir.mkdirs()
         System.setProperty("maven.repo.local", localRepoDir.absolutePath)
     }
 
     @Test
-    fun `Normal publish to Maven Local`() {
+    fun `Normal publish plugin to Maven Local`() {
 
         File("$tempProjectDir/pom.yaml")
-            .writeText(simplePom("test.group", "test.artifact", "0.1"))
+            .writeText(
+                simplePom("test.group", "test.artifact", "0.1") + '\n' +
+                    pluginPom("test.plugin", "TestPlugin")
+            )
 
         File("$tempProjectDir/build.gradle").writeText(
             """
