@@ -15,11 +15,10 @@
  *
  *
  */
+@file:JvmName("Constants")
+package io.hkhc.gradle.utils
 
-package io.hkhc.test.utils
+import io.hkhc.gradle.PLUGIN_ID
 
-class PropertiesSpec {
-
-
-
-}
+const val LOG_PREFIX = "[$PLUGIN_ID]"
+const val ANDROID_LIBRARY_PLUGIN_ID = "com.android.library"

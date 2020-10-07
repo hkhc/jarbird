@@ -20,10 +20,10 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.builder.PublicationBuilder
 import io.hkhc.gradle.pom.PomFactory
-import util.ANDROID_LIBRARY_PLUGIN_ID
-import util.LOG_PREFIX
-import util.detailMessageError
-import util.fatalMessage
+import io.hkhc.gradle.utils.ANDROID_LIBRARY_PLUGIN_ID
+import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.utils.detailMessageError
+import io.hkhc.gradle.utils.fatalMessage
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -72,7 +72,10 @@ class JarbirdPlugin : Plugin<Project> {
                     )
                 }
                 if (extension.gradlePlugin) {
-                    fatalMessage(project, "Cannot build Gradle plugin in Android project")
+                    fatalMessage(
+                        project,
+                        "Cannot build Gradle plugin in Android project"
+                    )
                 }
             }
         }
@@ -184,6 +187,10 @@ class JarbirdPlugin : Plugin<Project> {
             // TODO handle multiple level child project?
             if (!project.isMultiProjectRoot()) {
                 precheck(p)
+            }
+
+            if (pom.plugin!=null) {
+                extension.gradlePlugin = true
             }
 
             with(p.pluginManager) {

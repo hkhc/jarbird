@@ -16,7 +16,7 @@
  *
  */
 
-package util
+package io.hkhc.gradle.utils
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project

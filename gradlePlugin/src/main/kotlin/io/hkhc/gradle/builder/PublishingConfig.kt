@@ -40,8 +40,8 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
-import util.LOG_PREFIX
-import util.detailMessageWarning
+import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.utils.detailMessageWarning
 
 class PublishingConfig(
     private val project: Project,

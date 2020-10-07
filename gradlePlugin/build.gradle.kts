@@ -132,10 +132,6 @@ ktlint {
     }
 }
 
-jarbird {
-    gradlePlugin = true
-}
-
 gradlePlugin {
     testSourceSets(sourceSets["testFunctional"])
 }

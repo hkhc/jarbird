@@ -19,8 +19,8 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.test.MockRepositoryServer
-import io.hkhc.test.utils.FileTree
-import io.hkhc.test.utils.PropertiesEditor
+import io.hkhc.utils.FileTree
+import io.hkhc.utils.PropertiesEditor
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach

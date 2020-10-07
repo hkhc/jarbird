@@ -21,7 +21,7 @@ package io.hkhc.gradle.pom
 import org.gradle.api.Project
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
-import util.LOG_PREFIX
+import io.hkhc.gradle.utils.LOG_PREFIX
 import java.io.File
 
 class PomFactory(val project: Project) {

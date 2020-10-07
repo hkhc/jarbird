@@ -22,7 +22,7 @@ import groovy.lang.GroovyObject
 import io.hkhc.gradle.PublishConfig
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.isMultiProjectRoot
-import util.LOG_PREFIX
+import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName

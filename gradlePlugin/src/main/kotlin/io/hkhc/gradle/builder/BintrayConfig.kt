@@ -26,7 +26,7 @@ import io.hkhc.gradle.pom.Pom
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.closureOf
-import util.LOG_PREFIX
+import io.hkhc.gradle.utils.LOG_PREFIX
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 

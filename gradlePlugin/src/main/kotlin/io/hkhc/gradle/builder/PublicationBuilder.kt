@@ -23,7 +23,7 @@ import io.hkhc.gradle.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.PLUGIN_ID
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.gradle.pom.Pom
-import util.LOG_PREFIX
+import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.Project
 
 /**

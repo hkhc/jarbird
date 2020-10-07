@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.test.utils
+package io.hkhc.utils
 
 import java.io.FileNotFoundException
 import java.io.FileReader

@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.test.utils.PropertiesEditor
+import io.hkhc.utils.PropertiesEditor
 
 fun PropertiesEditor.setupKeyStore() {
 
