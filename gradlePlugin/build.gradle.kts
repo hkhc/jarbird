@@ -109,6 +109,11 @@ tasks {
     }
 }
 
+jarbird {
+    bintray = false
+    ossArtifactory = false
+}
+
 detekt {
     input = files(
         "src/main/java",
@@ -133,6 +138,7 @@ ktlint {
 }
 
 gradlePlugin {
+    pluginSourceSet(sourceSets["main"])
     testSourceSets(sourceSets["testFunctional"])
 }
 
@@ -150,6 +156,7 @@ dependencies {
     implementation("org.yaml:snakeyaml:$snakeYamlVersion")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
     implementation("com.gradle.publish:plugin-publish-plugin:0.12.0")
+//    implementation("")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {
         version {

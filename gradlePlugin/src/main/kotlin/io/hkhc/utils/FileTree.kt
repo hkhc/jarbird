@@ -29,14 +29,12 @@ class FileTree {
             file.listFiles()?.let { list ->
                 val lastIndex = list.size - 1
                 list.forEachIndexed { idx, it ->
-                    val headPrefix = if (idx == lastIndex)
+                    val headPrefix = if (idx == lastIndex) {
                         "\u2570\u2500\u2500\u2500 " /* L--- */
-                    else
+                    } else {
                         "\u251C\u2500\u2500\u2500 " /* +--- */
-                    val tailPrefix = if (idx == lastIndex)
-                        "     "
-                    else
-                        "\u2502    " /* | */
+                    }
+                    val tailPrefix = if (idx == lastIndex) "     " else "\u2502    " /* | */
                     var first = true
                     dump(it) {
                         if (first) {

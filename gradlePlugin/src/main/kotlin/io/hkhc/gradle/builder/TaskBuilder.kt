@@ -18,10 +18,10 @@
 
 package io.hkhc.gradle.builder
 
-import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.SP_GROUP
 import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.SP_GROUP
 import io.hkhc.gradle.isMultiProjectRoot
+import io.hkhc.gradle.pom.Pom
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
 
@@ -79,7 +79,7 @@ class TaskBuilder(
     private fun TaskContainer.registerMavenRepositoryTask() {
 
         if (project.isMultiProjectRoot()) {
-            registerRootProjectTasks("jbPublishToMavenRepository")
+            registerRootProjectTasks("jbPublishTo$mavenRepo")
         } else {
 
             register("jbPublishToMavenRepository") {
@@ -96,9 +96,9 @@ class TaskBuilder(
 
                 dependsOn("publish${pubId}To$mavenRepo")
 
-                //            if (extension.gradlePlugin) {
-                //                dependsOn("publish${markerPubId}To$mavenRepo")
-                //            }
+                if (extension.gradlePlugin) {
+                    dependsOn("publish${markerPubId}To$mavenRepo")
+                }
             }
         }
     }

@@ -23,7 +23,7 @@ import java.io.FileReader
 import java.io.FileWriter
 import java.util.Properties
 
-class PropertiesEditor(val filename: String, spec: PropertiesEditor.()->Unit) {
+class PropertiesEditor(val filename: String, spec: PropertiesEditor.() -> Unit) {
 
     val props = Properties()
 
@@ -35,17 +35,17 @@ class PropertiesEditor(val filename: String, spec: PropertiesEditor.()->Unit) {
         }
         spec.invoke(this)
         try {
-            props.store(FileWriter(filename),"")
+            props.store(FileWriter(filename), "")
         } catch (e: FileNotFoundException) {
             // do nothing intentionally
         }
     }
 
-    infix fun String.to(that: String): Unit {
+    infix fun String.to(that: String) {
         props.setProperty(this, that)
     }
 
-    fun String.unaryMinus(): Unit {
+    fun String.unaryMinus() {
         props.remove(this)
     }
 
@@ -54,5 +54,4 @@ class PropertiesEditor(val filename: String, spec: PropertiesEditor.()->Unit) {
             System.out.println("${it.key} = ${it.value}")
         }
     }
-
 }

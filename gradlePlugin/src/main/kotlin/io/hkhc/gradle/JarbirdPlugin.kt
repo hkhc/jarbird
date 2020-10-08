@@ -189,7 +189,7 @@ class JarbirdPlugin : Plugin<Project> {
                 precheck(p)
             }
 
-            if (pom.plugin!=null) {
+            if (pom.plugin != null) {
                 extension.gradlePlugin = true
             }
 

@@ -38,8 +38,6 @@ import java.util.GregorianCalendar
 // @ExtendWith(MockKExtension::class)
 class PomTest : StringSpec({
 
-    var spec = this
-
     lateinit var project: DefaultProject
 
     beforeTest {

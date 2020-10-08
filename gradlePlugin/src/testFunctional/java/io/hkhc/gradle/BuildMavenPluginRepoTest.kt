@@ -33,8 +33,8 @@ import java.io.File
 
 /**
  * snapshot / release
- * +- MavenLocal
- * +- MavenRepository
+ * - MavenLocal
+ * - MavenRepository
  * - Bintray
  * - artifactory
  * - Android AAR
@@ -44,8 +44,8 @@ import java.io.File
  *
  * snapshot / release
  * plugin gradle plugin portal
- * + plugin mavenLocal
- * + plugin mavenrepository
+ * plugin mavenLocal
+ * plugin mavenrepository
  * plugin bintray
  * plugin artifactory
  *
@@ -59,7 +59,7 @@ import java.io.File
  *
  *
  */
-class BuildMavenRepoTest {
+class BuildMavenPluginRepoTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
@@ -80,12 +80,15 @@ class BuildMavenRepoTest {
         mockRepositoryServer.setUp(group, artifactId, version, basePath)
 
         File("$tempProjectDir/pom.yaml")
-            .writeText(simplePom(group, artifactId, version))
+            .writeText(
+                simplePom(group, artifactId, version) + '\n' +
+                    pluginPom("test.plugin", "TestPlugin")
+            )
         File("$tempProjectDir/build.gradle.kts")
-            .writeText(buildGradle())
+            .writeText(buildGradlePlugin())
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
+        File("functionalTestData/plugin/src").copyRecursively(tempProjectDir)
     }
 
     fun runTask(task: String): BuildResult {
@@ -103,7 +106,7 @@ class BuildMavenRepoTest {
     }
 
     @Test
-    fun `Normal publish to Maven Repository to release repository`() {
+    fun `Normal publish plugin to Maven Repository to release repository`() {
 
         commonSetup("test.group", "test.artifact", "0.1", "/release")
 
@@ -119,11 +122,11 @@ class BuildMavenRepoTest {
         val result = runTask(task)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        mockRepositoryServer.assertArtifacts("/release", mockRepositoryServer::transformReleaseVersion)
+        mockRepositoryServer.assertArtifacts("/release", mockRepositoryServer::transformReleaseVersion, "test.plugin")
     }
 
     @Test
-    fun `Normal publish to Maven Repository to snapshot repository`() {
+    fun `Normal publish plugin to Maven Repository to snapshot repository`() {
 
         commonSetup("test.group", "test.artifact", "0.1-SNAPSHOT", "/snapshot")
 
@@ -139,6 +142,6 @@ class BuildMavenRepoTest {
         val result = runTask(task)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        mockRepositoryServer.assertArtifacts("/snapshot", mockRepositoryServer::transformSnapshotVersion)
+        mockRepositoryServer.assertArtifacts("/snapshot", mockRepositoryServer::transformSnapshotVersion, "test.plugin")
     }
 }

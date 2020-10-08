@@ -25,7 +25,6 @@ fun PropertiesEditor.setupKeyStore() {
     "signing.keyId" to "6B70FAE3"
     "signing.password" to "password"
     "signing.secretKeyRingFile" to "gnupg/secring.gpg"
-
 }
 
 fun simplePom(group: String, artifactId: String, version: String): String {
@@ -67,6 +66,24 @@ fun buildGradle(): String {
             `kotlin-dsl`
             id("io.hkhc.jarbird")
         }
+        jarbird {
+            withMavenByProperties("mock")
+        }
+    """.trimIndent()
+}
+
+// why does org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.72 cannot be load successfully with mavenCentral() ??
+fun buildGradlePlugin(): String {
+    return """
+        plugins {
+            kotlin("jvm") version "1.3.72"
+            `kotlin-dsl` 
+            id("io.hkhc.jarbird")
+        }
+            repositories {
+                // mavenCentral()
+                jcenter()
+            }
         jarbird {
             withMavenByProperties("mock")
         }

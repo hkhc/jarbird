@@ -114,102 +114,93 @@ class MockRepositoryServer {
         return server.url(baseUrl).toString()
     }
 
-    private fun assertFile(requests: List<RecordedRequest>, pathRegex: String) {
-        var matched = false
-        requests
+    private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
+        var matched = requests
             .filter { it.method == "PUT" }
-            .forEach {
-                it.path?.let { path ->
-                    if (Regex(pathRegex).matches(path)) {
-                        matched = true
-                        return@forEach
-                    }
-                }
-            }
+            .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
         if (!matched) {
             fail("$pathRegex does not match any recorded request")
         }
     }
 
-    private fun assertReleaseFiles(
-        requests: List<RecordedRequest>,
-        baseUrl: String,
-        suffix: String
-    ): List<String> {
-        val packageBase = "$baseUrl/${group.replace('.','/')}/$artifactId/$version"
-        val filenamePrefix = "$artifactId-$version"
+    class RepoPatterns(
+        val baseUrl: String,
+        val group: String,
+        val artifactId: String,
+        val version: String,
+        val pluginId: String? = null
+    ) {
 
-        return assertFiles(requests, "$packageBase/$filenamePrefix$suffix")
-    }
+        val isSnapshot = version.endsWith("-SNAPSHOT")
+        val METADATA_FILE = "maven-metadata.xml"
 
-    private fun assertFiles(requests: List<RecordedRequest>, url: String): List<String> {
-        assertFile(requests, url)
-        return listOf("", ".md5", ".sha1", ".sha256", ".sha512")
-            .map { "$url$it" }
-            .fold(mutableListOf()) { assertedFiles, path ->
-                assertedFiles.apply {
-                    assertFile(requests, path)
-                    add(path)
-                }
+        fun metafile(base: String): List<String> {
+            return mutableListOf<String>().apply {
+                add("$base/$METADATA_FILE")
+                if (isSnapshot) add("$base/$version/$METADATA_FILE")
             }
+        }
+
+        fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) =
+            pluginId?.let {
+                listOf("$baseUrl/${pluginId.replace('.', '/')}/$pluginId.gradle.plugin")
+                    .flatMap {
+                        metafile(it) +
+                            listOf("$it/$version/$pluginId.gradle.plugin-${versionTransformer(version)}.pom")
+                    }
+                    .flatMap(::hashedPaths)
+            } ?: listOf()
+
+        fun hashedPaths(path: String) =
+            listOf("", ".md5", ".sha1", ".sha256", ".sha512")
+                .map { hash -> "$path$hash" }
+
+        fun artifactTypes(path: String) =
+            listOf(".jar", "-javadoc.jar", "-sources.jar", ".module", ".pom")
+                .map { suffix -> "$path$suffix" }
+
+        fun list(versionTransformer: (String) -> String) = (
+            listPluginRepo(pluginId, versionTransformer) +
+                listOf("$baseUrl/${group.replace('.', '/')}/$artifactId")
+                    .flatMap {
+                        metafile(it) +
+                            listOf("$it/$version/$artifactId-${versionTransformer(version)}")
+                                .flatMap(::artifactTypes)
+                                .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
+                    }
+                    .flatMap(::hashedPaths)
+            )
+            .map { Regex(it) }
     }
 
-    private fun assertSnapshotFiles(requests: List<RecordedRequest>, baseUrl: String, suffix: String): List<String> {
-        val packageBase = "$baseUrl/${group.replace('.','/')}/$artifactId/$version"
-        val versionNumber = version.substring(0, version.indexOf("-SNAPSHOT"))
-        val filenamePrefix = "$artifactId-$versionNumber-[0-9]+.[0-9]+-[0-9]+"
+    fun transformReleaseVersion(version: String) = version
 
-        return assertFiles(requests, "$packageBase/$filenamePrefix$suffix")
+    fun transformSnapshotVersion(version: String): String {
+        val snapshotVersion = version.indexOf("-SNAPSHOT")
+            .let { if (it == -1) version else version.substring(0, it) }
+        return "$snapshotVersion-[0-9]+.[0-9]+-[0-9]+"
     }
 
-    fun assertReleaseArtifacts() {
+    fun assertArtifacts(baseUrl: String, versionTransformer: (String) -> String, pluginId: String? = null) {
 
         val recordedRequests = collectRequests(server)
 
-        val assertedPaths = listOf(".jar", "-javadoc.jar", "-sources.jar", ".module", ".pom")
-            .fold(mutableListOf<String>()) { assertedFiles, suffix ->
-                assertedFiles.apply {
-                    addAll(assertReleaseFiles(recordedRequests, baseUrl, suffix))
-                    addAll(assertReleaseFiles(recordedRequests, baseUrl, "$suffix.asc"))
-                }
-            }
-            .apply {
-                val packageBase = "$baseUrl/${group.replace('.','/')}/$artifactId"
-                addAll(assertFiles(recordedRequests, "$packageBase/maven-metadata.xml"))
-            }
+        val expectedPaths = RepoPatterns(baseUrl, group, artifactId, version, pluginId).let {
+            it.list(versionTransformer)
+        }.apply {
+            forEach { assertFile(recordedRequests, it) }
+        }
 
         val remainingPaths = recordedRequests
             .filter {
                 it.method == "PUT" &&
-                    assertedPaths.none { regex -> it.path?.let { path -> Regex(regex).matches(path) } ?: false }
+                    expectedPaths.none { regex -> it.path?.let { path -> regex.matches(path) } ?: false }
             }
 
-        assertEquals(0, remainingPaths.size)
-    }
-
-    fun assertSnapshotArtifacts() {
-
-        val recordedRequests = collectRequests(server)
-
-        val assertedPaths = listOf(".jar", "-javadoc.jar", "-sources.jar", ".module", ".pom")
-            .fold(mutableListOf<String>()) { assertedFiles, suffix ->
-                assertedFiles.apply {
-                    addAll(assertSnapshotFiles(recordedRequests, baseUrl, suffix))
-                    addAll(assertSnapshotFiles(recordedRequests, baseUrl, "$suffix.asc"))
-                }
-            }
-            .apply {
-                val packageBase = "$baseUrl/${group.replace('.','/')}/$artifactId"
-                addAll(assertFiles(recordedRequests, "$packageBase/maven-metadata.xml"))
-                addAll(assertFiles(recordedRequests, "$packageBase/$version/maven-metadata.xml"))
-            }
-
-        val remainingPaths = recordedRequests
-            .filter {
-                it.method == "PUT" &&
-                    assertedPaths.none { regex -> it.path?.let { path -> Regex(regex).matches(path) } ?: false }
-            }
-
-        assertEquals(0, remainingPaths.size)
+        assertEquals(
+            "all request to repository server are expected",
+            "",
+            remainingPaths.map { it.path }.joinToString("\n")
+        )
     }
 }
