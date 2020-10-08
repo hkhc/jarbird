@@ -115,8 +115,10 @@ class SigningConfig(
 
         isRequired = !pom.isSnapshot()
 
-        project.findByType(PublishingExtension::class.java)?.let {
-            sign(it.publications[pubName])
+        if (!pom.isSnapshot()) {
+            project.findByType(PublishingExtension::class.java)?.let {
+                sign(it.publications[pubName])
+            }
         }
     }
 }
