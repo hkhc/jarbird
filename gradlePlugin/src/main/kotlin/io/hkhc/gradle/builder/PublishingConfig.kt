@@ -160,7 +160,6 @@ class PublishingConfig(
                         endpoint.releaseUrl
                     }
                 url = project.uri(endpointUrl)
-                System.out.println("maven repository url : $url isSnapshot ${pom.isSnapshot()} ${pom.version}")
                 credentials {
                     username = endpoint.username
                     password = endpoint.password

@@ -1,6 +1,6 @@
 group: io.hkhc.gradle
 artifactId: jarbird
-version: 0.4.2.2-SNAPSHOT
+version: 0.4.2.2
 description: Wrapping boilerplate code of publishing artifact to maven repository
 packaging: jar
 
@@ -23,3 +23,9 @@ plugin:
   implementationClass: io.hkhc.gradle.JarbirdPlugin
   tags:
   - publish
+
+#we don't need this
+#bintray:
+  # labels: my-tables
+  #  repo: my-maven
+  # userOrg: my-org

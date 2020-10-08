@@ -109,11 +109,6 @@ tasks {
     }
 }
 
-jarbird {
-    bintray = false
-    ossArtifactory = false
-}
-
 detekt {
     input = files(
         "src/main/java",
