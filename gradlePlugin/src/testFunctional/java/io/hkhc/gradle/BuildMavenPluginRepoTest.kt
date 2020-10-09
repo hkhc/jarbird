@@ -91,20 +91,6 @@ class BuildMavenPluginRepoTest {
         File("functionalTestData/plugin/src").copyRecursively(tempProjectDir)
     }
 
-    fun runTask(task: String): BuildResult {
-
-        val result = GradleRunner.create()
-            .withProjectDir(tempProjectDir)
-            .withArguments(task)
-            .withPluginClasspath()
-            .withDebug(true)
-            .build()
-
-        FileTree().dump(tempProjectDir, System.out::println)
-
-        return result
-    }
-
     @Test
     fun `Normal publish plugin to Maven Repository to release repository`() {
 
@@ -119,7 +105,7 @@ class BuildMavenPluginRepoTest {
         }
 
         val task = "jbPublishToMavenRepository"
-        val result = runTask(task)
+        val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         mockRepositoryServer.assertArtifacts("/release", mockRepositoryServer::transformReleaseVersion, "test.plugin")
@@ -139,7 +125,7 @@ class BuildMavenPluginRepoTest {
         }
 
         val task = "jbPublishToMavenRepository"
-        val result = runTask(task)
+        val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         mockRepositoryServer.assertArtifacts("/snapshot", mockRepositoryServer::transformSnapshotVersion, "test.plugin")

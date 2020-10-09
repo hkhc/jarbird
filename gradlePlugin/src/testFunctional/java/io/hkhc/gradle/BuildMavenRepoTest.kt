@@ -56,6 +56,7 @@ import java.io.File
  * signing v1 signing v2
  * groovy/kts script
  * alternate project name
+ * credential with env variable
  *
  *
  */
@@ -88,19 +89,6 @@ class BuildMavenRepoTest {
         File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
     }
 
-    fun runTask(task: String): BuildResult {
-
-        val result = GradleRunner.create()
-            .withProjectDir(tempProjectDir)
-            .withArguments(task)
-            .withPluginClasspath()
-            .withDebug(true)
-            .build()
-
-        FileTree().dump(tempProjectDir, System.out::println)
-
-        return result
-    }
 
     @Test
     fun `Normal publish to Maven Repository to release repository`() {
@@ -116,7 +104,7 @@ class BuildMavenRepoTest {
         }
 
         val task = "jbPublishToMavenRepository"
-        val result = runTask(task)
+        val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         mockRepositoryServer.assertArtifacts("/release", mockRepositoryServer::transformReleaseVersion)
@@ -136,7 +124,7 @@ class BuildMavenRepoTest {
         }
 
         val task = "jbPublishToMavenRepository"
-        val result = runTask(task)
+        val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         mockRepositoryServer.assertArtifacts("/snapshot", mockRepositoryServer::transformSnapshotVersion)

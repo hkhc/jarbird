@@ -72,15 +72,7 @@ class BuildPluginMavenLocalTest {
         }
 
         val task = "jbPublishToMavenLocal"
-
-        val result = GradleRunner.create()
-            .withProjectDir(tempProjectDir)
-            .withArguments(task)
-            .withPluginClasspath()
-            .withDebug(true)
-            .build()
-
-        FileTree().dump(tempProjectDir, System.out::println)
+        val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         ArtifactChecker()

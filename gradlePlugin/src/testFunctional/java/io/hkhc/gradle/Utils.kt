@@ -18,7 +18,11 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
+import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.GradleRunner
+import java.io.File
 
 fun PropertiesEditor.setupKeyStore() {
 
@@ -88,4 +92,18 @@ fun buildGradlePlugin(): String {
             withMavenByProperties("mock")
         }
     """.trimIndent()
+}
+
+fun runTask(task: String, projectDir: File): BuildResult {
+
+    val result = GradleRunner.create()
+        .withProjectDir(projectDir)
+        .withArguments(task)
+        .withPluginClasspath()
+        .withDebug(true)
+        .build()
+
+    FileTree().dump(projectDir, System.out::println)
+
+    return result
 }
