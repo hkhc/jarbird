@@ -19,14 +19,13 @@
 package io.hkhc.gradle.builder
 
 import groovy.lang.GroovyObject
-import io.hkhc.gradle.PublishConfig
+import io.hkhc.gradle.BintrayPublishConfig
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName
-import org.gradle.kotlin.dsl.register
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
@@ -37,7 +36,7 @@ class ArtifactoryConfig(
     private val extension: JarbirdExtension
 ) {
 
-    private val pubConfig = PublishConfig(project)
+    private val pubConfig = BintrayPublishConfig(project)
     private val pubName = extension.pubNameWithVariant()
 
     fun config() {
@@ -54,7 +53,7 @@ class ArtifactoryConfig(
                 repository(
                     delegateClosureOf<GroovyObject> {
                         setProperty("repoKey", "oss-snapshot-local")
-                        setProperty("username", pubConfig.bintrayUser)
+                        setProperty("username", pubConfig.bintrayUsername)
                         setProperty("password", pubConfig.bintrayApiKey)
                         setProperty("maven", true)
                     }

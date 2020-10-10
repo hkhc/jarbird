@@ -19,6 +19,7 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.test.ArtifactChecker
+import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import org.gradle.testkit.runner.GradleRunner
@@ -49,10 +50,12 @@ class BuildPluginMavenLocalTest {
     @Test
     fun `Normal publish plugin to Maven Local`() {
 
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1", "test.plugin")
+
         File("$tempProjectDir/pom.yaml")
             .writeText(
-                simplePom("test.group", "test.artifact", "0.1") + '\n' +
-                    pluginPom("test.plugin", "TestPlugin")
+                simplePom(coordinate) + '\n' +
+                    pluginPom(coordinate.pluginId?:"non-exist-plugin-id", "TestPlugin")
             )
 
         File("$tempProjectDir/build.gradle").writeText(
@@ -76,6 +79,6 @@ class BuildPluginMavenLocalTest {
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         ArtifactChecker()
-            .verifyRepostory(localRepoDir, "test.group", "test.artifact", "0.1", "jar")
+            .verifyRepostory(localRepoDir, coordinate, "jar")
     }
 }

@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import org.gradle.testkit.runner.BuildResult
@@ -31,11 +32,11 @@ fun PropertiesEditor.setupKeyStore() {
     "signing.secretKeyRingFile" to "gnupg/secring.gpg"
 }
 
-fun simplePom(group: String, artifactId: String, version: String): String {
+fun simplePom(coordinate: Coordinate): String {
     return """
-        group: $group
-        artifactId: $artifactId
-        version: $version
+        group: ${coordinate.group}
+        artifactId: ${coordinate.artifactId}
+        version: ${coordinate.version}
         description: Test artifact
         packaging: jar
 
@@ -72,6 +73,19 @@ fun buildGradle(): String {
         }
         jarbird {
             withMavenByProperties("mock")
+        }
+    """.trimIndent()
+}
+
+fun buildGradleCustomBintray(url: String): String {
+    return """
+        plugins {
+            kotlin("jvm") version "1.3.72"
+            `kotlin-dsl`
+            id("io.hkhc.jarbird")
+        }
+        jarbird {
+            bintrayApiUrl = "$url"
         }
     """.trimIndent()
 }

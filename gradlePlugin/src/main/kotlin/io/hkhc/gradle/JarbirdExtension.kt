@@ -99,11 +99,13 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
      */
     var mavenRepository: MavenEndpoint? = null
 
-//    fun withMavenCentral() {
-//        mavenRepository = project.mavenCentral()
-//    }
-
     fun withMavenByProperties(key: String) {
         mavenRepository = PropertyMavenEndpoint(project, key)
     }
+
+    /**
+     * Bintray alternative URL
+     */
+    var bintrayApiUrl: String? = null
+
 }

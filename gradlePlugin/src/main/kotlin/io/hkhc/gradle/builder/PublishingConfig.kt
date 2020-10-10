@@ -22,7 +22,7 @@ import io.hkhc.gradle.CLASSIFIER_JAVADOC
 import io.hkhc.gradle.CLASSIFIER_SOURCE
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.PUBLISH_GROUP
-import io.hkhc.gradle.PublishConfig
+import io.hkhc.gradle.BintrayPublishConfig
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.maven.MavenPomAdapter
 import io.hkhc.gradle.maven.mavenCentral
@@ -49,7 +49,6 @@ class PublishingConfig(
     private val pom: Pom
 ) {
 
-    private val pubConfig = PublishConfig(project)
     private val pubName = extension.pubNameWithVariant()
     private val ext = (project as ExtensionAware).extensions
     private var dokka = extension.dokka
@@ -152,18 +151,16 @@ class PublishingConfig(
 
         maven {
             name = "Maven${pubName.capitalize()}"
-            with(pubConfig) {
-                val endpointUrl =
-                    if (pom.isSnapshot()) {
-                        endpoint.snapshotUrl
-                    } else {
-                        endpoint.releaseUrl
-                    }
-                url = project.uri(endpointUrl)
-                credentials {
-                    username = endpoint.username
-                    password = endpoint.password
+            val endpointUrl =
+                if (pom.isSnapshot()) {
+                    endpoint.snapshotUrl
+                } else {
+                    endpoint.releaseUrl
                 }
+            url = project.uri(endpointUrl)
+            credentials {
+                username = endpoint.username
+                password = endpoint.password
             }
         }
     }

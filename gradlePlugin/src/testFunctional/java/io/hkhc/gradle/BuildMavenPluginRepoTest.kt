@@ -18,11 +18,10 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.MockRepositoryServer
-import io.hkhc.utils.FileTree
+import io.hkhc.gradle.test.Coordinate
+import io.hkhc.gradle.test.MavenPublishingChecker
+import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.utils.PropertiesEditor
-import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -64,11 +63,11 @@ class BuildMavenPluginRepoTest {
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
     lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockRepositoryServer
+    lateinit var mockRepositoryServer: MockMavenRepositoryServer
 
     @BeforeEach
     fun setUp() {
-        mockRepositoryServer = MockRepositoryServer()
+        mockRepositoryServer = MockMavenRepositoryServer()
     }
 
     @AfterEach
@@ -76,13 +75,13 @@ class BuildMavenPluginRepoTest {
         mockRepositoryServer.teardown()
     }
 
-    fun commonSetup(group: String, artifactId: String, version: String, basePath: String) {
-        mockRepositoryServer.setUp(group, artifactId, version, basePath)
+    fun commonSetup(coordinate: Coordinate) {
+        mockRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/pom.yaml")
             .writeText(
-                simplePom(group, artifactId, version) + '\n' +
-                    pluginPom("test.plugin", "TestPlugin")
+                simplePom(coordinate) + '\n' +
+                    pluginPom(coordinate.pluginId?:"non-exist-plugin-id", "TestPlugin")
             )
         File("$tempProjectDir/build.gradle.kts")
             .writeText(buildGradlePlugin())
@@ -94,40 +93,42 @@ class BuildMavenPluginRepoTest {
     @Test
     fun `Normal publish plugin to Maven Repository to release repository`() {
 
-        commonSetup("test.group", "test.artifact", "0.1", "/release")
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1", "test.plugin")
+        commonSetup(coordinate)
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore()
-            "repository.mock.release" to mockRepositoryServer.getServerUrl()
-            "repository.mock.snapshot" to "fake-url-that-is-not-going-to-work"
-            "repository.mock.username" to "username"
-            "repository.mock.password" to "password"
+            "repository.maven.mock.release" to mockRepositoryServer.getServerUrl()
+            "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
+            "repository.maven.mock.username" to "username"
+            "repository.maven.mock.password" to "password"
         }
 
         val task = "jbPublishToMavenRepository"
         val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        mockRepositoryServer.assertArtifacts("/release", mockRepositoryServer::transformReleaseVersion, "test.plugin")
+        MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockRepositoryServer.collectRequests())
     }
 
     @Test
     fun `Normal publish plugin to Maven Repository to snapshot repository`() {
 
-        commonSetup("test.group", "test.artifact", "0.1-SNAPSHOT", "/snapshot")
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT", "test.plugin")
+        commonSetup(coordinate)
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore()
-            "repository.mock.release" to "fake-url-that-is-not-going-to-work"
-            "repository.mock.snapshot" to mockRepositoryServer.getServerUrl()
-            "repository.mock.username" to "username"
-            "repository.mock.password" to "password"
+            "repository.maven.mock.release" to "fake-url-that-is-not-going-to-work"
+            "repository.maven.mock.snapshot" to mockRepositoryServer.getServerUrl()
+            "repository.maven.mock.username" to "username"
+            "repository.maven.mock.password" to "password"
         }
 
         val task = "jbPublishToMavenRepository"
         val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        mockRepositoryServer.assertArtifacts("/snapshot", mockRepositoryServer::transformSnapshotVersion, "test.plugin")
+        MavenPublishingChecker(coordinate).assertSnapshotArtifacts(mockRepositoryServer.collectRequests())
     }
 }

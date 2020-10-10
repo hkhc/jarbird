@@ -17,6 +17,7 @@
  */
 package io.hkhc.gradle.maven
 
+import groovy.lang.MissingPropertyException
 import io.hkhc.gradle.utils.LOG_PREFIX
 import io.hkhc.gradle.utils.detailMessageError
 import org.gradle.api.GradleException
@@ -44,7 +45,11 @@ fun Project.mavenCentral(): MavenEndpoint {
 }
 
 fun resolveProperty(project: Project, propertyName: String): String {
-    var value: String? = project.property(propertyName) as String?
+    var value: String? = try {
+        project.property(propertyName) as String?
+    } catch (e: MissingPropertyException) {
+        ""
+    }
     if (value == null) {
         detailMessageError(
             project.logger,

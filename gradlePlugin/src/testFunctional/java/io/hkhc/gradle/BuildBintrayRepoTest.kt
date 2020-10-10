@@ -18,66 +18,69 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.ArtifactChecker
+import io.hkhc.gradle.test.BintrayPublishingChecker
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.utils.FileTree
+import io.hkhc.gradle.test.MockBintrayRepositoryServer
 import io.hkhc.utils.PropertiesEditor
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
-class BuildMavenLocalTest {
+class BuildBintrayRepoTest {
 
-    // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
     lateinit var tempProjectDir: File
-
-    lateinit var localRepoDir: File
+    lateinit var mockRepositoryServer: MockBintrayRepositoryServer
 
     @BeforeEach
     fun setUp() {
-        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
-        localRepoDir = File(tempProjectDir, "localRepo")
-        localRepoDir.mkdirs()
-        System.setProperty("maven.repo.local", localRepoDir.absolutePath)
+        mockRepositoryServer = MockBintrayRepositoryServer()
     }
 
-    @Test
-    fun `Normal publish to Maven Local`() {
+    @AfterEach
+    fun teardown() {
+        mockRepositoryServer.teardown()
+    }
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
+    fun commonSetup(coordinate: Coordinate) {
+        mockRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/pom.yaml")
             .writeText(simplePom(coordinate))
+        File("$tempProjectDir/build.gradle.kts")
+            .writeText(buildGradleCustomBintray(mockRepositoryServer.getServerUrl()))
 
-        File("$tempProjectDir/build.gradle").writeText(
-            """
-            plugins {
-                id 'java'
-                id 'io.hkhc.jarbird'
-            }
-            jarbird {
-                maven = false
-            }
-            """.trimIndent()
-        )
+        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
+        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
+    }
+
+    @Test
+    fun `Normal publish to Bintray Repository to release repository`() {
+
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
+        commonSetup(coordinate)
+
+        val username = "username"
+        val repo = "maven"
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore()
+            "repository.bintray.username" to username
+            "repository.bintray.apikey" to "password"
         }
 
-        val task = "jbPublishToMavenLocal"
+        val task = "jbPublishToBintray"
         val result = runTask(task, tempProjectDir)
 
-        FileTree().dump(tempProjectDir, System.out::println)
-
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        ArtifactChecker()
-            .verifyRepostory(localRepoDir, coordinate, "jar")
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+        BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
+            mockRepositoryServer.collectRequests(),
+            username,
+            repo)
     }
+
 }

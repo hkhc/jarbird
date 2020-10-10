@@ -27,7 +27,7 @@ class PropertyMavenEndpoint(private val project: Project, private val key: Strin
 //        Exception("PropertyMavenEndpoint constructor").printStackTrace()
     }
 
-    private val keyPrefix = "repository"
+    private val keyPrefix = "repository.maven"
 
     override val releaseUrl: String
         get() {

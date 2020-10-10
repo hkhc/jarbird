@@ -23,13 +23,13 @@ import java.io.File
 
 class ArtifactChecker {
 
-    fun verifyRepostory(repoDir: File, groupId: String, artifactId: String, version: String, packaging: String) {
+    fun verifyRepostory(repoDir: File, coordinate: Coordinate, packaging: String) {
 
         Assert.assertTrue(repoDir.exists())
         val artifactPath =
-            groupId.replace('.', '/') + "/" +
-                artifactId + "/" +
-                version
+            coordinate.group.replace('.', '/') + "/" +
+                coordinate.artifactId + "/" +
+                coordinate.version
 
         val artifactDir = File(repoDir, artifactPath)
 
@@ -38,11 +38,13 @@ class ArtifactChecker {
 
         val fileSet = artifactDir.listFiles().toMutableSet()
 
-        verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.module"))
-        verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.pom"))
-        verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.jar"))
-        verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version-javadoc.jar"))
-        verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version-sources.jar"))
+        with (coordinate) {
+            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.module"))
+            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.pom"))
+            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.jar"))
+            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version-javadoc.jar"))
+            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version-sources.jar"))
+        }
 
         Assert.assertTrue(fileSet.isEmpty())
     }

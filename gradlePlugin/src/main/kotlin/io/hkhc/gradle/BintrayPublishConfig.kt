@@ -18,11 +18,28 @@
 
 package io.hkhc.gradle
 
+import groovy.lang.MissingPropertyException
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.provideDelegate
 
-class PublishConfig(project: Project) {
+class BintrayPublishConfig(val project: Project) {
 
-    val bintrayUser: String? by project
-    val bintrayApiKey: String? by project
+    val bintrayUsername: String
+        get() {
+            return try {
+                project.property("repository.bintray.username") as String
+            }
+            catch (e: MissingPropertyException) {
+                ""
+            }
+        }
+    val bintrayApiKey: String
+        get() {
+            return try {
+                project.property("repository.bintray.apikey") as String
+            }
+            catch (e: MissingPropertyException) {
+                ""
+            }
+        }
 }
