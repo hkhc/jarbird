@@ -21,12 +21,11 @@ package io.hkhc.gradle.builder
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import io.hkhc.gradle.JarbirdExtension
-import io.hkhc.gradle.BintrayPublishConfig
 import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.closureOf
-import io.hkhc.gradle.utils.LOG_PREFIX
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -36,7 +35,6 @@ class BintrayConfig(
     private val pom: Pom
 ) {
 
-    private val pubConfig = BintrayPublishConfig(project)
     private val pubName = extension.pubNameWithVariant()
 
     fun config() {
@@ -91,16 +89,18 @@ class BintrayConfig(
 
     private fun BintrayExtension.config() {
 
-        extension.bintrayApiUrl?.let {
-            apiUrl = it
+        val endpoint = extension.bintrayRepository!!
+
+        if (endpoint.releaseUrl != "") {
+            apiUrl = endpoint.releaseUrl
         }
 
         override = true
         dryRun = false
         publish = true
 
-        if (pubConfig.bintrayUsername != "") user = pubConfig.bintrayUsername
-        if (pubConfig.bintrayApiKey != "") key = pubConfig.bintrayApiKey
+        if (endpoint.username != "") user = endpoint.username
+        if (endpoint.apikey != "") key = endpoint.apikey
 
         if (pom.isGradlePlugin()) {
             setPublications(pubName, "${pubName}PluginMarkerMaven")

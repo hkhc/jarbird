@@ -52,7 +52,7 @@ class BuildBintrayRepoTest {
         File("$tempProjectDir/pom.yaml")
             .writeText(simplePom(coordinate))
         File("$tempProjectDir/build.gradle.kts")
-            .writeText(buildGradleCustomBintray(mockRepositoryServer.getServerUrl()))
+            .writeText(buildGradleCustomBintray())
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
@@ -69,6 +69,7 @@ class BuildBintrayRepoTest {
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore()
+            "repository.bintray.release" to mockRepositoryServer.getServerUrl()
             "repository.bintray.username" to username
             "repository.bintray.apikey" to "password"
         }
@@ -83,6 +84,4 @@ class BuildBintrayRepoTest {
             repo
         )
     }
-
-
 }

@@ -18,8 +18,9 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.maven.MavenEndpoint
-import io.hkhc.gradle.maven.PropertyMavenEndpoint
+import io.hkhc.gradle.maven.MavenCentralEndpoint
+import io.hkhc.gradle.maven.RepoEndpoint
+import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.Pom
 import org.gradle.api.Project
 
@@ -87,20 +88,16 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     /**
      * Specify maven repository for publishing.
      */
-    var mavenRepository: MavenEndpoint? = null
+    var mavenRepository: RepoEndpoint? = null
 
-    fun withMavenByProperties(key: String) {
-        mavenRepository = PropertyMavenEndpoint(project, key)
+    fun withMavenCentral() {
+        mavenRepository = MavenCentralEndpoint(project)
     }
 
-    /**
-     * Bintray alternative URL
-     */
-    var bintrayApiUrl: String? = null
+    fun withMavenByProperties(key: String) {
+        mavenRepository = PropertyRepoEndpoint(project, "maven.$key")
+    }
 
-    /**
-     * Artifactory alternative URL
-     */
-    var artifactoryApiUrl: String? = null
+    var bintrayRepository: RepoEndpoint? = null
 
 }

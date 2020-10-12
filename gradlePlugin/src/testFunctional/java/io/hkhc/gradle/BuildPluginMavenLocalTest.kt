@@ -20,9 +20,7 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -55,7 +53,7 @@ class BuildPluginMavenLocalTest {
         File("$tempProjectDir/pom.yaml")
             .writeText(
                 simplePom(coordinate) + '\n' +
-                    pluginPom(coordinate.pluginId?:"non-exist-plugin-id", "TestPlugin")
+                    pluginPom(coordinate.pluginId ?: "non-exist-plugin-id", "TestPlugin")
             )
 
         File("$tempProjectDir/build.gradle").writeText(

@@ -19,6 +19,7 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.builder.PublicationBuilder
+import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.PomFactory
 import io.hkhc.gradle.utils.ANDROID_LIBRARY_PLUGIN_ID
@@ -183,6 +184,8 @@ class JarbirdPlugin : Plugin<Project> {
         // Build Phase 1
         project.gradleAfterEvaluate { _ ->
             pom.syncWith(p)
+
+            extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
 
             // pre-check of final data, for child project
             // TODO handle multiple level child project?

@@ -18,9 +18,10 @@
 
 package io.hkhc.gradle.maven
 
-data class SimpleMavenEndpoint(
+data class SimpleRepoEndpoint(
     override val releaseUrl: String,
     override val snapshotUrl: String,
     override val username: String,
-    override val password: String
-) : MavenEndpoint
+    override val password: String,
+    override val apikey: String = ""
+) : RepoEndpoint

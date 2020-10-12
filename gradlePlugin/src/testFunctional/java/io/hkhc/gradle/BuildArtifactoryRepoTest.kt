@@ -52,8 +52,7 @@ class BuildArtifactoryRepoTest {
         File("$tempProjectDir/pom.yaml")
             .writeText(simplePom(coordinate))
         File("$tempProjectDir/build.gradle.kts")
-            .writeText(buildGradleCustomArtifactrory(mockRepositoryServer.getServerUrl()))
-
+            .writeText(buildGradleCustomArtifactrory())
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
     }
@@ -69,6 +68,7 @@ class BuildArtifactoryRepoTest {
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore()
+            "repository.bintray.snapshot" to mockRepositoryServer.getServerUrl()
             "repository.bintray.username" to username
             "repository.bintray.apikey" to "password"
         }
