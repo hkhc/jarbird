@@ -71,26 +71,16 @@ fun buildGradle(): String {
             `kotlin-dsl`
             id("io.hkhc.jarbird")
         }
+        repositories {
+            jcenter()
+        }
         jarbird {
             withMavenByProperties("mock")
         }
     """.trimIndent()
 }
 
-fun buildGradleCustomBintray(url: String): String {
-    return """
-        plugins {
-            kotlin("jvm") version "1.3.72"
-            `kotlin-dsl`
-            id("io.hkhc.jarbird")
-        }
-        jarbird {
-            bintrayApiUrl = "$url"
-        }
-    """.trimIndent()
-}
-
-fun buildGradleCustomArtifactrory(url: String): String {
+fun buildGradleCustomBintray(): String {
     return """
         plugins {
             kotlin("jvm") version "1.3.72"
@@ -98,11 +88,20 @@ fun buildGradleCustomArtifactrory(url: String): String {
             id("io.hkhc.jarbird")
         }
         repositories {
-            // mavenCentral()
             jcenter()
         }
-        jarbird {
-            artifactoryApiUrl = "$url"
+    """.trimIndent()
+}
+
+fun buildGradleCustomArtifactrory(): String {
+    return """
+        plugins {
+            kotlin("jvm") version "1.3.72"
+            `kotlin-dsl`
+            id("io.hkhc.jarbird")
+        }
+        repositories {
+            jcenter()
         }
     """.trimIndent()
 }
@@ -115,10 +114,9 @@ fun buildGradlePlugin(): String {
             `kotlin-dsl` 
             id("io.hkhc.jarbird")
         }
-            repositories {
-                // mavenCentral()
-                jcenter()
-            }
+        repositories {
+            jcenter()
+        }
         jarbird {
             withMavenByProperties("mock")
         }
