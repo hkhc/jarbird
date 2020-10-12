@@ -99,10 +99,10 @@ class BintrayConfig(
         dryRun = false
         publish = true
 
-        if (pubConfig.bintrayUsername!="") user = pubConfig.bintrayUsername
-        if (pubConfig.bintrayApiKey!="") key = pubConfig.bintrayApiKey
+        if (pubConfig.bintrayUsername != "") user = pubConfig.bintrayUsername
+        if (pubConfig.bintrayApiKey != "") key = pubConfig.bintrayApiKey
 
-        if (extension.gradlePlugin) {
+        if (pom.isGradlePlugin()) {
             setPublications(pubName, "${pubName}PluginMarkerMaven")
         } else {
             setPublications(pubName)

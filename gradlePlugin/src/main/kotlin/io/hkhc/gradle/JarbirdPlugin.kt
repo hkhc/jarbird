@@ -19,6 +19,7 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.builder.PublicationBuilder
+import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.PomFactory
 import io.hkhc.gradle.utils.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.utils.LOG_PREFIX
@@ -46,7 +47,7 @@ class JarbirdPlugin : Plugin<Project> {
     // TODO accept both pom.yml or pom.yaml
 
     @Suppress("ThrowsCount")
-    private fun precheck(project: Project) {
+    private fun precheck(pom: Pom, project: Project) {
         with(project) {
             if (group.toString().isBlank()) {
                 detailMessageError(
@@ -71,7 +72,7 @@ class JarbirdPlugin : Plugin<Project> {
                         "$PLUGIN_ID should not applied before $ANDROID_LIBRARY_PLUGIN_ID"
                     )
                 }
-                if (extension.gradlePlugin) {
+                if (pom.isGradlePlugin()) {
                     fatalMessage(
                         project,
                         "Cannot build Gradle plugin in Android project"
@@ -186,11 +187,7 @@ class JarbirdPlugin : Plugin<Project> {
             // pre-check of final data, for child project
             // TODO handle multiple level child project?
             if (!project.isMultiProjectRoot()) {
-                precheck(p)
-            }
-
-            if (pom.plugin != null) {
-                extension.gradlePlugin = true
+                precheck(pom, p)
             }
 
             with(p.pluginManager) {
@@ -202,7 +199,7 @@ class JarbirdPlugin : Plugin<Project> {
                     apply("org.gradle.signing")
                 }
 
-                if (extension.gradlePlugin) {
+                if (pom.isGradlePlugin()) {
 
                     /**
                      * @see com.gradle.publish.PublishPlugin
@@ -238,6 +235,7 @@ class JarbirdPlugin : Plugin<Project> {
         plugins anyway. We put the bintray extension configuration code at PublicationBuilder.buildPhase1, which is
         executed in another ProjectEvaluationListener setup before Bintray's. (@see PublicationBuilder)
          */
+
         with(project.pluginManager) {
             /**
              * @see com.jfrog.bintray.gradle.BintrayPlugin

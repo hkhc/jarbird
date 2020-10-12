@@ -18,8 +18,6 @@
 
 package io.hkhc.gradle.test
 
-import groovy.util.GroovyTestCase.assertEquals
-import io.kotest.assertions.fail
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -50,26 +48,26 @@ class MockBintrayRepositoryServer {
                 request.headers.forEach {
                     System.out.println("headers : ${it.first} = ${it.second}")
                 }
-                if (request.method=="POST") {
+                if (request.method == "POST") {
                     System.out.println("mock server request body : ${request.body.readString(Charset.defaultCharset())}")
                 }
                 return request.path?.let { path ->
-                    if (request.method=="HEAD" && path=="/packages/${username}/${repo}/${coordinate.artifactId}") {
+                    if (request.method == "HEAD" && path == "/packages/$username/$repo/${coordinate.artifactId}") {
                         System.out.println("probe package")
                         MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
-                    } else if (request.method=="POST" && path=="/packages/${username}/${repo}") {
+                    } else if (request.method == "POST" && path == "/packages/$username/$repo") {
                         System.out.println("create package")
                         MockResponse().setResponseCode(HTTP_SUCCESS)
-                    } else if (request.method=="HEAD" && path=="/packages/${username}/${repo}/${coordinate.artifactId}/versions/${coordinate.version}") {
+                    } else if (request.method == "HEAD" && path == "/packages/$username/$repo/${coordinate.artifactId}/versions/${coordinate.version}") {
                         System.out.println("probe version")
                         MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
-                    } else if (request.method=="POST" && path=="/packages/${username}/${repo}/${coordinate.artifactId}/versions") {
+                    } else if (request.method == "POST" && path == "/packages/$username/$repo/${coordinate.artifactId}/versions") {
                         System.out.println("create version")
                         MockResponse().setResponseCode(HTTP_SUCCESS)
-                    } else if (request.method=="PUT" && path.startsWith("/content/${username}/${repo}/${coordinate.artifactId}/${coordinate.version}")) {
+                    } else if (request.method == "PUT" && path.startsWith("/content/$username/$repo/${coordinate.artifactId}/${coordinate.version}")) {
                         System.out.println("publish file")
                         MockResponse().setResponseCode(HTTP_SUCCESS)
-                    } else if (request.method=="POST" && path=="/content/${username}/${repo}/${coordinate.artifactId}/${coordinate.version}/publish") {
+                    } else if (request.method == "POST" && path == "/content/$username/$repo/${coordinate.artifactId}/${coordinate.version}/publish") {
                         System.out.println("finalize publishing")
                         fileCount++
                         MockResponse().setBody("{ \"files\": $fileCount }").setResponseCode(HTTP_SUCCESS)
@@ -110,6 +108,7 @@ class MockBintrayRepositoryServer {
 
     fun collectRequests(): List<RecordedRequest> {
         val count = server.requestCount
+        System.out.println("$count recorded requests")
         return mutableListOf<RecordedRequest>().apply {
             for (i in 0 until count) {
                 add(server.takeRequest())
@@ -120,5 +119,4 @@ class MockBintrayRepositoryServer {
     fun getServerUrl(): String {
         return server.url(baseUrl).toString()
     }
-
 }
