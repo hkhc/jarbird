@@ -18,8 +18,6 @@
 
 package io.hkhc.gradle.test
 
-import groovy.util.GroovyTestCase.assertEquals
-import io.kotest.assertions.fail
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -108,5 +106,4 @@ class MockMavenRepositoryServer {
     fun getServerUrl(): String {
         return server.url(baseUrl).toString()
     }
-
 }

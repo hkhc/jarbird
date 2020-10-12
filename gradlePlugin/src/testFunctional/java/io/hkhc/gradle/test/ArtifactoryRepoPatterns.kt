@@ -19,7 +19,9 @@
 package io.hkhc.gradle.test
 
 class ArtifactoryRepoPatterns(
-    val coordinate: Coordinate, val username: String, val repo: String
+    val coordinate: Coordinate,
+    val username: String,
+    val repo: String
 ) {
 
     val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")

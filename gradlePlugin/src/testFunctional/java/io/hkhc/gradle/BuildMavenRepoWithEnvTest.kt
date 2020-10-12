@@ -78,5 +78,4 @@ class BuildMavenRepoWithEnvTest {
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockRepositoryServer.collectRequests())
     }
-
 }

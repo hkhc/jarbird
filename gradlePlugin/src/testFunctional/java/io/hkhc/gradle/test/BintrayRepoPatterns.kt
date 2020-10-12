@@ -19,7 +19,9 @@
 package io.hkhc.gradle.test
 
 class BintrayRepoPatterns(
-    val coordinate: Coordinate, val username: String, val repo: String
+    val coordinate: Coordinate,
+    val username: String,
+    val repo: String
 ) {
 
     val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
@@ -34,12 +36,16 @@ class BintrayRepoPatterns(
 
     fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) = with(coordinate) {
         pluginId?.let {
-            listOf("/content/$username/$repo/"+
-                "$artifactId/$version/"+
-                "${pluginId.replace('.', '/')}/$pluginId.gradle.plugin")
+            listOf(
+                "/content/$username/$repo/" +
+                    "$artifactId/$version/" +
+                    "${pluginId.replace('.', '/')}/$pluginId.gradle.plugin"
+            )
                 .flatMap {
-                    listOf("$it/$version/"+
-                        "$pluginId.gradle.plugin-${versionTransformer(version)}.pom")
+                    listOf(
+                        "$it/$version/" +
+                            "$pluginId.gradle.plugin-${versionTransformer(version)}.pom"
+                    )
                 }
         } ?: listOf()
     }

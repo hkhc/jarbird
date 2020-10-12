@@ -38,7 +38,7 @@ class ArtifactChecker {
 
         val fileSet = artifactDir.listFiles().toMutableSet()
 
-        with (coordinate) {
+        with(coordinate) {
             verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.module"))
             verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.pom"))
             verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.jar"))

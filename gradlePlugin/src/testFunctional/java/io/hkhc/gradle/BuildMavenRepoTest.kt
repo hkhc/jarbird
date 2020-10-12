@@ -34,10 +34,10 @@ import java.io.File
  * snapshot / release
  * +- MavenLocal
  * +- MavenRepository
- * - Bintray
- * - artifactory
- * - Android AAR
- * - multivariant Android AAR
+ * + Bintray
+ * + artifactory
+ * Android AAR
+ * multivariant Android AAR
  *
  * Multi-project
  *
@@ -45,7 +45,7 @@ import java.io.File
  * plugin gradle plugin portal
  * + plugin mavenLocal
  * + plugin mavenrepository
- * plugin bintray
+ * + plugin bintray
  * - plugin artifactory
  *
  * all - mavenrepository
@@ -87,7 +87,6 @@ class BuildMavenRepoTest {
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
     }
-
 
     @Test
     fun `Normal publish to Maven Repository to release repository`() {

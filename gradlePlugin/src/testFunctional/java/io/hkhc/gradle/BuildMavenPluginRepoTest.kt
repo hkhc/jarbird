@@ -81,7 +81,7 @@ class BuildMavenPluginRepoTest {
         File("$tempProjectDir/pom.yaml")
             .writeText(
                 simplePom(coordinate) + '\n' +
-                    pluginPom(coordinate.pluginId?:"non-exist-plugin-id", "TestPlugin")
+                    pluginPom(coordinate.pluginId ?: "non-exist-plugin-id", "TestPlugin")
             )
         File("$tempProjectDir/build.gradle.kts")
             .writeText(buildGradlePlugin())

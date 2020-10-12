@@ -72,6 +72,4 @@ class MavenPublishingChecker(val coordinate: Coordinate) {
             remainingPaths.map { it.path }.joinToString("\n")
         )
     }
-
-
 }

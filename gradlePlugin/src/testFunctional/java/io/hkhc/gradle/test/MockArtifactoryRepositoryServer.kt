@@ -44,39 +44,41 @@ class MockArtifactoryRepositoryServer {
         server.dispatcher = object : Dispatcher() {
             var fileCount = 0
             override fun dispatch(request: RecordedRequest): MockResponse {
-                System.out.println("AF mock server request : ${request.method} ${request.path}")
-                request.headers.forEach {
-                    System.out.println("AF headers : ${it.first} = ${it.second}")
-                }
-                if (request.method == "POST") {
-                    System.out.println("AF mock server request body : ${request.body.readString(Charset.defaultCharset())}")
-                }
-                return request.path?.let { path ->
-                    if (request.method == "PUT" &&
-                        path.startsWith(
-                            "/base/oss-snapshot-local/${coordinate.group.replace('.','/')}/" +
-                                "${coordinate.artifactId}/${coordinate.version}"
-                        )
-                    ) {
-                        System.out.println("publish file")
-                        MockResponse().setResponseCode(HTTP_SUCCESS)
-                    } else if (request.method == "GET" && path == "/base/api/system/version") {
-                        MockResponse().setBody(
-                            """
-                            {
-                              "version" : "6.18.1",
-                              "revision" : "61801900",
-                              "addons" : [],
-                              "license" : "1e7f3be7c2a8bbfaf1c4e7c41779d89664a440e93"
-                            }
-                        """.trimIndent()
-                        )
-                    } else if (request.method == "PUT" && path == "/base/api/build") {
-                        MockResponse().setResponseCode(HTTP_SUCCESS)
-                    } else {
-                        MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
+                with(request) {
+                    System.out.println("AF mock server request : $method $path")
+                    headers.forEach {
+                        System.out.println("AF headers : ${it.first} = ${it.second}")
                     }
-                } ?: MockResponse().setResponseCode(HTTP_SERVICE_NOT_AVAILABLE)
+                    if (method == "POST") {
+                        System.out.println("AF mock server request body : ${body.readString(Charset.defaultCharset())}")
+                    }
+                    return path?.let { path ->
+                        val prefix = with(coordinate) {
+                            "/base/oss-snapshot-local/" +
+                                "${group.replace('.', '/')}/" +
+                                "$artifactId/$version"
+                        }
+                        if (method == "PUT" && path.startsWith(prefix)) {
+                            System.out.println("publish file")
+                            MockResponse().setResponseCode(HTTP_SUCCESS)
+                        } else if (method == "GET" && path == "/base/api/system/version") {
+                            MockResponse().setBody(
+                                """
+                                {
+                                  "version" : "6.18.1",
+                                  "revision" : "61801900",
+                                  "addons" : [],
+                                  "license" : "1e7f3be7c2a8bbfaf1c4e7c41779d89664a440e93"
+                                }
+                                """.trimIndent()
+                            )
+                        } else if (method == "PUT" && path == "/base/api/build") {
+                            MockResponse().setResponseCode(HTTP_SUCCESS)
+                        } else {
+                            MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
+                        }
+                    } ?: MockResponse().setResponseCode(HTTP_SERVICE_NOT_AVAILABLE)
+                }
             }
         }
         server.start()

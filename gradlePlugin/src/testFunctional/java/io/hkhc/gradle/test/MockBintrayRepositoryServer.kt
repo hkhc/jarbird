@@ -44,37 +44,51 @@ class MockBintrayRepositoryServer {
         server.dispatcher = object : Dispatcher() {
             var fileCount = 0
             override fun dispatch(request: RecordedRequest): MockResponse {
-                System.out.println("mock server request : ${request.method} ${request.path}")
-                request.headers.forEach {
-                    System.out.println("headers : ${it.first} = ${it.second}")
-                }
-                if (request.method == "POST") {
-                    System.out.println("mock server request body : ${request.body.readString(Charset.defaultCharset())}")
-                }
-                return request.path?.let { path ->
-                    if (request.method == "HEAD" && path == "/packages/$username/$repo/${coordinate.artifactId}") {
-                        System.out.println("probe package")
-                        MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
-                    } else if (request.method == "POST" && path == "/packages/$username/$repo") {
-                        System.out.println("create package")
-                        MockResponse().setResponseCode(HTTP_SUCCESS)
-                    } else if (request.method == "HEAD" && path == "/packages/$username/$repo/${coordinate.artifactId}/versions/${coordinate.version}") {
-                        System.out.println("probe version")
-                        MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
-                    } else if (request.method == "POST" && path == "/packages/$username/$repo/${coordinate.artifactId}/versions") {
-                        System.out.println("create version")
-                        MockResponse().setResponseCode(HTTP_SUCCESS)
-                    } else if (request.method == "PUT" && path.startsWith("/content/$username/$repo/${coordinate.artifactId}/${coordinate.version}")) {
-                        System.out.println("publish file")
-                        MockResponse().setResponseCode(HTTP_SUCCESS)
-                    } else if (request.method == "POST" && path == "/content/$username/$repo/${coordinate.artifactId}/${coordinate.version}/publish") {
-                        System.out.println("finalize publishing")
-                        fileCount++
-                        MockResponse().setBody("{ \"files\": $fileCount }").setResponseCode(HTTP_SUCCESS)
-                    } else {
-                        MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
+                with(request) {
+                    System.out.println("mock server request : $method $path")
+                    headers.forEach {
+                        System.out.println("headers : ${it.first} = ${it.second}")
                     }
-                } ?: MockResponse().setResponseCode(HTTP_SERVICE_NOT_AVAILABLE)
+                    if (method == "POST") {
+                        System.out.println("mock server request body : ${body.readString(Charset.defaultCharset())}")
+                    }
+                    return path?.let { path ->
+                        with(coordinate) {
+                            if (method == "HEAD" && path == "/packages/$username/$repo/$artifactId") {
+                                System.out.println("probe package")
+                                MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
+                            } else if (method == "POST" &&
+                                path == "/packages/$username/$repo"
+                            ) {
+                                System.out.println("create package")
+                                MockResponse().setResponseCode(HTTP_SUCCESS)
+                            } else if (method == "HEAD" &&
+                                path == "/packages/$username/$repo/$artifactId/versions/$version"
+                            ) {
+                                System.out.println("probe version")
+                                MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
+                            } else if (method == "POST" &&
+                                path == "/packages/$username/$repo/$artifactId/versions"
+                            ) {
+                                System.out.println("create version")
+                                MockResponse().setResponseCode(HTTP_SUCCESS)
+                            } else if (method == "PUT" &&
+                                path.startsWith("/content/$username/$repo/$artifactId/$version")
+                            ) {
+                                System.out.println("publish file")
+                                MockResponse().setResponseCode(HTTP_SUCCESS)
+                            } else if (method == "POST" &&
+                                path == "/content/$username/$repo/$artifactId/$version/publish"
+                            ) {
+                                System.out.println("finalize publishing")
+                                fileCount++
+                                MockResponse().setBody("{ \"files\": $fileCount }").setResponseCode(HTTP_SUCCESS)
+                            } else {
+                                MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
+                            }
+                        }
+                    } ?: MockResponse().setResponseCode(HTTP_SERVICE_NOT_AVAILABLE)
+                }
             }
         }
         server.start()

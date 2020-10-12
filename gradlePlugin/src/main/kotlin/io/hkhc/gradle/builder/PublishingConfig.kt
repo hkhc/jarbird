@@ -22,7 +22,6 @@ import io.hkhc.gradle.CLASSIFIER_JAVADOC
 import io.hkhc.gradle.CLASSIFIER_SOURCE
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.PUBLISH_GROUP
-import io.hkhc.gradle.BintrayPublishConfig
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.maven.MavenPomAdapter
 import io.hkhc.gradle.maven.mavenCentral
