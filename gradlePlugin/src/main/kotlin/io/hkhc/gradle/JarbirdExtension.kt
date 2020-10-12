@@ -39,16 +39,6 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     var bintray = true
 
     /**
-     * Configure for OSS JFrog Snapshot publishing or not
-     */
-    var ossArtifactory = true
-
-    /**
-     * Configure for Gradle plugin publishing or not (reserve for future use)
-     */
-    var gradlePlugin = false
-
-    /**
      * Configure for artifact signing or not
      */
     var signing = true
@@ -107,5 +97,4 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
      * Bintray alternative URL
      */
     var bintrayApiUrl: String? = null
-
 }

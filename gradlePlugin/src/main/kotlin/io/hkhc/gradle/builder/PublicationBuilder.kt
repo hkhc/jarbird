@@ -24,6 +24,7 @@ import io.hkhc.gradle.PLUGIN_ID
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.utils.LOG_PREFIX
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 /**
@@ -87,24 +88,25 @@ class PublicationBuilder(
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
                 if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) &&
-                    extension.ossArtifactory
+                    extension.bintray
                 ) {
                     ArtifactoryConfig(this, extension).config()
                 }
             } else {
                 logger.info(
                     if (this == rootProject) {
-                        "$LOG_PREFIX Configure project '$name' for single-project publishing"
+                        "$LOG_PREFIX Configure project '$name' for single-project publishing bintray ${extension.bintray} gradlePlugin ${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}"
                     } else {
                         "$LOG_PREFIX Configure child project '$name' for multi-project publishing"
                     }
                 )
 
-                if (extension.bintray) {
-                    BintrayConfig(this, extension, pom).config()
-                }
+                logger.info("bintray ${extension.bintray} gradlePlugin ${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}")
 
-                if (extension.ossArtifactory) {
+                /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
+                if (extension.bintray && !(pom.isGradlePlugin() && pom.isSnapshot())) {
+                    logger.info("config bintray and artifactory")
+                    BintrayConfig(this, extension, pom).config()
                     ArtifactoryConfig(this, extension).config()
                 }
             }
@@ -114,7 +116,7 @@ class PublicationBuilder(
     @Suppress("unused")
     fun buildPhase2() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 2 of 4")
-        if (extension.gradlePlugin) {
+        if (pom.isGradlePlugin()) {
             PluginPublishingConfig(project, extension, pom).config()
         }
     }
@@ -122,7 +124,7 @@ class PublicationBuilder(
     @Suppress("unused")
     fun buildPhase3() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 3 of 4")
-        if (extension.gradlePlugin) {
+        if (pom.isGradlePlugin()) {
             PluginPublishingConfig(project, extension, pom).config2()
         }
     }
