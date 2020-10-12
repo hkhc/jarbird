@@ -90,6 +90,23 @@ fun buildGradleCustomBintray(url: String): String {
     """.trimIndent()
 }
 
+fun buildGradleCustomArtifactrory(url: String): String {
+    return """
+        plugins {
+            kotlin("jvm") version "1.3.72"
+            `kotlin-dsl`
+            id("io.hkhc.jarbird")
+        }
+        repositories {
+            // mavenCentral()
+            jcenter()
+        }
+        jarbird {
+            artifactoryApiUrl = "$url"
+        }
+    """.trimIndent()
+}
+
 // why does org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.72 cannot be load successfully with mavenCentral() ??
 fun buildGradlePlugin(): String {
     return """

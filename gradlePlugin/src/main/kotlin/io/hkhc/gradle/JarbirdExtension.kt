@@ -97,4 +97,10 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
      * Bintray alternative URL
      */
     var bintrayApiUrl: String? = null
+
+    /**
+     * Artifactory alternative URL
+     */
+    var artifactoryApiUrl: String? = null
+
 }
