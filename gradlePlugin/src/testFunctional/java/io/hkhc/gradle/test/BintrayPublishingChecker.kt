@@ -28,8 +28,11 @@ class BintrayPublishingChecker(val coordinate: Coordinate) {
         var matched = requests
             .filter { it.method == "PUT" }
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
-        Assertions.assertTrue(matched, "$pathRegex does not match any recorded request\n"+
-        requests.map {it.path}.joinToString("\n"))
+        Assertions.assertTrue(
+            matched,
+            "$pathRegex does not match any recorded request\n" + "x" +
+                requests.map { it.path }.joinToString("\n")
+        )
     }
 
     private fun transformReleaseVersion(version: String) = version
@@ -77,6 +80,4 @@ class BintrayPublishingChecker(val coordinate: Coordinate) {
             "all request to repository server are expected"
         )
     }
-
-
 }

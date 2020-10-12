@@ -59,7 +59,7 @@ class BuildBintrayRepoTest {
     }
 
     @Test
-    fun `Normal publish to Bintray Repository to release repository`() {
+    fun `Normal release publish to Bintray Repository`() {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1")
         commonSetup(coordinate)
@@ -80,7 +80,38 @@ class BuildBintrayRepoTest {
         BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
             mockRepositoryServer.collectRequests(),
             username,
-            repo)
+            repo
+        )
     }
 
+    // Publish snapshot gradle plugin to Bintray / OSS Artifactory is no longer supported.
+//    @Test
+//    fun `Normal publish snapshot to Bintray Repository`() {
+//
+//        val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
+//        commonSetup(coordinate)
+//
+//        val username = "username"
+//        val repo = "maven"
+//
+//        PropertiesEditor("$tempProjectDir/gradle.properties") {
+//            setupKeyStore()
+//            "repository.bintray.username" to username
+//            "repository.bintray.apikey" to "password"
+//        }
+//
+//        val task = "jbPublishToBintray"
+//        val result = runTask(task, tempProjectDir)
+//
+//        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+//        BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
+//            mockRepositoryServer.collectRequests().apply {
+//                forEach {
+//                    System.err.println("recorded request ${it.path}")
+//                }
+//            },
+//            username,
+//            repo
+//        )
+//    }
 }

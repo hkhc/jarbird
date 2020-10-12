@@ -62,7 +62,7 @@ class BuildBintrayPluginRepoTest {
     }
 
     @Test
-    fun `Normal publish to Bintray Repository to release repository`() {
+    fun `Normal release publish plugin to Bintray Repository`() {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1", "test.plugin")
         commonSetup(coordinate)

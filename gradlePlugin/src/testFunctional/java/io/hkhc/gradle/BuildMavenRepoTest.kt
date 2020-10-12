@@ -46,7 +46,7 @@ import java.io.File
  * + plugin mavenLocal
  * + plugin mavenrepository
  * plugin bintray
- * plugin artifactory
+ * - plugin artifactory
  *
  * all - mavenrepository
  * all - bintray
