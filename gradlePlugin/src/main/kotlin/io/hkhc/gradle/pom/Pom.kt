@@ -279,6 +279,8 @@ data class Pom(
 
     fun isSnapshot() = version?.endsWith("-SNAPSHOT") ?: false
 
+    fun isGradlePlugin() = plugin != null
+
     /**
      * See https://central.sonatype.org/pages/requirements.html#sufficient-metadata
      * for the detail accounts of POM metadata needs to publish to Maven Central.
