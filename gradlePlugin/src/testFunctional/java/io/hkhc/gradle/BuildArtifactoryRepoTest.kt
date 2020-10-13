@@ -80,7 +80,7 @@ class BuildArtifactoryRepoTest {
         ArtifactoryPublishingChecker(coordinate).assertReleaseArtifacts(
             mockRepositoryServer.collectRequests().apply {
                 forEach {
-                    System.err.println("recorded request ${it.path}")
+                    println("recorded request ${it.path}")
                 }
             },
             username,

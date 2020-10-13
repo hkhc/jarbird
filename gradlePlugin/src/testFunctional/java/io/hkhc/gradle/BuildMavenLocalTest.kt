@@ -73,7 +73,7 @@ class BuildMavenLocalTest {
         val task = "jbPublishToMavenLocal"
         val result = runTask(task, tempProjectDir)
 
-        FileTree().dump(tempProjectDir, System.out::println)
+        //FileTree().dump(tempProjectDir, System.out::println)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         ArtifactChecker()

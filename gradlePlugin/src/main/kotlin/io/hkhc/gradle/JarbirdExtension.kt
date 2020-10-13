@@ -24,7 +24,7 @@ import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.Pom
 import org.gradle.api.Project
 
-// Gradle plugin extensions must be open class so that Gradle system can "decorate" it.
+// Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.
 open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     lateinit var pom: Pom

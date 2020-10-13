@@ -30,7 +30,7 @@ class BintrayPublishingChecker(val coordinate: Coordinate) {
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
         Assertions.assertTrue(
             matched,
-            "$pathRegex does not match any recorded request\n" + "x" +
+            "$pathRegex does not match any recorded request\n" +
                 requests.map { it.path }.joinToString("\n")
         )
     }
@@ -62,9 +62,7 @@ class BintrayPublishingChecker(val coordinate: Coordinate) {
             coordinate,
             username,
             repo
-        ).let {
-            it.list(versionTransformer)
-        }.apply {
+        ).list(versionTransformer).apply {
             forEach { assertFile(recordedRequests, it) }
         }
 
