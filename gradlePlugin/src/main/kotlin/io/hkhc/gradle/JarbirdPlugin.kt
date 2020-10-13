@@ -18,6 +18,8 @@
 
 package io.hkhc.gradle
 
+import com.gradle.publish.PublishPlugin
+import com.jfrog.bintray.gradle.BintrayPlugin
 import io.hkhc.gradle.builder.PublicationBuilder
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.Pom
@@ -29,6 +31,12 @@ import io.hkhc.gradle.utils.fatalMessage
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+import org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
+import org.gradle.plugins.signing.SigningPlugin
+import org.jetbrains.dokka.gradle.DokkaPlugin
+import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
+import java.io.File
 
 @Suppress("unused")
 class JarbirdPlugin : Plugin<Project> {
@@ -164,16 +172,16 @@ class JarbirdPlugin : Plugin<Project> {
         with(project.pluginManager) {
 
             /**
-             * @see org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+             * "org.gradle.maven-publish"
              * no evaluation listener
              */
-            apply("org.gradle.maven-publish")
+            apply(MavenPublishPlugin::class.java)
 
             /**
-             * @see org.jetbrains.dokka.gradle.DokkaPlugin
+\             * "org.jetbrains.dokka"
              * no evaluation listener
              */
-            apply("org.jetbrains.dokka")
+            apply(DokkaPlugin::class.java)
         }
 
         /* Under the following situation we need plugins to be applied within the Gradle-scope afterEvaluate
@@ -196,29 +204,30 @@ class JarbirdPlugin : Plugin<Project> {
             with(p.pluginManager) {
                 if (extension.signing) {
                     /**
-                     * @see org.gradle.plugins.signing.SigningPlugin
+                     * "org.gradle.signing"
                      * no evaluation listener
                      */
-                    apply("org.gradle.signing")
+                    apply(SigningPlugin::class.java)
                 }
 
                 if (pom.isGradlePlugin()) {
 
                     /**
-                     * @see com.gradle.publish.PublishPlugin
+                     * "com.gradle.plugin-publish"
                      *      project.afterEvaluate
                      *          setup sourcejar docjar tasks
                      */
-                    apply("com.gradle.plugin-publish")
+                    apply(PublishPlugin::class.java)
 
                     /**
                      * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
+                     * "org.gradle.java-gradle-plugin"
                      * project.afterEvaluate
                      *      add testkit dependency
                      * project.afterEvaluate
                      *      validate plugin declaration
                      */
-                    apply("org.gradle.java-gradle-plugin")
+                    apply(JavaGradlePluginPlugin::class.java)
                 }
             }
         }
@@ -241,23 +250,23 @@ class JarbirdPlugin : Plugin<Project> {
 
         with(project.pluginManager) {
             /**
-             * @see com.jfrog.bintray.gradle.BintrayPlugin
+             * "com.jfrog.bintray"
              * ProjectsEvaluationListener
              *     afterEvaluate:
              *         bintrayUpload task depends on subProject bintrayUpload
              *     projectEvaluated:
              *         bintrayUpload task depends on publishToMavenLocal
              */
-            apply("com.jfrog.bintray")
+            apply(BintrayPlugin::class.java)
 
             /**
-             * @see org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
+             * "com.jfrog.artifactory"
              *     afterEvaluate:
              *         artifactoryTasks task depends on subProject
              *     projectEvaluated:
              *         finialize artifactoryTasks task
              */
-            apply("com.jfrog.artifactory")
+            apply(ArtifactoryPlugin::class.java)
         }
 
         // Build phase 3
