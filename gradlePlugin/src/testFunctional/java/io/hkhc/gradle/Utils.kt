@@ -32,26 +32,26 @@ fun PropertiesEditor.setupKeyStore() {
     "signing.secretKeyRingFile" to "gnupg/secring.gpg"
 }
 
-fun simplePom(coordinate: Coordinate): String {
-    return """
-        group: ${coordinate.group}
-        artifactId: ${coordinate.artifactId}
-        version: ${coordinate.version}
-        description: Test artifact
-        packaging: jar
+fun simplePom(coordinate: Coordinate) = with(coordinate) {
+    """
+    group: $group
+    artifactId: $artifactId
+    version: $version
+    description: Test artifact
+    packaging: jar
 
-        licenses:
-          - name: Apache-2.0
-            dist: repo
+    licenses:
+      - name: Apache-2.0
+        dist: repo
 
-        developers:
-          - id: test.user
-            name: Test User
-            email: test.user@mail.com
+    developers:
+      - id: test.user
+        name: Test User
+        email: test.user@mail.com
 
-        scm:
-          repoType: github.com
-          repoName: test.user/test.repo
+    scm:
+      repoType: github.com
+      repoName: test.user/test.repo
     """.trimIndent()
 }
 
@@ -63,6 +63,8 @@ fun pluginPom(id: String, className: String): String {
             implementationClass: $className
     """.trimIndent()
 }
+
+// jcenter is required by dokka, mavenCentral alone is not enough
 
 fun buildGradle(): String {
     return """
@@ -127,12 +129,13 @@ fun runTask(task: String, projectDir: File): BuildResult {
 
     val result = GradleRunner.create()
         .withProjectDir(projectDir)
+        .withEnvironment(mapOf("GRADLE_USER_HOME" to System.getenv()["HOME"]+"/.gradle"))
         .withArguments(task)
         .withPluginClasspath()
-        .withDebug(true)
+        .forwardOutput()
         .build()
 
-    FileTree().dump(projectDir, System.out::println)
+    // FileTree().dump(projectDir, System.out::println)
 
     return result
 }
