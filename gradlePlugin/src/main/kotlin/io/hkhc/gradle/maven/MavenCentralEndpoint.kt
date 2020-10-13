@@ -60,3 +60,8 @@ class MavenCentralEndpoint(val project: Project) : RepoEndpoint {
     override val apikey: String
         get() = ""
 }
+
+fun Project.mavenCentral(): RepoEndpoint {
+    return MavenCentralEndpoint(this)
+}
+

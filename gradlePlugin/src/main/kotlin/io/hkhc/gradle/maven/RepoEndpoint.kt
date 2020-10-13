@@ -42,10 +42,6 @@ interface RepoEndpoint {
 fun Project.byProperty(key: String): RepoEndpoint {
     return PropertyRepoEndpoint(this, key)
 }
-fun Project.mavenCentral(): RepoEndpoint {
-    return MavenCentralEndpoint(this)
-}
-
 fun resolveProperty(project: Project, propertyName: String): String {
     var value: String? = try {
         project.property(propertyName) as String?
