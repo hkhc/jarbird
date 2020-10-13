@@ -38,9 +38,6 @@ class MockArtifactoryRepositoryServer {
         this.baseUrl = baseUrl
         server = MockWebServer()
 
-        val username = "username"
-        val repo = "maven"
-
         server.dispatcher = object : Dispatcher() {
             var fileCount = 0
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -112,13 +109,8 @@ class MockArtifactoryRepositoryServer {
 
     fun collectRequests(): List<RecordedRequest> {
         val count = server.requestCount
-        System.out.println("$count recorded requests")
-        return mutableListOf<RecordedRequest>()
-            .apply {
-                for (i in 0 until count) {
-                    add(server.takeRequest())
-                }
-            }
+        println("$count recorded requests")
+        return List(count) { server.takeRequest() }
             .filter { it.path?.let { path -> !path.startsWith("/base/api") } ?: false }
     }
 

@@ -22,6 +22,7 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
+import org.gradle.api.GradleException
 import java.nio.charset.Charset
 
 @Suppress("TooManyFunctions")
@@ -44,43 +45,46 @@ class MockBintrayRepositoryServer {
         server.dispatcher = object : Dispatcher() {
             var fileCount = 0
             override fun dispatch(request: RecordedRequest): MockResponse {
+                println("mock server request")
                 with(request) {
-                    System.out.println("mock server request : $method $path")
+                    println("mock server request : $method $path")
                     headers.forEach {
-                        System.out.println("headers : ${it.first} = ${it.second}")
+                        println("headers : ${it.first} = ${it.second}")
                     }
                     if (method == "POST") {
-                        System.out.println("mock server request body : ${body.readString(Charset.defaultCharset())}")
+                        println("mock server request body : ${body.readString(Charset.defaultCharset())}")
                     }
                     return path?.let { path ->
                         with(coordinate) {
-                            if (method == "HEAD" && path == "/packages/$username/$repo/$artifactId") {
-                                System.out.println("probe package")
+                            if (method == "HEAD" &&
+                                path == "/packages/$username/$repo/$artifactId"
+                            ) {
+                                println("probe package")
                                 MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
                             } else if (method == "POST" &&
                                 path == "/packages/$username/$repo"
                             ) {
-                                System.out.println("create package")
+                                println("create package")
                                 MockResponse().setResponseCode(HTTP_SUCCESS)
                             } else if (method == "HEAD" &&
                                 path == "/packages/$username/$repo/$artifactId/versions/$version"
                             ) {
-                                System.out.println("probe version")
+                                println("probe version")
                                 MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
                             } else if (method == "POST" &&
                                 path == "/packages/$username/$repo/$artifactId/versions"
                             ) {
-                                System.out.println("create version")
+                                println("create version")
                                 MockResponse().setResponseCode(HTTP_SUCCESS)
                             } else if (method == "PUT" &&
                                 path.startsWith("/content/$username/$repo/$artifactId/$version")
                             ) {
-                                System.out.println("publish file")
+                                println("publish file")
                                 MockResponse().setResponseCode(HTTP_SUCCESS)
                             } else if (method == "POST" &&
                                 path == "/content/$username/$repo/$artifactId/$version/publish"
                             ) {
-                                System.out.println("finalize publishing")
+                                println("finalize publishing")
                                 fileCount++
                                 MockResponse().setBody("{ \"files\": $fileCount }").setResponseCode(HTTP_SUCCESS)
                             } else {
@@ -88,6 +92,8 @@ class MockBintrayRepositoryServer {
                             }
                         }
                     } ?: MockResponse().setResponseCode(HTTP_SERVICE_NOT_AVAILABLE)
+
+
                 }
             }
         }
@@ -122,12 +128,8 @@ class MockBintrayRepositoryServer {
 
     fun collectRequests(): List<RecordedRequest> {
         val count = server.requestCount
-        System.out.println("$count recorded requests")
-        return mutableListOf<RecordedRequest>().apply {
-            for (i in 0 until count) {
-                add(server.takeRequest())
-            }
-        }
+        println("$count recorded requests")
+        return List(count) { server.takeRequest() }
     }
 
     fun getServerUrl(): String {
