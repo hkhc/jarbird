@@ -104,13 +104,19 @@ class TaskBuilder(
         }
     }
 
-    private fun TaskContainer.registerBintrayTask() {
-
-        if (pom.isSnapshot() && extension.bintray && pom.isGradlePlugin()) {
+    private fun publishingSupported(): Boolean {
+        val notSupport = pom.isSnapshot() && extension.bintray && pom.isGradlePlugin()
+        if (notSupport) {
             project.logger.warn(
                 "WARNING: $LOG_PREFIX Publish snapshot Gradle Plugin to Bintray/OSSArtifactory is not supported."
             )
-        } else {
+        }
+        return !notSupport
+    }
+
+    private fun TaskContainer.registerBintrayTask() {
+
+        if (publishingSupported()) {
 
             if (project.isMultiProjectRoot()) {
                 registerRootProjectTasks("jbPublishToBintray")
