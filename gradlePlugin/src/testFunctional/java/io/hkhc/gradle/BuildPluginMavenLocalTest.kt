@@ -69,7 +69,7 @@ class BuildPluginMavenLocalTest {
         )
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore()
+            setupKeyStore(tempProjectDir)
         }
 
         val task = "jbPublishToMavenLocal"

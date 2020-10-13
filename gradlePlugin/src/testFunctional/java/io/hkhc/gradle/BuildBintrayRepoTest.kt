@@ -68,7 +68,7 @@ class BuildBintrayRepoTest {
         val repo = "maven"
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore()
+            setupKeyStore(tempProjectDir)
             "repository.bintray.release" to mockRepositoryServer.getServerUrl()
             "repository.bintray.username" to username
             "repository.bintray.apikey" to "password"

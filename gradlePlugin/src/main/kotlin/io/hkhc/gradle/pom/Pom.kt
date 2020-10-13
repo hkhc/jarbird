@@ -302,8 +302,10 @@ data class Pom(
         name = artifactId
 
         // TODO need a way to mock convention to make it testable
-        val convention = project.convention.plugins["base"] as BasePluginConvention
-        artifactId?.let { convention.archivesBaseName = it }
+        val convention = project.convention.plugins["base"] as BasePluginConvention?
+        convention?.let { c ->
+            artifactId?.let { c.archivesBaseName = it }
+        }
 
         // two-way sync with project.version
         version?.let { project.version = it }

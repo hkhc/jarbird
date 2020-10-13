@@ -25,12 +25,39 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import java.io.File
 
-fun PropertiesEditor.setupKeyStore() {
+fun PropertiesEditor.setupKeyStore(baseDir: File) {
 
     "signing.keyId" to "6B70FAE3"
     "signing.password" to "password"
-    "signing.secretKeyRingFile" to "gnupg/secring.gpg"
+    "signing.secretKeyRingFile" to File(baseDir, "gnupg/secring.gpg").absolutePath
 }
+
+fun simplePomRoot() =
+    """
+    licenses:
+      - name: Apache-2.0
+        dist: repo
+
+    developers:
+      - id: test.user
+        name: Test User
+        email: test.user@mail.com
+
+    scm:
+      repoType: github.com
+      repoName: test.user/test.repo
+    """.trimIndent()
+
+fun simpleSubProj(coordinate: Coordinate) = with(coordinate) {
+    """
+    group: $group
+    artifactId: $artifactId
+    version: $version
+    description: Test artifact $artifactId
+    packaging: jar
+    """.trimIndent()
+}
+
 
 fun simplePom(coordinate: Coordinate) = with(coordinate) {
     """
@@ -129,8 +156,8 @@ fun runTask(task: String, projectDir: File): BuildResult {
 
     val result = GradleRunner.create()
         .withProjectDir(projectDir)
-        .withEnvironment(mapOf("GRADLE_USER_HOME" to System.getenv()["HOME"]+"/.gradle"))
-        .withArguments(task)
+        .withEnvironment(mapOf("GRADLE_USER_HOME" to System.getenv()["HOME"] + "/.gradle"))
+        .withArguments("--stacktrace", task)
         .withPluginClasspath()
         .forwardOutput()
         .build()

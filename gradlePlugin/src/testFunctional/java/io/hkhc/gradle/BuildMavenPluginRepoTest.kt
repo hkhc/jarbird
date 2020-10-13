@@ -97,7 +97,7 @@ class BuildMavenPluginRepoTest {
         commonSetup(coordinate)
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore()
+            setupKeyStore(tempProjectDir)
             "repository.maven.mock.release" to mockRepositoryServer.getServerUrl()
             "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
             "repository.maven.mock.username" to "username"
@@ -118,7 +118,7 @@ class BuildMavenPluginRepoTest {
         commonSetup(coordinate)
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore()
+            setupKeyStore(tempProjectDir)
             "repository.maven.mock.release" to "fake-url-that-is-not-going-to-work"
             "repository.maven.mock.snapshot" to mockRepositoryServer.getServerUrl()
             "repository.maven.mock.username" to "username"
