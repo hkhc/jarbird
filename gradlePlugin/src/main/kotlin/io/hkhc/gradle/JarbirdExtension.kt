@@ -99,5 +99,4 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     }
 
     var bintrayRepository: RepoEndpoint? = null
-
 }

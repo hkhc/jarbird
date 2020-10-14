@@ -36,7 +36,6 @@ import org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
-import java.io.File
 
 @Suppress("unused")
 class JarbirdPlugin : Plugin<Project> {

@@ -152,6 +152,7 @@ suspend fun <T : Overlayable> `Fields overlay properly`(
             .filter { !nonStringFields.contains(it.name) }
     }
 
+    @Suppress("UNCHECKED_CAST")
     checkAll(gen) {
         if (isClassOrNullableType(it, String::class)) {
             `Field perform overlay properly`(cstr, it as KMutableProperty1<T, String>, "value")

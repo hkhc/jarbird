@@ -32,17 +32,18 @@ class ArtifactoryRepoPatterns(
             .map { suffix -> "$path$suffix" }
 
     fun list(versionTransformer: (String) -> String) = with(coordinate) {
-        (
-            listOf(
-                "/base/oss-snapshot-local/" +
-                    "${group.replace('.', '/')}/" +
-                    "$artifactId/$version/" +
-                    "$artifactId-$version"
-            )
-                .flatMap(::artifactTypes)
-                .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
-                .map { "$it;.*" }
-            )
-            .map { Regex(it) }
+        listOf(Regex("/base/api.build")) +
+            (
+                listOf(
+                    "/base/oss-snapshot-local/" +
+                        "${group.replace('.', '/')}/" +
+                        "$artifactId/$version/" +
+                        "$artifactId-$version"
+                )
+                    .flatMap(::artifactTypes)
+                    .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
+                    .map { "$it;.*" }
+                )
+                .map { Regex(it) }
     }
 }

@@ -103,7 +103,7 @@ class PublicationBuilder(
 
                 logger.info(
                     "bintray ${extension.bintray} gradlePlugin " +
-                    "${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}"
+                        "${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}"
                 )
 
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */

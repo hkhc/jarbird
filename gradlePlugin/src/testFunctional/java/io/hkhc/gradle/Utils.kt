@@ -19,7 +19,6 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -57,7 +56,6 @@ fun simpleSubProj(coordinate: Coordinate) = with(coordinate) {
     packaging: jar
     """.trimIndent()
 }
-
 
 fun simplePom(coordinate: Coordinate) = with(coordinate) {
     """

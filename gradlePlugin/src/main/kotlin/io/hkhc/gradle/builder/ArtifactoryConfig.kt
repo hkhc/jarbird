@@ -75,19 +75,8 @@ class ArtifactoryConfig(
                 )
                 defaults(
                     delegateClosureOf<GroovyObject> {
-                        // TODO Not support artifactory snapshot gradle plugin at the moment
-//                        if (extension.gradlePlugin) {
-//                            invokeMethod(
-//                                "publications",
-//                                arrayOf(
-//                                    pubName as Any,
-//                                    "${pubName}PluginMarkerMaven" as Any
-//                                )
-//                            )
-//                        } else {
                         if (!isRootProject)
                             invokeMethod("publications", pubName)
-//                        }
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
                         setProperty("publishIvy", false)

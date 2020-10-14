@@ -64,4 +64,3 @@ class MavenCentralEndpoint(val project: Project) : RepoEndpoint {
 fun Project.mavenCentral(): RepoEndpoint {
     return MavenCentralEndpoint(this)
 }
-

@@ -29,7 +29,7 @@ interface RepoEndpoint {
         fun create(release: String, snapshot: String, username: String, password: String, apikey: String = ""):
             RepoEndpoint {
                 return SimpleRepoEndpoint(release, snapshot, username, password)
-        }
+            }
     }
 
     val releaseUrl: String

@@ -89,18 +89,18 @@ class BintrayConfig(
 
     private fun BintrayExtension.config() {
 
-        val endpoint = extension.bintrayRepository!!
+        extension.bintrayRepository?.let { endpoint ->
+            if (endpoint.releaseUrl != "") {
+                apiUrl = endpoint.releaseUrl
+            }
 
-        if (endpoint.releaseUrl != "") {
-            apiUrl = endpoint.releaseUrl
+            override = true
+            dryRun = false
+            publish = true
+
+            if (endpoint.username != "") user = endpoint.username
+            if (endpoint.apikey != "") key = endpoint.apikey
         }
-
-        override = true
-        dryRun = false
-        publish = true
-
-        if (endpoint.username != "") user = endpoint.username
-        if (endpoint.apikey != "") key = endpoint.apikey
 
         if (pom.isGradlePlugin()) {
             setPublications(pubName, "${pubName}PluginMarkerMaven")

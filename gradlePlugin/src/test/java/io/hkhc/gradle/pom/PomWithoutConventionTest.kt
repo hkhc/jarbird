@@ -18,20 +18,11 @@
 
 package io.hkhc.gradle.pom
 
-import io.hkhc.utils.test.`Array Fields merged properly when overlaying`
-import io.hkhc.utils.test.`Field perform overlay properly`
-import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.booleans.shouldBeFalse
-import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.gradle.api.internal.project.DefaultProject
-import org.gradle.api.plugins.Convention
-import org.gradle.api.plugins.internal.DefaultBasePluginConvention
 import java.util.Calendar
 import java.util.GregorianCalendar
 
@@ -75,6 +66,4 @@ class PomWithoutConventionTest : StringSpec({
         pom.url shouldBe "https://github.com/hkhc/mylib"
         pom.web.url shouldBe "https://github.com/hkhc/mylib"
     }
-
-
 })
