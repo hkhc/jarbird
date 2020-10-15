@@ -72,8 +72,6 @@ class PublicationBuilder(
     private val pom: Pom
 ) {
 
-    private val pubName = extension.pubNameWithVariant()
-
     @Suppress("unused")
     fun buildPhase1() {
         with(project) {
@@ -141,6 +139,6 @@ class PublicationBuilder(
                 SigningConfig(project, extension, pom).config()
             }
         }
-        TaskBuilder(project, pom, extension, pubName).build()
+        TaskBuilder(project, pom, extension).build()
     }
 }

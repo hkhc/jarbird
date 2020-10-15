@@ -19,10 +19,11 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.maven.MavenCentralEndpoint
-import io.hkhc.gradle.maven.RepoEndpoint
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
+import io.hkhc.gradle.maven.RepoEndpoint
 import io.hkhc.gradle.pom.Pom
 import org.gradle.api.Project
+import java.io.File
 
 // Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.
 open class JarbirdExtension(@Suppress("unused") private val project: Project) {
@@ -71,14 +72,16 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
      * if sourcesPath is not provided, the plugin try to get the sources set named [sourceSetName] for source jar task
      */
     var sourceSetName: String = "main"
+//
+//    /**
+//     * The path of sourceset for archiving.
+//     * as specified in from(...) of Jar task
+//     * if sourcesPath is provided, sourceSetName will be ignored
+//     */
+//    var sourcesPath: Any? = null
 
-    /**
-     * The path of sourceset for archiving.
-     * as specified in from(...) of Jar task
-     * if sourcesPath is provided, sourceSetName will be ignored
-     */
-    var sourcesPath: Any? = null
-
+    // TODO make it flexible for more data type
+    var sourceSets: Collection<File>? = null
     /**
      * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
      * We will need useGpg=true if we use new keybox (.kbx) format for pur signing key.
@@ -99,4 +102,5 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     }
 
     var bintrayRepository: RepoEndpoint? = null
+
 }

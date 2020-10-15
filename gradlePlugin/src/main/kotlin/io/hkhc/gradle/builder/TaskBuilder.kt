@@ -29,14 +29,9 @@ import org.gradle.api.tasks.TaskContainer
 class TaskBuilder(
     private val project: Project,
     private val pom: Pom,
-    private val extension: JarbirdExtension,
-    private val pubName: String
+    private val extension: JarbirdExtension
 ) {
 
-    private val pubNameCap = pubName.capitalize()
-    private val pubId = "${pubNameCap}Publication"
-    private val markerPubId = "${pubNameCap}PluginMarkerMavenPublication"
-    private val mavenRepo = "Maven${pubNameCap}Repository"
     private val mavenLocal = "MavenLocal"
 
     private fun registerRootProjectTasks(taskPath: String) {
@@ -51,6 +46,17 @@ class TaskBuilder(
             }
         }
     }
+
+    private val pubName: String
+        get() = extension.pubNameWithVariant()
+    private val pubNameCap: String
+        get() = pubName.capitalize()
+    private val pubId: String
+        get() = "${pubNameCap}Publication"
+    private val markerPubId: String
+        get() = "${pubNameCap}PluginMarkerMavenPublication"
+    private val mavenRepo: String
+        get() = "Maven${pubNameCap}Repository"
 
     private fun TaskContainer.registerMavenLocalTask() {
 

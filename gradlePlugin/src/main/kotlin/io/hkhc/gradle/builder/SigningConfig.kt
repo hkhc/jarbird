@@ -33,8 +33,6 @@ class SigningConfig(
     private val pom: Pom
 ) {
 
-    private val pubName = extension.pubNameWithVariant()
-
     private val signingIgnoredMessage = "Signing operation is ignored. " +
         "Maven Central publishing cannot be done without signing the artifacts."
 
@@ -117,7 +115,7 @@ class SigningConfig(
 
         if (!pom.isSnapshot()) {
             project.findByType(PublishingExtension::class.java)?.let {
-                sign(it.publications[pubName])
+                sign(it.publications[extension.pubNameWithVariant()])
             }
         }
     }

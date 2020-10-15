@@ -190,7 +190,6 @@ class JarbirdPlugin : Plugin<Project> {
 
         // Build Phase 1
         project.gradleAfterEvaluate { _ ->
-            println("before syncwith project ${p.name}")
             pom.syncWith(p)
 
             extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")

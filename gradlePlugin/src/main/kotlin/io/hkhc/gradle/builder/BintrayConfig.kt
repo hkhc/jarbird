@@ -35,8 +35,6 @@ class BintrayConfig(
     private val pom: Pom
 ) {
 
-    private val pubName = extension.pubNameWithVariant()
-
     fun config() {
         project.logger.debug("$LOG_PREFIX configure Bintray plugin")
         val bintrayExt = project.findByType(BintrayExtension::class.java)
@@ -54,7 +52,7 @@ class BintrayConfig(
             Make sure the build has finished before performing the copying task.
          */
         project.tasks.named("_bintrayRecordingCopy").get().apply {
-            dependsOn("publish${pubName.capitalize()}PublicationToMavenLocal")
+            dependsOn("publish${extension.pubNameWithVariant().capitalize()}PublicationToMavenLocal")
         }
     }
 
@@ -78,7 +76,7 @@ class BintrayConfig(
                         "$filenamePrefix*.jar.asc"
                     )
                 }
-                from("${project.buildDir}/publications/$pubName") {
+                from("${project.buildDir}/publications/${extension.pubNameWithVariant()}") {
                     include("pom-default.xml.asc")
                     rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
                 }
@@ -102,6 +100,7 @@ class BintrayConfig(
             if (endpoint.apikey != "") key = endpoint.apikey
         }
 
+        val pubName = extension.pubNameWithVariant()
         if (pom.isGradlePlugin()) {
             setPublications(pubName, "${pubName}PluginMarkerMaven")
         } else {

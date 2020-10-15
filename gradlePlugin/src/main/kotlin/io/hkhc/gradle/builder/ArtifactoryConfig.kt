@@ -39,7 +39,6 @@ class ArtifactoryConfig(
 
     private var repoUrl = "https://oss.jfrog.org"
     private val pubConfig = BintrayPublishConfig(project)
-    private val pubName = extension.pubNameWithVariant()
 
     fun config() {
 
@@ -76,7 +75,7 @@ class ArtifactoryConfig(
                 defaults(
                     delegateClosureOf<GroovyObject> {
                         if (!isRootProject)
-                            invokeMethod("publications", pubName)
+                            invokeMethod("publications", extension.pubNameWithVariant())
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
                         setProperty("publishIvy", false)
@@ -106,7 +105,7 @@ class ArtifactoryConfig(
     private fun configTask() {
 
         project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
-            publications(pubName)
+            publications(extension.pubNameWithVariant())
             if (project.isMultiProjectRoot()) {
                 skip = true
             }
@@ -140,7 +139,7 @@ class ArtifactoryConfig(
 //                                )
 //                            )
 //                        } else {
-                        invokeMethod("publications", pubName)
+                        invokeMethod("publications", extension.pubNameWithVariant())
 //                        }
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
@@ -161,7 +160,7 @@ class ArtifactoryConfig(
 //            if (extension.gradlePlugin) {
 //                publications(pubName, "${pubName}PluginMarkerMaven")
 //            } else {
-            publications(pubName)
+            publications(extension.pubNameWithVariant())
 //            }
             if (project.isMultiProjectRoot()) {
                 skip = true
