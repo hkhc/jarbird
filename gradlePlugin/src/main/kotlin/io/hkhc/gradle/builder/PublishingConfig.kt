@@ -22,11 +22,12 @@ import io.hkhc.gradle.CLASSIFIER_JAVADOC
 import io.hkhc.gradle.CLASSIFIER_SOURCE
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.PUBLISH_GROUP
-import io.hkhc.gradle.BintrayPublishConfig
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.maven.MavenPomAdapter
 import io.hkhc.gradle.maven.mavenCentral
 import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.utils.detailMessageWarning
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.UnknownTaskException
@@ -36,20 +37,18 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
-import io.hkhc.gradle.utils.LOG_PREFIX
-import io.hkhc.gradle.utils.detailMessageWarning
 
 class PublishingConfig(
     private val project: Project,
     private val extension: JarbirdExtension,
     private val pom: Pom
 ) {
-
-    private val pubName = extension.pubNameWithVariant()
+    private val exte = extension
     private val ext = (project as ExtensionAware).extensions
     private var dokka = extension.dokka
 
@@ -120,8 +119,7 @@ class PublishingConfig(
         val pomSpec = pom
 
         val pubComponent = extension.pubComponent
-
-        register(pubName, MavenPublication::class.java) {
+        register(extension.pubNameWithVariant(), MavenPublication::class.java) {
 
             groupId = pomSpec.group
 
@@ -150,7 +148,7 @@ class PublishingConfig(
         val endpoint = extension.mavenRepository ?: project.mavenCentral()
 
         maven {
-            name = "Maven${pubName.capitalize()}"
+            name = "Maven${extension.pubNameWithVariant().capitalize()}"
             val endpointUrl =
                 if (pom.isSnapshot()) {
                     endpoint.snapshotUrl
@@ -201,13 +199,13 @@ class PublishingConfig(
                 "Create archive of source code for the binary of variant '${extension.variant}' "
             }
 
-            val path = extension.sourcesPath ?: sourceSets.getByName(extension.sourceSetName).allSource
+            val ss = exte.sourceSets?.let { it } ?: (sourceSets.getByName(extension.sourceSetName) as SourceSet).allSource
 
             project.tasks.register(sourcesJarTaskName, Jar::class.java) {
                 group = PUBLISH_GROUP
                 description = desc
                 archiveClassifier.set(CLASSIFIER_SOURCE)
-                from(path)
+                from(ss)
             }
         }
     }

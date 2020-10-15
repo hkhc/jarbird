@@ -30,11 +30,10 @@ import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 
 class PluginPublishingConfig(
     private val project: Project,
-    extension: JarbirdExtension,
+    private val extension: JarbirdExtension,
     private val pom: Pom
 ) {
 
-    private val pubName = extension.pubNameWithVariant()
 
     /*
         The following plugins shall be declared as dependencies in build.gradle.kts.
@@ -83,7 +82,7 @@ class PluginPublishingConfig(
         project.logger.debug("$LOG_PREFIX configure Gradle plugin development plugin")
 
         plugins {
-            create(pubName) {
+            create(extension.pubNameWithVariant()) {
                 pom.plugin?.let { plugin ->
                     id = plugin.id
                     displayName = plugin.displayName

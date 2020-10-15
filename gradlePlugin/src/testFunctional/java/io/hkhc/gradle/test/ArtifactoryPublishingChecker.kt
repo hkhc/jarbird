@@ -18,19 +18,21 @@
 
 package io.hkhc.gradle.test
 
-import groovy.util.GroovyTestCase
-import io.kotest.assertions.fail
 import okhttp3.mockwebserver.RecordedRequest
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 
-class MavenPublishingChecker(val coordinate: Coordinate) {
+class ArtifactoryPublishingChecker(val coordinate: Coordinate) {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
         var matched = requests
             .filter { it.method == "PUT" }
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
-        if (!matched) {
-            fail("$pathRegex does not match any recorded request")
-        }
+        Assertions.assertTrue(
+            matched,
+            "$pathRegex does not match any recorded request\n" + "x" +
+                requests.map { it.path }.joinToString("\n")
+        )
     }
 
     private fun transformReleaseVersion(version: String) = version
@@ -41,19 +43,26 @@ class MavenPublishingChecker(val coordinate: Coordinate) {
         return "$snapshotVersion-[0-9]+.[0-9]+-[0-9]+"
     }
 
-    fun assertReleaseArtifacts(recordedRequests: List<RecordedRequest>) {
-        assertArtifacts(recordedRequests, ::transformReleaseVersion)
+    fun assertReleaseArtifacts(recordedRequests: List<RecordedRequest>, username: String, repo: String) {
+        assertArtifacts(recordedRequests, ::transformReleaseVersion, username, repo)
     }
 
-    fun assertSnapshotArtifacts(recordedRequests: List<RecordedRequest>) {
-        assertArtifacts(recordedRequests, ::transformSnapshotVersion)
+    fun assertSnapshotArtifacts(recordedRequests: List<RecordedRequest>, username: String, repo: String) {
+        assertArtifacts(recordedRequests, ::transformSnapshotVersion, username, repo)
     }
 
-    fun assertArtifacts(recordedRequests: List<RecordedRequest>, versionTransformer: (String) -> String) {
+    fun assertArtifacts(
+        recordedRequests: List<RecordedRequest>,
+        versionTransformer: (String) -> String,
+        username: String,
+        repo: String
+    ) {
 
-        val expectedPaths = MavenRepoPatterns(
-            "/base",
-            coordinate
+        val expectedPaths = ArtifactoryRepoPatterns(
+
+            coordinate,
+            username,
+            repo
         ).let {
             it.list(versionTransformer)
         }.apply {
@@ -66,10 +75,10 @@ class MavenPublishingChecker(val coordinate: Coordinate) {
                     expectedPaths.none { regex -> it.path?.let { path -> regex.matches(path) } ?: false }
             }
 
-        GroovyTestCase.assertEquals(
-            "all request to repository server are expected",
+        assertEquals(
             "",
-            remainingPaths.map { it.path }.joinToString("\n")
+            remainingPaths.map { it.path }.joinToString("\n"),
+            "all request to repository server are expected"
         )
     }
 }

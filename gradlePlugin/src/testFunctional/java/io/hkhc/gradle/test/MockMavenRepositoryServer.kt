@@ -18,60 +18,26 @@
 
 package io.hkhc.gradle.test
 
-import groovy.util.GroovyTestCase.assertEquals
-import io.kotest.assertions.fail
-import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 
-const val HTTP_SUCCESS = 200
-const val HTTP_FILE_NOT_FOUND = 404
-const val HTTP_SERVICE_NOT_AVAILABLE = 503
+class GetMatcherAtEnd(
+    path: String,
+    responseHandler: (RecordedRequest, MockResponse) -> MockResponse
+) : GetMatcher(path, responseHandler) {
+    override fun matches(request: RecordedRequest) = request.method == method && (request.path?.endsWith(path) ?: false)
+}
 
 @Suppress("TooManyFunctions")
-class MockMavenRepositoryServer {
+class MockMavenRepositoryServer : BaseMockRepositoryServer() {
 
-    private lateinit var server: MockWebServer
-    private var baseUrl = "/release"
-    private lateinit var coordinate: Coordinate
-
-    fun setUp(coordinate: Coordinate, baseUrl: String) {
-
-        this.coordinate = coordinate
-
-        this.baseUrl = baseUrl
-        server = MockWebServer()
-
-        server.dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse {
-                System.out.println("mock server request : ${request.method} ${request.path}")
-//                request.headers.forEach {
-//                    System.out.println("headers : ${it.first} = ${it.second}")
-//                }
-//                if (request.method=="POST") {
-//                    System.out.println("mock server request body : ${request.body.readUtf8LineStrict()}")
-//                }
-                return request.path?.let { path ->
-                    if (path.startsWith(baseUrl)) {
-                        if (request.method == "PUT") {
-                            MockResponse().setResponseCode(HTTP_SUCCESS)
-                        } else if (request.method == "GET" && path.endsWith("maven-metadata.xml")) {
-                            MockResponse().setBody(generateMetaDataXML(coordinate))
-                        } else {
-                            MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
-                        }
-                    } else {
-                        MockResponse().setResponseCode(HTTP_FILE_NOT_FOUND)
-                    }
-                } ?: MockResponse().setResponseCode(HTTP_SERVICE_NOT_AVAILABLE)
+    override fun setupMatcher(coordinate: Coordinate) = with(coordinate) {
+        listOf(
+            PutMatcher("", Success),
+            GetMatcherAtEnd("maven-metadata.xml") { _, response ->
+                response.setBody(generateMetaDataXML(coordinate))
             }
-        }
-        server.start()
-    }
-
-    fun teardown() {
-        server.shutdown()
+        )
     }
 
     private fun generateMetaDataXML(
@@ -80,33 +46,19 @@ class MockMavenRepositoryServer {
     ): String {
 
         return """
-            |<metadata>
-            |    <groupId>${coordinate.group}</groupId>
-            |    <artifactId>${coordinate.artifactId}</artifactId>
-            |    <versioning>
-            |    <latest>${coordinate.version}</latest>
-            |    <release>${coordinate.version}</release>
-            |    <versions>
-            |       ${pastVersions.fold("") { c, v -> c + "<version>$v</version>\n"} }
-            |       <version>0.1</version>
-            |    </versions>
-            |    <lastUpdated>20200513071913</lastUpdated>
-            |   </versioning>
-            |</metadata>
-        """.trimMargin()
+                |<metadata>
+                |    <groupId>${coordinate.group}</groupId>
+                |    <artifactId>${coordinate.artifactId}</artifactId>
+                |    <versioning>
+                |    <latest>${coordinate.version}</latest>
+                |    <release>${coordinate.version}</release>
+                |    <versions>
+                |       ${pastVersions.fold("") { c, v -> c + "<version>$v</version>\n"} }
+                |       <version>0.1</version>
+                |    </versions>
+                |    <lastUpdated>20200513071913</lastUpdated>
+                |   </versioning>
+                |</metadata>
+            """.trimMargin()
     }
-
-    fun collectRequests(): List<RecordedRequest> {
-        val count = server.requestCount
-        return mutableListOf<RecordedRequest>().apply {
-            for (i in 0 until count) {
-                add(server.takeRequest())
-            }
-        }
-    }
-
-    fun getServerUrl(): String {
-        return server.url(baseUrl).toString()
-    }
-
 }

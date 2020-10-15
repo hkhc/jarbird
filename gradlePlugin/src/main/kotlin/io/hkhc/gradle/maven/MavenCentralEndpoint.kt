@@ -21,7 +21,7 @@ package io.hkhc.gradle.maven
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
-class MavenCentralEndpoint(val project: Project) : MavenEndpoint {
+class MavenCentralEndpoint(val project: Project) : RepoEndpoint {
 
     private val keyPrefix = "repository"
 
@@ -56,4 +56,11 @@ class MavenCentralEndpoint(val project: Project) : MavenEndpoint {
                 return ""
             }
         }
+
+    override val apikey: String
+        get() = ""
+}
+
+fun Project.mavenCentral(): RepoEndpoint {
+    return MavenCentralEndpoint(this)
 }

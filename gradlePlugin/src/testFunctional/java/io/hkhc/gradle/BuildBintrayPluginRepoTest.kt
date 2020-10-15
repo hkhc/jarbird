@@ -52,17 +52,17 @@ class BuildBintrayPluginRepoTest {
         File("$tempProjectDir/pom.yaml")
             .writeText(
                 simplePom(coordinate) + '\n' +
-                    pluginPom(coordinate.pluginId?:"non-exist-plugin-id", "TestPlugin")
+                    pluginPom(coordinate.pluginId ?: "non-exist-plugin-id", "TestPlugin")
             )
         File("$tempProjectDir/build.gradle.kts")
-            .writeText(buildGradleCustomBintray(mockRepositoryServer.getServerUrl()))
+            .writeText(buildGradleCustomBintray())
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
     }
 
     @Test
-    fun `Normal publish to Bintray Repository to release repository`() {
+    fun `Normal release publish plugin to Bintray Repository`() {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1", "test.plugin")
         commonSetup(coordinate)
@@ -71,7 +71,8 @@ class BuildBintrayPluginRepoTest {
         val repo = "maven"
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore()
+            setupKeyStore(tempProjectDir)
+            "repository.bintray.release" to mockRepositoryServer.getServerUrl()
             "repository.bintray.username" to username
             "repository.bintray.apikey" to "password"
         }
@@ -83,7 +84,7 @@ class BuildBintrayPluginRepoTest {
         BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
             mockRepositoryServer.collectRequests(),
             username,
-            repo)
+            repo
+        )
     }
-
 }

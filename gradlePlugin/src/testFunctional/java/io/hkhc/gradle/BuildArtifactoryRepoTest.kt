@@ -18,9 +18,9 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.BintrayPublishingChecker
+import io.hkhc.gradle.test.ArtifactoryPublishingChecker
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.gradle.test.MockBintrayRepositoryServer
+import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
 import io.hkhc.utils.PropertiesEditor
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
@@ -30,15 +30,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
-class BuildBintrayRepoTest {
+class BuildArtifactoryRepoTest {
 
     @TempDir
     lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockBintrayRepositoryServer
+    lateinit var mockRepositoryServer: MockArtifactoryRepositoryServer
 
     @BeforeEach
     fun setUp() {
-        mockRepositoryServer = MockBintrayRepositoryServer()
+        mockRepositoryServer = MockArtifactoryRepositoryServer()
     }
 
     @AfterEach
@@ -52,16 +52,15 @@ class BuildBintrayRepoTest {
         File("$tempProjectDir/pom.yaml")
             .writeText(simplePom(coordinate))
         File("$tempProjectDir/build.gradle.kts")
-            .writeText(buildGradleCustomBintray())
-
+            .writeText(buildGradleCustomArtifactrory())
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
     }
 
     @Test
-    fun `Normal release publish to Bintray Repository`() {
+    fun `Normal publish snapshot to Bintray Repository`() {
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
         commonSetup(coordinate)
 
         val username = "username"
@@ -69,7 +68,7 @@ class BuildBintrayRepoTest {
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)
-            "repository.bintray.release" to mockRepositoryServer.getServerUrl()
+            "repository.bintray.snapshot" to mockRepositoryServer.getServerUrl()
             "repository.bintray.username" to username
             "repository.bintray.apikey" to "password"
         }
@@ -78,8 +77,12 @@ class BuildBintrayRepoTest {
         val result = runTask(task, tempProjectDir)
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
-            mockRepositoryServer.collectRequests(),
+        ArtifactoryPublishingChecker(coordinate).assertReleaseArtifacts(
+            mockRepositoryServer.collectRequests().apply {
+                forEach {
+                    println("recorded request ${it.method} ${it.path}")
+                }
+            },
             username,
             repo
         )

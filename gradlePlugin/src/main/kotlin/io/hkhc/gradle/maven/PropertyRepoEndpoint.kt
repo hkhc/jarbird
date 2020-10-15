@@ -20,14 +20,14 @@ package io.hkhc.gradle.maven
 
 import org.gradle.api.Project
 
-class PropertyMavenEndpoint(private val project: Project, private val key: String) :
-    MavenEndpoint {
+class PropertyRepoEndpoint(private val project: Project, private val key: String) :
+    RepoEndpoint {
 
     init {
 //        Exception("PropertyMavenEndpoint constructor").printStackTrace()
     }
 
-    private val keyPrefix = "repository.maven"
+    private val keyPrefix = "repository"
 
     override val releaseUrl: String
         get() {
@@ -43,4 +43,7 @@ class PropertyMavenEndpoint(private val project: Project, private val key: Strin
 
     override val password: String
         get() = resolveProperty(project, "$keyPrefix.$key.password")
+
+    override val apikey: String
+        get() = resolveProperty(project, "$keyPrefix.$key.apikey")
 }

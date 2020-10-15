@@ -26,6 +26,9 @@ import org.gradle.api.ProjectState
 fun Project.isMultiProjectRoot() =
     rootProject == this && childProjects.isNotEmpty()
 
+fun Project.isSingleProject() =
+    rootProject == this && childProjects.isEmpty()
+
 fun Project.gradleAfterEvaluate(action: (ProjectState) -> Unit) {
     gradle.addProjectEvaluationListener(
         object : ProjectEvaluationListener {

@@ -26,6 +26,7 @@ const val ktlintVersion = "9.4.1"
 const val taskTreeVersion = "1.5"
 const val detektVersion = "1.14.0"
 const val bintrayVersion = "1.8.5"
+const val buildInfoVersion = "4.17.2"
 
 // lib
 const val junit5Version = "5.6.1"

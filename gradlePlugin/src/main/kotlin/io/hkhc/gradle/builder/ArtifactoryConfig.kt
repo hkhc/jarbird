@@ -22,6 +22,7 @@ import groovy.lang.GroovyObject
 import io.hkhc.gradle.BintrayPublishConfig
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.isMultiProjectRoot
+import io.hkhc.gradle.isSingleProject
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
@@ -36,11 +37,79 @@ class ArtifactoryConfig(
     private val extension: JarbirdExtension
 ) {
 
+    private var repoUrl = "https://oss.jfrog.org"
     private val pubConfig = BintrayPublishConfig(project)
-    private val pubName = extension.pubNameWithVariant()
 
     fun config() {
-        project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+
+        repoUrl = extension.bintrayRepository?.snapshotUrl ?: repoUrl
+
+        val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
+        if (project.isSingleProject()) {
+            convention.configSingle(false)
+            configTask()
+        } else if (project.isMultiProjectRoot()) {
+//            convention.configSingle(true)
+        } else {
+            convention.configSingle(false)
+            configTask()
+        }
+//        project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
+    }
+
+    private fun ArtifactoryPluginConvention.configSingle(isRootProject: Boolean) {
+
+        project.logger.debug("$LOG_PREFIX configure Artifactory plugin for single project")
+
+        setContextUrl(repoUrl)
+        publish(
+            delegateClosureOf<PublisherConfig> {
+                repository(
+                    delegateClosureOf<GroovyObject> {
+                        setProperty("repoKey", "oss-snapshot-local")
+                        setProperty("username", pubConfig.bintrayUsername)
+                        setProperty("password", pubConfig.bintrayApiKey)
+                        setProperty("maven", true)
+                    }
+                )
+                defaults(
+                    delegateClosureOf<GroovyObject> {
+                        if (!isRootProject)
+                            invokeMethod("publications", extension.pubNameWithVariant())
+                        setProperty("publishArtifacts", true)
+                        setProperty("publishPom", true)
+                        setProperty("publishIvy", false)
+                    }
+                )
+            }
+        )
+
+        resolve(
+            delegateClosureOf<ResolverConfig> {
+                setProperty("repoKey", "jcenter")
+            }
+        )
+    }
+
+    private fun ArtifactoryPluginConvention.configSub() {
+//        publish(
+//            delegateClosureOf<PublisherConfig> {
+//                defaults(
+//                    delegateClosureOf<GroovyObject> {
+//                        invokeMethod("publications", pubName)
+//                    }
+//                )
+//            }
+    }
+
+    private fun configTask() {
+
+        project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
+            publications(extension.pubNameWithVariant())
+            if (project.isMultiProjectRoot()) {
+                skip = true
+            }
+        }
     }
 
     private fun ArtifactoryPluginConvention.config() {
@@ -60,19 +129,21 @@ class ArtifactoryConfig(
                 )
                 defaults(
                     delegateClosureOf<GroovyObject> {
-                        if (extension.gradlePlugin) {
-                            invokeMethod(
-                                "publications",
-                                arrayOf(
-                                    pubName as Any,
-                                    "${pubName}PluginMarkerMaven" as Any
-                                )
-                            )
-                        } else {
-                            invokeMethod("publications", pubName)
-                        }
+                        // TODO Not support artifactory snapshot gradle plugin at the moment
+//                        if (extension.gradlePlugin) {
+//                            invokeMethod(
+//                                "publications",
+//                                arrayOf(
+//                                    pubName as Any,
+//                                    "${pubName}PluginMarkerMaven" as Any
+//                                )
+//                            )
+//                        } else {
+                        invokeMethod("publications", extension.pubNameWithVariant())
+//                        }
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
+                        setProperty("publishIvy", false)
                     }
                 )
             }
@@ -84,12 +155,13 @@ class ArtifactoryConfig(
             }
         )
 
-        project.tasks.register("artifactory${pubName.capitalize()}Publish", ArtifactoryTask::class.java) {
-            if (extension.gradlePlugin) {
-                publications(pubName, "${pubName}PluginMarkerMaven")
-            } else {
-                publications(pubName)
-            }
+        project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
+            // TODO Not support artifactory snapshot gradle plugin at the moment
+//            if (extension.gradlePlugin) {
+//                publications(pubName, "${pubName}PluginMarkerMaven")
+//            } else {
+            publications(extension.pubNameWithVariant())
+//            }
             if (project.isMultiProjectRoot()) {
                 skip = true
             }

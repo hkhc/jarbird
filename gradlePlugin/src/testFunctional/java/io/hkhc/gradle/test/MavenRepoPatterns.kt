@@ -38,8 +38,10 @@ class MavenRepoPatterns(
             listOf("$baseUrl/${pluginId.replace('.', '/')}/$pluginId.gradle.plugin")
                 .flatMap {
                     metafile(it) +
-                        listOf("$it/${coordinate.version}/"+
-                            "${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.version)}.pom")
+                        listOf(
+                            "$it/${coordinate.version}/" +
+                                "${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.version)}.pom"
+                        )
                 }
                 .flatMap(::hashedPaths)
         } ?: listOf()
@@ -57,8 +59,10 @@ class MavenRepoPatterns(
             listOf("$baseUrl/${coordinate.group.replace('.', '/')}/${coordinate.artifactId}")
                 .flatMap {
                     metafile(it) +
-                        listOf("$it/${coordinate.version}/"+
-                            "${coordinate.artifactId}-${versionTransformer(coordinate.version)}")
+                        listOf(
+                            "$it/${coordinate.version}/" +
+                                "${coordinate.artifactId}-${versionTransformer(coordinate.version)}"
+                        )
                             .flatMap(::artifactTypes)
                             .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
                 }

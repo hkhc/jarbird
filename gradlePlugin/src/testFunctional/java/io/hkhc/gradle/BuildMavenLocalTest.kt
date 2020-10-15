@@ -20,9 +20,7 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -68,13 +66,13 @@ class BuildMavenLocalTest {
         )
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore()
+            setupKeyStore(tempProjectDir)
         }
 
         val task = "jbPublishToMavenLocal"
         val result = runTask(task, tempProjectDir)
 
-        FileTree().dump(tempProjectDir, System.out::println)
+        // FileTree().dump(tempProjectDir, System.out::println)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         ArtifactChecker()

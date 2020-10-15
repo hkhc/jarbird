@@ -18,8 +18,12 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.test.ArtifactoryPublishingChecker
+import io.hkhc.gradle.test.BintrayPublishingChecker
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.MavenPublishingChecker
+import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
+import io.hkhc.gradle.test.MockBintrayRepositoryServer
 import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.utils.PropertiesEditor
 import org.gradle.testkit.runner.TaskOutcome
@@ -30,54 +34,33 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
-/**
- * snapshot / release
- * +- MavenLocal
- * +- MavenRepository
- * + Bintray
- * + artifactory
- * Android AAR
- * multivariant Android AAR
- *
- * Multi-project
- *
- * snapshot / release
- * plugin gradle plugin portal
- * + plugin mavenLocal
- * + plugin mavenrepository
- * + plugin bintray
- * - plugin artifactory
- *
- * all - mavenrepository
- * all - bintray
- *
- * gradle versions
- * signing v1 signing v2
- * groovy/kts script
- * alternate project name
- * credential with env variable
- * handle publishing rejection
- *
- */
-class BuildMavenRepoTest {
+class BuildMavenBintrayRepoTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
     lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockMavenRepositoryServer
+    lateinit var mockMavenRepositoryServer: MockMavenRepositoryServer
+    lateinit var mockBintrayRepositoryServer: MockBintrayRepositoryServer
+    lateinit var mockArtifactoryRepositoryServer: MockArtifactoryRepositoryServer
 
     @BeforeEach
     fun setUp() {
-        mockRepositoryServer = MockMavenRepositoryServer()
+        mockMavenRepositoryServer = MockMavenRepositoryServer()
+        mockBintrayRepositoryServer = MockBintrayRepositoryServer()
+        mockArtifactoryRepositoryServer = MockArtifactoryRepositoryServer()
     }
 
     @AfterEach
     fun teardown() {
-        mockRepositoryServer.teardown()
+        mockMavenRepositoryServer.teardown()
+        mockBintrayRepositoryServer.teardown()
+        mockArtifactoryRepositoryServer.teardown()
     }
 
     fun commonSetup(coordinate: Coordinate) {
-        mockRepositoryServer.setUp(coordinate, "/base")
+        mockMavenRepositoryServer.setUp(coordinate, "/base")
+        mockBintrayRepositoryServer.setUp(coordinate, "/base")
+        mockArtifactoryRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/pom.yaml")
             .writeText(simplePom(coordinate))
@@ -89,44 +72,66 @@ class BuildMavenRepoTest {
     }
 
     @Test
-    fun `Normal publish to Maven Repository to release repository`() {
+    fun `Normal publish to Maven and Bintray Repository to release repository`() {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1")
         commonSetup(coordinate)
 
+        val username = "username"
+        val repo = "maven"
+
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)
-            "repository.maven.mock.release" to mockRepositoryServer.getServerUrl()
+            "repository.maven.mock.release" to mockMavenRepositoryServer.getServerUrl()
             "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
             "repository.maven.mock.username" to "username"
             "repository.maven.mock.password" to "password"
+            "repository.bintray.release" to mockBintrayRepositoryServer.getServerUrl()
+            "repository.bintray.username" to username
+            "repository.bintray.apikey" to "password"
         }
 
-        val task = "jbPublishToMavenRepository"
+        val task = "jbPublish"
         val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockRepositoryServer.collectRequests())
+        MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockMavenRepositoryServer.collectRequests())
+        BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
+            mockBintrayRepositoryServer.collectRequests(),
+            username,
+            repo
+        )
     }
 
     @Test
-    fun `Normal publish to Maven Repository to snapshot repository`() {
+    fun `Normal publish to Maven and Bintray Repository to snapshot repository`() {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
         commonSetup(coordinate)
 
+        val username = "username"
+        val repo = "maven"
+
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)
             "repository.maven.mock.release" to "fake-url-that-is-not-going-to-work"
-            "repository.maven.mock.snapshot" to mockRepositoryServer.getServerUrl()
+            "repository.maven.mock.snapshot" to mockMavenRepositoryServer.getServerUrl()
             "repository.maven.mock.username" to "username"
             "repository.maven.mock.password" to "password"
+            "repository.bintray.snapshot" to mockArtifactoryRepositoryServer.getServerUrl()
+            "repository.bintray.username" to username
+            "repository.bintray.apikey" to "password"
         }
 
-        val task = "jbPublishToMavenRepository"
+        val task = "jbPublish"
         val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        MavenPublishingChecker(coordinate).assertSnapshotArtifacts(mockRepositoryServer.collectRequests())
+        MavenPublishingChecker(coordinate).assertSnapshotArtifacts(mockMavenRepositoryServer.collectRequests())
+        ArtifactoryPublishingChecker(coordinate).assertReleaseArtifacts(
+            mockArtifactoryRepositoryServer.collectRequests(),
+            username,
+            repo
+        )
     }
 }

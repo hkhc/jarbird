@@ -106,6 +106,9 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+        }
     }
 }
 
@@ -147,7 +150,7 @@ dependencies {
 
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion")
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0")
+    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:$buildInfoVersion")
     implementation("org.yaml:snakeyaml:$snakeYamlVersion")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
     implementation("com.gradle.publish:plugin-publish-plugin:0.12.0")

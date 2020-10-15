@@ -23,27 +23,25 @@ import io.hkhc.gradle.utils.detailMessageError
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
-interface MavenEndpoint {
+interface RepoEndpoint {
 
     companion object {
-        fun create(release: String, snapshot: String, username: String, password: String): MavenEndpoint {
-            return SimpleMavenEndpoint(release, snapshot, username, password)
-        }
+        fun create(release: String, snapshot: String, username: String, password: String, apikey: String = ""):
+            RepoEndpoint {
+                return SimpleRepoEndpoint(release, snapshot, username, password)
+            }
     }
 
     val releaseUrl: String
     val snapshotUrl: String
     val username: String
     val password: String
+    val apikey: String
 }
 
-fun Project.byProperty(key: String): MavenEndpoint {
-    return PropertyMavenEndpoint(this, key)
+fun Project.byProperty(key: String): RepoEndpoint {
+    return PropertyRepoEndpoint(this, key)
 }
-fun Project.mavenCentral(): MavenEndpoint {
-    return MavenCentralEndpoint(this)
-}
-
 fun resolveProperty(project: Project, propertyName: String): String {
     var value: String? = try {
         project.property(propertyName) as String?
