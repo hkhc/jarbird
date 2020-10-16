@@ -33,13 +33,15 @@ class SigningConfig(
     private val pom: Pom
 ) {
 
+    private val pub = extension.pubItrn
+
     private val signingIgnoredMessage = "Signing operation is ignored. " +
         "Maven Central publishing cannot be done without signing the artifacts."
 
     // return true if checking passed, otherwise failed
     private fun validateConfig(project: Project, extension: JarbirdExtension, pom: Pom): Boolean {
 
-        var complete = if (pom.isSnapshot() && extension.signing) {
+        var complete = if (pom.isSnapshot() && pub.signing) {
             project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pom.version}')")
             false
         } else if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
@@ -53,23 +55,23 @@ class SigningConfig(
         }
 
         if (complete) {
-            if (extension.useGpg) {
+            if (pub.useGpg) {
                 if (isV1ConfigPresents() && !isV2ConfigPresents()) {
                     project.logger.warn(
                         "WARNING: $LOG_PREFIX Setting to use keybox file but signing gpg keyring " +
                             "configuration is found. Fall back to use gpg keyring"
                     )
-                    extension.useGpg = false
+                    pub.useGpg = false
                 }
             } else if (!isV1ConfigPresents() && isV2ConfigPresents()) {
                 project.logger.warn(
                     "WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox " +
                         " configuration is found. Switch to use gpg keybox"
                 )
-                extension.useGpg = true
+                pub.useGpg = true
             }
-            complete = (!extension.useGpg || isV2ConfigPresents()) &&
-                (extension.useGpg || isV1ConfigPresents())
+            complete = (!pub.useGpg || isV2ConfigPresents()) &&
+                (pub.useGpg || isV1ConfigPresents())
         }
 
         return complete
@@ -107,7 +109,7 @@ class SigningConfig(
 
     private fun SigningExtension.config() {
 
-        if (extension.useGpg) {
+        if (pub.useGpg) {
             useGpgCmd()
         }
 
@@ -115,7 +117,7 @@ class SigningConfig(
 
         if (!pom.isSnapshot()) {
             project.findByType(PublishingExtension::class.java)?.let {
-                sign(it.publications[extension.pubNameWithVariant()])
+                sign(it.publications[pub.pubNameWithVariant()])
             }
         }
     }

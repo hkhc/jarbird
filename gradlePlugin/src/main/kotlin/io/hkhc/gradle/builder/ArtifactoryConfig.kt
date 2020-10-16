@@ -39,10 +39,11 @@ class ArtifactoryConfig(
 
     private var repoUrl = "https://oss.jfrog.org"
     private val pubConfig = BintrayPublishConfig(project)
+    private val pub = extension.pubItrn
 
     fun config() {
 
-        repoUrl = extension.bintrayRepository?.snapshotUrl ?: repoUrl
+        repoUrl = pub.bintrayRepository?.snapshotUrl ?: repoUrl
 
         val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
         if (project.isSingleProject()) {
@@ -75,7 +76,7 @@ class ArtifactoryConfig(
                 defaults(
                     delegateClosureOf<GroovyObject> {
                         if (!isRootProject)
-                            invokeMethod("publications", extension.pubNameWithVariant())
+                            invokeMethod("publications", pub.pubNameWithVariant())
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
                         setProperty("publishIvy", false)
@@ -105,7 +106,7 @@ class ArtifactoryConfig(
     private fun configTask() {
 
         project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
-            publications(extension.pubNameWithVariant())
+            publications(pub.pubNameWithVariant())
             if (project.isMultiProjectRoot()) {
                 skip = true
             }
@@ -139,7 +140,7 @@ class ArtifactoryConfig(
 //                                )
 //                            )
 //                        } else {
-                        invokeMethod("publications", extension.pubNameWithVariant())
+                        invokeMethod("publications", pub.pubNameWithVariant())
 //                        }
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
@@ -160,7 +161,7 @@ class ArtifactoryConfig(
 //            if (extension.gradlePlugin) {
 //                publications(pubName, "${pubName}PluginMarkerMaven")
 //            } else {
-            publications(extension.pubNameWithVariant())
+            publications(pub.pubNameWithVariant())
 //            }
             if (project.isMultiProjectRoot()) {
                 skip = true

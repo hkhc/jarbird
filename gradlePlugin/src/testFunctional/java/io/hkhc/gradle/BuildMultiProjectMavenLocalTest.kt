@@ -85,7 +85,9 @@ class BuildMultiProjectMavenLocalTest {
                 jcenter()
             }
             jarbird {
-                maven = false
+                pub {
+                    maven = false
+                }
             }
             """.trimIndent()
         )
@@ -101,7 +103,9 @@ class BuildMultiProjectMavenLocalTest {
                 jcenter()
             }
             jarbird {
-                maven = false
+                pub {
+                    maven = false
+                }
             }
             """.trimIndent()
         )

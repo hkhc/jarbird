@@ -32,6 +32,8 @@ class TaskBuilder(
     private val extension: JarbirdExtension
 ) {
 
+    private val pub = extension.pubItrn
+
     private val mavenLocal = "MavenLocal"
 
     private fun registerRootProjectTasks(taskPath: String) {
@@ -48,7 +50,7 @@ class TaskBuilder(
     }
 
     private val pubName: String
-        get() = extension.pubNameWithVariant()
+        get() = pub.pubNameWithVariant()
     private val pubNameCap: String
         get() = pubName.capitalize()
     private val pubId: String
@@ -111,7 +113,7 @@ class TaskBuilder(
     }
 
     private fun publishingSupported(): Boolean {
-        val notSupport = pom.isSnapshot() && extension.bintray && pom.isGradlePlugin()
+        val notSupport = pom.isSnapshot() && pub.bintray && pom.isGradlePlugin()
         if (notSupport) {
             project.logger.warn(
                 "WARNING: $LOG_PREFIX Publish snapshot Gradle Plugin to Bintray/OSSArtifactory is not supported."
@@ -178,7 +180,7 @@ class TaskBuilder(
                 val repoList = mutableListOf<String>()
                 repoList.add("Maven Local")
                 repoList.add("'Maven$pubName' Repository")
-                if (extension.bintray) {
+                if (pub.bintray) {
                     repoList.add("Bintray")
                 }
                 if (pom.isGradlePlugin()) {
@@ -195,7 +197,7 @@ class TaskBuilder(
 
                 dependsOn("jbPublishTo$mavenLocal")
                 dependsOn("jbPublishToMavenRepository")
-                if (extension.bintray && !(pom.isGradlePlugin() && pom.isSnapshot())) {
+                if (pub.bintray && !(pom.isGradlePlugin() && pom.isSnapshot())) {
                     dependsOn("jbPublishToBintray")
                 }
                 if (pom.isGradlePlugin()) {
@@ -210,7 +212,7 @@ class TaskBuilder(
         with(project.tasks) {
             registerMavenLocalTask()
             registerMavenRepositoryTask()
-            if (extension.bintray) {
+            if (pub.bintray) {
                 registerBintrayTask()
             }
             if (pom.isGradlePlugin()) {

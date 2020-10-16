@@ -72,6 +72,8 @@ class PublicationBuilder(
     private val pom: Pom
 ) {
 
+    private val pub = extension.pubItrn
+
     @Suppress("unused")
     fun buildPhase1() {
         with(project) {
@@ -85,7 +87,7 @@ class PublicationBuilder(
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
                 if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) &&
-                    extension.bintray
+                    pub.bintray
                 ) {
                     ArtifactoryConfig(this, extension).config()
                 }
@@ -93,19 +95,19 @@ class PublicationBuilder(
                 logger.info(
                     if (this == rootProject) {
                         "$LOG_PREFIX Configure project '$name' for single-project publishing bintray " +
-                            "${extension.bintray} gradlePlugin ${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}"
+                            "${pub.bintray} gradlePlugin ${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}"
                     } else {
                         "$LOG_PREFIX Configure child project '$name' for multi-project publishing"
                     }
                 )
 
                 logger.info(
-                    "bintray ${extension.bintray} gradlePlugin " +
+                    "bintray ${pub.bintray} gradlePlugin " +
                         "${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}"
                 )
 
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
-                if (extension.bintray && !(pom.isGradlePlugin() && pom.isSnapshot())) {
+                if (pub.bintray && !(pom.isGradlePlugin() && pom.isSnapshot())) {
                     logger.info("config bintray and artifactory")
                     BintrayConfig(this, extension, pom).config()
                     ArtifactoryConfig(this, extension).config()
@@ -135,7 +137,7 @@ class PublicationBuilder(
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 4 of 4")
         if (!project.isMultiProjectRoot()) {
             PublishingConfig(project, extension, pom).config()
-            if (extension.signing) {
+            if (pub.signing) {
                 SigningConfig(project, extension, pom).config()
             }
         }

@@ -102,7 +102,9 @@ fun buildGradle(): String {
             jcenter()
         }
         jarbird {
-            withMavenByProperties("mock")
+            pub {
+                withMavenByProperties("mock")
+            }
         }
     """.trimIndent()
 }
@@ -145,7 +147,9 @@ fun buildGradlePlugin(): String {
             jcenter()
         }
         jarbird {
-            withMavenByProperties("mock")
+            pub {
+                withMavenByProperties("mock")
+            }
         }
     """.trimIndent()
 }

@@ -63,7 +63,9 @@ class BuildPluginMavenLocalTest {
                 id 'io.hkhc.jarbird'
             }
             jarbird {
-                maven = false
+                pub {
+                    maven = false
+                }
             }
             """.trimIndent()
         )

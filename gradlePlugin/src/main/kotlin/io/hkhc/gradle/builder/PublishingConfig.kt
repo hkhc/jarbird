@@ -37,7 +37,6 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
@@ -45,12 +44,12 @@ import org.gradle.kotlin.dsl.get
 
 class PublishingConfig(
     private val project: Project,
-    private val extension: JarbirdExtension,
+    private val exte: JarbirdExtension,
     private val pom: Pom
 ) {
-    private val exte = extension
-    private val ext = (project as ExtensionAware).extensions
-    private var dokka = extension.dokka
+    private val extensions = (project as ExtensionAware).extensions
+    private val pub = exte.pubItrn
+    private var dokka = pub.dokka
 
     companion object {
         private fun printHelpForMissingDokka(project: Project) {
@@ -101,7 +100,7 @@ class PublishingConfig(
             createPublication()
         }
 
-        if (extension.maven) {
+        if (pub.maven) {
             repositories {
                 createRepository()
             }
@@ -118,8 +117,8 @@ class PublishingConfig(
 
         val pomSpec = pom
 
-        val pubComponent = extension.pubComponent
-        register(extension.pubNameWithVariant(), MavenPublication::class.java) {
+        val pubComponent = pub.pubComponent
+        register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
             groupId = pomSpec.group
 
@@ -145,10 +144,10 @@ class PublishingConfig(
     private fun RepositoryHandler.createRepository() {
 
         // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
-        val endpoint = extension.mavenRepository ?: project.mavenCentral()
+        val endpoint = pub.mavenRepository ?: project.mavenCentral()
 
         maven {
-            name = "Maven${extension.pubNameWithVariant().capitalize()}"
+            name = "Maven${pub.pubNameWithVariant().capitalize()}"
             val endpointUrl =
                 if (pom.isSnapshot()) {
                     endpoint.snapshotUrl
@@ -166,7 +165,7 @@ class PublishingConfig(
     @Suppress("UnstableApiUsage")
     private fun setupDokkaJar(): TaskProvider<Jar>? {
         if (dokka == null) return null
-        val dokkaJarTaskName = extension.pubNameWithVariant("dokkaJar")
+        val dokkaJarTaskName = pub.pubNameWithVariant("dokkaJar")
         return try {
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {
                 group = PUBLISH_GROUP
@@ -187,19 +186,19 @@ class PublishingConfig(
     @Suppress("UnstableApiUsage")
     private fun setupSourcesJar(): TaskProvider<Jar>? {
 
-        val sourcesJarTaskName = extension.pubNameWithVariant("sourcesJar")
+        val sourcesJarTaskName = pub.pubNameWithVariant("sourcesJar")
         return try {
             project.tasks.named(sourcesJarTaskName, Jar::class.java) {
                 archiveClassifier.set(CLASSIFIER_SOURCE)
             }
         } catch (e: UnknownTaskException) {
-            val desc = if (extension.variant == "") {
+            val desc = if (pub.variant == "") {
                 "Create archive of source code for the binary"
             } else {
-                "Create archive of source code for the binary of variant '${extension.variant}' "
+                "Create archive of source code for the binary of variant '${pub.variant}' "
             }
 
-            val ss = exte.sourceSets?.let { it } ?: (sourceSets.getByName(extension.sourceSetName) as SourceSet).allSource
+            val ss = pub.sourceSets?.let { it } ?: sourceSets.getByName(pub.sourceSetName).allSource
 
             project.tasks.register(sourcesJarTaskName, Jar::class.java) {
                 group = PUBLISH_GROUP
@@ -212,5 +211,5 @@ class PublishingConfig(
 
     private val sourceSets: SourceSetContainer
         get() =
-            ext.getByName("sourceSets") as SourceSetContainer
+            extensions.getByName("sourceSets") as SourceSetContainer
 }

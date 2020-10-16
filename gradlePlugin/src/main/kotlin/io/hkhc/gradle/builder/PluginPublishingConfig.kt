@@ -34,6 +34,7 @@ class PluginPublishingConfig(
     private val pom: Pom
 ) {
 
+    private val pub = extension.pubItrn
 
     /*
         The following plugins shall be declared as dependencies in build.gradle.kts.
@@ -82,7 +83,7 @@ class PluginPublishingConfig(
         project.logger.debug("$LOG_PREFIX configure Gradle plugin development plugin")
 
         plugins {
-            create(extension.pubNameWithVariant()) {
+            create(pub.pubNameWithVariant()) {
                 pom.plugin?.let { plugin ->
                     id = plugin.id
                     displayName = plugin.displayName

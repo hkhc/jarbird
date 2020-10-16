@@ -18,10 +18,10 @@
 
 package io.hkhc.gradle.builder
 
-import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.JarbirdPub
 import org.gradle.api.Project
 
-internal fun JarbirdExtension.pubNameWithVariant(pubName: String = this.pubName): String {
+internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
     return "${pubName}${variant.capitalize()}"
 }
 

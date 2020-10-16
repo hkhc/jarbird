@@ -59,8 +59,14 @@ class BuildMavenLocalTest {
                 id 'java'
                 id 'io.hkhc.jarbird'
             }
+            repositories {
+                jcenter()
+            }
             jarbird {
-                maven = false
+                pub {
+                    System.out.println("closure class : " + this.class.name)
+                    maven = false
+                }
             }
             """.trimIndent()
         )

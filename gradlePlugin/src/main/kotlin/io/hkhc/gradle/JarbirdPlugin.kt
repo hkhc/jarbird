@@ -192,7 +192,8 @@ class JarbirdPlugin : Plugin<Project> {
         project.gradleAfterEvaluate { _ ->
             pom.syncWith(p)
 
-            extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
+            val pub = extension.pubItrn
+            pub.bintrayRepository = pub.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
 
             // pre-check of final data, for child project
             // TODO handle multiple level child project?
@@ -201,7 +202,7 @@ class JarbirdPlugin : Plugin<Project> {
             }
 
             with(p.pluginManager) {
-                if (extension.signing) {
+                if (pub.signing) {
                     /**
                      * "org.gradle.signing"
                      * no evaluation listener
