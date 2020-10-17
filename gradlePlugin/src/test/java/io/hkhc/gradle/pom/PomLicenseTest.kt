@@ -48,7 +48,7 @@ class PomLicenseTest : StringSpec({
         )
 
         // WHEN merging two lists together
-        val list3 = Pom.overlayToLicenses(list2, list1)
+        val list3 = Pom.overlayToList(list2, list1, License::match)
 
         // THEN the list becomes ...
         with(list3) {
@@ -76,7 +76,7 @@ class PomLicenseTest : StringSpec({
         )
 
         // WHEN merging two lists together
-        val list3 = Pom.overlayToLicenses(list2, list1)
+        val list3 = Pom.overlayToList(list2, list1, License::match)
 
         // THEN the items in the second list overlay the items in the first list
         with(list3) {

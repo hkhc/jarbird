@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.pom
 
+import io.hkhc.gradle.pom.Person.Companion.match
 import io.hkhc.utils.test.`Fields overlay properly`
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -29,30 +30,21 @@ class PomPeopleTest : StringSpec({
         `Fields overlay properly`(Person::class, ::Person)
     }
 
-    "Merging list of people and obtain new item" {
+    "Merging empty lists of people and obtain new empty list" {
 
         // GIVEN list of two licenses with different names
-        val list1 = mutableListOf(
-            Person(id = "people_id_1", name = "people_name_1", email = "people_email_1"),
-            Person(id = "people_id_2", name = "people_name_2", email = "people_email_2")
-        )
+        val list1 = mutableListOf<Person>()
 
         // AND a different list of licenses with different names
-        val list2 = listOf(
-            Person(id = "people_id_3", name = "people_name_3", email = "people_email_3")
-        )
+        val list2 = listOf<Person>()
 
         // WHEN merging two lists together
-        val list3 = Pom.overlayToPeople(list2, list1)
+        val list3 = Pom.overlayToList(list2, list1, Person::match)
 
         // THEN the list becomes ...
         with(list3) {
-            size shouldBe 3
-            this shouldBe listOf(
-                Person(id = "people_id_1", name = "people_name_1", email = "people_email_1"),
-                Person(id = "people_id_2", name = "people_name_2", email = "people_email_2"),
-                Person(id = "people_id_3", name = "people_name_3", email = "people_email_3")
-            )
+            size shouldBe 0
+            this shouldBe listOf()
         }
     }
 
@@ -71,7 +63,7 @@ class PomPeopleTest : StringSpec({
         )
 
         // WHEN merging two lists together
-        val list3 = Pom.overlayToPeople(list2, list1)
+        val list3 = Pom.overlayToList(list2, list1, Person::match)
 
         // THEN the items in the second list overlay the items in the first list
         with(list3) {

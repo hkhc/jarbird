@@ -53,6 +53,9 @@ data class License(
             comments?.let { other.comments = it }
         }
     }
+    companion object {
+        fun match(a: License, b: License) = a.name == b.name
+    }
 }
 
 // TODO missed Properties, Roles
@@ -76,6 +79,9 @@ data class Person(
             timeZone?.let { other.timeZone = it }
             url?.let { other.url = url }
         }
+    }
+    companion object {
+        fun match(a: Person, b: Person) = a.name == b.name
     }
 }
 
@@ -198,28 +204,19 @@ data class Pom(
 ) : Overlayable {
 
     companion object {
-        fun overlayToLicenses(me: List<License>, other: MutableList<License>): MutableList<License> {
-            me.forEach { meItem ->
-                var found = false
-                other.find { otherItem -> meItem.name == otherItem.name }?.apply {
-                    meItem.overlayTo(this)
-                    found = true
+
+        fun <T : Overlayable> overlayToList(me: List<T>, other: MutableList<T>, matcher: (T, T) -> Boolean):
+            MutableList<T> {
+                me.forEach { meItem ->
+                    var found = false
+                    other.find { matcher.invoke(meItem, it) }?.apply {
+                        meItem.overlayTo(this)
+                        found = true
+                    }
+                    if (!found) other.add(meItem)
                 }
-                if (!found) other.add(meItem)
+                return other
             }
-            return other
-        }
-        fun overlayToPeople(me: List<Person>, other: MutableList<Person>): MutableList<Person> {
-            me.forEach { meItem ->
-                var found = false
-                other.find { otherItem -> meItem.name == otherItem.name }?.apply {
-                    meItem.overlayTo(this)
-                    found = true
-                }
-                if (!found) other.add(meItem)
-            }
-            return other
-        }
 
         var dataHandler: () -> Calendar = { GregorianCalendar.getInstance() }
 
@@ -240,9 +237,9 @@ data class Pom(
             url?.let { other.url = it }
             description?.let { other.description = it }
 
-            overlayToLicenses(licenses, other.licenses)
-            overlayToPeople(developers, other.developers)
-            overlayToPeople(contributors, other.contributors)
+            overlayToList(licenses, other.licenses, License::match)
+            overlayToList(developers, other.developers, Person::match)
+            overlayToList(contributors, other.contributors, Person::match)
 
             organization.overlayTo(other.organization)
             web.overlayTo(other.web)
