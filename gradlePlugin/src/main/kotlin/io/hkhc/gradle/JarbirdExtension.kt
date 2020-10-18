@@ -19,7 +19,6 @@
 package io.hkhc.gradle
 
 import groovy.lang.Closure
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 
@@ -40,5 +39,4 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     fun pub(action: JarbirdPub.() -> Unit) {
         action.invoke(pubItrn)
     }
-
 }

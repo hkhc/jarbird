@@ -66,24 +66,34 @@ class PomGroupTest : StringSpec({
 
     "POM Group overlay another" {
 
-        (
+        val pomGroup = PomGroup(
+            listOf(
+                Pom(name = "package name")
+            )
+        ).overlayTo(
             PomGroup(
                 listOf(
-                    Pom(name = "package name")
+                    Pom(description = "common description"),
+                    Pom(variant = "v1", group = "test.group1"),
+                    Pom(variant = "v2", group = "test.group2", description = "group2 description")
                 )
-            ).overlayTo(
-                PomGroup(
-                    listOf(
-                        Pom(description = "common description"),
-                        Pom(variant = "v1", group = "test.group1"),
-                        Pom(variant = "v2", group = "test.group2", description = "group2 description")
-                    )
-                )
-            ) as PomGroup
-            ).getMap() shouldContainExactly mapOf(
+            )
+        ) as PomGroup
+
+        pomGroup.getMap() shouldContainExactly mapOf(
             Pom.DEFAULT_VARIANT to Pom(description = "common description", name = "package name"),
-            "v1" to Pom(variant = "v1", group = "test.group1", name = "package name", description = "common description"),
-            "v2" to Pom(variant = "v2", group = "test.group2", name = "package name", description = "group2 description")
+            "v1" to Pom(
+                variant = "v1",
+                group = "test.group1",
+                name = "package name",
+                description = "common description"
+            ),
+            "v2" to Pom(
+                variant = "v2",
+                group = "test.group2",
+                name = "package name",
+                description = "group2 description"
+            )
         )
     }
 })

@@ -55,10 +55,10 @@ data class License(
     override fun overlayTo(other: Overlayable): Overlayable {
         if (other is License) {
             return License(
-                name?:other.name,
-                url?:other.url,
-                dist?:other.dist,
-                comments?:other.comments
+                name ?: other.name,
+                url ?: other.url,
+                dist ?: other.dist,
+                comments ?: other.comments
             )
 //                name?.let { other.name = it }
 //                    url?.let { other.url = it }
@@ -248,7 +248,7 @@ data class Pom(
                 // add those
                 newList.addAll(
                     other.filter {
-                        me.none { meItem -> matcher.invoke(meItem, it )}
+                        me.none { meItem -> matcher.invoke(meItem, it) }
                     }
                 )
                 newList.addAll(

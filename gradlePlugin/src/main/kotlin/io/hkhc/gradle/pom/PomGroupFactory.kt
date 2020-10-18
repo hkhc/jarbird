@@ -36,10 +36,11 @@ class PomGroupFactory(val project: Project) {
     fun loadYaml(file: File): PomGroup {
         val yaml = Yaml(Constructor(Pom::class.java))
         val poms = yaml.loadAll(file.readText())?.map { it as Pom }
-        return if (poms==null)
+        return if (poms == null) {
             PomGroup()
-        else
+        } else {
             PomGroup(poms)
+        }
     }
 
     fun readPom(file: File): PomGroup {

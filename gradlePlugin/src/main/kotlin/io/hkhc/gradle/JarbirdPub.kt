@@ -98,6 +98,4 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
     }
 
     var bintrayRepository: RepoEndpoint? = null
-
-
 }

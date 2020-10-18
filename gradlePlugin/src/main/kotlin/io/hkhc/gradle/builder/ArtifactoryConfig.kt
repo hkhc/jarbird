@@ -75,8 +75,9 @@ class ArtifactoryConfig(
                 )
                 defaults(
                     delegateClosureOf<GroovyObject> {
-                        if (!isRootProject)
+                        if (!isRootProject) {
                             invokeMethod("publications", pub.pubNameWithVariant())
+                        }
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
                         setProperty("publishIvy", false)

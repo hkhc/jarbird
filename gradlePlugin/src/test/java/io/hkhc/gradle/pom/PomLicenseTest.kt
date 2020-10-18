@@ -93,7 +93,7 @@ class PomLicenseTest : StringSpec({
     "License details based on license name" {
 
         // GIVEN non-existence license name
-        var l1 = License(name="XXX")
+        var l1 = License(name = "XXX")
         l1.fillLicenseUrl()
         // THEN
         l1.url.shouldBeNull()
@@ -104,7 +104,4 @@ class PomLicenseTest : StringSpec({
         // THEN
         l2.url shouldBe "http://www.apache.org/licenses/LICENSE-2.0.txt"
     }
-
-
-
 })

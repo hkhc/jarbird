@@ -52,6 +52,7 @@ class BuildMultiProjectMavenLocalTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `Normal publish two sub-projects to Maven Local`() {
 
         val coordinate1 = Coordinate("test.group", "test.artifact.one", "0.1")

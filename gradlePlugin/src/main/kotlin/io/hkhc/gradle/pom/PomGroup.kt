@@ -40,10 +40,11 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
 
     private fun add(groups: MutableMap<String, Pom>, pom: Pom) {
         if (groups.containsKey(pom.variant)) {
-            if (pom.variant == Pom.DEFAULT_VARIANT)
+            if (pom.variant == Pom.DEFAULT_VARIANT) {
                 throw IllegalArgumentException("POM with default variant has already existed.")
-            else
+            } else {
                 throw IllegalArgumentException("POM with variant '${pom.variant}' has already existed.")
+            }
         }
         groups[pom.variant] = pom
     }
