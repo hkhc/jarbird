@@ -23,7 +23,7 @@ import com.jfrog.bintray.gradle.BintrayPlugin
 import io.hkhc.gradle.builder.PublicationBuilder
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.pom.PomFactory
+import io.hkhc.gradle.pom.PomGroupFactory
 import io.hkhc.gradle.utils.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.utils.LOG_PREFIX
 import io.hkhc.gradle.utils.detailMessageError
@@ -109,13 +109,14 @@ class JarbirdPlugin : Plugin<Project> {
 
         project = p
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
-        val pom = PomFactory(p).resolvePom()
+        val pomGroup = PomGroupFactory(p).resolvePomGroup()
 
         extension = project.extensions.create(SP_EXT_NAME, JarbirdExtension::class.java, project)
-        extension.pom = pom
+        extension.pom = pomGroup
+        val pom = pomGroup.getDefault()!!
         val pubCreator = PublicationBuilder(extension, project, pom)
 
-        project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pom")
+        project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pomGroup")
 
         checkAndroidPlugin(p)
 

@@ -42,14 +42,19 @@ fun <T : Overlayable, Field> `check null cannot overlay non-null`(
     val l0 = cstr()
     val l1 = cstr()
     val l2 = cstr()
+    // l0.field == null
+    // l1.field == null
+    // l2.field == testValue
     mutableProp.setter.call(l2, testValue)
 
     // WHEN
-    l1.overlayTo(l2)
+    val l2a = l1.overlayTo(l2)
 
     // THEN
+    // l1.field == l0.field. this mean l1.field remain unchanged
     mutableProp.getter.call(l1) shouldBe mutableProp.getter.call(l0)
-    mutableProp.getter.call(l2) shouldBe testValue
+    // l2.field == testValue
+    mutableProp.getter.call(l2a) shouldBe testValue
 }
 
 fun <T : Overlayable, Field> `check non-null will overlay anything`(
@@ -62,17 +67,20 @@ fun <T : Overlayable, Field> `check non-null will overlay anything`(
     val l1 = cstr()
     val l2 = cstr()
     val l3 = cstr()
+    // l1.field == testValue
+    // l2.field == null
+    // l3.field == testValue
     mutableProp.setter.call(l1, testValue)
     mutableProp.setter.call(l3, testValue)
 
     // WHEN l1 is overlaying null value (l2) and is overlaying non-null value (l3)
-    l1.overlayTo(l2)
-    l1.overlayTo(l3)
+    val l2a = l1.overlayTo(l2)
+    val l3a = l1.overlayTo(l3)
 
     // THEN l2 and l3 are overlaid by l1 because l1.name!=null
     mutableProp.getter.call(l1) shouldBe testValue
-    mutableProp.getter.call(l2) shouldBe testValue
-    mutableProp.getter.call(l3) shouldBe testValue
+    mutableProp.getter.call(l2a) shouldBe testValue
+    mutableProp.getter.call(l3a) shouldBe testValue
 }
 
 fun <T : Overlayable, Field> `Field perform overlay properly`(
@@ -134,10 +142,36 @@ fun <T : Overlayable, Field, ElementField> `ArrayFields merged properly when ove
     mutableProp.getter.call(p2) shouldBe v2 + v1.filter { !v2.contains(it) }
 }
 
+/**
+ * return true if prop represents a class, or a nullable type
+ * e.g. class A {
+ *     var index: Int
+ *     var nullableStr: String?
+ *     var str: String
+ * }
+ *
+ * Then
+ * isClassOrNullableType(A::index, String::class) == false
+ * isClassOrNullableType(A::str, String::class) == true
+ * isClassOrNullableType(A::nullableStr, String::class) == true
+ **
+ */
 fun isClassOrNullableType(prop: KProperty1<*, *>, cls: KClass<out Any>): Boolean {
     val propType = prop.returnType
     val matchingType = cls.createType()
     return propType == matchingType || propType == matchingType.withNullability(true)
+}
+
+fun isClassType(prop: KProperty1<*, *>, cls: KClass<out Any>): Boolean {
+    val propType = prop.returnType
+    val matchingType = cls.createType()
+    return propType == matchingType
+}
+
+fun isNullableType(prop: KProperty1<*, *>, cls: KClass<out Any>): Boolean {
+    val propType = prop.returnType
+    val matchingType = cls.createType()
+    return propType == matchingType.withNullability(true)
 }
 
 suspend fun <T : Overlayable> `Fields overlay properly`(
@@ -146,6 +180,7 @@ suspend fun <T : Overlayable> `Fields overlay properly`(
     nonStringFields: Array<String> = arrayOf()
 ) {
 
+    // collect all properties that need to be unit-tested
     val gen = mutableListOf<KProperty1<T, *>>().let {
         it.addAll(cls.memberProperties)
         it.exhaustive()
@@ -154,12 +189,16 @@ suspend fun <T : Overlayable> `Fields overlay properly`(
 
     @Suppress("UNCHECKED_CAST")
     checkAll(gen) {
-        if (isClassOrNullableType(it, String::class)) {
-            `Field perform overlay properly`(cstr, it as KMutableProperty1<T, String>, "value")
-        } else if (isClassOrNullableType(it, Int::class)) {
-            `Field perform overlay properly`(cstr, it as KMutableProperty1<T, Int>, 123)
-        } else {
-            fail("No test handler for field ${cls.qualifiedName} ${it.name} ${it.returnType}")
+        when {
+            isClassOrNullableType(it, String::class) -> {
+                `Field perform overlay properly`(cstr, it as KMutableProperty1<T, String>, "value")
+            }
+            isClassOrNullableType(it, Int::class) -> {
+                `Field perform overlay properly`(cstr, it as KMutableProperty1<T, Int>, 123)
+            }
+            else -> {
+                fail("No test handler for field ${cls.qualifiedName} ${it.name} ${it.returnType}")
+            }
         }
     }
 }

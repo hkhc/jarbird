@@ -59,10 +59,10 @@ class PomFactoryTest : StringSpec({
             |packaging: jar
             """.trimMargin()
         )
-        val pom = PomFactory(project).readPom(file)
+        val pomGroup = PomGroupFactory(project).readPom(file).getDefault()!!
 
         withClue("Parsed POM should reflect content in file") {
-            pom.asClue {
+            pomGroup.asClue {
                 it.group shouldBe "test-group"
                 it.artifactId shouldBe "test-id"
                 it.version shouldBe "1.2.3.4"
@@ -84,10 +84,10 @@ class PomFactoryTest : StringSpec({
             |packaging: jar
             """.trimMargin()
         )
-        val pom = PomFactory(project).readPom(file.absolutePath)
+        val pomGroup = PomGroupFactory(project).readPom(file.absolutePath).getDefault()!!
 
         withClue("Parsed POM should reflect content in file") {
-            pom.asClue {
+            pomGroup.asClue {
                 it.group shouldBe "test-group"
                 it.artifactId shouldBe "test-id"
                 it.version shouldBe "1.2.3.4"
@@ -100,7 +100,7 @@ class PomFactoryTest : StringSpec({
     "Load with non-exist file" {
 
         val file = "non-exist-file.txt"
-        val pom = PomFactory(project).readPom(file)
+        val pom = PomGroupFactory(project).readPom(file).getDefault()
 
         pom shouldBe Pom()
     }
@@ -108,7 +108,7 @@ class PomFactoryTest : StringSpec({
     "Load with invalid file" {
 
         val file = tempfile()
-        val pom = PomFactory(project).readPom(file)
+        val pom = PomGroupFactory(project).readPom(file).getDefault()
         // Even if some part of the file is valid yaml, when we've got invalid part, we
         // will only return empty Pom object.
         file.writeText(
@@ -171,7 +171,7 @@ class PomFactoryTest : StringSpec({
             ),
             OverrideMode.SetOrOverride
         ) {
-            PomFactory(project).getPomFileList().map { it.path } shouldBe listOf(
+            PomGroupFactory(project).getPomFileList().map { it.path } shouldBe listOf(
                 "dir0/.gradle/pom.yaml",
                 "${project.rootDir}/pom.yaml",
                 "${project.projectDir}/pom.yaml",
@@ -182,37 +182,37 @@ class PomFactoryTest : StringSpec({
 
     "Resolve POM from list of files" {
 
-        val pomFactory = PomFactory(project)
+        val pomGroupFactory = PomGroupFactory(project)
 
         withClue("Single item in list") {
-            pomFactory.resolvePom(
+            pomGroupFactory.resolvePomGroup(
                 listOf(tempfile().apply { writeText("group: test-group-1") })
-            ).group shouldBe "test-group-1"
+            ).getDefault()!!.group shouldBe "test-group-1"
         }
 
         withClue("Two items in list") {
-            pomFactory.resolvePom(
+            pomGroupFactory.resolvePomGroup(
                 listOf(
                     tempfile().apply { writeText("group: test-group-1") },
                     tempfile().apply { writeText("group: test-group-2") }
                 )
-            ).group shouldBe "test-group-2"
+            ).getDefault()!!.group shouldBe "test-group-2"
         }
 
         withClue("Three items in list") {
-            pomFactory.resolvePom(
+            pomGroupFactory.resolvePomGroup(
                 listOf(
                     tempfile().apply { writeText("group: test-group-1") },
                     tempfile().apply { writeText("group: test-group-2") },
                     tempfile().apply { writeText("group: test-group-3") }
                 )
-            ).group shouldBe "test-group-3"
+            ).getDefault()!!.group shouldBe "test-group-3"
         }
     }
 
     "Resolve Pom from User's gradle home" {
 
-        val pomFactory = PomFactory(project)
+        val pomFactory = PomGroupFactory(project)
         var baseDir = tempDirectory()
         var gradleUserHomeDir = baseDir.mkdir("gradle-user-home")
         var pomFile = File(gradleUserHomeDir, "pom.yaml")
@@ -227,8 +227,8 @@ class PomFactoryTest : StringSpec({
         )
 
         withSystemProperty("gradle.user.home", gradleUserHomeDir.absolutePath) {
-            val pom = pomFactory.resolvePom()
-            pom.asClue {
+            val pomGroup = pomFactory.resolvePomGroup().getDefault()!!
+            pomGroup.asClue {
                 it.group shouldBe "test-group"
                 it.artifactId shouldBe "test-id"
                 it.version shouldBe "1.2.3.4"

@@ -24,26 +24,34 @@ import org.yaml.snakeyaml.constructor.Constructor
 import io.hkhc.gradle.utils.LOG_PREFIX
 import java.io.File
 
-class PomFactory(val project: Project) {
+class PomGroupFactory(val project: Project) {
 
     /**
      * read POM spec from a YAML file
      */
-    fun readPom(path: String): Pom {
+    fun readPom(path: String): PomGroup {
         return readPom(File(path))
     }
 
-    fun readPom(file: File): Pom {
+    fun loadYaml(file: File): PomGroup {
+        val yaml = Yaml(Constructor(Pom::class.java))
+        val poms = yaml.loadAll(file.readText())?.map { it as Pom }
+        return if (poms==null)
+            PomGroup()
+        else
+            PomGroup(poms)
+    }
+
+    fun readPom(file: File): PomGroup {
         return if (file.exists()) {
             project.logger.debug("$LOG_PREFIX File '${file.absolutePath}' found")
-            val yaml = Yaml(Constructor(Pom::class.java))
             // it is possible that yaml.load return null even if file exists and
             // is a valid yaml file. For example, a YAML file could be fill of comment
             // and have no real tag.
-            return yaml.load(file.readText()) ?: Pom()
+            return loadYaml(file)
         } else {
             project.logger.debug("$LOG_PREFIX File '${file.absolutePath}' does not exist")
-            Pom()
+            PomGroup()
         }
     }
 
@@ -59,14 +67,14 @@ class PomFactory(val project: Project) {
         }
     }
 
-    fun resolvePom(files: List<File>): Pom {
+    fun resolvePomGroup(files: List<File>): PomGroup {
         return files
             .map { readPom(it) }
-            .fold(Pom()) { acc, pom -> acc.also { pom.overlayTo(it) } }
+            .fold(PomGroup()) { acc, pom -> acc.also { pom.overlayTo(it) } }
     }
 
     /**
      * resolve POM spec via a series of possible location and accumulate the details
      */
-    fun resolvePom() = resolvePom(getPomFileList())
+    fun resolvePomGroup() = resolvePomGroup(getPomFileList())
 }

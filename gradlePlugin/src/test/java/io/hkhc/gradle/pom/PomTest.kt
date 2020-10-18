@@ -77,7 +77,8 @@ class PomTest : StringSpec({
                 Pom::contributors,
                 listOf(Person(name = "A"), Person(name = "B")),
                 listOf(Person(name = "C"))
-            )
+            ),
+            "variant"
         )
 
         `Fields overlay properly`(Pom::class, ::Pom, nonStringFields)

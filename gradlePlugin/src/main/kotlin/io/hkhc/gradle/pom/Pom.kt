@@ -29,14 +29,21 @@ import java.util.GregorianCalendar
  * by providing "overlayTo" method.
  *
  * The method that implements the interface shall merge each field of the class such that
- * - The field in receiver shall overwrite the ine in parameter, if former is not null
+ * a new instance is created that contain values of object2 if field in object1 is null, and values of
+ * object1 if field in object2 is null
+ * - the receiver's value is set to the param object if it is null in param object*
  *
- * For collection fields, the item in former field and not in later field shall be appended to the later collection
+ * e.g.
+ * object1 = { field1: "hello" }
+ * object2 = { field1: "hi", field2: "world" }
+ * then object1.overlayTo(object2) return { field1: "hello", field2: "world" }
+ * and both object1 and object2 are remain unchanged
  *
+ * @return the same instance of other
  *
  */
 interface Overlayable {
-    fun overlayTo(other: Overlayable)
+    fun overlayTo(other: Overlayable): Overlayable
 }
 
 data class License(
@@ -45,14 +52,28 @@ data class License(
     var dist: String? = null,
     var comments: String? = null
 ) : Overlayable {
-    override fun overlayTo(other: Overlayable) {
+    override fun overlayTo(other: Overlayable): Overlayable {
         if (other is License) {
-            name?.let { other.name = it }
-            url?.let { other.url = it }
-            dist?.let { other.dist = it }
-            comments?.let { other.comments = it }
+            return License(
+                name?:other.name,
+                url?:other.url,
+                dist?:other.dist,
+                comments?:other.comments
+            )
+//                name?.let { other.name = it }
+//                    url?.let { other.url = it }
+//                    dist?.let { other.dist = it }
+//                    comments?.let { other.comments = it }
+        }
+        return other
+    }
+
+    fun fillLicenseUrl() {
+        name?.let {
+            url = url ?: LICENSE_MAP[it]
         }
     }
+
     companion object {
         fun match(a: License, b: License) = a.name == b.name
     }
@@ -69,7 +90,7 @@ data class Person(
     var timeZone: String? = null,
     var url: String? = null
 ) : Overlayable {
-    override fun overlayTo(other: Overlayable) {
+    override fun overlayTo(other: Overlayable): Overlayable {
         if (other is Person) {
             id?.let { other.id = it }
             name?.let { other.name = it }
@@ -79,6 +100,7 @@ data class Person(
             timeZone?.let { other.timeZone = it }
             url?.let { other.url = url }
         }
+        return other
     }
     companion object {
         fun match(a: Person, b: Person) = a.name == b.name
@@ -89,11 +111,12 @@ data class Organization(
     var name: String? = null,
     var url: String? = null
 ) : Overlayable {
-    override fun overlayTo(other: Overlayable) {
+    override fun overlayTo(other: Overlayable): Overlayable {
         if (other is Organization) {
             name?.let { other.name = it }
             url?.let { other.url = it }
         }
+        return other
     }
 }
 
@@ -101,11 +124,12 @@ data class Web(
     var url: String? = null,
     var description: String? = null
 ) : Overlayable {
-    override fun overlayTo(other: Overlayable) {
+    override fun overlayTo(other: Overlayable): Overlayable {
         if (other is Web) {
             url?.let { other.url = it }
             description?.let { other.description = it }
         }
+        return other
     }
 }
 
@@ -121,7 +145,7 @@ data class Scm(
     var githubReleaseNoteFile: String? = null
 ) : Overlayable {
     @Suppress("DuplicatedCode")
-    override fun overlayTo(other: Overlayable) {
+    override fun overlayTo(other: Overlayable): Overlayable {
         if (other is Scm) {
             url?.let { other.url = it }
             connection?.let { other.connection = it }
@@ -133,6 +157,7 @@ data class Scm(
             tag?.let { other.tag = it }
             githubReleaseNoteFile?.let { other.githubReleaseNoteFile = it }
         }
+        return other
     }
 }
 
@@ -142,12 +167,13 @@ data class Bintray(
     var userOrg: String? = null
 ) : Overlayable {
 
-    override fun overlayTo(other: Overlayable) {
+    override fun overlayTo(other: Overlayable): Overlayable {
         if (other is Bintray) {
             labels?.let { other.labels = it }
             repo?.let { other.repo = it }
             userOrg?.let { other.userOrg = it }
         }
+        return other
     }
 }
 
@@ -168,7 +194,7 @@ data class PluginInfo(
         }
     }
 
-    override fun overlayTo(other: Overlayable) {
+    override fun overlayTo(other: Overlayable): Overlayable {
         if (other is PluginInfo) {
             id?.let { other.id = it }
             displayName?.let { other.displayName = it }
@@ -176,6 +202,7 @@ data class PluginInfo(
             implementationClass?.let { other.implementationClass = it }
             overlayToTags(tags, other.tags)
         }
+        return other
     }
 }
 
@@ -197,26 +224,45 @@ data class Pom(
     var organization: Organization = Organization(),
     var web: Web = Web(),
     var scm: Scm = Scm(),
+
+    /* "variant" is not part of POM, but an ID to facilitates multiple POM coexist in the same pom.yaml file */
+    /* variant is fixed and not going to be overlaid */
+    val variant: String = DEFAULT_VARIANT,
+
+    /* "bintary" is not part of POM, but additional information needs to deploy to bintray repo */
+    /* TODO it may be better to specify repo details in gradle.properties? */
     var bintray: Bintray = Bintray(),
 
+    /* additional details for plugin deployment */
     var plugin: PluginInfo? = null
 
 ) : Overlayable {
 
     companion object {
 
-        fun <T : Overlayable> overlayToList(me: List<T>, other: MutableList<T>, matcher: (T, T) -> Boolean):
-            MutableList<T> {
-                me.forEach { meItem ->
-                    var found = false
-                    other.find { matcher.invoke(meItem, it) }?.apply {
-                        meItem.overlayTo(this)
-                        found = true
+        const val DEFAULT_VARIANT = "---DEFAULT-POM---"
+        const val SNAPSHOT_PREFIX = "-SNAPSHOT"
+
+        fun <T : Overlayable> overlayToList(me: List<T>, other: List<T>, matcher: (T, T) -> Boolean): List<T> {
+            return mutableListOf<T>().also { newList ->
+                // add those
+                newList.addAll(
+                    other.filter {
+                        me.none { meItem -> matcher.invoke(meItem, it )}
                     }
-                    if (!found) other.add(meItem)
-                }
-                return other
+                )
+                newList.addAll(
+                    me.map { meItem ->
+                        val matched = other.find { matcher.invoke(meItem, it) }
+                        if (matched == null) {
+                            meItem
+                        } else {
+                            meItem.overlayTo(matched) as T
+                        }
+                    }
+                )
             }
+        }
 
         var dataHandler: () -> Calendar = { GregorianCalendar.getInstance() }
 
@@ -226,7 +272,7 @@ data class Pom(
     }
 
     @Suppress("DuplicatedCode")
-    override fun overlayTo(other: Overlayable) {
+    override fun overlayTo(other: Overlayable): Overlayable {
         if (other is Pom) {
             group?.let { other.group = it }
             artifactId?.let { other.artifactId = it }
@@ -251,14 +297,11 @@ data class Pom(
                 other.plugin = other.plugin?.also(thisPlugin::overlayTo) ?: thisPlugin
             }
         }
+        return other
     }
 
     internal fun lookupLicenseLink(licenses: List<License>) {
-        for (lic in licenses) {
-            lic.name?.let {
-                lic.url = lic.url ?: LICENSE_MAP[it]
-            }
-        }
+        licenses.forEach { it.fillLicenseUrl() }
     }
 
     @Suppress("DuplicatedCode")
@@ -274,7 +317,7 @@ data class Pom(
         }
     }
 
-    fun isSnapshot() = version?.endsWith("-SNAPSHOT") ?: false
+    fun isSnapshot() = version?.endsWith(SNAPSHOT_PREFIX) ?: false
 
     fun isGradlePlugin() = plugin != null
 
