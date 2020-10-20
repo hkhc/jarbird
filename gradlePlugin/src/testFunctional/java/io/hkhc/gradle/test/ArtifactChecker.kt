@@ -18,12 +18,13 @@
 
 package io.hkhc.gradle.test
 
+import io.kotest.assertions.withClue
 import org.junit.Assert
 import java.io.File
 
 class ArtifactChecker {
 
-    fun verifyRepostory(repoDir: File, coordinate: Coordinate, packaging: String) {
+    fun verifyRepository(repoDir: File, coordinate: Coordinate, packaging: String) {
 
         Assert.assertTrue(repoDir.exists())
         val artifactPath =
@@ -38,15 +39,21 @@ class ArtifactChecker {
 
         val fileSet = artifactDir.listFiles().toMutableSet()
 
-        with(coordinate) {
-            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.module"))
-            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.pom"))
-            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version.jar"))
-            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version-javadoc.jar"))
-            verifyArtifact(fileSet, File(artifactDir, "$artifactId-$version-sources.jar"))
+        withClue("In local repository $repoDir") {
+            with(coordinate) {
+                listOf(".module", ".pom", ".$packaging", "-javadoc.jar", "-sources.jar")
+                    .map { "$artifactId-$version$it" }
+                    .forEach {
+                        withClue("The generated file $it should presents ") {
+                            verifyArtifact(fileSet, File(artifactDir, it))
+                        }
+                    }
+            }
         }
 
-        Assert.assertTrue(fileSet.isEmpty())
+        withClue("With no extra file left out") {
+            Assert.assertTrue(fileSet.isEmpty())
+        }
     }
 
     fun verifyArtifact(fileList: MutableSet<File>, file: File) {

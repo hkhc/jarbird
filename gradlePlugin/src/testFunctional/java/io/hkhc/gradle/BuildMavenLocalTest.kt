@@ -82,6 +82,6 @@ class BuildMavenLocalTest {
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         ArtifactChecker()
-            .verifyRepostory(localRepoDir, coordinate, "jar")
+            .verifyRepository(localRepoDir, coordinate, "jar")
     }
 }

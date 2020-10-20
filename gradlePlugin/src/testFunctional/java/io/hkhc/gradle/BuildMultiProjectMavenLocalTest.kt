@@ -118,8 +118,8 @@ class BuildMultiProjectMavenLocalTest {
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         ArtifactChecker()
-            .verifyRepostory(localRepoDir, coordinate1, "jar")
+            .verifyRepository(localRepoDir, coordinate1, "jar")
         ArtifactChecker()
-            .verifyRepostory(localRepoDir, coordinate2, "jar")
+            .verifyRepository(localRepoDir, coordinate2, "jar")
     }
 }

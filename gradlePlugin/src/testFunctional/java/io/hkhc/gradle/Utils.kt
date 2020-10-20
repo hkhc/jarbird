@@ -80,6 +80,29 @@ fun simplePom(coordinate: Coordinate) = with(coordinate) {
     """.trimIndent()
 }
 
+fun simpleAndroidPom(coordinate: Coordinate) = with(coordinate) {
+    """
+    group: $group
+    artifactId: $artifactId
+    version: $version
+    description: Test artifact
+    packaging: aar
+
+    licenses:
+      - name: Apache-2.0
+        dist: repo
+
+    developers:
+      - id: test.user
+        name: Test User
+        email: test.user@mail.com
+
+    scm:
+      repoType: github.com
+      repoName: test.user/test.repo
+    """.trimIndent()
+}
+
 fun pluginPom(id: String, className: String): String {
     return """
         plugin:
@@ -158,7 +181,12 @@ fun runTask(task: String, projectDir: File): BuildResult {
 
     val result = GradleRunner.create()
         .withProjectDir(projectDir)
-        .withEnvironment(mapOf("GRADLE_USER_HOME" to System.getenv()["HOME"] + "/.gradle"))
+        .withEnvironment(
+            mapOf(
+                "GRADLE_USER_HOME" to System.getenv()["HOME"] + "/.gradle",
+                "ANDROID_SDK_ROOT" to System.getenv()["ANDROID_SDK_ROOT"]
+            )
+        )
         .withArguments("--stacktrace", task)
         .withPluginClasspath()
         .forwardOutput()

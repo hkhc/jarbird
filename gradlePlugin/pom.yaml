@@ -1,6 +1,6 @@
 group: io.hkhc.gradle
 artifactId: jarbird
-version: 0.4.2.3
+version: 0.4.2.3-SNAPSHOT
 description: Wrapping boilerplate code of publishing artifact to maven repository
 packaging: jar
 
