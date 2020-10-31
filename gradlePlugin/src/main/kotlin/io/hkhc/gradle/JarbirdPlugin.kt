@@ -112,9 +112,6 @@ class JarbirdPlugin : Plugin<Project> {
         val pomGroup = PomGroupFactory(p).resolvePomGroup()
 
         extension = project.extensions.create(SP_EXT_NAME, JarbirdExtension::class.java, project)
-        extension.pom = pomGroup
-        val pom = pomGroup.getDefault()!!
-        val pubCreator = PublicationBuilder(extension, project, pom)
 
         project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pomGroup")
 
@@ -191,19 +188,29 @@ class JarbirdPlugin : Plugin<Project> {
 
         // Build Phase 1
         project.gradleAfterEvaluate { _ ->
-            pom.syncWith(p)
 
-            val pub = extension.pubItrn
-            pub.bintrayRepository = pub.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
+            println("0 extension publist count ${extension.pubList.size}")
 
-            // pre-check of final data, for child project
-            // TODO handle multiple level child project?
-            if (!project.isMultiProjectRoot()) {
-                precheck(pom, p)
+            extension.pubList.forEach {
+
+                it.pom = pomGroup[it.variant]
+                println("pub variant ${it.variant} pom = ${it.pom}")
+
+                // TODO we ignore that pom overwrite some project properties in the mean time.
+                // need to properly take care of it.
+                it.pom?.syncWith(p)
+
+                it.bintrayRepository = it.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
+
+                // pre-check of final data, for child project
+                // TODO handle multiple level child project?
+                if (!project.isMultiProjectRoot()) {
+                    it.pom?.let { pom -> precheck(pom, p) }
+                }
             }
 
             with(p.pluginManager) {
-                if (pub.signing) {
+                if (extension.pubList.needSigning()) {
                     /**
                      * "org.gradle.signing"
                      * no evaluation listener
@@ -211,7 +218,13 @@ class JarbirdPlugin : Plugin<Project> {
                     apply(SigningPlugin::class.java)
                 }
 
-                if (pom.isGradlePlugin()) {
+                extension.pubList.forEach {
+                    if (it.variant != Pom.DEFAULT_VARIANT) {
+
+                    }
+                }
+
+                if (pomGroup.involveGradlePlugin()) {
 
                     /**
                      * "com.gradle.plugin-publish"
@@ -238,7 +251,9 @@ class JarbirdPlugin : Plugin<Project> {
         // Defer the configuration with afterEvaluate so that Android plugin has a chance
         // to setup itself before we configure the bintray plugin
         project.gradleAfterEvaluate { _ ->
-            pubCreator.buildPhase1()
+            println("1 extension publist count ${extension.pubList.size}")
+            println("1 extension publist pom ${extension.pubList[0].pom}")
+            PublicationBuilder(project, extension.pubList).buildPhase1()
         }
 
         /*
@@ -272,17 +287,17 @@ class JarbirdPlugin : Plugin<Project> {
 
         // Build phase 3
         project.afterEvaluate {
-            pubCreator.buildPhase3()
+            PublicationBuilder(project, extension.pubList).buildPhase3()
         }
 
         // Build phase 2
         project.gradleAfterEvaluate {
-            pubCreator.buildPhase2()
+            PublicationBuilder(project, extension.pubList).buildPhase2()
         }
 
         // Build phase 4
         project.afterEvaluate {
-            pubCreator.buildPhase4()
+            PublicationBuilder(project, extension.pubList).buildPhase4()
         }
     }
 }

@@ -187,7 +187,7 @@ fun runTask(task: String, projectDir: File): BuildResult {
                 "ANDROID_SDK_ROOT" to System.getenv()["ANDROID_SDK_ROOT"]
             )
         )
-        .withArguments("--stacktrace", task)
+        .withArguments("--stacktrace", "tasks", "--all", task)
         .withPluginClasspath()
         .forwardOutput()
         .build()

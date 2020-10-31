@@ -20,7 +20,9 @@ package io.hkhc.gradle.builder
 
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
-import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.bintrayGradlePluginPubList
+import io.hkhc.gradle.bintrayPubList
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.GradleException
@@ -31,11 +33,8 @@ import java.time.format.DateTimeFormatter
 
 class BintrayConfig(
     private val project: Project,
-    private val extension: JarbirdExtension,
-    private val pom: Pom
+    private val pubs: List<JarbirdPub>
 ) {
-
-    private val pub = extension.pubItrn
 
     fun config() {
         project.logger.debug("$LOG_PREFIX configure Bintray plugin")
@@ -54,7 +53,9 @@ class BintrayConfig(
             Make sure the build has finished before performing the copying task.
          */
         project.tasks.named("_bintrayRecordingCopy").get().apply {
-            dependsOn("publish${pub.pubNameWithVariant().capitalize()}PublicationToMavenLocal")
+            pubs.bintrayPubList().forEach {
+                dependsOn("publish${it.capitalize()}PublicationToMavenLocal")
+            }
         }
     }
 
@@ -63,33 +64,43 @@ class BintrayConfig(
     // them.
     private fun BintrayExtension.includeSignatureFiles() {
 
-        if (pom.group == null) {
-            throw GradleException("Bintray: group name is not available, failed to configure Bintray extension.")
-        }
-
-        val groupDir = pom.group?.replace('.', '/')
-        val filenamePrefix = "${pom.artifactId}-${pom.version}"
 
         filesSpec(
             closureOf<RecordingCopyTask> {
+                val includeFileList = pubs
+                    .filter { it.bintray }
+                    .filter { !(it.pom!!.isGradlePlugin() && it.pom!!.isSnapshot())}
+                    .fold(mutableListOf<String>()) { acc, pub ->
+                        if (pub.pom!!.group == null) {
+                            throw GradleException("Bintray: group name is not available, failed to configure Bintray extension.")
+                        }
+                        val filenamePrefix = "${pub.pom!!.artifactId}-${pub.pom!!.version}"
+                        acc.apply { add("$filenamePrefix*.${pub.pom!!.packaging}.asc") }
+                    }
+                    .toTypedArray()
                 from("${project.buildDir}/libs") {
-                    include(
-                        "$filenamePrefix*.aar.asc",
-                        "$filenamePrefix*.jar.asc"
-                    )
+                    include(*includeFileList)
                 }
-                from("${project.buildDir}/publications/${pub.pubNameWithVariant()}") {
-                    include("pom-default.xml.asc")
-                    rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
+                pubs
+                    .filter { it.bintray }
+                    .filter { !(it.pom!!.isGradlePlugin() && it.pom!!.isSnapshot())}
+                    .forEach {
+                        val groupDir = it.pom!!.group?.replace('.', '/')
+                        val filenamePrefix = "${it.pom!!.artifactId}-${it.pom!!.version}"
+                        from("${project.buildDir}/publications/${it.pubNameWithVariant()}") {
+                            include("pom-default.xml.asc")
+                            rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
+                        }
+                        into("$groupDir/${it.pom!!.artifactId}/${it.pom!!.version}")
                 }
-                into("$groupDir/${pom.artifactId}/${pom.version}")
             }
         )
     }
 
     private fun BintrayExtension.config() {
 
-        pub.bintrayRepository?.let { endpoint ->
+        // TODO assumed one bintrayRepository per project here. Should do precheck before proceed
+        pubs[0].bintrayRepository?.let { endpoint ->
             if (endpoint.releaseUrl != "") {
                 apiUrl = endpoint.releaseUrl
             }
@@ -102,14 +113,13 @@ class BintrayConfig(
             if (endpoint.apikey != "") key = endpoint.apikey
         }
 
-        val pubName = pub.pubNameWithVariant()
-        if (pom.isGradlePlugin()) {
-            setPublications(pubName, "${pubName}PluginMarkerMaven")
-        } else {
-            setPublications(pubName)
-        }
+        val publicationsList = pubs.bintrayPubList()
+        val gradlePublicationsList = publicationsList + pubs.bintrayGradlePluginPubList()
 
-        pkg.fill(pom)
+        setPublications(*(gradlePublicationsList.toTypedArray()))
+
+        // TODO assumed one bintrayRepository per project here. Should do precheck before proceed
+        pkg.fill(pubs[0].pom!!)
 
         includeSignatureFiles()
     }

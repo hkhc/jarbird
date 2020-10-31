@@ -19,8 +19,7 @@
 package io.hkhc.gradle.builder
 
 import com.gradle.publish.PluginBundleExtension
-import io.hkhc.gradle.JarbirdExtension
-import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -30,11 +29,8 @@ import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 
 class PluginPublishingConfig(
     private val project: Project,
-    private val extension: JarbirdExtension,
-    private val pom: Pom
+    private val pubs: List<JarbirdPub>
 ) {
-
-    private val pub = extension.pubItrn
 
     /*
         The following plugins shall be declared as dependencies in build.gradle.kts.
@@ -66,12 +62,18 @@ class PluginPublishingConfig(
     }
 
     fun config2() {
-        pom.name ?.let {
-            updatePluginPublication(project, it)
+        pubs.forEach {
+            if (it.pom!!.isGradlePlugin())
+                updatePluginPublication(project, it.pom!!.artifactId!!)
         }
     }
 
     private fun PluginBundleExtension.config() {
+
+        // TODO we can have one set of metadata for gradle plugins in one project.
+
+        val pom = pubs.map { it.pom!! }.first { it.isGradlePlugin() }
+
         website = pom.web.url
         vcsUrl = pom.scm.url ?: website
         description = pom.plugin?.description ?: pom.description
@@ -83,12 +85,14 @@ class PluginPublishingConfig(
         project.logger.debug("$LOG_PREFIX configure Gradle plugin development plugin")
 
         plugins {
-            create(pub.pubNameWithVariant()) {
-                pom.plugin?.let { plugin ->
-                    id = plugin.id
-                    displayName = plugin.displayName
-                    description = plugin.description
-                    implementationClass = plugin.implementationClass
+            pubs.filter { it.pom!!.isGradlePlugin() }.forEach {
+                create(it.pubNameWithVariant()) {
+                    it.pom!!.plugin?.let { plugin ->
+                        id = plugin.id
+                        displayName = plugin.displayName
+                        description = plugin.description
+                        implementationClass = plugin.implementationClass
+                    }
                 }
             }
         }

@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle.builder
 
-import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.GradleException
@@ -29,20 +29,17 @@ import org.gradle.plugins.signing.SigningExtension
 
 class SigningConfig(
     private val project: Project,
-    private val extension: JarbirdExtension,
-    private val pom: Pom
+    private val pubs: List<JarbirdPub>
 ) {
-
-    private val pub = extension.pubItrn
 
     private val signingIgnoredMessage = "Signing operation is ignored. " +
         "Maven Central publishing cannot be done without signing the artifacts."
 
     // return true if checking passed, otherwise failed
-    private fun validateConfig(project: Project, extension: JarbirdExtension, pom: Pom): Boolean {
+    private fun validateConfig(project: Project, pub: JarbirdPub): Boolean {
 
-        var complete = if (pom.isSnapshot() && pub.signing) {
-            project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pom.version}')")
+        var complete = if (pub.pom!!.isSnapshot() && pub.signing) {
+            project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pub.pom!!.version}')")
             false
         } else if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
             project.logger.warn(
@@ -81,16 +78,20 @@ class SigningConfig(
 
         project.logger.debug("$LOG_PREFIX configure Signing plugin")
 
-        val complete = validateConfig(project, extension, pom)
+        pubs.forEach { pub ->
+            val complete = validateConfig(project, pub)
 
-        if (!complete) {
-            project.logger.warn(
-                "WARNING: $LOG_PREFIX " +
-                    "Signing configuration for keybox file is not complete. $signingIgnoredMessage"
-            )
-        } else {
-            project.logger.debug("$LOG_PREFIX Signing info complete")
+            if (!complete) {
+                project.logger.warn(
+                    "WARNING: $LOG_PREFIX " +
+                        "Signing configuration for keybox file is not complete. $signingIgnoredMessage"
+                )
+            } else {
+                project.logger.debug("$LOG_PREFIX Signing info complete")
+            }
+
         }
+
 
         (
             project.findByType(SigningExtension::class.java)
@@ -109,16 +110,19 @@ class SigningConfig(
 
     private fun SigningExtension.config() {
 
-        if (pub.useGpg) {
-            useGpgCmd()
-        }
+        pubs.forEach { pub ->
+            if (pub.useGpg) {
+                useGpgCmd()
+            }
 
-        isRequired = !pom.isSnapshot()
+            isRequired = !pub.pom!!.isSnapshot()
 
-        if (!pom.isSnapshot()) {
-            project.findByType(PublishingExtension::class.java)?.let {
-                sign(it.publications[pub.pubNameWithVariant()])
+            if (!pub.pom!!.isSnapshot()) {
+                project.findByType(PublishingExtension::class.java)?.let {
+                    sign(it.publications[pub.pubNameWithVariant()])
+                }
             }
         }
+
     }
 }

@@ -325,6 +325,8 @@ data class Pom(
      * See https://central.sonatype.org/pages/requirements.html#sufficient-metadata
      * for the detail accounts of POM metadata needs to publish to Maven Central.
      * That should be more than enough for Bintray
+     *
+     * project.group, archiveBaseName of project convnetion may be updated
      */
     @Suppress("ComplexMethod")
     fun syncWith(project: Project) {

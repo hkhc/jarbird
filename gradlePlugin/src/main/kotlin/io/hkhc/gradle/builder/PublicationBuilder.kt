@@ -18,11 +18,13 @@
 
 package io.hkhc.gradle.builder
 
-import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.PLUGIN_ID
+import io.hkhc.gradle.bintrayPubList
 import io.hkhc.gradle.isMultiProjectRoot
-import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.needBintray
+import io.hkhc.gradle.needGradlePlugin
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.Project
 
@@ -67,12 +69,9 @@ import org.gradle.api.Project
  *  - Create facade tasks
  */
 class PublicationBuilder(
-    private val extension: JarbirdExtension,
     private val project: Project,
-    private val pom: Pom
+    private val pubs: List<JarbirdPub>
 ) {
-
-    private val pub = extension.pubItrn
 
     @Suppress("unused")
     fun buildPhase1() {
@@ -86,31 +85,23 @@ class PublicationBuilder(
             if (isMultiProjectRoot()) {
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
-                if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) &&
-                    pub.bintray
-                ) {
-                    ArtifactoryConfig(this, extension).config()
+                if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) && pubs.needBintray()) {
+                    ArtifactoryConfig(this, pubs).config()
                 }
             } else {
                 logger.info(
                     if (this == rootProject) {
-                        "$LOG_PREFIX Configure project '$name' for single-project publishing bintray " +
-                            "${pub.bintray} gradlePlugin ${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}"
+                        "$LOG_PREFIX Configure project '$name' for single-project publishing bintray"
                     } else {
                         "$LOG_PREFIX Configure child project '$name' for multi-project publishing"
                     }
                 )
 
-                logger.info(
-                    "bintray ${pub.bintray} gradlePlugin " +
-                        "${pom.isGradlePlugin()} snapshot ${pom.isSnapshot()}"
-                )
-
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
-                if (pub.bintray && !(pom.isGradlePlugin() && pom.isSnapshot())) {
+                if (pubs.bintrayPubList().isNotEmpty()) {
                     logger.info("config bintray and artifactory")
-                    BintrayConfig(this, extension, pom).config()
-                    ArtifactoryConfig(this, extension).config()
+                    BintrayConfig(this, pubs).config()
+                    ArtifactoryConfig(this, pubs).config()
                 }
             }
         }
@@ -119,16 +110,16 @@ class PublicationBuilder(
     @Suppress("unused")
     fun buildPhase2() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 2 of 4")
-        if (pom.isGradlePlugin()) {
-            PluginPublishingConfig(project, extension, pom).config()
+        if (pubs.needGradlePlugin()) {
+            PluginPublishingConfig(project, pubs).config()
         }
     }
 
     @Suppress("unused")
     fun buildPhase3() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 3 of 4")
-        if (pom.isGradlePlugin()) {
-            PluginPublishingConfig(project, extension, pom).config2()
+        if (pubs.needGradlePlugin()) {
+            PluginPublishingConfig(project, pubs).config2()
         }
     }
 
@@ -136,11 +127,11 @@ class PublicationBuilder(
     fun buildPhase4() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 4 of 4")
         if (!project.isMultiProjectRoot()) {
-            PublishingConfig(project, extension, pom).config()
-            if (pub.signing) {
-                SigningConfig(project, extension, pom).config()
+            PublishingConfig(project, pubs).config()
+            if (pubs.any { it.signing }) {
+                SigningConfig(project, pubs).config()
             }
         }
-        TaskBuilder(project, pom, extension).build()
+        TaskBuilder(project, pubs).build()
     }
 }

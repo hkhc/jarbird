@@ -34,10 +34,13 @@ class ArtifactChecker {
 
         val artifactDir = File(repoDir, artifactPath)
 
-        System.out.println("artifactDir $artifactDir")
         Assert.assertTrue(artifactDir.exists())
 
         val fileSet = artifactDir.listFiles().toMutableSet()
+
+        fileSet.forEach {
+            System.out.println("file set = ${it.absolutePath}")
+        }
 
         withClue("In local repository $repoDir") {
             with(coordinate) {
@@ -45,6 +48,7 @@ class ArtifactChecker {
                     .map { "$artifactId-$version$it" }
                     .forEach {
                         withClue("The generated file $it should presents ") {
+                            System.out.println("check file ${File(artifactDir, it).absolutePath}")
                             verifyArtifact(fileSet, File(artifactDir, it))
                         }
                     }
@@ -58,9 +62,9 @@ class ArtifactChecker {
 
     fun verifyArtifact(fileList: MutableSet<File>, file: File) {
 
-        Assert.assertTrue(file.exists())
+        Assert.assertTrue("File ${file.absolutePath} should exists", file.exists())
         val signature = File(file.absolutePath + ".asc")
-        Assert.assertTrue(signature.exists())
+        Assert.assertTrue("Signature file ${signature.absolutePath} should exists", signature.exists())
 
         fileList.remove(file)
         fileList.remove(signature)

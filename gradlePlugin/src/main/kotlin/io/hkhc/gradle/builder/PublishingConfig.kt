@@ -20,7 +20,7 @@ package io.hkhc.gradle.builder
 
 import io.hkhc.gradle.CLASSIFIER_JAVADOC
 import io.hkhc.gradle.CLASSIFIER_SOURCE
-import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.PUBLISH_GROUP
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.maven.MavenPomAdapter
@@ -44,12 +44,11 @@ import org.gradle.kotlin.dsl.get
 
 class PublishingConfig(
     private val project: Project,
-    private val exte: JarbirdExtension,
-    private val pom: Pom
+    private val pubs: List<JarbirdPub>
 ) {
     private val extensions = (project as ExtensionAware).extensions
-    private val pub = exte.pubItrn
-    private var dokka = pub.dokka
+    // TODO we shall have one separate dokka task per pub
+    private var dokka = pubs.map { it.dokka }.find { it != null }
 
     companion object {
         private fun printHelpForMissingDokka(project: Project) {
@@ -78,6 +77,7 @@ class PublishingConfig(
         project.logger.debug("$LOG_PREFIX configure Publishing extension")
 
         if (dokka == null) {
+            System.out.println("dokka is null, create a new dokka task")
             try {
                 dokka = project.tasks.named("dokka")
             } catch (e: UnknownTaskException) {
@@ -100,7 +100,7 @@ class PublishingConfig(
             createPublication()
         }
 
-        if (pub.maven) {
+        if (pubs.any { it.maven } ) {
             repositories {
                 createRepository()
             }
@@ -112,59 +112,66 @@ class PublishingConfig(
 
     private fun PublicationContainer.createPublication() {
 
-        val dokkaJar = setupDokkaJar()
-        val sourcesJar = setupSourcesJar()
+        pubs.forEach { pub ->
+            val dokkaJar = setupDokkaJar(pub)
+            val sourcesJar = setupSourcesJar(pub)
 
-        val pomSpec = pom
+            val pomSpec = pub.pom!!
 
-        val pubComponent = pub.pubComponent
-        register(pub.pubNameWithVariant(), MavenPublication::class.java) {
+            val pubComponent = pub.pubComponent
+            register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
-            groupId = pomSpec.group
+                groupId = pomSpec.group
 
-            artifactId = pomSpec.artifactId
+                artifactId = pomSpec.artifactId
 
-            // version is gotten from an external plugin
-            //            version = project.versioning.info.display
-            version = pomSpec.version
+                // version is gotten from an external plugin
+                //            version = project.versioning.info.display
+                version = pomSpec.version
 
-            // This is the main artifact
-            from(project.components[pubComponent])
-            // We are adding documentation artifact
-            project.afterEvaluate {
-                dokkaJar?.let { artifact(it.get()) }
-                // And sources
-                sourcesJar?.let { artifact(it.get()) }
+                // This is the main artifact
+                from(project.components[pubComponent])
+                // We are adding documentation artifact
+                project.afterEvaluate {
+                    dokkaJar?.let { artifact(it.get()) }
+                    // And sources
+                    sourcesJar?.let { artifact(it.get()) }
+                }
+
+                pom { MavenPomAdapter().fill(this, pomSpec) }
             }
-
-            pom { MavenPomAdapter().fill(this, pomSpec) }
         }
     }
 
     private fun RepositoryHandler.createRepository() {
 
-        // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
-        val endpoint = pub.mavenRepository ?: project.mavenCentral()
+        pubs.filter { it.maven }.forEach { pub ->
+            // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
+            val endpoint = pub.mavenRepository ?: project.mavenCentral()
 
-        maven {
-            name = "Maven${pub.pubNameWithVariant().capitalize()}"
-            val endpointUrl =
-                if (pom.isSnapshot()) {
-                    endpoint.snapshotUrl
-                } else {
-                    endpoint.releaseUrl
+            maven {
+                name = "Maven${pub.pubNameWithVariant().capitalize()}"
+                val endpointUrl =
+                    if (pub.pom!!.isSnapshot()) {
+                        endpoint.snapshotUrl
+                    } else {
+                        endpoint.releaseUrl
+                    }
+                url = project.uri(endpointUrl)
+                credentials {
+                    username = endpoint.username
+                    password = endpoint.password
                 }
-            url = project.uri(endpointUrl)
-            credentials {
-                username = endpoint.username
-                password = endpoint.password
             }
         }
+
     }
 
     @Suppress("UnstableApiUsage")
-    private fun setupDokkaJar(): TaskProvider<Jar>? {
+    private fun setupDokkaJar(pub: JarbirdPub): TaskProvider<Jar>? {
+
         if (dokka == null) return null
+
         val dokkaJarTaskName = pub.pubNameWithVariant("dokkaJar")
         return try {
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {
@@ -184,7 +191,7 @@ class PublishingConfig(
     }
 
     @Suppress("UnstableApiUsage")
-    private fun setupSourcesJar(): TaskProvider<Jar>? {
+    private fun setupSourcesJar(pub: JarbirdPub): TaskProvider<Jar>? {
 
         val sourcesJarTaskName = pub.pubNameWithVariant("sourcesJar")
         return try {

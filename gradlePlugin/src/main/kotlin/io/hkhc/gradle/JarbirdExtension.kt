@@ -25,18 +25,20 @@ import org.gradle.api.Project
 // Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.
 open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
-    lateinit var pom: PomGroup
-
-    var pubItrn = JarbirdPub(project)
+    var pubList = mutableListOf<JarbirdPub>()
 
     /* to be invoked by Groovy Gradle script */
     fun pub(action: Closure<JarbirdPub>) {
-        action.delegate = pubItrn
+        val newPub = JarbirdPub(project)
+        pubList.add(newPub)
+        action.delegate = newPub
         action.call()
     }
 
     /* to be invoked by Kotlin Gradle script */
     fun pub(action: JarbirdPub.() -> Unit) {
-        action.invoke(pubItrn)
+        val newPub = JarbirdPub(project)
+        pubList.add(newPub)
+        action.invoke(newPub)
     }
 }

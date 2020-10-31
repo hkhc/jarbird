@@ -49,7 +49,7 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
         groups[pom.variant] = pom
     }
 
-    operator fun get(variant: String) = group[variant]
+    operator fun get(variant: String) = if (variant == "") group[Pom.DEFAULT_VARIANT] else group[variant]
 
     fun getDefault() = group[Pom.DEFAULT_VARIANT] ?: Pom()
 
@@ -89,4 +89,7 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
 
     /* for unit test only */
     internal fun getMap(): Map<String, Pom> = group
+
+    fun involveGradlePlugin() = group.any { it.value.isGradlePlugin() }
+
 }
