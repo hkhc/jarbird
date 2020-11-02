@@ -23,13 +23,12 @@ import io.hkhc.gradle.maven.MavenCentralEndpoint
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.maven.RepoEndpoint
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 import java.io.File
 
 class JarbirdPub(@Suppress("unused") private val project: Project) {
 
-    var pom: Pom? = null
+    lateinit var pom: Pom
 
     /**
      * Configure for Maven publishing or not (No matter maven central or alternate maven repository)
@@ -107,13 +106,13 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
 
 internal fun List<JarbirdPub>.needSigning() = any { it.signing }
 internal fun List<JarbirdPub>.needBintray() = any { it.bintray }
-internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom!!.isGradlePlugin() }
+internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
 internal fun List<JarbirdPub>.bintrayPubList() =
     filter { it.bintray }
-        .filter { !(it.pom!!.isGradlePlugin() && it.pom!!.isSnapshot())}
+        .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot())}
         .map { it.pubNameWithVariant() }
 internal fun List<JarbirdPub>.bintrayGradlePluginPubList() =
     filter { it.bintray }
-        .filter { it.pom != null && it.pom!!.isGradlePlugin() }
-        .filter { !(it.pom!!.isGradlePlugin() && it.pom!!.isSnapshot())}
+        .filter { it.pom != null && it.pom.isGradlePlugin() }
+        .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot())}
         .map { it.pubNameWithVariant() + "PluginMarkerMaven" }

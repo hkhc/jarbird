@@ -63,8 +63,8 @@ class PluginPublishingConfig(
 
     fun config2() {
         pubs.forEach {
-            if (it.pom!!.isGradlePlugin())
-                updatePluginPublication(project, it.pom!!.artifactId!!)
+            if (it.pom.isGradlePlugin())
+                updatePluginPublication(project, it.pom.artifactId!!)
         }
     }
 
@@ -72,7 +72,7 @@ class PluginPublishingConfig(
 
         // TODO we can have one set of metadata for gradle plugins in one project.
 
-        val pom = pubs.map { it.pom!! }.first { it.isGradlePlugin() }
+        val pom = pubs.map { it.pom }.first { it.isGradlePlugin() }
 
         website = pom.web.url
         vcsUrl = pom.scm.url ?: website
@@ -85,9 +85,9 @@ class PluginPublishingConfig(
         project.logger.debug("$LOG_PREFIX configure Gradle plugin development plugin")
 
         plugins {
-            pubs.filter { it.pom!!.isGradlePlugin() }.forEach {
+            pubs.filter { it.pom.isGradlePlugin() }.forEach {
                 create(it.pubNameWithVariant()) {
-                    it.pom!!.plugin?.let { plugin ->
+                    it.pom.plugin?.let { plugin ->
                         id = plugin.id
                         displayName = plugin.displayName
                         description = plugin.description

@@ -38,8 +38,8 @@ class SigningConfig(
     // return true if checking passed, otherwise failed
     private fun validateConfig(project: Project, pub: JarbirdPub): Boolean {
 
-        var complete = if (pub.pom!!.isSnapshot() && pub.signing) {
-            project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pub.pom!!.version}')")
+        var complete = if (pub.pom.isSnapshot() && pub.signing) {
+            project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pub.pom.version}')")
             false
         } else if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
             project.logger.warn(
@@ -115,9 +115,9 @@ class SigningConfig(
                 useGpgCmd()
             }
 
-            isRequired = !pub.pom!!.isSnapshot()
+            isRequired = !pub.pom.isSnapshot()
 
-            if (!pub.pom!!.isSnapshot()) {
+            if (!pub.pom.isSnapshot()) {
                 project.findByType(PublishingExtension::class.java)?.let {
                     sign(it.publications[pub.pubNameWithVariant()])
                 }

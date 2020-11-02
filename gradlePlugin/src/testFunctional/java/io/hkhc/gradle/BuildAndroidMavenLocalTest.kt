@@ -37,9 +37,16 @@ class BuildAndroidMavenLocalTest {
     lateinit var libProj: File
 
     lateinit var localRepoDir: File
+    lateinit var envs: MutableMap<String,String>
 
     @BeforeEach
     fun setUp() {
+
+        envs = defaultEnvs(tempProjectDir).apply {
+            val pair = getTestAndroidSdkHomePair()
+            put(pair.first, pair.second)
+        }
+
         libProj = File(tempProjectDir, "lib")
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/libaar").copyRecursively(libProj)
@@ -143,8 +150,10 @@ class BuildAndroidMavenLocalTest {
                     def variantName = name
                     if (variantName == "release") {
                         jarbird {
-                            pub {
+                             pub {
+                                System.out.println("in pub closure")
                                 useGpg = true
+                                System.out.println("variantName in script "+variantName)
                                 pubComponent = variantName
                                 sourceSets = sourceSets[0].javaDirectories
                             }
@@ -168,7 +177,7 @@ class BuildAndroidMavenLocalTest {
 
         FileTree().dump(tempProjectDir, ::println)
 
-        val result = runTask(task, tempProjectDir)
+        val result = runTask(task, tempProjectDir, envs)
 
         FileTree().dump(tempProjectDir, ::println)
 

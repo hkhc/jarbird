@@ -34,7 +34,7 @@ class ArtifactChecker {
 
         val artifactDir = File(repoDir, artifactPath)
 
-        Assert.assertTrue(artifactDir.exists())
+        Assert.assertTrue("The artifact directory $artifactDir in local repo shall exist", artifactDir.exists())
 
         val fileSet = artifactDir.listFiles().toMutableSet()
 

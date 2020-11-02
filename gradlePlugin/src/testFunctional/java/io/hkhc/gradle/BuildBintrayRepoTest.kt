@@ -21,6 +21,7 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.BintrayPublishingChecker
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.MockBintrayRepositoryServer
+import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
@@ -35,6 +36,7 @@ class BuildBintrayRepoTest {
     @TempDir
     lateinit var tempProjectDir: File
     lateinit var mockRepositoryServer: MockBintrayRepositoryServer
+    lateinit var localRepoDir: File
 
     @BeforeEach
     fun setUp() {
@@ -56,6 +58,10 @@ class BuildBintrayRepoTest {
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
+
+        localRepoDir = File(tempProjectDir, "localRepo")
+        localRepoDir.mkdirs()
+        System.setProperty("maven.repo.local", localRepoDir.absolutePath)
     }
 
     @Test
@@ -76,6 +82,8 @@ class BuildBintrayRepoTest {
 
         val task = "jbPublishToBintray"
         val result = runTask(task, tempProjectDir)
+
+        FileTree().dump(tempProjectDir, System.out::println)
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
         BintrayPublishingChecker(coordinate).assertReleaseArtifacts(

@@ -46,7 +46,7 @@ class TaskBuilder(
         }
     }
 
-    private fun getPubNameCap(pub: JarbirdPub) = pub.pubNameWithVariant()
+    private fun getPubNameCap(pub: JarbirdPub) = pub.pubNameWithVariant().capitalize()
     private fun getPubId(pub: JarbirdPub) = "${getPubNameCap(pub)}Publication"
     private fun getMarkerPubId(pub: JarbirdPub) = "${getPubNameCap(pub)}PluginMarkerMavenPublication"
     private fun getMavenRepo(pub: JarbirdPub) = "Maven${getPubNameCap(pub)}Repository"
@@ -75,17 +75,17 @@ class TaskBuilder(
                 register(publishTask) {
                     group = SP_GROUP
 
-                    description = if (pub.pom!!.isGradlePlugin()) {
+                    description = if (pub.pom.isGradlePlugin()) {
                         "Publish Maven publication '${pub.pubNameWithVariant()}' " +
-                            "and plugin '${pub.pom!!.plugin?.id}' version '${pub.pom!!.version}' to the local Maven Repository"
+                            "and plugin '${pub.pom.plugin?.id}' version '${pub.pom.version}' to the local Maven Repository"
                     } else {
                         "Publish Maven publication '${pub.pubNameWithVariant()}' to the local Maven Repository"
                     }
 
                     dependsOn("publish${getPubId(pub).capitalize()}To$mavenLocal")
 
-                    if (pub.pom!!.isGradlePlugin()) {
-                        dependsOn("publish${getMarkerPubId(pub)}To$mavenLocal")
+                    if (pub.pom.isGradlePlugin()) {
+                        dependsOn("publish${getMarkerPubId(pub).capitalize()}To$mavenLocal")
                     }
                 }
 
@@ -111,16 +111,16 @@ class TaskBuilder(
 
                     // I don't know why the maven repository name in the task name is not capitalized
 
-                    description = if (pub.pom!!.isGradlePlugin()) {
+                    description = if (pub.pom.isGradlePlugin()) {
                         "Publish Maven publication '${pub.pubNameWithVariant()}' " +
-                            "and plugin '${pub.pom!!.plugin?.id}' version '${pub.pom!!.version}' to the 'Maven${getPubNameCap(pub)}' Repository"
+                            "and plugin '${pub.pom.plugin?.id}' version '${pub.pom.version}' to the 'Maven${getPubNameCap(pub)}' Repository"
                     } else {
                         "Publish Maven publication '${pub.pubNameWithVariant()}' to the 'Maven${getPubNameCap(pub)}' Repository"
                     }
 
                     dependsOn("publish${getPubId(pub)}To${getMavenRepo(pub)}")
 
-                    if (pub.pom!!.isGradlePlugin()) {
+                    if (pub.pom.isGradlePlugin()) {
                         dependsOn("publish${getMarkerPubId(pub)}To${getMavenRepo(pub)}")
                     }
                 }
@@ -133,7 +133,7 @@ class TaskBuilder(
     }
 
     private fun publishingSupported(pub: JarbirdPub): Boolean {
-        val notSupport = pub.pom!!.isSnapshot() && pub.bintray && pub.pom!!.isGradlePlugin()
+        val notSupport = pub.pom.isSnapshot() && pub.bintray && pub.pom.isGradlePlugin()
         if (notSupport) {
             project.logger.warn(
                 "WARNING: $LOG_PREFIX Publish snapshot Gradle Plugin to Bintray/OSSArtifactory is not supported."
@@ -155,11 +155,11 @@ class TaskBuilder(
                     register("jbPublishToBintray") {
                         group = SP_GROUP
 
-                        val target = if (pub.pom!!.isSnapshot()) "OSS JFrog" else "Bintray"
+                        val target = if (pub.pom.isSnapshot()) "OSS JFrog" else "Bintray"
 
-                        description = if (pub.pom!!.isGradlePlugin()) {
+                        description = if (pub.pom.isGradlePlugin()) {
                             "Publish Maven publication '$${getPubNameCap(pub)}' " +
-                                "and plugin '${pub.pom!!.plugin?.id}' version '${pub.pom!!.version}' to $target"
+                                "and plugin '${pub.pom.plugin?.id}' version '${pub.pom.version}' to $target"
                         } else {
                             "Publish Maven publication '${getPubNameCap(pub)}' to $target"
                         }
@@ -168,7 +168,7 @@ class TaskBuilder(
                             bintray repository does not allow publishing SNAPSHOT artifacts, it has to be published
                             to the OSS JFrog repository
                          */
-                        if (pub.pom!!.isSnapshot()) {
+                        if (pub.pom.isSnapshot()) {
                             dependsOn("artifactoryPublish")
                         } else {
                             dependsOn("bintrayUpload")
@@ -184,11 +184,11 @@ class TaskBuilder(
         if (project.isMultiProjectRoot()) {
             registerRootProjectTasks("jbPublishToGradlePortal")
         } else {
-            val pom = pubs.first {it.pom!!.isGradlePlugin()}?.pom
+            val pom = pubs.first {it.pom.isGradlePlugin()}?.pom
             register("jbPublishToGradlePortal") {
                 group = SP_GROUP
                 // TODO fix description for multiple pom
-                description = "Publish plugin '${pom!!.plugin?.id}' version '${pom!!.version}' to the Gradle plugin portal"
+                description = "Publish plugin '${pom.plugin?.id}' version '${pom.version}' to the Gradle plugin portal"
                 dependsOn("publishPlugins")
             }
         }
@@ -212,13 +212,13 @@ class TaskBuilder(
                     if (pub.bintray) {
                         repoList.add("Bintray")
                     }
-                    if (pub.pom!!.isGradlePlugin()) {
+                    if (pub.pom.isGradlePlugin()) {
                         repoList.add("Gradle Plugin Portal")
                     }
                     val repoListStr = repoList.joinToString()
 
-                    description = if (pub.pom!!.isGradlePlugin()) {
-                        "Publish Maven publication '${getPubNameCap(pub)}' and plugin '${pub.pom!!.plugin?.id}' version '${pub.pom!!.version}' " +
+                    description = if (pub.pom.isGradlePlugin()) {
+                        "Publish Maven publication '${getPubNameCap(pub)}' and plugin '${pub.pom.plugin?.id}' version '${pub.pom.version}' " +
                             "to $repoListStr"
                     } else {
                         "Publish Maven publication '${getPubNameCap(pub)}' to $repoListStr"
@@ -226,10 +226,10 @@ class TaskBuilder(
 
                     dependsOn("jbPublishTo$mavenLocal")
                     dependsOn("jbPublishToMavenRepository")
-                    if (pub.bintray && !(pub.pom!!.isGradlePlugin() && pub.pom!!.isSnapshot())) {
+                    if (pub.bintray && !(pub.pom.isGradlePlugin() && pub.pom.isSnapshot())) {
                         dependsOn("jbPublishToBintray")
                     }
-                    if (pub.pom!!.isGradlePlugin()) {
+                    if (pub.pom.isGradlePlugin()) {
                         dependsOn("jbPublishToGradlePortal")
                     }
                 }
@@ -249,7 +249,7 @@ class TaskBuilder(
             if (pubs.any { it.bintray }) {
                 registerBintrayTask()
             }
-            if (pubs.any { it.pom!!.isGradlePlugin() }) {
+            if (pubs.any { it.pom.isGradlePlugin() }) {
                 registerGradlePortalTask()
             }
             registerPublishTask()

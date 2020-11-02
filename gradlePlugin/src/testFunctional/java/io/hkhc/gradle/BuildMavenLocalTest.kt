@@ -22,6 +22,7 @@ import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
+import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -37,13 +38,40 @@ class BuildMavenLocalTest {
 
     lateinit var localRepoDir: File
 
+    lateinit var envs: Map<String, String>
+
     @BeforeEach
     fun setUp() {
+
+        envs = mutableMapOf(
+            getTestGradleHomePair(tempProjectDir)
+        )
+
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
         localRepoDir = File(tempProjectDir, "localRepo")
         localRepoDir.mkdirs()
         System.setProperty("maven.repo.local", localRepoDir.absolutePath)
+    }
+
+    // TODO need a test for zero pub
+
+    @Test
+    fun `Zero Gradle Test`() {
+        val result = GradleRunner.create()
+            .withProjectDir(tempProjectDir)
+            .withEnvironment(
+                mapOf(
+                    "GRADLE_USER_HOME" to System.getenv()["HOME"] + "/.gradle"
+//                    "ANDROID_SDK_ROOT" to System.getenv()["ANDROID_SDK_ROOT"]
+                )
+            )
+            .withArguments("--stacktrace", "tasks", "--all")
+            .withPluginClasspath()
+            .forwardOutput()
+            .build()
+
+        // FileTree().dump(projectDir, System.out::println)
     }
 
     @Test
@@ -62,12 +90,6 @@ class BuildMavenLocalTest {
             }
             repositories {
                 jcenter()
-            }
-            jarbird {
-                pub {
-                    System.out.println("closure class : " + this.class.name)
-                    maven = false
-                }
             }
             """.trimIndent()
         )

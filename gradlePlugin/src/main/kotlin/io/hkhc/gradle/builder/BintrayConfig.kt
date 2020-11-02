@@ -64,40 +64,64 @@ class BintrayConfig(
     // them.
     private fun BintrayExtension.includeSignatureFiles() {
 
+        System.out.println("BintrayExtension.includeSignatureFiles")
+
+        val includeFileList = pubs
+            .filter { it.bintray }
+            .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
+            .fold(mutableListOf<String>()) { acc, pub ->
+                if (pub.pom.group == null) {
+                    throw GradleException("Bintray: group name is not available, failed to configure Bintray extension.")
+                }
+                val filenamePrefix = "${pub.pom.artifactId}-${pub.pom.version}"
+                acc.apply { add("$filenamePrefix.${pub.pom.packaging}.asc") }
+            }
+            .toTypedArray()
+
+//        filesSpec(
+//            closureOf<RecordingCopyTask> {
+//                from("${project.buildDir}/libs") {
+//                    include(*includeFileList)
+//                }
+//                pubs
+//                    .filter { it.bintray }
+//                    .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
+//                    .forEach {
+//                        val groupDir = it.pom.group?.replace('.', '/')
+//                        val filenamePrefix = "${it.pom.artifactId}-${it.pom.version}"
+//                        from("${project.buildDir}/publications/${it.pubNameWithVariant()}") {
+//                            include("pom-default.xml.asc")
+//                            rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
+//                        }
+//                        into("$groupDir/${it.pom.artifactId}/${it.pom.version}")
+//                    }
+//            }
+//        )
 
         filesSpec(
             closureOf<RecordingCopyTask> {
-                val includeFileList = pubs
-                    .filter { it.bintray }
-                    .filter { !(it.pom!!.isGradlePlugin() && it.pom!!.isSnapshot())}
-                    .fold(mutableListOf<String>()) { acc, pub ->
-                        if (pub.pom!!.group == null) {
-                            throw GradleException("Bintray: group name is not available, failed to configure Bintray extension.")
-                        }
-                        val filenamePrefix = "${pub.pom!!.artifactId}-${pub.pom!!.version}"
-                        acc.apply { add("$filenamePrefix*.${pub.pom!!.packaging}.asc") }
-                    }
-                    .toTypedArray()
+                System.out.println("BintrayExtension.includeSignatureFiles config filesSpec ${rootSpec}")
+//                from("main/java") {
+//                    include("Hello.java")
+//                }
                 from("${project.buildDir}/libs") {
-                    include(*includeFileList)
+                    include("test.artifact-0.1.jar.asc")
                 }
-                pubs
-                    .filter { it.bintray }
-                    .filter { !(it.pom!!.isGradlePlugin() && it.pom!!.isSnapshot())}
-                    .forEach {
-                        val groupDir = it.pom!!.group?.replace('.', '/')
-                        val filenamePrefix = "${it.pom!!.artifactId}-${it.pom!!.version}"
-                        from("${project.buildDir}/publications/${it.pubNameWithVariant()}") {
-                            include("pom-default.xml.asc")
-                            rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
-                        }
-                        into("$groupDir/${it.pom!!.artifactId}/${it.pom!!.version}")
+                val groupDir = "test/group"
+                val filenamePrefix = "test.artifact-0.1"
+                from("${project.buildDir}/publications/lib") {
+                    include("pom-default.xml.asc")
+                    rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
                 }
+                into("$groupDir/test.artifact/0.1xxx")
             }
         )
+
     }
 
     private fun BintrayExtension.config() {
+
+        System.out.println("BintrayExtension.config start pub count ${pubs.size}")
 
         // TODO assumed one bintrayRepository per project here. Should do precheck before proceed
         pubs[0].bintrayRepository?.let { endpoint ->
@@ -116,10 +140,12 @@ class BintrayConfig(
         val publicationsList = pubs.bintrayPubList()
         val gradlePublicationsList = publicationsList + pubs.bintrayGradlePluginPubList()
 
+        System.out.println("bintray publication list ${gradlePublicationsList.joinToString()}")
+
         setPublications(*(gradlePublicationsList.toTypedArray()))
 
         // TODO assumed one bintrayRepository per project here. Should do precheck before proceed
-        pkg.fill(pubs[0].pom!!)
+        pkg.fill(pubs[0].pom)
 
         includeSignatureFiles()
     }
@@ -128,6 +154,9 @@ class BintrayConfig(
 
         val labelList = pom.bintray.labels?.split(',')?.toTypedArray() ?: arrayOf()
         val licenseList = pom.licenses.map { it.name }.toTypedArray()
+
+        System.out.println("Bintray repo ${pom.bintray.repo}")
+        System.out.println("Bintray userOrg ${pom.bintray.userOrg}")
 
         repo = pom.bintray.repo ?: "maven"
         pom.bintray.userOrg?.let { userOrg = it }

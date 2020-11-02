@@ -62,6 +62,9 @@ class BuildPluginMavenLocalTest {
                 id 'java'
                 id 'io.hkhc.jarbird'
             }
+            repositories {
+                jcenter()
+            }
             jarbird {
                 pub {
                     maven = false
@@ -75,6 +78,7 @@ class BuildPluginMavenLocalTest {
         }
 
         val task = "jbPublishToMavenLocal"
+//        val task = "clean"
         val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)

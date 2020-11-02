@@ -112,13 +112,19 @@ class PublishingConfig(
 
     private fun PublicationContainer.createPublication() {
 
+        System.out.println("PublicationContainer.createPublication component count ${project.components.size}")
+        project.components.forEach {
+            System.out.println("PublicationContainer.createPublication component ${it.name}")
+        }
+
         pubs.forEach { pub ->
             val dokkaJar = setupDokkaJar(pub)
             val sourcesJar = setupSourcesJar(pub)
 
-            val pomSpec = pub.pom!!
+            val pomSpec = pub.pom
 
             val pubComponent = pub.pubComponent
+            System.out.println("PublicationContainer.createPublication pubComponent $pubComponent")
             register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
                 groupId = pomSpec.group
@@ -152,7 +158,7 @@ class PublishingConfig(
             maven {
                 name = "Maven${pub.pubNameWithVariant().capitalize()}"
                 val endpointUrl =
-                    if (pub.pom!!.isSnapshot()) {
+                    if (pub.pom.isSnapshot()) {
                         endpoint.snapshotUrl
                     } else {
                         endpoint.releaseUrl

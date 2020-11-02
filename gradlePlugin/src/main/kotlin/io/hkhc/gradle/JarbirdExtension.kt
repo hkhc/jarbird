@@ -19,6 +19,7 @@
 package io.hkhc.gradle
 
 import groovy.lang.Closure
+import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 
@@ -26,13 +27,16 @@ import org.gradle.api.Project
 open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     var pubList = mutableListOf<JarbirdPub>()
+    lateinit var pomGroupCallback: PomGroupCallback
 
     /* to be invoked by Groovy Gradle script */
     fun pub(action: Closure<JarbirdPub>) {
+        System.out.println("add new pub by closure")
         val newPub = JarbirdPub(project)
         pubList.add(newPub)
         action.delegate = newPub
         action.call()
+        pomGroupCallback.initPub(newPub)
     }
 
     /* to be invoked by Kotlin Gradle script */
@@ -40,5 +44,7 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
         val newPub = JarbirdPub(project)
         pubList.add(newPub)
         action.invoke(newPub)
+        pomGroupCallback.initPub(newPub)
     }
+
 }

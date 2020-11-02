@@ -20,8 +20,11 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.PropertiesEditor
+import junit.framework.Assert.assertTrue
+import org.gradle.api.GradleException
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.Assertions.assertNotNull
 import java.io.File
 
 fun PropertiesEditor.setupKeyStore(baseDir: File) {
@@ -177,17 +180,17 @@ fun buildGradlePlugin(): String {
     """.trimIndent()
 }
 
-fun runTask(task: String, projectDir: File): BuildResult {
+fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultEnvs(projectDir)): BuildResult {
+
+    assertTrue("Project directory '$projectDir' shall exist", projectDir.exists())
+    envs.forEach {
+        assertNotNull("Environment Variable '${it.key}' should have non null value", it.value)
+    }
 
     val result = GradleRunner.create()
         .withProjectDir(projectDir)
-        .withEnvironment(
-            mapOf(
-                "GRADLE_USER_HOME" to System.getenv()["HOME"] + "/.gradle",
-                "ANDROID_SDK_ROOT" to System.getenv()["ANDROID_SDK_ROOT"]
-            )
-        )
-        .withArguments("--stacktrace", "tasks", "--all", task)
+        .withEnvironment(envs)
+        .withArguments("--stacktrace", "--debug", "tasks", "--all", task)
         .withPluginClasspath()
         .forwardOutput()
         .build()
@@ -195,4 +198,22 @@ fun runTask(task: String, projectDir: File): BuildResult {
     // FileTree().dump(projectDir, System.out::println)
 
     return result
+}
+
+fun defaultEnvs(projectDir: File) = mutableMapOf(getTestGradleHomePair(projectDir))
+
+fun getTestGradleHomePair(projectDir: File): Pair<String, String> {
+    val path = (
+        System.getenv()["GRADLE_USER_HOME"]
+            ?: System.getenv()["HOME"] ?: projectDir.absolutePath
+        ) + "/.gradle"
+    return "GRADLE_USER_HOME" to path
+}
+
+fun getTestAndroidSdkHomePair(): Pair<String, String> {
+    val path = System.getenv()["ANDROID_HOME"] ?: System.getenv()["ANDROID_SDK_ROOT"]
+    if (path == null) {
+        throw GradleException("environment variable 'ANDROID_SDK_ROOT' is missed. It shall contain path to Android SDK")
+    }
+    return "ANDROID_SDK_ROOT" to path
 }

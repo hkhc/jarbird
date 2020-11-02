@@ -23,6 +23,7 @@ import com.jfrog.bintray.gradle.BintrayPlugin
 import io.hkhc.gradle.builder.PublicationBuilder
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.pom.PomGroup
 import io.hkhc.gradle.pom.PomGroupFactory
 import io.hkhc.gradle.utils.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.utils.LOG_PREFIX
@@ -38,9 +39,10 @@ import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 
 @Suppress("unused")
-class JarbirdPlugin : Plugin<Project> {
+class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
     private lateinit var extension: JarbirdExtension
+    private lateinit var pomGroup: PomGroup
     private var androidPluginAppliedBeforeUs = false
 
     /*
@@ -53,6 +55,35 @@ class JarbirdPlugin : Plugin<Project> {
     // TODO check if POM fulfill minimal requirements for publishing
     // TODO maven publishing dry-run
     // TODO accept both pom.yml or pom.yaml
+
+    private fun checkAndroidPlugin(project: Project) {
+
+        if (project.pluginManager.hasPlugin(ANDROID_LIBRARY_PLUGIN_ID)) {
+            androidPluginAppliedBeforeUs = true
+            project.logger.debug("$LOG_PREFIX $ANDROID_LIBRARY_PLUGIN_ID plugin is found to be applied")
+        } else {
+            androidPluginAppliedBeforeUs = false
+            project.logger.debug("$LOG_PREFIX apply $ANDROID_LIBRARY_PLUGIN_ID is not found to be applied")
+        }
+    }
+
+    override fun initPub(pub: JarbirdPub) {
+
+        pub.pom = pomGroup[pub.variant]
+        println("pub variant ${pub.variant} pom = ${pub.pom}")
+
+        // TODO we ignore that pom overwrite some project properties in the mean time.
+        // need to properly take care of it.
+        pub.pom?.syncWith(project)
+
+        pub.bintrayRepository = pub.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
+
+        // pre-check of final data, for child project
+        // TODO handle multiple level child project?
+        if (!project.isMultiProjectRoot()) {
+            pub.pom?.let { pom -> precheck(pom, project) }
+        }
+    }
 
     @Suppress("ThrowsCount")
     private fun precheck(pom: Pom, project: Project) {
@@ -90,17 +121,6 @@ class JarbirdPlugin : Plugin<Project> {
         }
     }
 
-    private fun checkAndroidPlugin(project: Project) {
-
-        if (project.pluginManager.hasPlugin(ANDROID_LIBRARY_PLUGIN_ID)) {
-            androidPluginAppliedBeforeUs = true
-            project.logger.debug("$LOG_PREFIX $ANDROID_LIBRARY_PLUGIN_ID plugin is found to be applied")
-        } else {
-            androidPluginAppliedBeforeUs = false
-            project.logger.debug("$LOG_PREFIX apply $ANDROID_LIBRARY_PLUGIN_ID is not found to be applied")
-        }
-    }
-
     /**
      * The order of applying plugins and whether they are deferred by the two kind of afterEvaluate listener, are
      * important. So mess around them without know exactly the consequence.
@@ -109,9 +129,10 @@ class JarbirdPlugin : Plugin<Project> {
 
         project = p
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
-        val pomGroup = PomGroupFactory(p).resolvePomGroup()
+        pomGroup = PomGroupFactory(p).resolvePomGroup()
 
         extension = project.extensions.create(SP_EXT_NAME, JarbirdExtension::class.java, project)
+        extension.pomGroupCallback = this
 
         project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pomGroup")
 
@@ -175,7 +196,7 @@ class JarbirdPlugin : Plugin<Project> {
             apply(MavenPublishPlugin::class.java)
 
             /**
-\             * "org.jetbrains.dokka"
+             * "org.jetbrains.dokka"
              * no evaluation listener
              */
             apply(DokkaPlugin::class.java)
@@ -191,40 +212,52 @@ class JarbirdPlugin : Plugin<Project> {
 
             println("0 extension publist count ${extension.pubList.size}")
 
-            extension.pubList.forEach {
-
-                it.pom = pomGroup[it.variant]
-                println("pub variant ${it.variant} pom = ${it.pom}")
-
-                // TODO we ignore that pom overwrite some project properties in the mean time.
-                // need to properly take care of it.
-                it.pom?.syncWith(p)
-
-                it.bintrayRepository = it.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
-
-                // pre-check of final data, for child project
-                // TODO handle multiple level child project?
-                if (!project.isMultiProjectRoot()) {
-                    it.pom?.let { pom -> precheck(pom, p) }
-                }
-            }
+//            extension.pubList.forEach {
+//
+//                it.pom = pomGroup[it.variant]
+//                println("pub variant ${it.variant} pom = ${it.pom}")
+//
+//                // TODO we ignore that pom overwrite some project properties in the mean time.
+//                // need to properly take care of it.
+//                it.pom?.syncWith(p)
+//
+//                it.bintrayRepository = it.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
+//
+//                // pre-check of final data, for child project
+//                // TODO handle multiple level child project?
+//                if (!project.isMultiProjectRoot()) {
+//                    it.pom?.let { pom -> precheck(pom, p) }
+//                }
+//            }
 
             with(p.pluginManager) {
-                if (extension.pubList.needSigning()) {
-                    /**
-                     * "org.gradle.signing"
-                     * no evaluation listener
-                     */
-                    apply(SigningPlugin::class.java)
-                }
-
-                extension.pubList.forEach {
-                    if (it.variant != Pom.DEFAULT_VARIANT) {
-
-                    }
-                }
+//                if (extension.pubList.needSigning()) {
+//                    /**
+//                     * "org.gradle.signing"
+//                     * no evaluation listener
+//                     */
+//                    apply(SigningPlugin::class.java)
+//                }
+//
+//                extension.pubList.forEach {
+//                    if (it.variant != Pom.DEFAULT_VARIANT) {
+//                    }
+//                }
 
                 if (pomGroup.involveGradlePlugin()) {
+
+                    if (extension.pubList.needSigning()) {
+                        /**
+                         * "org.gradle.signing"
+                         * no evaluation listener
+                         */
+                        apply(SigningPlugin::class.java)
+                    }
+
+                    extension.pubList.forEach {
+                        if (it.variant != Pom.DEFAULT_VARIANT) {
+                        }
+                    }
 
                     /**
                      * "com.gradle.plugin-publish"
@@ -251,9 +284,9 @@ class JarbirdPlugin : Plugin<Project> {
         // Defer the configuration with afterEvaluate so that Android plugin has a chance
         // to setup itself before we configure the bintray plugin
         project.gradleAfterEvaluate { _ ->
-            println("1 extension publist count ${extension.pubList.size}")
-            println("1 extension publist pom ${extension.pubList[0].pom}")
-            PublicationBuilder(project, extension.pubList).buildPhase1()
+//            System.out.println("before phase 1")
+//            PublicationBuilder(project, extension.pubList).buildPhase1()
+//            System.out.println("after phase 1")
         }
 
         /*
@@ -287,12 +320,64 @@ class JarbirdPlugin : Plugin<Project> {
 
         // Build phase 3
         project.afterEvaluate {
+            if (extension.pubList.isEmpty() && !project.isMultiProjectRoot()) {
+                System.out.println("add a default pub")
+                extension.pub { }
+            }
+
+            with(p.pluginManager) {
+
+
+                if (!pomGroup.involveGradlePlugin()) {
+
+                    if (extension.pubList.needSigning()) {
+                        /**
+                         * "org.gradle.signing"
+                         * no evaluation listener
+                         */
+                        apply(SigningPlugin::class.java)
+                    }
+
+                    extension.pubList.forEach {
+                        if (it.variant != Pom.DEFAULT_VARIANT) {
+                        }
+                    }
+                }
+
+//                if (pomGroup.involveGradlePlugin()) {
+//
+//                    /**
+//                     * "com.gradle.plugin-publish"
+//                     *      project.afterEvaluate
+//                     *          setup sourcejar docjar tasks
+//                     */
+//                    apply(PublishPlugin::class.java)
+//
+//                    /**
+//                     * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
+//                     * "org.gradle.java-gradle-plugin"
+//                     * project.afterEvaluate
+//                     *      add testkit dependency
+//                     * project.afterEvaluate
+//                     *      validate plugin declaration
+//                     */
+//                    apply(JavaGradlePluginPlugin::class.java)
+//                }
+            }
+
+            System.out.println("before phase 1")
+            PublicationBuilder(project, extension.pubList).buildPhase1()
+            System.out.println("after phase 1")
+            System.out.println("before phase 3")
             PublicationBuilder(project, extension.pubList).buildPhase3()
+            System.out.println("after phase 3")
         }
 
         // Build phase 2
         project.gradleAfterEvaluate {
+            System.out.println("before phase 2")
             PublicationBuilder(project, extension.pubList).buildPhase2()
+            System.out.println("after phase 2")
         }
 
         // Build phase 4

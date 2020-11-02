@@ -49,7 +49,7 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
         groups[pom.variant] = pom
     }
 
-    operator fun get(variant: String) = if (variant == "") group[Pom.DEFAULT_VARIANT] else group[variant]
+    operator fun get(variant: String) = (if (variant == "") group[Pom.DEFAULT_VARIANT] else group[variant]) ?: Pom()
 
     fun getDefault() = group[Pom.DEFAULT_VARIANT] ?: Pom()
 

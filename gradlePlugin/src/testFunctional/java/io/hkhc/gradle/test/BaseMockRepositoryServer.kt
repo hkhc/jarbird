@@ -73,7 +73,11 @@ abstract class BaseMockRepositoryServer {
     fun collectRequests(): List<RecordedRequest> {
         val count = server.requestCount
         println("$count recorded requests")
-        return List(count) { server.takeRequest() }
+        return List(count) { server.takeRequest() }.also {
+            it.forEach {
+                System.out.println("recorded request = ${it.path}")
+            }
+        }
     }
 
     fun getServerUrl(): String {
