@@ -100,9 +100,6 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
     fun withMavenByProperties(key: String) {
         mavenRepository = PropertyRepoEndpoint(project, "maven.$key")
     }
-
-    var bintrayRepository: RepoEndpoint? = null
-
 }
 
 internal fun List<JarbirdPub>.needSigning() = any { it.signing }
@@ -114,6 +111,6 @@ internal fun List<JarbirdPub>.bintrayPubList() =
         .map { it.pubNameWithVariant() }
 internal fun List<JarbirdPub>.bintrayGradlePluginPubList() =
     filter { it.bintray }
-        .filter { it.pom != null && it.pom.isGradlePlugin() }
+        .filter { it.pom.isGradlePlugin() }
         .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot())}
         .map { it.pubNameWithVariant() + "PluginMarkerMaven" }

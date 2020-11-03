@@ -20,6 +20,7 @@ package io.hkhc.gradle.builder
 
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.bintrayGradlePluginPubList
 import io.hkhc.gradle.bintrayPubList
@@ -33,6 +34,7 @@ import java.time.format.DateTimeFormatter
 
 class BintrayConfig(
     private val project: Project,
+    private val extension: JarbirdExtension,
     private val pubs: List<JarbirdPub>
 ) {
 
@@ -105,8 +107,7 @@ class BintrayConfig(
 
         System.out.println("BintrayExtension.config start pub count ${pubs.size}")
 
-        // TODO assumed one bintrayRepository per project here. Should do precheck before proceed
-        pubs[0].bintrayRepository?.let { endpoint ->
+        extension.bintrayRepository?.let { endpoint ->
             if (endpoint.releaseUrl != "") {
                 apiUrl = endpoint.releaseUrl
             }

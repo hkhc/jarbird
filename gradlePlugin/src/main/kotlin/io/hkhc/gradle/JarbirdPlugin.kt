@@ -76,14 +76,12 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
         // TODO we ignore that pom overwrite some project properties in the mean time.
         // need to properly take care of it.
-        pub.pom?.syncWith(project)
-
-        pub.bintrayRepository = pub.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
+        pub.pom.syncWith(project)
 
         // pre-check of final data, for child project
         // TODO handle multiple level child project?
         if (!project.isMultiProjectRoot()) {
-            pub.pom?.let { pom -> precheck(pom, project) }
+            pub.pom.let { pom -> precheck(pom, project) }
         }
     }
 
@@ -123,7 +121,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         }
     }
 
-    private fun pluginStatus(project: Project, tag: String) {
+//    private fun pluginStatus(project: Project, tag: String) {
 //        val gradleExt = project.extensions.getByType(GradlePluginDevelopmentExtension::class.java)
 //        System.out.println("$tag gradleExt.plugins.size ${gradleExt.plugins.size}")
 //        System.out.println("$tag isAutomatedPublishing ${gradleExt.isAutomatedPublishing}")
@@ -134,7 +132,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 //        pubExt.publications.forEach {
 //            System.out.println("$tag publication ${it.name}")
 //        }
-    }
+//    }
 
     /**
      * The order of applying plugins and whether they are deferred by the two kind of afterEvaluate listener, are
@@ -234,6 +232,8 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
             println("0 extension publist count ${extension.pubList.size}")
 
+            extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
+
             if (!project.isMultiProjectRoot()) {
                 System.out.println("add a default pub")
                 extension.createImplicit()
@@ -262,10 +262,10 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                 project.pluginManager.apply(JavaGradlePluginPlugin::class.java)
 
                 System.out.println("before phase 2")
-                PublicationBuilder(project, extension.pubList).buildPhase2()
+                PublicationBuilder(project, extension, extension.pubList).buildPhase2()
                 System.out.println("after phase 2")
                 System.out.println("before phase 3")
-                PublicationBuilder(project, extension.pubList).buildPhase3()
+                PublicationBuilder(project, extension, extension.pubList).buildPhase3()
                 System.out.println("after phase 3")
 
             }
@@ -333,13 +333,13 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
             System.out.println("plugin build : ${pomGroup.involveGradlePlugin()} ")
 
             System.out.println("before phase 1")
-            PublicationBuilder(project, extension.pubList).buildPhase1()
+            PublicationBuilder(project, extension, extension.pubList).buildPhase1()
             System.out.println("after phase 1")
         }
 
         project.afterEvaluate {
             System.out.println("before phase 4")
-            PublicationBuilder(project, extension.pubList).buildPhase4()
+            PublicationBuilder(project, extension, extension.pubList).buildPhase4()
             System.out.println("after phase 4")
         }
 

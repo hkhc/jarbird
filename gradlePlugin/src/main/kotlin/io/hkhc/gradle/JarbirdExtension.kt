@@ -20,6 +20,7 @@ package io.hkhc.gradle
 
 import groovy.lang.Closure
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
+import io.hkhc.gradle.maven.RepoEndpoint
 import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 
@@ -27,6 +28,11 @@ import org.gradle.api.Project
 open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     var pubList = mutableListOf<JarbirdPub>()
+
+    var bintrayRepository: RepoEndpoint? = null
+
+
+
     lateinit var pomGroupCallback: PomGroupCallback
     private var implicited: JarbirdPub? = null
 

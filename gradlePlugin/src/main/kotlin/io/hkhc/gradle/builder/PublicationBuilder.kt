@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.builder
 
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.PLUGIN_ID
@@ -70,6 +71,7 @@ import org.gradle.api.Project
  */
 class PublicationBuilder(
     private val project: Project,
+    private val extension: JarbirdExtension,
     private val pubs: List<JarbirdPub>
 ) {
 
@@ -86,7 +88,7 @@ class PublicationBuilder(
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
                 if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) && pubs.needBintray()) {
-                    ArtifactoryConfig(this, pubs).config()
+                    ArtifactoryConfig(this, extension, pubs).config()
                 }
             } else {
                 logger.info(
@@ -105,8 +107,8 @@ class PublicationBuilder(
                 if (pubs.bintrayPubList().isNotEmpty()) {
                     System.out.println("config bintray and artifactory")
                     logger.info("config bintray and artifactory")
-                    BintrayConfig(this, pubs).config()
-                    ArtifactoryConfig(this, pubs).config()
+                    BintrayConfig(this, extension, pubs).config()
+                    ArtifactoryConfig(this, extension, pubs).config()
                 }
             }
         }

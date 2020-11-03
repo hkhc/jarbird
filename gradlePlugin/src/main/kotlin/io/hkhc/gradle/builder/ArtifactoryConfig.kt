@@ -20,6 +20,7 @@ package io.hkhc.gradle.builder
 
 import groovy.lang.GroovyObject
 import io.hkhc.gradle.BintrayPublishConfig
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.bintrayPubList
 import io.hkhc.gradle.isMultiProjectRoot
@@ -36,6 +37,7 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 
 class ArtifactoryConfig(
     private val project: Project,
+    private val extension: JarbirdExtension,
     private val pubs: List<JarbirdPub>
 ) {
 
@@ -46,7 +48,7 @@ class ArtifactoryConfig(
     fun config() {
 
         // TODO we should have one bintray repository per project. need precheck before proceed
-        repoUrl = pubs.first {it.variant!= Pom.DEFAULT_VARIANT} .bintrayRepository?.snapshotUrl ?: repoUrl
+        repoUrl = extension.bintrayRepository?.snapshotUrl ?: repoUrl
 
         val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
         if (project.isSingleProject()) {
