@@ -102,6 +102,7 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
     }
 
     var bintrayRepository: RepoEndpoint? = null
+
 }
 
 internal fun List<JarbirdPub>.needSigning() = any { it.signing }

@@ -26,7 +26,8 @@ repositories {
      because our plugin code applys other plugins, so that make those dependent plugins
      part of the dependenciies */
     gradlePluginPortal()
-//    mavenLocal()
+    // for bintray-gradle-plugin:1.8.5-hkhc
+    mavenLocal()
 }
 
 plugins {

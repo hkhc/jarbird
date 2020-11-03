@@ -55,7 +55,7 @@ class BuildMavenRepoWithEnvTest {
             .writeText(buildGradle())
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
+        File("functionalTestData/lib").copyRecursively(tempProjectDir)
     }
 
     @Test

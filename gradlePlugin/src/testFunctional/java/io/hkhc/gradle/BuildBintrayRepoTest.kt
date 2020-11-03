@@ -57,7 +57,7 @@ class BuildBintrayRepoTest {
             .writeText(buildGradleCustomBintray())
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
+        File("functionalTestData/lib").copyRecursively(tempProjectDir)
 
         localRepoDir = File(tempProjectDir, "localRepo")
         localRepoDir.mkdirs()

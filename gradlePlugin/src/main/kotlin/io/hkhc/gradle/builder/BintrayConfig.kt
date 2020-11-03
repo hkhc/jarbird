@@ -46,7 +46,9 @@ class BintrayConfig(
             Why does bintrayUpload not depends on _bintrayRecordingCopy by default?
          */
         project.tasks.named("bintrayUpload").get().apply {
-            dependsOn("_bintrayRecordingCopy")
+            // Bintray Gradle Plugin expect RecordingCopyTask dependency in task directly rather than name in String
+            dependsOn(project.tasks.named("_bintrayRecordingCopy").get())
+//            dependsOn("_bintrayRecordingCopy")
         }
 
         /*
@@ -74,49 +76,29 @@ class BintrayConfig(
                     throw GradleException("Bintray: group name is not available, failed to configure Bintray extension.")
                 }
                 val filenamePrefix = "${pub.pom.artifactId}-${pub.pom.version}"
-                acc.apply { add("$filenamePrefix.${pub.pom.packaging}.asc") }
+                acc.apply { add("$filenamePrefix*.${pub.pom.packaging}.asc") }
             }
             .toTypedArray()
 
-//        filesSpec(
-//            closureOf<RecordingCopyTask> {
-//                from("${project.buildDir}/libs") {
-//                    include(*includeFileList)
-//                }
-//                pubs
-//                    .filter { it.bintray }
-//                    .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
-//                    .forEach {
-//                        val groupDir = it.pom.group?.replace('.', '/')
-//                        val filenamePrefix = "${it.pom.artifactId}-${it.pom.version}"
-//                        from("${project.buildDir}/publications/${it.pubNameWithVariant()}") {
-//                            include("pom-default.xml.asc")
-//                            rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
-//                        }
-//                        into("$groupDir/${it.pom.artifactId}/${it.pom.version}")
-//                    }
-//            }
-//        )
-
         filesSpec(
             closureOf<RecordingCopyTask> {
-                System.out.println("BintrayExtension.includeSignatureFiles config filesSpec ${rootSpec}")
-//                from("main/java") {
-//                    include("Hello.java")
-//                }
                 from("${project.buildDir}/libs") {
-                    include("test.artifact-0.1.jar.asc")
+                    include(*includeFileList)
                 }
-                val groupDir = "test/group"
-                val filenamePrefix = "test.artifact-0.1"
-                from("${project.buildDir}/publications/lib") {
-                    include("pom-default.xml.asc")
-                    rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
-                }
-                into("$groupDir/test.artifact/0.1xxx")
+                pubs
+                    .filter { it.bintray }
+                    .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
+                    .forEach {
+                        val groupDir = it.pom.group?.replace('.', '/')
+                        val filenamePrefix = "${it.pom.artifactId}-${it.pom.version}"
+                        from("${project.buildDir}/publications/${it.pubNameWithVariant()}") {
+                            include("pom-default.xml.asc")
+                            rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
+                        }
+                        into("$groupDir/${it.pom.artifactId}/${it.pom.version}")
+                    }
             }
         )
-
     }
 
     private fun BintrayExtension.config() {

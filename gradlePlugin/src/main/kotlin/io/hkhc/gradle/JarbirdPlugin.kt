@@ -32,7 +32,9 @@ import io.hkhc.gradle.utils.fatalMessage
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 import org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
@@ -121,11 +123,26 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         }
     }
 
+    private fun pluginStatus(project: Project, tag: String) {
+//        val gradleExt = project.extensions.getByType(GradlePluginDevelopmentExtension::class.java)
+//        System.out.println("$tag gradleExt.plugins.size ${gradleExt.plugins.size}")
+//        System.out.println("$tag isAutomatedPublishing ${gradleExt.isAutomatedPublishing}")
+//        gradleExt.plugins.forEach {
+//            System.out.println("$tag pluginDeclaration ${it.name} [${it.implementationClass}]")
+//        }
+//        val pubExt = project.extensions.getByType(PublishingExtension::class.java)
+//        pubExt.publications.forEach {
+//            System.out.println("$tag publication ${it.name}")
+//        }
+    }
+
     /**
      * The order of applying plugins and whether they are deferred by the two kind of afterEvaluate listener, are
      * important. So mess around them without know exactly the consequence.
      */
     override fun apply(p: Project) {
+
+        System.out.println("applying jarbird ${p.name}")
 
         project = p
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
@@ -137,6 +154,10 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pomGroup")
 
         checkAndroidPlugin(p)
+
+        project.pluginManager.withPlugin("org.gradle.java-gradle-plugin") {
+            System.out.println("JavaGradlePluginPlugin has just applied")
+        }
 
         /*
 
@@ -200,6 +221,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
              * no evaluation listener
              */
             apply(DokkaPlugin::class.java)
+
         }
 
         /* Under the following situation we need plugins to be applied within the Gradle-scope afterEvaluate
@@ -211,6 +233,43 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         project.gradleAfterEvaluate { _ ->
 
             println("0 extension publist count ${extension.pubList.size}")
+
+            if (!project.isMultiProjectRoot()) {
+                System.out.println("add a default pub")
+                extension.createImplicit()
+            }
+
+            /*
+            JavaGradlePluginPlugin expect plugin declaration at top level and not in afterEvaluate block.
+            So we can safely configuring gradle plugin pub here.
+             */
+            if (extension.pubList.needGradlePlugin()) {
+                /**
+                 * "com.gradle.plugin-publish"
+                 *      project.afterEvaluate
+                 *          setup sourcejar docjar tasks
+                 */
+                project.pluginManager.apply(PublishPlugin::class.java)
+
+                /**
+                 * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
+                 * "org.gradle.java-gradle-plugin"
+                 * project.afterEvaluate
+                 *      add testkit dependency
+                 * project.afterEvaluate
+                 *      validate plugin declaration
+                 */
+                project.pluginManager.apply(JavaGradlePluginPlugin::class.java)
+
+                System.out.println("before phase 2")
+                PublicationBuilder(project, extension.pubList).buildPhase2()
+                System.out.println("after phase 2")
+                System.out.println("before phase 3")
+                PublicationBuilder(project, extension.pubList).buildPhase3()
+                System.out.println("after phase 3")
+
+            }
+
 
 //            extension.pubList.forEach {
 //
@@ -230,53 +289,8 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 //                }
 //            }
 
-            with(p.pluginManager) {
-//                if (extension.pubList.needSigning()) {
-//                    /**
-//                     * "org.gradle.signing"
-//                     * no evaluation listener
-//                     */
-//                    apply(SigningPlugin::class.java)
-//                }
-//
-//                extension.pubList.forEach {
-//                    if (it.variant != Pom.DEFAULT_VARIANT) {
-//                    }
-//                }
 
-                if (pomGroup.involveGradlePlugin()) {
 
-                    if (extension.pubList.needSigning()) {
-                        /**
-                         * "org.gradle.signing"
-                         * no evaluation listener
-                         */
-                        apply(SigningPlugin::class.java)
-                    }
-
-                    extension.pubList.forEach {
-                        if (it.variant != Pom.DEFAULT_VARIANT) {
-                        }
-                    }
-
-                    /**
-                     * "com.gradle.plugin-publish"
-                     *      project.afterEvaluate
-                     *          setup sourcejar docjar tasks
-                     */
-                    apply(PublishPlugin::class.java)
-
-                    /**
-                     * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
-                     * "org.gradle.java-gradle-plugin"
-                     * project.afterEvaluate
-                     *      add testkit dependency
-                     * project.afterEvaluate
-                     *      validate plugin declaration
-                     */
-                    apply(JavaGradlePluginPlugin::class.java)
-                }
-            }
         }
 
         // Gradle plugin publish plugin is not compatible with Android plugin.
@@ -287,6 +301,46 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 //            System.out.println("before phase 1")
 //            PublicationBuilder(project, extension.pubList).buildPhase1()
 //            System.out.println("after phase 1")
+        }
+
+
+        // Build phase 3
+        project.afterEvaluate {
+
+            println("A extension publist count ${extension.pubList.size}")
+
+            // we created an implicit JarbirdPub and we have more in afterEvaluate
+            extension.removeImplicit()
+
+            with(p.pluginManager) {
+
+
+                if (extension.pubList.needSigning()) {
+                    /**
+                     * "org.gradle.signing"
+                     * no evaluation listener
+                     */
+                    /**
+                     * "org.gradle.signing"
+                     * no evaluation listener
+                     */
+                    apply(SigningPlugin::class.java)
+                }
+
+
+            }
+
+            System.out.println("plugin build : ${pomGroup.involveGradlePlugin()} ")
+
+            System.out.println("before phase 1")
+            PublicationBuilder(project, extension.pubList).buildPhase1()
+            System.out.println("after phase 1")
+        }
+
+        project.afterEvaluate {
+            System.out.println("before phase 4")
+            PublicationBuilder(project, extension.pubList).buildPhase4()
+            System.out.println("after phase 4")
         }
 
         /*
@@ -318,71 +372,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
             apply(ArtifactoryPlugin::class.java)
         }
 
-        // Build phase 3
-        project.afterEvaluate {
-            if (extension.pubList.isEmpty() && !project.isMultiProjectRoot()) {
-                System.out.println("add a default pub")
-                extension.pub { }
-            }
-
-            with(p.pluginManager) {
 
 
-                if (!pomGroup.involveGradlePlugin()) {
-
-                    if (extension.pubList.needSigning()) {
-                        /**
-                         * "org.gradle.signing"
-                         * no evaluation listener
-                         */
-                        apply(SigningPlugin::class.java)
-                    }
-
-                    extension.pubList.forEach {
-                        if (it.variant != Pom.DEFAULT_VARIANT) {
-                        }
-                    }
-                }
-
-//                if (pomGroup.involveGradlePlugin()) {
-//
-//                    /**
-//                     * "com.gradle.plugin-publish"
-//                     *      project.afterEvaluate
-//                     *          setup sourcejar docjar tasks
-//                     */
-//                    apply(PublishPlugin::class.java)
-//
-//                    /**
-//                     * @see org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
-//                     * "org.gradle.java-gradle-plugin"
-//                     * project.afterEvaluate
-//                     *      add testkit dependency
-//                     * project.afterEvaluate
-//                     *      validate plugin declaration
-//                     */
-//                    apply(JavaGradlePluginPlugin::class.java)
-//                }
-            }
-
-            System.out.println("before phase 1")
-            PublicationBuilder(project, extension.pubList).buildPhase1()
-            System.out.println("after phase 1")
-            System.out.println("before phase 3")
-            PublicationBuilder(project, extension.pubList).buildPhase3()
-            System.out.println("after phase 3")
-        }
-
-        // Build phase 2
-        project.gradleAfterEvaluate {
-            System.out.println("before phase 2")
-            PublicationBuilder(project, extension.pubList).buildPhase2()
-            System.out.println("after phase 2")
-        }
-
-        // Build phase 4
-        project.afterEvaluate {
-            PublicationBuilder(project, extension.pubList).buildPhase4()
-        }
     }
 }

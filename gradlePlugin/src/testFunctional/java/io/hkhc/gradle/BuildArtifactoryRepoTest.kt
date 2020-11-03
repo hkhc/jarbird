@@ -54,7 +54,7 @@ class BuildArtifactoryRepoTest {
         File("$tempProjectDir/build.gradle.kts")
             .writeText(buildGradleCustomArtifactrory())
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
+        File("functionalTestData/lib").copyRecursively(tempProjectDir)
     }
 
     @Test

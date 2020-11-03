@@ -52,13 +52,13 @@ class BuildBintrayPluginRepoTest {
         File("$tempProjectDir/pom.yaml")
             .writeText(
                 simplePom(coordinate) + '\n' +
-                    pluginPom(coordinate.pluginId ?: "non-exist-plugin-id", "TestPlugin")
+                    pluginPom(coordinate.pluginId ?: "non-exist-plugin-id", "TestPluginClass")
             )
         File("$tempProjectDir/build.gradle.kts")
             .writeText(buildGradleCustomBintray())
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
+        File("functionalTestData/lib").copyRecursively(tempProjectDir)
     }
 
     @Test

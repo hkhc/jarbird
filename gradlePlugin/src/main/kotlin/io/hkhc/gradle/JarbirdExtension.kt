@@ -28,6 +28,7 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     var pubList = mutableListOf<JarbirdPub>()
     lateinit var pomGroupCallback: PomGroupCallback
+    private var implicited: JarbirdPub? = null
 
     /* to be invoked by Groovy Gradle script */
     fun pub(action: Closure<JarbirdPub>) {
@@ -45,6 +46,26 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
         pubList.add(newPub)
         action.invoke(newPub)
         pomGroupCallback.initPub(newPub)
+    }
+
+    fun createImplicit() {
+        /*
+        if implicit != null, we have alrady got an implicit, no need to create another
+        if pubList.isNotEmpty() and implicit == null, we have an non-implicit pub, no need to create implicit
+         */
+        if (implicited != null || pubList.isNotEmpty()) return
+        pub {}
+        implicited = pubList[0]
+    }
+
+    fun removeImplicit() {
+        /*
+        If implicit == null , means we have not created an implicit pub, no need to remove
+        If pubList.size == 1 and implicit != null, this means it is the only pub, so we still need it, don't remove
+         */
+        if (implicited == null || pubList.size == 1 ) return
+        pubList.remove(implicited)
+        implicited = null
     }
 
 }

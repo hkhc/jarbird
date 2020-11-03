@@ -45,6 +45,7 @@ class PluginPublishingConfig(
 
     fun config() {
         (
+            // TODO rename findByType to findExtension
             project.findByType(PluginBundleExtension::class.java)
                 ?: throw GradleException(
                     "\"pluginBundle\" extension is not found, may be " +
@@ -84,9 +85,13 @@ class PluginPublishingConfig(
 
         project.logger.debug("$LOG_PREFIX configure Gradle plugin development plugin")
 
+        System.out.println("GradlePluginDevelopmentExtension.config")
+
         plugins {
             pubs.filter { it.pom.isGradlePlugin() }.forEach {
+                System.out.println("create plugin pubName ${it.pubNameWithVariant()}")
                 create(it.pubNameWithVariant()) {
+                    System.out.println("PluginDeclaration name ${name}")
                     it.pom.plugin?.let { plugin ->
                         id = plugin.id
                         displayName = plugin.displayName

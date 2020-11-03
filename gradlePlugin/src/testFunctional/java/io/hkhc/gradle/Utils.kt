@@ -190,7 +190,7 @@ fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultE
     val result = GradleRunner.create()
         .withProjectDir(projectDir)
         .withEnvironment(envs)
-        .withArguments("--stacktrace", "--debug", "tasks", "--all", task)
+        .withArguments("--stacktrace", "tasks", "--all", task)
         .withPluginClasspath()
         .forwardOutput()
         .build()

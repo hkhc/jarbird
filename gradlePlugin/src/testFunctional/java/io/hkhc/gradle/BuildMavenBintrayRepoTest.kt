@@ -68,7 +68,7 @@ class BuildMavenBintrayRepoTest {
             .writeText(buildGradle())
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib/src").copyRecursively(tempProjectDir)
+        File("functionalTestData/lib").copyRecursively(tempProjectDir)
     }
 
     @Test
