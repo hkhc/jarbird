@@ -22,6 +22,8 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.MavenPublishingChecker
 import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.utils.PropertiesEditor
+import io.hkhc.utils.StringNodeBuilder
+import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -102,10 +104,34 @@ class BuildMavenRepoTest {
             "repository.maven.mock.password" to "password"
         }
 
-        val task = "jbPublishToMavenRepository"
-        val result = runTask(task, tempProjectDir)
+        val targetTask = "jbPublishToMavenRepository"
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+        val taskTree = treeStr(
+            StringNodeBuilder(":$targetTask").build {
+                +":jbPublishLibToMavenRepository" {
+                    +":jbPublishLibToMavenmock" {
+                        +":publishLibPublicationToMavenLibRepository" {
+                            +":dokkaJar ..>"
+                            +":generateMetadataFileForLibPublication ..>"
+                            +":generatePomFileForLibPublication"
+                            +":jar ..>"
+                            +":signLibPublication ..>"
+                            +":sourcesJar"
+                        }
+                    }
+                }
+            }
+        )
+
+        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "4"), tempProjectDir)
+        assertEquals(
+            taskTree,
+            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
+        )
+
+        val result = runTask(targetTask, tempProjectDir)
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockRepositoryServer.collectRequests())
     }
 
@@ -123,10 +149,33 @@ class BuildMavenRepoTest {
             "repository.maven.mock.password" to "password"
         }
 
-        val task = "jbPublishToMavenRepository"
-        val result = runTask(task, tempProjectDir)
+        val targetTask = "jbPublishToMavenRepository"
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+        val taskTree = treeStr(
+            StringNodeBuilder(":$targetTask").build {
+                +":jbPublishLibToMavenRepository" {
+                    +":jbPublishLibToMavenmock" {
+                        +":publishLibPublicationToMavenLibRepository" {
+                            +":dokkaJar ..>"
+                            +":generateMetadataFileForLibPublication ..>"
+                            +":generatePomFileForLibPublication"
+                            +":jar ..>"
+                            +":sourcesJar"
+                        }
+                    }
+                }
+            }
+        )
+
+        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "4"), tempProjectDir)
+        assertEquals(
+            taskTree,
+            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
+        )
+
+        val result = runTask(targetTask, tempProjectDir)
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         MavenPublishingChecker(coordinate).assertSnapshotArtifacts(mockRepositoryServer.collectRequests())
     }
 }
