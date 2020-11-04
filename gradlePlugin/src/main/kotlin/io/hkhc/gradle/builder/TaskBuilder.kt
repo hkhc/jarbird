@@ -21,7 +21,6 @@ package io.hkhc.gradle.builder
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.SP_GROUP
 import io.hkhc.gradle.isMultiProjectRoot
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
@@ -68,6 +67,11 @@ class TaskBuilder(
             registerRootProjectTasks("jbPublishTo$mavenLocal")
         } else {
 
+            val jbPublishToMavenLocal = register("jbPublishTo$mavenLocal") {
+                group = SP_GROUP
+                description = "Publish"
+            }.get()
+
             pubs.forEach { pub ->
 
                 val publishTask = "jbPublish${getPubNameCap(pub)}To$mavenLocal"
@@ -76,8 +80,8 @@ class TaskBuilder(
                     group = SP_GROUP
 
                     description = if (pub.pom.isGradlePlugin()) {
-                        "Publish Maven publication '${pub.pubNameWithVariant()}' " +
-                            "and plugin '${pub.pom.plugin?.id}' version '${pub.pom.version}' to the local Maven Repository"
+                        "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.pom.version}' " +
+                            "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' to the local Maven Repository"
                     } else {
                         "Publish Maven publication '${pub.pubNameWithVariant()}' to the local Maven Repository"
                     }
@@ -89,9 +93,7 @@ class TaskBuilder(
                     }
                 }
 
-                register("jbPublishTo$mavenLocal") {
-                    dependsOn(publishTask)
-                }
+                jbPublishToMavenLocal.dependsOn(publishTask)
             }
         }
     }
@@ -105,28 +107,41 @@ class TaskBuilder(
             }
         } else {
 
+            val jbPublishToMavenRepository = register("jbPublishToMavenRepository"){
+                group = SP_GROUP
+            }.get()
+
+            System.out.println("configuring jbPublishToMavenRepository")
             pubs.forEach { pub ->
-                register("jbPublish${getPubNameCap(pub)}ToMavenRepository") {
-                    group = SP_GROUP
+                System.out.println("dependsOn mavenRepository for pub ")
+                pub.mavenRepository?.let { repo ->
+                    System.out.println("dependsOn mavenRepository ${repo}")
+                    val jbPublishPubNameToMavenRepository = register("jbPublish${getPubNameCap(pub)}To${repo.name}") {
+                        group = SP_GROUP
 
-                    // I don't know why the maven repository name in the task name is not capitalized
+                        // I don't know why the maven repository name in the task name is not capitalized
 
-                    description = if (pub.pom.isGradlePlugin()) {
-                        "Publish Maven publication '${pub.pubNameWithVariant()}' " +
-                            "and plugin '${pub.pom.plugin?.id}' version '${pub.pom.version}' to the 'Maven${getPubNameCap(pub)}' Repository"
-                    } else {
-                        "Publish Maven publication '${pub.pubNameWithVariant()}' to the 'Maven${getPubNameCap(pub)}' Repository"
+                        description = if (pub.pom.isGradlePlugin()) {
+                            "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.pom.version}' " +
+                                "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' to the 'Maven${getPubNameCap(pub)}' Repository"
+                        } else {
+                            // TODO 'Maven${getPubNameCap(pub)}' is wrong
+                            "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.pom.version}' to the 'Maven${getPubNameCap(pub)}' Repository"
+                        }
+
+                        dependsOn("publish${getPubId(pub)}To${getMavenRepo(pub)}")
+
+                        if (pub.pom.isGradlePlugin()) {
+                            dependsOn("publish${getMarkerPubId(pub)}To${getMavenRepo(pub)}")
+                        }
+                    }.get()
+
+                    register("jbPublish${getPubNameCap(pub)}ToMavenRepository") {
+                        group = SP_GROUP
+                        dependsOn("jbPublish${getPubNameCap(pub)}To${repo.name}")
                     }
 
-                    dependsOn("publish${getPubId(pub)}To${getMavenRepo(pub)}")
-
-                    if (pub.pom.isGradlePlugin()) {
-                        dependsOn("publish${getMarkerPubId(pub)}To${getMavenRepo(pub)}")
-                    }
-                }
-
-                register("jbPublishToMavenRepository"){
-                    dependsOn("jbPublish${getPubNameCap(pub)}ToMavenRepository")
+                    jbPublishToMavenRepository.dependsOn("jbPublish${getPubNameCap(pub)}ToMavenRepository")
                 }
             }
         }
@@ -158,8 +173,8 @@ class TaskBuilder(
                         val target = if (pub.pom.isSnapshot()) "OSS JFrog" else "Bintray"
 
                         description = if (pub.pom.isGradlePlugin()) {
-                            "Publish Maven publication '$${getPubNameCap(pub)}' " +
-                                "and plugin '${pub.pom.plugin?.id}' version '${pub.pom.version}' to $target"
+                            "Publish Maven publication '${getPubNameCap(pub)}' " +
+                                "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' to $target"
                         } else {
                             "Publish Maven publication '${getPubNameCap(pub)}' to $target"
                         }
@@ -184,12 +199,14 @@ class TaskBuilder(
         if (project.isMultiProjectRoot()) {
             registerRootProjectTasks("jbPublishToGradlePortal")
         } else {
-            val pom = pubs.first {it.pom.isGradlePlugin()}?.pom
-            register("jbPublishToGradlePortal") {
-                group = SP_GROUP
-                // TODO fix description for multiple pom
-                description = "Publish plugin '${pom.plugin?.id}' version '${pom.version}' to the Gradle plugin portal"
-                dependsOn("publishPlugins")
+            val pom = pubs.firstOrNull { it.pom.isGradlePlugin() }?.pom
+            pom?.let {
+                register("jbPublishToGradlePortal") {
+                    group = SP_GROUP
+                    // TODO fix description for multiple pom
+                    description = "Publish plugin '${it.plugin?.id}:${it.version}' to the Gradle plugin portal"
+                    dependsOn("publishPlugins")
+                }
             }
         }
     }
@@ -200,6 +217,10 @@ class TaskBuilder(
             registerRootProjectTasks("jbPublish")
         } else {
 
+            val jbPublish = register("jbPublish") {
+                group = SP_GROUP
+            }.get()
+
             pubs.forEach { pub ->
 
                 register("jbPublish${getPubNameCap(pub)}") {
@@ -208,7 +229,7 @@ class TaskBuilder(
                     // assemble a list of repositories
                     val repoList = mutableListOf<String>()
                     repoList.add("Maven Local")
-                    repoList.add("'Maven$${getPubNameCap(pub)}' Repository")
+                    repoList.add("'Maven${getPubNameCap(pub)}' Repository")
                     if (pub.bintray) {
                         repoList.add("Bintray")
                     }
@@ -218,25 +239,26 @@ class TaskBuilder(
                     val repoListStr = repoList.joinToString()
 
                     description = if (pub.pom.isGradlePlugin()) {
-                        "Publish Maven publication '${getPubNameCap(pub)}' and plugin '${pub.pom.plugin?.id}' version '${pub.pom.version}' " +
+                        "Publish Maven publication '${getPubNameCap(pub)}:${pub.pom.version}' and plugin '${pub.pom.plugin?.id}:${pub.pom.version}'" +
                             "to $repoListStr"
                     } else {
                         "Publish Maven publication '${getPubNameCap(pub)}' to $repoListStr"
                     }
 
-                    dependsOn("jbPublishTo$mavenLocal")
-                    dependsOn("jbPublishToMavenRepository")
-                    if (pub.bintray && !(pub.pom.isGradlePlugin() && pub.pom.isSnapshot())) {
-                        dependsOn("jbPublishToBintray")
-                    }
-                    if (pub.pom.isGradlePlugin()) {
-                        dependsOn("jbPublishToGradlePortal")
-                    }
+                    // TODO depends on jbPublish{pubName}To{mavenLocal}
+                    // TODO depends on jbPublish{pubName}To{mavenRepository}
+                    dependsOn("jbPublish${getPubNameCap(pub)}To$mavenLocal")
+                    dependsOn("jbPublish${getPubNameCap(pub)}ToMavenRepository")
                 }
 
-                register("jbPublish") {
-                    dependsOn("jbPublish${getPubNameCap(pub)}")
-                }
+                jbPublish.dependsOn("jbPublish${getPubNameCap(pub)}")
+            }
+
+            if (findByName("jbPublishToBintray") != null) {
+                jbPublish.dependsOn("jbPublishToBintray")
+            }
+            if (findByName("jbPublishToGradlePortal") != null) {
+                jbPublish.dependsOn("jbPublishToGradlePortal")
             }
         }
     }

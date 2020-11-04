@@ -22,8 +22,6 @@ import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.bintrayGradlePluginPubList
-import io.hkhc.gradle.bintrayPubList
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.GradleException
@@ -107,19 +105,21 @@ class BintrayConfig(
 
         System.out.println("BintrayExtension.config start pub count ${pubs.size}")
 
+        val firstBintrayPom = pubs.firstOrNull { it.bintray }
+        if (firstBintrayPom == null) return
+
         extension.bintrayRepository?.let { endpoint ->
-            if (endpoint.releaseUrl != "") {
-                apiUrl = endpoint.releaseUrl
-            }
+            if (endpoint.releaseUrl != "") apiUrl = endpoint.releaseUrl
+            if (endpoint.username != "") user = endpoint.username
+            if (endpoint.apikey != "") key = endpoint.apikey
 
             override = true
             dryRun = false
             publish = true
 
-            if (endpoint.username != "") user = endpoint.username
-            if (endpoint.apikey != "") key = endpoint.apikey
         }
 
+        // TODO if we are publishing gradle plugin, we shall use the publication from plugin development plugin directly
         val publicationsList = pubs.bintrayPubList()
         val gradlePublicationsList = publicationsList + pubs.bintrayGradlePluginPubList()
 
@@ -127,8 +127,7 @@ class BintrayConfig(
 
         setPublications(*(gradlePublicationsList.toTypedArray()))
 
-        // TODO assumed one bintrayRepository per project here. Should do precheck before proceed
-        pkg.fill(pubs[0].pom)
+        firstBintrayPom?.let { pkg.fill(it.pom) }
 
         includeSignatureFiles()
     }
@@ -167,3 +166,10 @@ class BintrayConfig(
     private fun currentZonedDateTime(): String =
         ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
 }
+
+internal fun List<JarbirdPub>.bintrayPubList() =
+    filter { it.bintray && !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
+    .map { it.pubNameWithVariant() }
+internal fun List<JarbirdPub>.bintrayGradlePluginPubList() =
+    filter { it.bintray && it.pom.isGradlePlugin() && !it.pom.isSnapshot() }
+    .map { it.pubNameWithVariant() + "PluginMarkerMaven" }

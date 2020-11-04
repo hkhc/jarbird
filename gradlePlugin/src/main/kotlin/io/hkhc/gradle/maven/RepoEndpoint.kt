@@ -37,6 +37,8 @@ interface RepoEndpoint {
     val username: String
     val password: String
     val apikey: String
+    val name: String
+        get() = ""
 }
 
 fun Project.byProperty(key: String): RepoEndpoint {

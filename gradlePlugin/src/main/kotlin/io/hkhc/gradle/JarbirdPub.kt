@@ -105,12 +105,3 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
 internal fun List<JarbirdPub>.needSigning() = any { it.signing }
 internal fun List<JarbirdPub>.needBintray() = any { it.bintray }
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
-internal fun List<JarbirdPub>.bintrayPubList() =
-    filter { it.bintray }
-        .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot())}
-        .map { it.pubNameWithVariant() }
-internal fun List<JarbirdPub>.bintrayGradlePluginPubList() =
-    filter { it.bintray }
-        .filter { it.pom.isGradlePlugin() }
-        .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot())}
-        .map { it.pubNameWithVariant() + "PluginMarkerMaven" }

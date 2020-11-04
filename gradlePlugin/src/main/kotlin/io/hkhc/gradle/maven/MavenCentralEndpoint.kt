@@ -59,6 +59,9 @@ class MavenCentralEndpoint(val project: Project) : RepoEndpoint {
 
     override val apikey: String
         get() = ""
+
+    override val name: String
+        get() = "MavenCentral"
 }
 
 fun Project.mavenCentral(): RepoEndpoint {

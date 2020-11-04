@@ -22,7 +22,6 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.PLUGIN_ID
-import io.hkhc.gradle.bintrayPubList
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.gradle.needBintray
 import io.hkhc.gradle.needGradlePlugin
@@ -98,6 +97,11 @@ class PublicationBuilder(
                         "$LOG_PREFIX Configure child project '$name' for multi-project publishing"
                     }
                 )
+
+//                val invalidBintrayPom = pubs.filter { it.bintray && it.pom.isGradlePlugin() && it.pom.isSnapshot()}
+//
+//                if (invalidBintrayPom.isNotEmpty())
+//                    throw GradleException("Publishing snapshot Gradle Plugin to bintray is not supported")
 
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
                 System.out.println("config bintray and artifactory before count ${pubs.size}")

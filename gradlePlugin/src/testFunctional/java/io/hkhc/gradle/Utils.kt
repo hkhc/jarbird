@@ -20,12 +20,15 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.PropertiesEditor
+import io.hkhc.utils.StringNodeBuilder
+import io.hkhc.utils.TextTree
 import junit.framework.Assert.assertTrue
 import org.gradle.api.GradleException
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Assertions.assertNotNull
 import java.io.File
+import java.io.StringWriter
 
 fun PropertiesEditor.setupKeyStore(baseDir: File) {
 
@@ -123,6 +126,7 @@ fun buildGradle(): String {
             kotlin("jvm") version "1.3.72"
             `kotlin-dsl`
             id("io.hkhc.jarbird")
+            id("com.dorongold.task-tree") version "1.5"
         }
         repositories {
             jcenter()
@@ -141,6 +145,7 @@ fun buildGradleCustomBintray(): String {
             kotlin("jvm") version "1.3.72"
             `kotlin-dsl`
             id("io.hkhc.jarbird")
+            id("com.dorongold.task-tree") version "1.5"
         }
         repositories {
             jcenter()
@@ -154,6 +159,7 @@ fun buildGradleCustomArtifactrory(): String {
             kotlin("jvm") version "1.3.72"
             `kotlin-dsl`
             id("io.hkhc.jarbird")
+            id("com.dorongold.task-tree") version "1.5"
         }
         repositories {
             jcenter()
@@ -168,6 +174,7 @@ fun buildGradlePlugin(): String {
             kotlin("jvm") version "1.3.72"
             `kotlin-dsl` 
             id("io.hkhc.jarbird")
+            id("com.dorongold.task-tree") version "1.5"
         }
         repositories {
             jcenter()
@@ -178,6 +185,108 @@ fun buildGradlePlugin(): String {
             }
         }
     """.trimIndent()
+}
+
+
+
+fun taskTree(bintray: Boolean = true, plugin: Boolean = false, snapshot: Boolean = false, publications: List<String> = mutableListOf()): String {
+
+    val taskTree = StringNodeBuilder(":jbPublish").build {
+        +":jbPublishLib" {
+            +":jbPublishLibToMavenLocal" {
+                +":publishLibPluginMarkerMavenPublicationToMavenLocal" {
+                    +":generatePomFileForLibPluginMarkerMavenPublication"
+                }
+                +":publishLibPublicationToMavenLocal" {
+                    +":dokkaJar" {
+                        +":dokka"
+                    }
+                    +":generateMetadataFileForLibPublication" {
+                        +":jar" {
+                            +":classes" {
+                                +":compileJava" {
+                                    +":compileKotlin"
+                                }
+                                +":processResources" {
+                                    +":pluginDescriptors"
+                                }
+                            }
+                            +":compileKotlin *"
+                            +":inspectClassesForKotlinIC" {
+                                +":classes *"
+                            }
+                        }
+                    }
+                    +":generatePomFileForLibPublication"
+                    +":jar *"
+                    if (!snapshot) {
+                        +":signLibPublication" {
+                            +":dokkaJar *"
+                            +":generateMetadataFileForLibPublication *"
+                            +":generatePomFileForLibPublication *"
+                            +":jar *"
+                            +":sourcesJar"
+                        }
+                    }
+                    +":sourcesJar *"
+                }
+            }
+            +":jbPublishLibToMavenRepository" {
+                +":jbPublishLibToMavenmock" {
+                    +":publishLibPluginMarkerMavenPublicationToMavenLibRepository" {
+                        +":generatePomFileForLibPluginMarkerMavenPublication *"
+                    }
+                    +":publishLibPublicationToMavenLibRepository" {
+                        +":dokkaJar *"
+                        +":generateMetadataFileForLibPublication *"
+                        +":generatePomFileForLibPublication *"
+                        +":jar *"
+                        +":signLibPublication *"
+                        +":sourcesJar *"
+                    }
+                }
+            }
+        }
+        if (bintray) {
+            +":jbPublishToBintray" {
+                +":bintrayUpload" {
+                    +":_bintrayRecordingCopy" {
+                        +":publishLibPublicationToMavenLocal *"
+                    }
+                    +":publishLibPluginMarkerMavenPublicationToMavenLocal *"
+                    +":publishLibPublicationToMavenLocal *"
+                }
+            }
+        }
+        if (plugin) {
+            +":jbPublishToGradlePortal" {
+                +":publishPlugins" {
+                    +":generatePomFileForPluginMavenPublication"
+                    +":jar *"
+                    +":publishPluginJar"
+                    +":publishPluginJavaDocsJar" {
+                        +":javadoc" {
+                            +":classes *"
+                            +":compileKotlin *"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    val taskTreeWriter = StringWriter().also {
+        TextTree<String>(TextTree.TaskTreeTheme()).dump(taskTree, { line -> it.write(line + "\n") })
+    }
+
+    return taskTreeWriter.toString()
+}
+
+fun <T> treeStr(node: TextTree.Node<T>): String {
+    val treeWriter = StringWriter().also {
+        TextTree<String>(TextTree.TaskTreeTheme()).dump(node, { line -> it.write(line + "\n") })
+    }
+    return treeWriter.toString()
 }
 
 fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultEnvs(projectDir)): BuildResult {
@@ -198,6 +307,29 @@ fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultE
     // FileTree().dump(projectDir, System.out::println)
 
     return result
+}
+
+fun runTaskWithOutput(tasks: Array<String>, projectDir: File, envs: Map<String, String> = defaultEnvs(projectDir)): BuildOutput {
+
+    assertTrue("Project directory '$projectDir' shall exist", projectDir.exists())
+    envs.forEach {
+        assertNotNull("Environment Variable '${it.key}' should have non null value", it.value)
+    }
+
+    val stdout = StringWriter()
+    val stderr = StringWriter()
+
+    val result = GradleRunner.create()
+        .withProjectDir(projectDir)
+        .withEnvironment(envs)
+        .withArguments("--stacktrace", *tasks)
+        .withPluginClasspath()
+        .forwardStdOutput(stdout)
+        .forwardStdError(stderr)
+        .build()
+
+    return BuildOutput(result, stdout.toString(), stderr.toString())
+
 }
 
 fun defaultEnvs(projectDir: File) = mutableMapOf(getTestGradleHomePair(projectDir))

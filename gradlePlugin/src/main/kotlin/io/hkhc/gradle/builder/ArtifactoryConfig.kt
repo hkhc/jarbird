@@ -22,7 +22,6 @@ import groovy.lang.GroovyObject
 import io.hkhc.gradle.BintrayPublishConfig
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.bintrayPubList
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.gradle.isSingleProject
 import io.hkhc.gradle.pom.Pom
@@ -43,7 +42,6 @@ class ArtifactoryConfig(
 
     private var repoUrl = "https://oss.jfrog.org"
     private val pubConfig = BintrayPublishConfig(project)
-
 
     fun config() {
 
