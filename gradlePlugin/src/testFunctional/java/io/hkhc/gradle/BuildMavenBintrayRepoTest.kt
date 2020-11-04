@@ -26,8 +26,11 @@ import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
 import io.hkhc.gradle.test.MockBintrayRepositoryServer
 import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.utils.PropertiesEditor
+import io.hkhc.utils.StringNodeBuilder
+import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -91,10 +94,54 @@ class BuildMavenBintrayRepoTest {
             "repository.bintray.apikey" to "password"
         }
 
-        val task = "jbPublish"
-        val result = runTask(task, tempProjectDir)
+        val targetTask = "jbPublish"
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+        val taskTree = treeStr(
+            StringNodeBuilder(":$targetTask").build {
+                +":jbPublishLib" {
+                    +":jbPublishLibToMavenLocal" {
+                        +":publishLibPublicationToMavenLocal" {
+                            +":dokkaJar ..>"
+                            +":generateMetadataFileForLibPublication ..>"
+                            +":generatePomFileForLibPublication"
+                            +":jar ..>"
+                            +":signLibPublication ..>"
+                            +":sourcesJar"
+                        }
+                    }
+                    +":jbPublishLibToMavenRepository" {
+                        +":jbPublishLibToMavenmock" {
+                            +":publishLibPublicationToMavenLibRepository ..>"
+                        }
+                    }
+                }
+                +":jbPublishToBintray" {
+                    +":bintrayUpload" {
+                        +":_bintrayRecordingCopy" {
+                            +":signLibPublication ..>"
+                        }
+                        +":publishLibPublicationToMavenLocal" {
+                            +":dokkaJar ..>"
+                            +":generateMetadataFileForLibPublication ..>"
+                            +":generatePomFileForLibPublication"
+                            +":jar ..>"
+                            +":signLibPublication ..>"
+                            +":sourcesJar"
+                        }
+                    }
+                }
+            }
+        )
+
+        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "4"), tempProjectDir)
+        Assertions.assertEquals(
+            taskTree,
+            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
+        )
+
+        val result = runTask(targetTask, tempProjectDir)
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockMavenRepositoryServer.collectRequests())
         BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
             mockBintrayRepositoryServer.collectRequests(),
