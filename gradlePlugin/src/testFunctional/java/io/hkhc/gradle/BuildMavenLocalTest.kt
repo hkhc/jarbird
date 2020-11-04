@@ -22,6 +22,8 @@ import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
+import io.hkhc.utils.StringNodeBuilder
+import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,7 +65,6 @@ class BuildMavenLocalTest {
             .withEnvironment(
                 mapOf(
                     "GRADLE_USER_HOME" to System.getenv()["HOME"] + "/.gradle"
-//                    "ANDROID_SDK_ROOT" to System.getenv()["ANDROID_SDK_ROOT"]
                 )
             )
             .withArguments("--stacktrace", "tasks", "--all")
@@ -87,6 +88,7 @@ class BuildMavenLocalTest {
             plugins {
                 id 'java'
                 id 'io.hkhc.jarbird'
+                id 'com.dorongold.task-tree' version '1.5'
             }
             repositories {
                 jcenter()
@@ -98,12 +100,34 @@ class BuildMavenLocalTest {
             setupKeyStore(tempProjectDir)
         }
 
-        val task = "jbPublishToMavenLocal"
-        val result = runTask(task, tempProjectDir)
+        val targetTask = "jbPublishToMavenLocal"
+
+        val taskTree = treeStr(
+            StringNodeBuilder(":$targetTask").build {
+                +":jbPublishLibToMavenLocal" {
+                    +":publishLibPublicationToMavenLocal" {
+                        +":dokkaJar ..>"
+                        +":generateMetadataFileForLibPublication ..>"
+                        +":generatePomFileForLibPublication"
+                        +":jar ..>"
+                        +":signLibPublication ..>"
+                        +":sourcesJar"
+                    }
+                }
+            }
+        )
+
+        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "3"), tempProjectDir)
+        assertEquals(
+            taskTree,
+            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
+        )
+
+        val result = runTask(targetTask, tempProjectDir)
 
         FileTree().dump(tempProjectDir, System.out::println)
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         ArtifactChecker()
             .verifyRepository(localRepoDir, coordinate, "jar")
     }
