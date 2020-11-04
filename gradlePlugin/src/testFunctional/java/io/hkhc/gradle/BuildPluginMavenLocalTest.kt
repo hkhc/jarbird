@@ -21,6 +21,8 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.PropertiesEditor
+import io.hkhc.utils.StringNodeBuilder
+import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -61,6 +63,7 @@ class BuildPluginMavenLocalTest {
             plugins {
                 id 'java'
                 id 'io.hkhc.jarbird'
+                id 'com.dorongold.task-tree' version '1.5'
             }
             repositories {
                 jcenter()
@@ -77,11 +80,36 @@ class BuildPluginMavenLocalTest {
             setupKeyStore(tempProjectDir)
         }
 
-        val task = "jbPublishToMavenLocal"
-//        val task = "clean"
-        val result = runTask(task, tempProjectDir)
+        val targetTask = "jbPublishToMavenLocal"
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+        val taskTree = treeStr(
+            StringNodeBuilder(":$targetTask").build {
+                +":jbPublishLibToMavenLocal" {
+                    +":publishLibPluginMarkerMavenPublicationToMavenLocal" {
+                        +":generatePomFileForLibPluginMarkerMavenPublication"
+                    }
+                    +":publishLibPublicationToMavenLocal" {
+                        +":dokkaJar ..>"
+                        +":generateMetadataFileForLibPublication ..>"
+                        +":generatePomFileForLibPublication"
+                        +":jar ..>"
+                        +":signLibPublication ..>"
+                        +":sourcesJar"
+                    }
+                }
+            }
+        )
+
+        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "3"), tempProjectDir)
+        assertEquals(
+            taskTree,
+            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
+        )
+
+//        val task = "clean"
+        val result = runTask(targetTask, tempProjectDir)
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         ArtifactChecker()
             .verifyRepository(localRepoDir, coordinate, "jar")
     }
