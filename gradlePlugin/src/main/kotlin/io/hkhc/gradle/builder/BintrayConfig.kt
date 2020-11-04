@@ -48,15 +48,14 @@ class BintrayConfig(
         project.tasks.named("bintrayUpload").get().apply {
             // Bintray Gradle Plugin expect RecordingCopyTask dependency in task directly rather than name in String
             dependsOn(project.tasks.named("_bintrayRecordingCopy").get())
-//            dependsOn("_bintrayRecordingCopy")
         }
 
         /*
-            Make sure the build has finished before performing the copying task.
+            Bintray does not do signing implicitly, we add our own dependency to make sure publication is signed.
          */
         project.tasks.named("_bintrayRecordingCopy").get().apply {
             pubs.bintrayPubList().forEach {
-                dependsOn("publish${it.capitalize()}PublicationToMavenLocal")
+                dependsOn("sign${it.capitalize()}Publication")
             }
         }
     }

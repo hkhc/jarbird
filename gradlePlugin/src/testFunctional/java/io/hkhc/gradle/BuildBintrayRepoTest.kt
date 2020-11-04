@@ -88,7 +88,7 @@ class BuildBintrayRepoTest {
             StringNodeBuilder(":$targetTask").build {
                 +":bintrayUpload" {
                     +":_bintrayRecordingCopy" {
-                        +":publishLibPublicationToMavenLocal ..>"
+                        +":signLibPublication ..>"
                     }
                     +":publishLibPublicationToMavenLocal" {
                         +":dokkaJar ..>"

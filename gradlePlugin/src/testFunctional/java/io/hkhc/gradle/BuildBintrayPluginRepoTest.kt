@@ -22,6 +22,8 @@ import io.hkhc.gradle.test.BintrayPublishingChecker
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.MockBintrayRepositoryServer
 import io.hkhc.utils.PropertiesEditor
+import io.hkhc.utils.StringNodeBuilder
+import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -77,10 +79,38 @@ class BuildBintrayPluginRepoTest {
             "repository.bintray.apikey" to "password"
         }
 
-        val task = "jbPublishToBintray"
-        val result = runTask(task, tempProjectDir)
+        val targetTask = "jbPublishToBintray"
 
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
+        val taskTree = treeStr(
+            StringNodeBuilder(":$targetTask").build {
+                +":bintrayUpload" {
+                    +":_bintrayRecordingCopy" {
+                        +":signLibPublication ..>"
+                    }
+                    +":publishLibPluginMarkerMavenPublicationToMavenLocal" {
+                        +":generatePomFileForLibPluginMarkerMavenPublication"
+                    }
+                    +":publishLibPublicationToMavenLocal" {
+                        +":dokkaJar ..>"
+                        +":generateMetadataFileForLibPublication ..>"
+                        +":generatePomFileForLibPublication"
+                        +":jar ..>"
+                        +":signLibPublication ..>"
+                        +":sourcesJar"
+                    }
+                }
+            }
+        )
+
+        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "3"), tempProjectDir)
+        Assertions.assertEquals(
+            taskTree,
+            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
+        )
+
+        val result = runTask(targetTask, tempProjectDir)
+
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
             mockRepositoryServer.collectRequests(),
             username,
