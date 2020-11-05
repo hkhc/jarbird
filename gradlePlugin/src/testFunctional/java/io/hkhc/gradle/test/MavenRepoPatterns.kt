@@ -20,7 +20,8 @@ package io.hkhc.gradle.test
 
 class MavenRepoPatterns(
     val baseUrl: String,
-    val coordinate: Coordinate
+    val coordinate: Coordinate,
+    val packaging: String = "jar"
 ) {
 
     val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
@@ -51,7 +52,7 @@ class MavenRepoPatterns(
             .map { hash -> "$path$hash" }
 
     fun artifactTypes(path: String) =
-        listOf(".jar", "-javadoc.jar", "-sources.jar", ".module", ".pom")
+        listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
             .map { suffix -> "$path$suffix" }
 
     fun list(versionTransformer: (String) -> String) = (
