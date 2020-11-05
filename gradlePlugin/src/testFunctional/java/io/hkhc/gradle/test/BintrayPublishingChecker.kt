@@ -22,7 +22,7 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class BintrayPublishingChecker(val coordinate: Coordinate) {
+class BintrayPublishingChecker(val coordinate: Coordinate, val packaging: String = "jar") {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
         var matched = requests
@@ -61,7 +61,8 @@ class BintrayPublishingChecker(val coordinate: Coordinate) {
         val expectedPaths = BintrayRepoPatterns(
             coordinate,
             username,
-            repo
+            repo,
+            packaging
         ).list(versionTransformer).apply {
             forEach { assertFile(recordedRequests, it) }
         }

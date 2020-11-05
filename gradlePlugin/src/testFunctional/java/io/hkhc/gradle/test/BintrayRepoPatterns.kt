@@ -21,7 +21,8 @@ package io.hkhc.gradle.test
 class BintrayRepoPatterns(
     val coordinate: Coordinate,
     val username: String,
-    val repo: String
+    val repo: String,
+    val packaging: String = "jar"
 ) {
 
     val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
@@ -51,7 +52,7 @@ class BintrayRepoPatterns(
     }
 
     fun artifactTypes(path: String) =
-        listOf(".jar", "-javadoc.jar", "-sources.jar", ".pom")
+        listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".pom")
             .map { suffix -> "$path$suffix" }
 
     fun list(versionTransformer: (String) -> String) = with(coordinate) {
