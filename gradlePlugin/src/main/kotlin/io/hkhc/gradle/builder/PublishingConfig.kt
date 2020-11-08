@@ -114,13 +114,13 @@ class PublishingConfig(
             val dokkaJar = setupDokkaJar(pub)
             val sourcesJar = setupSourcesJar(pub)
 
-            val pomSpec = pub.pom
+            val pom = pub.pom
 
             register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
-                groupId = pomSpec.group
+                groupId = pom.group
 
-                artifactId = pomSpec.artifactId
+                artifactId = pom.artifactId
 
                 // version is gotten from an external plugin
                 //            version = project.versioning.info.display
@@ -135,7 +135,7 @@ class PublishingConfig(
                     sourcesJar?.let { artifact(it.get()) }
                 }
 
-                pom { MavenPomAdapter().fill(this, pomSpec) }
+                pom { MavenPomAdapter().fill(this, pom) }
             }
         }
     }

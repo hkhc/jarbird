@@ -98,13 +98,6 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
      * if sourcesPath is not provided, the plugin try to get the sources set named [sourceSetName] for source jar task
      */
     var sourceSetName: String = "main"
-//
-//    /**
-//     * The path of sourceset for archiving.
-//     * as specified in from(...) of Jar task
-//     * if sourcesPath is provided, sourceSetName will be ignored
-//     */
-//    var sourcesPath: Any? = null
 
     // TODO make it flexible for more data type
     var sourceSets: Collection<File>? = null

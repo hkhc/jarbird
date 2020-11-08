@@ -70,7 +70,6 @@ class TextTree<T>(val theme: Theme) {
         override fun forEachIndexed(action: (count: Int, index: Int, child: Node<File>) -> Unit) {
             fillList()
             child?.let {list ->
-                val lastIndex = list.size - 1
                 val c = childCount()
                 list.forEachIndexed{ idx, item ->
                     action.invoke(c, idx, FileNode(item))

@@ -113,7 +113,7 @@ class TaskBuilder(
 
             pubs.forEach { pub ->
                 pub.mavenRepository?.let { repo ->
-                    val jbPublishPubNameToMavenRepository = register("jbPublish${getPubNameCap(pub)}To${repo.name}") {
+                    register("jbPublish${getPubNameCap(pub)}To${repo.name}") {
                         group = SP_GROUP
 
                         // I don't know why the maven repository name in the task name is not capitalized
