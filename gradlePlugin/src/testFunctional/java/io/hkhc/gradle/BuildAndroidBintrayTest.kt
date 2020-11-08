@@ -76,7 +76,7 @@ class BuildAndroidBintrayTest {
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
         File("$libProj/build.gradle").writeText(commonAndroidGradle())
         File("$libProj/pom.yaml")
-            .writeText("variant: release\n" + simplePom(coordinate, "aar"))
+            .writeText("variant: release\n" + simplePom(coordinate, "release", "aar"))
 
         val username = "username"
         val repo = "maven"

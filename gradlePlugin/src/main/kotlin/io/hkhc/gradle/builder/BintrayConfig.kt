@@ -71,26 +71,7 @@ class BintrayConfig(
                 if (pub.pom.group == null) {
                     throw GradleException("Bintray: group name is not available, failed to configure Bintray extension.")
                 }
-//                val filenamePrefix = "${pub.pom.artifactId}-${pub.variantVersion()}"
                 acc.apply {
-//                    if (pub.pom.packaging != "jar")
-//                        add("$filenamePrefix.${pub.pom.packaging}.asc")
-                    add("${pub.pom.artifactId}-${pub.variantVersion()}*.asc")
-                }
-            }
-            .toTypedArray()
-
-        pubs
-            .filter { it.bintray }
-            .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
-            .fold(mutableListOf<String>()) { acc, pub ->
-                if (pub.pom.group == null) {
-                    throw GradleException("Bintray: group name is not available, failed to configure Bintray extension.")
-                }
-//                val filenamePrefix = "${pub.pom.artifactId}-${pub.variantVersion()}"
-                acc.apply {
-//                    if (pub.pom.packaging != "jar")
-//                        add("$filenamePrefix.${pub.pom.packaging}.asc")
                     add("${pub.pom.artifactId}-${pub.variantVersion()}*.asc")
                 }
             }
