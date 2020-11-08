@@ -30,7 +30,7 @@ class MavenRepoPatterns(
     private fun metafile(base: String): List<String> {
         return mutableListOf<String>().apply {
             add("$base/$METADATA_FILE")
-            if (isSnapshot) add("$base/${coordinate.version}/$METADATA_FILE")
+            if (isSnapshot) add("$base/${coordinate.versionWithVariant}/$METADATA_FILE")
         }
     }
 
@@ -40,8 +40,8 @@ class MavenRepoPatterns(
                 .flatMap {
                     metafile(it) +
                         listOf(
-                            "$it/${coordinate.version}/" +
-                                "${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.version)}.pom"
+                            "$it/${coordinate.versionWithVariant}/" +
+                                "${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.versionWithVariant)}.pom"
                         )
                 }
                 .flatMap(::hashedPaths)
@@ -61,8 +61,8 @@ class MavenRepoPatterns(
                 .flatMap {
                     metafile(it) +
                         listOf(
-                            "$it/${coordinate.version}/" +
-                                "${coordinate.artifactId}-${versionTransformer(coordinate.version)}"
+                            "$it/${coordinate.versionWithVariant}/" +
+                                "${coordinate.artifactId}-${versionTransformer(coordinate.versionWithVariant)}"
                         )
                             .flatMap(::artifactTypes)
                             .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
