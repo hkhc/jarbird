@@ -24,7 +24,6 @@ import io.hkhc.gradle.test.MockBintrayRepositoryServer
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
-import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -77,7 +76,7 @@ class BuildAndroidBintrayTest {
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
         File("$libProj/build.gradle").writeText(commonAndroidGradle())
         File("$libProj/pom.yaml")
-            .writeText("variant: release\n" + simpleAndroidPom(coordinate))
+            .writeText("variant: release\n" + simplePom(coordinate, "aar"))
 
         val username = "username"
         val repo = "maven"

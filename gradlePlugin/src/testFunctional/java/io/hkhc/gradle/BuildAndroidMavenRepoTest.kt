@@ -18,14 +18,12 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.MavenPublishingChecker
 import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
-import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -43,7 +41,7 @@ class BuildAndroidMavenRepoTest {
     lateinit var libProj: File
 
     lateinit var localRepoDir: File
-    lateinit var envs: MutableMap<String,String>
+    lateinit var envs: MutableMap<String, String>
 
     @BeforeEach
     fun setUp() {
@@ -77,8 +75,7 @@ class BuildAndroidMavenRepoTest {
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
         File("$libProj/build.gradle").writeText(commonAndroidGradle())
-        File("$libProj/pom.yaml")
-            .writeText("variant: release\n" + simpleAndroidPom(coordinate))
+        File("$libProj/pom.yaml").writeText( simplePom(coordinate, "release", "aar"))
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)

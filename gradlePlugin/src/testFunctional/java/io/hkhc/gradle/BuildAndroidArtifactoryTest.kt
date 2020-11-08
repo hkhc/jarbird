@@ -76,7 +76,7 @@ class BuildAndroidArtifactoryTest {
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
         File("$libProj/build.gradle").writeText(commonAndroidGradle())
-        File("$libProj/pom.yaml").writeText("variant: release\n" + simpleAndroidPom(coordinate))
+        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
 
         val username = "username"
         val repo = "maven"

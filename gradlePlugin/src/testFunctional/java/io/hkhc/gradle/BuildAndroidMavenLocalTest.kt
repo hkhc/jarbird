@@ -23,7 +23,6 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
-import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -36,8 +35,8 @@ class BuildAndroidMavenLocalTest {
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
     lateinit var tempProjectDir: File
-    lateinit var libProj: File
 
+    lateinit var libProj: File
     lateinit var localRepoDir: File
     lateinit var envs: MutableMap<String, String>
 
@@ -65,8 +64,7 @@ class BuildAndroidMavenLocalTest {
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
         File("$libProj/build.gradle").writeText(commonAndroidGradle())
-        File("$libProj/pom.yaml")
-            .writeText("variant: release\n" + simpleAndroidPom(coordinate))
+        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)

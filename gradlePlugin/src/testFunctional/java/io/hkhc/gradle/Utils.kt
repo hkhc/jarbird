@@ -71,8 +71,8 @@ fun simpleSubProj(coordinate: Coordinate) = with(coordinate) {
     """.trimIndent()
 }
 
-fun simplePom(coordinate: Coordinate) = with(coordinate) {
-    """
+fun simplePom(coordinate: Coordinate, variant: String = "", packaging: String = "jar") = with(coordinate) {
+    val pom = """
     group: $group
     artifactId: $artifactId
     version: $version
@@ -92,29 +92,12 @@ fun simplePom(coordinate: Coordinate) = with(coordinate) {
       repoType: github.com
       repoName: test.user/test.repo
     """.trimIndent()
-}
 
-fun simpleAndroidPom(coordinate: Coordinate) = with(coordinate) {
-    """
-    group: $group
-    artifactId: $artifactId
-    version: $version
-    description: Test artifact
-    packaging: aar
+    if (variant != null)
+        "variant: $variant\n"+pom
+    else
+        pom
 
-    licenses:
-      - name: Apache-2.0
-        dist: repo
-
-    developers:
-      - id: test.user
-        name: Test User
-        email: test.user@mail.com
-
-    scm:
-      repoType: github.com
-      repoName: test.user/test.repo
-    """.trimIndent()
 }
 
 fun pluginPom(id: String, className: String): String {
