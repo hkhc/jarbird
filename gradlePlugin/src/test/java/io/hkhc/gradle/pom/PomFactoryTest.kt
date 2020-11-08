@@ -59,7 +59,7 @@ class PomFactoryTest : StringSpec({
             |packaging: jar
             """.trimMargin()
         )
-        val pomGroup = PomGroupFactory(project).readPom(file).getDefault()!!
+        val pomGroup = PomGroupFactory(project).readPom(file).getDefault()
 
         withClue("Parsed POM should reflect content in file") {
             pomGroup.asClue {
@@ -68,6 +68,33 @@ class PomFactoryTest : StringSpec({
                 it.version shouldBe "1.2.3.4"
                 it.description shouldBe "test-description"
                 it.packaging shouldBe "jar"
+            }
+        }
+    }
+
+    "Load a yaml file with variant" {
+
+        val file = tempfile()
+        file.writeText(
+            """
+            |variant: release
+            |group: test-group
+            |artifactId: test-id
+            |version: 1.2.3.4
+            |description: test-description
+            |packaging: jar
+            """.trimMargin()
+        )
+        val pomGroup = PomGroupFactory(project).readPom(file)["release"]
+
+        withClue("Parsed POM should reflect content in file") {
+            pomGroup.asClue {
+                it.group shouldBe "test-group"
+                it.artifactId shouldBe "test-id"
+                it.version shouldBe "1.2.3.4"
+                it.description shouldBe "test-description"
+                it.packaging shouldBe "jar"
+                it.variant shouldBe "release"
             }
         }
     }
@@ -84,7 +111,7 @@ class PomFactoryTest : StringSpec({
             |packaging: jar
             """.trimMargin()
         )
-        val pomGroup = PomGroupFactory(project).readPom(file.absolutePath).getDefault()!!
+        val pomGroup = PomGroupFactory(project).readPom(file.absolutePath).getDefault()
 
         withClue("Parsed POM should reflect content in file") {
             pomGroup.asClue {
@@ -187,7 +214,7 @@ class PomFactoryTest : StringSpec({
         withClue("Single item in list") {
             pomGroupFactory.resolvePomGroup(
                 listOf(tempfile().apply { writeText("group: test-group-1") })
-            ).getDefault()!!.group shouldBe "test-group-1"
+            ).getDefault().group shouldBe "test-group-1"
         }
 
         withClue("Two items in list") {
@@ -196,7 +223,7 @@ class PomFactoryTest : StringSpec({
                     tempfile().apply { writeText("group: test-group-1") },
                     tempfile().apply { writeText("group: test-group-2") }
                 )
-            ).getDefault()!!.group shouldBe "test-group-2"
+            ).getDefault().group shouldBe "test-group-2"
         }
 
         withClue("Three items in list") {
@@ -206,16 +233,16 @@ class PomFactoryTest : StringSpec({
                     tempfile().apply { writeText("group: test-group-2") },
                     tempfile().apply { writeText("group: test-group-3") }
                 )
-            ).getDefault()!!.group shouldBe "test-group-3"
+            ).getDefault().group shouldBe "test-group-3"
         }
     }
 
     "Resolve Pom from User's gradle home" {
 
         val pomFactory = PomGroupFactory(project)
-        var baseDir = tempDirectory()
-        var gradleUserHomeDir = baseDir.mkdir("gradle-user-home")
-        var pomFile = File(gradleUserHomeDir, "pom.yaml")
+        val baseDir = tempDirectory()
+        val gradleUserHomeDir = baseDir.mkdir("gradle-user-home")
+        val pomFile = File(gradleUserHomeDir, "pom.yaml")
         pomFile.writeText(
             """
             |group: test-group
@@ -227,7 +254,7 @@ class PomFactoryTest : StringSpec({
         )
 
         withSystemProperty("gradle.user.home", gradleUserHomeDir.absolutePath) {
-            val pomGroup = pomFactory.resolvePomGroup().getDefault()!!
+            val pomGroup = pomFactory.resolvePomGroup().getDefault()
             pomGroup.asClue {
                 it.group shouldBe "test-group"
                 it.artifactId shouldBe "test-id"

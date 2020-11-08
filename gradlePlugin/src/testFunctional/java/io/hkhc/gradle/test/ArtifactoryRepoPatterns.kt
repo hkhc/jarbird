@@ -21,28 +21,30 @@ package io.hkhc.gradle.test
 class ArtifactoryRepoPatterns(
     val coordinate: Coordinate,
     val username: String,
-    val repo: String
+    val repo: String,
+    private val withBuildInfo: Boolean = true,
+    private val packaging: String = "jar"
 ) {
 
-    val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
-    val METADATA_FILE = "maven-metadata.xml"
+    private val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
+    private val METADATA_FILE = "maven-metadata.xml"
 
-    fun artifactTypes(path: String) =
-        listOf(".jar", "-javadoc.jar", "-sources.jar", ".module", ".pom")
+    private fun artifactTypes(path: String) =
+        listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
             .map { suffix -> "$path$suffix" }
 
     fun list(versionTransformer: (String) -> String) = with(coordinate) {
-        listOf(Regex("/base/api.build")) +
+        (if (withBuildInfo) listOf(Regex("/base/api/build")) else listOf<Regex>()) +
             (
                 listOf(
                     "/base/oss-snapshot-local/" +
                         "${group.replace('.', '/')}/" +
-                        "$artifactId/$version/" +
-                        "$artifactId-$version"
+                        "$artifactId/$versionWithVariant/" +
+                        "$artifactId-$versionWithVariant"
                 )
                     .flatMap(::artifactTypes)
                     .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
-                    .map { "$it;.*" }
+                    .map { "$it.*" }
                 )
                 .map { Regex(it) }
     }

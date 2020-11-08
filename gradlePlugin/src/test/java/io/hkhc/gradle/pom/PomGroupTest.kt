@@ -18,8 +18,14 @@
 
 package io.hkhc.gradle.pom
 
+import io.hkhc.utils.test.tempDirectory
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.maps.shouldContainExactly
+import io.kotest.matchers.maps.shouldHaveSize
+import io.kotest.matchers.shouldBe
+import io.mockk.mockk
+import org.gradle.api.Project
+import java.io.File
 
 class PomGroupTest : StringSpec({
 
@@ -62,6 +68,70 @@ class PomGroupTest : StringSpec({
             "v1" to Pom(variant = "v1", group = "test.group1", description = "common description"),
             "v2" to Pom(variant = "v2", group = "test.group2", description = "group2 description")
         )
+    }
+
+    "Load POMGroup with variant" {
+
+        val baseDir = tempDirectory()
+
+        val pomFile = File(baseDir, "pom1.yaml").apply {
+            writeText(
+                """
+                variant: release    
+                group: mygroup
+                artifactId: myArtifact
+                version: 1.0
+                """.trimIndent()
+            )
+        }
+
+        val pomGroup = PomGroupFactory(mockk<Project>()).loadYaml(pomFile)
+        pomGroup.getMap() shouldHaveSize 1
+
+        val pom = pomGroup["release"]
+
+        pom.variant shouldBe "release"
+        pom.group shouldBe "mygroup"
+        pom.artifactId shouldBe "myArtifact"
+        pom.version shouldBe "1.0"
+    }
+
+    "Load POMGroup with variant and overlay to empty PomGroup" {
+
+        val baseDir = tempDirectory()
+
+        val pomFile = File(baseDir, "pom1.yaml").apply {
+            writeText(
+                """
+                variant: release    
+                group: mygroup
+                artifactId: myArtifact
+                version: 1.0
+                """.trimIndent()
+            )
+        }
+
+        val pomGroup = PomGroupFactory(mockk<Project>()).loadYaml(pomFile)
+        pomGroup.getMap() shouldHaveSize 1
+
+        val pom = pomGroup["release"]
+
+        pom.variant shouldBe "release"
+        pom.group shouldBe "mygroup"
+        pom.artifactId shouldBe "myArtifact"
+        pom.version shouldBe "1.0"
+
+        val newPomGroup = PomGroup()
+        pomGroup.overlayTo(newPomGroup)
+
+        newPomGroup.getMap() shouldHaveSize 1
+
+        val newPom = newPomGroup["release"]
+
+        newPom.variant shouldBe "release"
+        newPom.group shouldBe "mygroup"
+        newPom.artifactId shouldBe "myArtifact"
+        newPom.version shouldBe "1.0"
     }
 
     "POM Group overlay another" {

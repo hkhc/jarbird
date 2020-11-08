@@ -20,10 +20,19 @@ package io.hkhc.gradle.pom
 
 class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
 
+    /* Unflattened groups */
+    /**
+     * Directly map the initial POMs, including the default POM if exists.
+     */
     private val rawGroup = mutableMapOf<String, Pom>().apply {
         pomIterable.forEach { add(this, it) }
     }
 
+    /* Flattened groups */
+    /**
+     * merge the groups with default group. Default group may still be present,
+     * and it is merged with upstream default group
+     */
     private val group: MutableMap<String, Pom> = mutableMapOf<String, Pom>().apply {
 
         val defaultPom = rawGroup[Pom.DEFAULT_VARIANT]
@@ -85,11 +94,15 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
             }
             group[it.key] = newPom
         }
+        upstream.group.entries.filter { !rawGroup.containsKey(it.key) }.forEach {
+            val newPom = Pom(variant = it.key)
+            it.value.overlayTo(newPom)
+            group[it.key] = newPom
+        }
     }
 
     /* for unit test only */
     internal fun getMap(): Map<String, Pom> = group
 
     fun involveGradlePlugin() = group.any { it.value.isGradlePlugin() }
-
 }

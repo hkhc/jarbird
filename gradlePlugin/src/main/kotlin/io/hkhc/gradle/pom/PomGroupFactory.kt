@@ -21,7 +21,6 @@ package io.hkhc.gradle.pom
 import org.gradle.api.Project
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
-import io.hkhc.gradle.utils.LOG_PREFIX
 import java.io.File
 
 class PomGroupFactory(val project: Project) {
@@ -45,13 +44,13 @@ class PomGroupFactory(val project: Project) {
 
     fun readPom(file: File): PomGroup {
         return if (file.exists()) {
-            project.logger.debug("$LOG_PREFIX File '${file.absolutePath}' found")
+//            project.logger.debug("$LOG_PREFIX File '${file.absolutePath}' found")
             // it is possible that yaml.load return null even if file exists and
             // is a valid yaml file. For example, a YAML file could be fill of comment
             // and have no real tag.
             return loadYaml(file)
         } else {
-            project.logger.debug("$LOG_PREFIX File '${file.absolutePath}' does not exist")
+//            project.logger.debug("$LOG_PREFIX File '${file.absolutePath}' does not exist")
             PomGroup()
         }
     }
@@ -71,7 +70,7 @@ class PomGroupFactory(val project: Project) {
     fun resolvePomGroup(files: List<File>): PomGroup {
         return files
             .map { readPom(it) }
-            .fold(PomGroup()) { acc, pom -> acc.also { pom.overlayTo(it) } }
+            .fold(PomGroup()) { acc, currPomGroup -> acc.also { currPomGroup.overlayTo(it) } }
     }
 
     /**

@@ -18,24 +18,27 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.ArtifactChecker
+import io.hkhc.gradle.test.ArtifactoryPublishingChecker
 import io.hkhc.gradle.test.Coordinate
+import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
 import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
-class BuildAndroidMavenLocalTest {
+class BuildAndroidArtifactoryTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
     lateinit var tempProjectDir: File
+    lateinit var mockRepositoryServer: MockArtifactoryRepositoryServer
     lateinit var libProj: File
 
     lateinit var localRepoDir: File
@@ -43,6 +46,8 @@ class BuildAndroidMavenLocalTest {
 
     @BeforeEach
     fun setUp() {
+
+        mockRepositoryServer = MockArtifactoryRepositoryServer()
 
         envs = defaultEnvs(tempProjectDir).apply {
             val pair = getTestAndroidSdkHomePair()
@@ -57,10 +62,16 @@ class BuildAndroidMavenLocalTest {
         System.setProperty("maven.repo.local", localRepoDir.absolutePath)
     }
 
-    @Test
-    fun `Normal publish Android AAR to Maven Local`() {
+    @AfterEach
+    fun teardown() {
+        mockRepositoryServer.teardown()
+    }
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1", versionWithVariant = "0.1-release")
+    @Test
+    fun `Normal publish Android AAR to Artifactory Repository`() {
+
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT", versionWithVariant = "0.1-release-SNAPSHOT")
+        mockRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/settings.gradle").writeText(
             """
@@ -132,7 +143,8 @@ class BuildAndroidMavenLocalTest {
                         minSdkVersion 21
                         targetSdkVersion 29
                         versionCode 1
-                        versionName "1.0a"
+                        versionName "1.0"
+                
                         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
                         consumerProguardFiles "consumer-rules.pro"
                     }
@@ -149,15 +161,16 @@ class BuildAndroidMavenLocalTest {
                     }
                 }
 
-                android.libraryVariants.configureEach { v ->
-                    def variantName = v.name
+                android.libraryVariants.configureEach {
+                    def variantName = name
                     if (variantName == "release") {
                         jarbird {
-                             pub(variantName) { 
+                             pub(variantName) {
+                                withMavenByProperties("mock")
                                 versionWithVariant = true
                                 useGpg = true
                                 pubComponent = variantName
-//                                sourceSets = sourceSets[0].javaDirectories
+                                sourceSets = sourceSets[0].javaDirectories
                             }
                         }
                     }
@@ -168,31 +181,34 @@ class BuildAndroidMavenLocalTest {
         File("$libProj/pom.yaml")
             .writeText("variant: release\n" + simpleAndroidPom(coordinate))
 
+        val username = "username"
+        val repo = "maven"
+
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)
+            "repository.bintray.snapshot" to mockRepositoryServer.getServerUrl()
+            "repository.bintray.username" to username
+            "repository.bintray.apikey" to "password"
             "android.useAndroidX" to "true"
             "android.enableJetifier" to "true"
             "kotlin.code.style" to "official"
         }
 
-        val targetTask = "lib:jbPublishToMavenLocal"
+        val targetTask = "lib:jbPublishToBintray"
 
         val taskTree = treeStr(
             StringNodeBuilder(":$targetTask").build {
-                +":lib:jbPublishLibReleaseToMavenLocal" {
-                    +":lib:publishLibReleasePublicationToMavenLocal" {
-                        +":lib:bundleReleaseAar ..>"
-                        +":lib:dokkaJarRelease ..>"
-                        +":lib:generateMetadataFileForLibReleasePublication ..>"
-                        +":lib:generatePomFileForLibReleasePublication"
-                        +":lib:signLibReleasePublication ..>"
-                        +":lib:sourcesJarRelease"
-                    }
+                +":lib:artifactoryPublish" {
+                    +":lib:bundleReleaseAar ..>"
+                    +":lib:dokkaJarRelease ..>"
+                    +":lib:generateMetadataFileForLibReleasePublication ..>"
+                    +":lib:generatePomFileForLibReleasePublication"
+                    +":lib:sourcesJarRelease"
                 }
             }
         )
 
-        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "3"), tempProjectDir, envs)
+        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "2"), tempProjectDir, envs)
         Assertions.assertEquals(
             taskTree,
             TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
@@ -207,7 +223,14 @@ class BuildAndroidMavenLocalTest {
         // FileTree().dump(tempProjectDir, System.out::println)
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        ArtifactChecker()
-            .verifyRepository(localRepoDir, coordinate, "aar")
+        ArtifactoryPublishingChecker(coordinate, "aar").assertReleaseArtifacts(
+            mockRepositoryServer.collectRequests().apply {
+                forEach {
+                    println("recorded request ${it.method} ${it.path}")
+                }
+            },
+            username,
+            repo
+        )
     }
 }

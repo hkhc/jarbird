@@ -22,15 +22,15 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class ArtifactoryPublishingChecker(val coordinate: Coordinate) {
+class ArtifactoryPublishingChecker(val coordinate: Coordinate, val packaging: String = "jar") {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
-        var matched = requests
+        val matched = requests
             .filter { it.method == "PUT" }
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
         Assertions.assertTrue(
             matched,
-            "$pathRegex does not match any recorded request\n" + "x" +
+            "$pathRegex does not match any recorded request\n" +
                 requests.map { it.path }.joinToString("\n")
         )
     }
@@ -58,11 +58,14 @@ class ArtifactoryPublishingChecker(val coordinate: Coordinate) {
         repo: String
     ) {
 
+        /* look like Artifactory Gradle Plugin does generate build-info for jar only */
         val expectedPaths = ArtifactoryRepoPatterns(
 
             coordinate,
             username,
-            repo
+            repo,
+            packaging == "jar",
+            packaging
         ).let {
             it.list(versionTransformer)
         }.apply {

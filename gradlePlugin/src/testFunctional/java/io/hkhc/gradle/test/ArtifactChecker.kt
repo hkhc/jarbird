@@ -30,7 +30,7 @@ class ArtifactChecker {
         val artifactPath =
             coordinate.group.replace('.', '/') + "/" +
                 coordinate.artifactId + "/" +
-                coordinate.version
+                coordinate.versionWithVariant
 
         val artifactDir = File(repoDir, artifactPath)
 
@@ -45,7 +45,7 @@ class ArtifactChecker {
         withClue("In local repository $repoDir") {
             with(coordinate) {
                 listOf(".module", ".pom", ".$packaging", "-javadoc.jar", "-sources.jar")
-                    .map { "$artifactId-$version$it" }
+                    .map { "$artifactId-$versionWithVariant$it" }
                     .forEach {
                         withClue("The generated file $it should presents ") {
                             System.out.println("check file ${File(artifactDir, it).absolutePath}")

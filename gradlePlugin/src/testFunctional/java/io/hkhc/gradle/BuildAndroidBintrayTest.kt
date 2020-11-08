@@ -20,9 +20,7 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.test.BintrayPublishingChecker
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.gradle.test.MavenPublishingChecker
 import io.hkhc.gradle.test.MockBintrayRepositoryServer
-import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
@@ -70,9 +68,9 @@ class BuildAndroidBintrayTest {
     }
 
     @Test
-    fun `Normal publish Android AAR to Maven Repository`() {
+    fun `Normal publish Android AAR to Bintray`() {
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1", versionWithVariant = "0.1-release")
         mockRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/settings.gradle").writeText(
@@ -138,6 +136,7 @@ class BuildAndroidBintrayTest {
                 }
 
                 android {
+
                     compileSdkVersion 29
                     buildToolsVersion "29.0.3"
                 
@@ -147,6 +146,7 @@ class BuildAndroidBintrayTest {
                         versionCode 1
                         versionName "1.0"
                 
+                        setProperty("archivesBaseName", "${'$'}{archivesBaseName}-${'$'}versionName")
                         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
                         consumerProguardFiles "consumer-rules.pro"
                     }
@@ -163,16 +163,16 @@ class BuildAndroidBintrayTest {
                     }
                 }
 
-                android.libraryVariants.configureEach {
-                    def variantName = name
+                android.libraryVariants.configureEach { v ->
+                    System.out.println("**variant ${'$'}{v}")
+                    def variantName = v.name
                     if (variantName == "release") {
                         jarbird {
-                             pub {
-                                withMavenByProperties("mock")
+                             pub(variantName) { 
+                                versionWithVariant = true
                                 useGpg = true
-                                System.out.println("variantName in script "+variantName)
                                 pubComponent = variantName
-                                sourceSets = sourceSets[0].javaDirectories
+//                                sourceSets = sourceSets[0].javaDirectories
                             }
                         }
                     }
@@ -181,7 +181,7 @@ class BuildAndroidBintrayTest {
         )
 
         File("$libProj/pom.yaml")
-            .writeText(simpleAndroidPom(coordinate))
+            .writeText("variant: release\n" + simpleAndroidPom(coordinate))
 
         val username = "username"
         val repo = "maven"
@@ -200,23 +200,23 @@ class BuildAndroidBintrayTest {
 
         val taskTree = treeStr(
             StringNodeBuilder(":$targetTask").build {
-                +":bintrayUpload" {
-                    +":_bintrayRecordingCopy" {
-                        +":signLibPublication ..>"
+                +":lib:bintrayUpload" {
+                    +":lib:_bintrayRecordingCopy" {
+                        +":lib:signLibReleasePublication ..>"
                     }
-                    +":publishLibPublicationToMavenLocal" {
-                        +":dokkaJar ..>"
-                        +":generateMetadataFileForLibPublication ..>"
-                        +":generatePomFileForLibPublication"
-                        +":jar ..>"
-                        +":signLibPublication ..>"
-                        +":sourcesJar"
+                    +":lib:publishLibReleasePublicationToMavenLocal" {
+                        +":lib:bundleReleaseAar ..>"
+                        +":lib:dokkaJarRelease ..>"
+                        +":lib:generateMetadataFileForLibReleasePublication ..>"
+                        +":lib:generatePomFileForLibReleasePublication"
+                        +":lib:signLibReleasePublication ..>"
+                        +":lib:sourcesJarRelease"
                     }
                 }
             }
         )
 
-        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "4"), tempProjectDir, envs)
+        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "3"), tempProjectDir, envs)
         Assertions.assertEquals(
             taskTree,
             TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"

@@ -22,36 +22,34 @@ class BintrayRepoPatterns(
     val coordinate: Coordinate,
     val username: String,
     val repo: String,
-    val packaging: String = "jar"
+    private val packaging: String = "jar"
 ) {
 
-    val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
-    val METADATA_FILE = "maven-metadata.xml"
+    private val isSnapshot = coordinate.versionWithVariant.endsWith("-SNAPSHOT")
+    private val METADATA_FILE = "maven-metadata.xml"
 
     fun metafile(base: String): List<String> {
         return mutableListOf<String>().apply {
             add("$base/$METADATA_FILE")
-            if (isSnapshot) add("$base/${coordinate.version}/$METADATA_FILE")
+            if (isSnapshot) add("$base/${coordinate.versionWithVariant}/$METADATA_FILE")
         }
     }
 
-    fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) = with(coordinate) {
+    private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) = with(coordinate) {
         pluginId?.let {
             listOf(
-                "/content/$username/$repo/" +
-                    "$artifactId/$version/" +
+                "/content/$username/$repo/$artifactId/$versionWithVariant/" +
                     "${pluginId.replace('.', '/')}/$pluginId.gradle.plugin"
             )
                 .flatMap {
                     listOf(
-                        "$it/$version/" +
-                            "$pluginId.gradle.plugin-${versionTransformer(version)}.pom"
+                        "$it/$versionWithVariant/$pluginId.gradle.plugin-${versionTransformer(versionWithVariant)}.pom"
                     )
                 }
         } ?: listOf()
     }
 
-    fun artifactTypes(path: String) =
+    private fun artifactTypes(path: String) =
         listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".pom")
             .map { suffix -> "$path$suffix" }
 
@@ -61,12 +59,13 @@ class BintrayRepoPatterns(
                 .map { "$it\\?override=1" } +
                 listOf(
                     "/content/$username/$repo/" +
-                        "$artifactId/$version/" +
+                        "$artifactId/$versionWithVariant/" +
                         "${group.replace('.', '/')}/" +
-                        "$artifactId/$version/" +
-                        "$artifactId-${versionTransformer(version)}"
+                        "$artifactId/$versionWithVariant/" +
+                        "$artifactId-${versionTransformer(versionWithVariant)}"
                 )
                     .flatMap(::artifactTypes)
+                    /* no signature for snapshot publishing */
                     .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
                     .map { "$it\\?override=1" }
             )

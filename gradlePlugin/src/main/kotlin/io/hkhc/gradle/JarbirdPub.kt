@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.builder.pubNameWithVariant
 import io.hkhc.gradle.maven.MavenCentralEndpoint
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.maven.RepoEndpoint
@@ -56,6 +55,35 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
      * It is usually used for building Android artifact
      */
     var variant: String = ""
+
+    /**
+     * if set, the deployed version will be suffixed with the variant name, delimited by '-'.
+     * if version is a SNAPSHOT, the variant is added before SNAPSHOT.
+     * if variant is empty, the version is not altered
+     *
+     * e.g.
+     * version = "1.0", variant = "" -> "1.0"
+     * version = "1.0", variant = "debug" -> "1.0-debug"
+     * version = "1.0-SNAPSHOT", variant = "debug" -> "1.0-debug-SNAPSHOT"
+     */
+    var versionWithVariant: Boolean = false
+
+    fun variantVersion(): String? {
+        return pom.version?.let { ver ->
+            if (!versionWithVariant) {
+                ver
+            } else if (variant == "") {
+                ver
+            } else if (ver.endsWith("-SNAPSHOT")) {
+                val versionPrefix = ver.substring(0, ver.indexOf("-SNAPSHOT"))
+                "$versionPrefix-$variant-SNAPSHOT"
+            } else {
+                "$ver-$variant"
+            }
+        }.apply {
+            System.out.println("**variantVersion [$variant] $this")
+        }
+    }
 
     /**
      * The name of component to to be published

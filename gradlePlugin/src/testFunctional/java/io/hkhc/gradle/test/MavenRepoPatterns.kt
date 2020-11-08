@@ -21,20 +21,20 @@ package io.hkhc.gradle.test
 class MavenRepoPatterns(
     val baseUrl: String,
     val coordinate: Coordinate,
-    val packaging: String = "jar"
+    private val packaging: String = "jar"
 ) {
 
-    val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
-    val METADATA_FILE = "maven-metadata.xml"
+    private val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
+    private val METADATA_FILE = "maven-metadata.xml"
 
-    fun metafile(base: String): List<String> {
+    private fun metafile(base: String): List<String> {
         return mutableListOf<String>().apply {
             add("$base/$METADATA_FILE")
             if (isSnapshot) add("$base/${coordinate.version}/$METADATA_FILE")
         }
     }
 
-    fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) =
+    private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) =
         pluginId?.let {
             listOf("$baseUrl/${pluginId.replace('.', '/')}/$pluginId.gradle.plugin")
                 .flatMap {
@@ -47,11 +47,11 @@ class MavenRepoPatterns(
                 .flatMap(::hashedPaths)
         } ?: listOf()
 
-    fun hashedPaths(path: String) =
+    private fun hashedPaths(path: String) =
         listOf("", ".md5", ".sha1", ".sha256", ".sha512")
             .map { hash -> "$path$hash" }
 
-    fun artifactTypes(path: String) =
+    private fun artifactTypes(path: String) =
         listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
             .map { suffix -> "$path$suffix" }
 
@@ -69,5 +69,5 @@ class MavenRepoPatterns(
                 }
                 .flatMap(::hashedPaths)
         )
-        .map { Regex(it) }
+        .map { Regex("$it.*") }
 }

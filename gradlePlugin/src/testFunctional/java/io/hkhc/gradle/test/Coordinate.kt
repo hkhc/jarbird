@@ -18,4 +18,10 @@
 
 package io.hkhc.gradle.test
 
-data class Coordinate(val group: String, val artifactId: String, val version: String, val pluginId: String? = null)
+data class Coordinate(
+    val group: String,
+    val artifactId: String,
+    val version: String,
+    val pluginId: String? = null,
+    val versionWithVariant: String = version
+)

@@ -24,7 +24,6 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.isMultiProjectRoot
 import io.hkhc.gradle.isSingleProject
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
@@ -144,8 +143,9 @@ class ArtifactoryConfig(
 //                                )
 //                            )
 //                        } else {
-                        invokeMethod("publications", pubs.bintrayPubList() )
+                        invokeMethod("publications", pubs.bintrayPubList())
 //                        }
+                        setProperty("publishBuildInfo", true)
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
                         setProperty("publishIvy", false)

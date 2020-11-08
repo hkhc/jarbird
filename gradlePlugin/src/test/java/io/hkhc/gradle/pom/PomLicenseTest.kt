@@ -24,7 +24,8 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 
-class PomLicenseTest : StringSpec({
+class
+PomLicenseTest : StringSpec({
 
     "License shall be a data class so that we may assume 'equals' logic is provided" {
         License::class.isData.shouldBeTrue()
@@ -93,13 +94,13 @@ class PomLicenseTest : StringSpec({
     "License details based on license name" {
 
         // GIVEN non-existence license name
-        var l1 = License(name = "XXX")
+        val l1 = License(name = "XXX")
         l1.fillLicenseUrl()
         // THEN
         l1.url.shouldBeNull()
 
         // GIVEN a known license name
-        var l2 = License(name = "Apache-2.0")
+        val l2 = License(name = "Apache-2.0")
         l2.fillLicenseUrl()
         // THEN
         l2.url shouldBe "http://www.apache.org/licenses/LICENSE-2.0.txt"

@@ -25,7 +25,6 @@ import io.hkhc.gradle.PUBLISH_GROUP
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.maven.MavenPomAdapter
 import io.hkhc.gradle.maven.mavenCentral
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.utils.LOG_PREFIX
 import io.hkhc.gradle.utils.detailMessageWarning
 import org.gradle.api.GradleException
@@ -100,7 +99,7 @@ class PublishingConfig(
             createPublication()
         }
 
-        if (pubs.any { it.maven } ) {
+        if (pubs.any { it.maven }) {
             repositories {
                 createRepository()
             }
@@ -123,8 +122,7 @@ class PublishingConfig(
 
             val pomSpec = pub.pom
 
-            val pubComponent = pub.pubComponent
-            System.out.println("PublicationContainer.createPublication pubComponent $pubComponent")
+            System.out.println("PublicationContainer.createPublication pubComponent ${pub.pubComponent}")
             register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
                 groupId = pomSpec.group
@@ -133,10 +131,14 @@ class PublishingConfig(
 
                 // version is gotten from an external plugin
                 //            version = project.versioning.info.display
-                version = pomSpec.version
+                version = pub.variantVersion()
 
                 // This is the main artifact
-                from(project.components[pubComponent])
+                project.components.forEach {
+                    System.out.println("components ${it.name}")
+                }
+//                System.out.println("component ${project.components[pub.pubComponent]}")
+                from(project.components[pub.pubComponent])
                 // We are adding documentation artifact
                 project.afterEvaluate {
                     dokkaJar?.let { artifact(it.get()) }
@@ -170,7 +172,6 @@ class PublishingConfig(
                 }
             }
         }
-
     }
 
     @Suppress("UnstableApiUsage")
@@ -183,6 +184,8 @@ class PublishingConfig(
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {
                 group = PUBLISH_GROUP
                 archiveClassifier.set(CLASSIFIER_JAVADOC)
+                archiveBaseName.set(pub.pom.artifactId)
+                archiveVersion.set(pub.variantVersion())
             }
         } catch (e: UnknownTaskException) {
             // TODO add error message here if dokka is null
@@ -190,6 +193,8 @@ class PublishingConfig(
                 group = PUBLISH_GROUP
                 description = "Assembles Kotlin docs with Dokka to Jar"
                 archiveClassifier.set(CLASSIFIER_JAVADOC)
+                archiveBaseName.set(pub.pom.artifactId)
+                archiveVersion.set(pub.variantVersion())
                 from(dokka)
                 dependsOn(dokka)
             }
@@ -203,6 +208,9 @@ class PublishingConfig(
         return try {
             project.tasks.named(sourcesJarTaskName, Jar::class.java) {
                 archiveClassifier.set(CLASSIFIER_SOURCE)
+                // TODO look like it affect other JAR tasks, may beed a better place for that
+                archiveBaseName.set(pub.pom.artifactId)
+                archiveVersion.set(pub.variantVersion())
             }
         } catch (e: UnknownTaskException) {
             val desc = if (pub.variant == "") {
@@ -211,12 +219,14 @@ class PublishingConfig(
                 "Create archive of source code for the binary of variant '${pub.variant}' "
             }
 
-            val ss = pub.sourceSets?.let { it } ?: sourceSets.getByName(pub.sourceSetName).allSource
+            val ss = pub.sourceSets ?: sourceSets.getByName(pub.sourceSetName).allSource
 
             project.tasks.register(sourcesJarTaskName, Jar::class.java) {
                 group = PUBLISH_GROUP
                 description = desc
                 archiveClassifier.set(CLASSIFIER_SOURCE)
+                archiveBaseName.set(pub.pom.artifactId)
+                archiveVersion.set(pub.variantVersion())
                 from(ss)
             }
         }

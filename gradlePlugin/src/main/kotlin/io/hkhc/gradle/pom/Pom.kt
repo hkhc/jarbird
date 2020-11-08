@@ -227,7 +227,7 @@ data class Pom(
 
     /* "variant" is not part of POM, but an ID to facilitates multiple POM coexist in the same pom.yaml file */
     /* variant is fixed and not going to be overlaid */
-    val variant: String = DEFAULT_VARIANT,
+    var variant: String = DEFAULT_VARIANT,
 
     /* "bintary" is not part of POM, but additional information needs to deploy to bintray repo */
     /* TODO it may be better to specify repo details in gradle.properties? */

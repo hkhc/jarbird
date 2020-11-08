@@ -19,9 +19,7 @@
 package io.hkhc.gradle
 
 import groovy.lang.Closure
-import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.maven.RepoEndpoint
-import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 
 // Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.
@@ -30,8 +28,6 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     var pubList = mutableListOf<JarbirdPub>()
 
     var bintrayRepository: RepoEndpoint? = null
-
-
 
     lateinit var pomGroupCallback: PomGroupCallback
     private var implicited: JarbirdPub? = null
@@ -46,12 +42,30 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
         pomGroupCallback.initPub(newPub)
     }
 
+    fun pub(variant: String, action: Closure<JarbirdPub>) {
+        System.out.println("add new pub by closure")
+        val newPub = JarbirdPub(project)
+        newPub.variant = variant
+        pomGroupCallback.initPub(newPub)
+        pubList.add(newPub)
+        action.delegate = newPub
+        action.call()
+    }
+
     /* to be invoked by Kotlin Gradle script */
     fun pub(action: JarbirdPub.() -> Unit) {
         val newPub = JarbirdPub(project)
         pubList.add(newPub)
         action.invoke(newPub)
         pomGroupCallback.initPub(newPub)
+    }
+
+    fun pub(variant: String, action: JarbirdPub.() -> Unit) {
+        val newPub = JarbirdPub(project)
+        newPub.variant = variant
+        pomGroupCallback.initPub(newPub)
+        pubList.add(newPub)
+        action.invoke(newPub)
     }
 
     fun createImplicit() {
@@ -69,9 +83,8 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
         If implicit == null , means we have not created an implicit pub, no need to remove
         If pubList.size == 1 and implicit != null, this means it is the only pub, so we still need it, don't remove
          */
-        if (implicited == null || pubList.size == 1 ) return
+        if (implicited == null || pubList.size == 1) return
         pubList.remove(implicited)
         implicited = null
     }
-
 }

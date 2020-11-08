@@ -29,13 +29,13 @@ class MockBintrayRepositoryServer : BaseMockRepositoryServer() {
         listOf(
             HeadMatcher("/packages/$username/$repo/$artifactId", FileNotFound),
             PostMatcher("/packages/$username/$repo", Success),
-            HeadMatcher("/packages/$username/$repo/$artifactId/versions/$version", FileNotFound),
+            HeadMatcher("/packages/$username/$repo/$artifactId/versions/$versionWithVariant", FileNotFound),
             PostMatcher("/packages/$username/$repo/$artifactId/versions", Success),
-            PutMatcher("/content/$username/$repo/$artifactId/$version") { request, response ->
+            PutMatcher("/content/$username/$repo/$artifactId/$versionWithVariant") { request, response ->
                 postFileCount++
                 Success.invoke(request, response)
             },
-            PostMatcher("/content/$username/$repo/$artifactId/$version/publish") { _, response ->
+            PostMatcher("/content/$username/$repo/$artifactId/$versionWithVariant/publish") { _, response ->
                 response.setBody("{ \"files\": $postFileCount }").setResponseCode(HTTP_SUCCESS)
             }
         )

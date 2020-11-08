@@ -80,8 +80,8 @@ class TaskBuilder(
                     group = SP_GROUP
 
                     description = if (pub.pom.isGradlePlugin()) {
-                        "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.pom.version}' " +
-                            "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' to the local Maven Repository"
+                        "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.variantVersion()}' " +
+                            "and plugin '${pub.pom.plugin?.id}:${pub.variantVersion()}' to the local Maven Repository"
                     } else {
                         "Publish Maven publication '${pub.pubNameWithVariant()}' to the local Maven Repository"
                     }
@@ -107,7 +107,7 @@ class TaskBuilder(
             }
         } else {
 
-            val jbPublishToMavenRepository = register("jbPublishToMavenRepository"){
+            val jbPublishToMavenRepository = register("jbPublishToMavenRepository") {
                 group = SP_GROUP
             }.get()
 
@@ -115,18 +115,18 @@ class TaskBuilder(
             pubs.forEach { pub ->
                 System.out.println("dependsOn mavenRepository for pub ")
                 pub.mavenRepository?.let { repo ->
-                    System.out.println("dependsOn mavenRepository ${repo}")
+                    System.out.println("dependsOn mavenRepository $repo")
                     val jbPublishPubNameToMavenRepository = register("jbPublish${getPubNameCap(pub)}To${repo.name}") {
                         group = SP_GROUP
 
                         // I don't know why the maven repository name in the task name is not capitalized
 
                         description = if (pub.pom.isGradlePlugin()) {
-                            "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.pom.version}' " +
+                            "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.variantVersion()}' " +
                                 "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' to the 'Maven${getPubNameCap(pub)}' Repository"
                         } else {
                             // TODO 'Maven${getPubNameCap(pub)}' is wrong
-                            "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.pom.version}' to the 'Maven${getPubNameCap(pub)}' Repository"
+                            "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.variantVersion()}' to the 'Maven${getPubNameCap(pub)}' Repository"
                         }
 
                         dependsOn("publish${getPubId(pub)}To${getMavenRepo(pub)}")
@@ -174,7 +174,7 @@ class TaskBuilder(
 
                         description = if (pub.pom.isGradlePlugin()) {
                             "Publish Maven publication '${getPubNameCap(pub)}' " +
-                                "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' to $target"
+                                "and plugin '${pub.pom.plugin?.id}:${pub.variantVersion()}' to $target"
                         } else {
                             "Publish Maven publication '${getPubNameCap(pub)}' to $target"
                         }
@@ -199,12 +199,13 @@ class TaskBuilder(
         if (project.isMultiProjectRoot()) {
             registerRootProjectTasks("jbPublishToGradlePortal")
         } else {
-            val pom = pubs.firstOrNull { it.pom.isGradlePlugin() }?.pom
+            val pub = pubs.firstOrNull { it.pom.isGradlePlugin() }
+            val pom = pub?.pom
             pom?.let {
                 register("jbPublishToGradlePortal") {
                     group = SP_GROUP
                     // TODO fix description for multiple pom
-                    description = "Publish plugin '${it.plugin?.id}:${it.version}' to the Gradle plugin portal"
+                    description = "Publish plugin '${it.plugin?.id}:${pub.variantVersion()}' to the Gradle plugin portal"
                     dependsOn("publishPlugins")
                 }
             }
@@ -239,7 +240,7 @@ class TaskBuilder(
                     val repoListStr = repoList.joinToString()
 
                     description = if (pub.pom.isGradlePlugin()) {
-                        "Publish Maven publication '${getPubNameCap(pub)}:${pub.pom.version}' and plugin '${pub.pom.plugin?.id}:${pub.pom.version}'" +
+                        "Publish Maven publication '${getPubNameCap(pub)}:${pub.variantVersion()}' and plugin '${pub.pom.plugin?.id}:${pub.pom.version}'" +
                             "to $repoListStr"
                     } else {
                         "Publish Maven publication '${getPubNameCap(pub)}' to $repoListStr"

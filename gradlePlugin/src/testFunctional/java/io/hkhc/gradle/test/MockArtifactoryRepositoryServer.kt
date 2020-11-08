@@ -25,7 +25,7 @@ class MockArtifactoryRepositoryServer : BaseMockRepositoryServer() {
         listOf(
             PutMatcher(
                 "/base/oss-snapshot-local/${group.replace('.', '/')}/" +
-                    "$artifactId/$version",
+                    "$artifactId/$versionWithVariant",
                 Success
             ),
             GetMatcher("/base/api/system/version") { _, response ->
