@@ -21,11 +21,13 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
+import io.hkhc.utils.TextCutter
 import io.hkhc.utils.TextTree
 import junit.framework.Assert.assertTrue
 import org.gradle.api.GradleException
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertNotNull
 import java.io.File
 import java.io.StringWriter
@@ -35,6 +37,12 @@ fun PropertiesEditor.setupKeyStore(baseDir: File) {
     "signing.keyId" to "6B70FAE3"
     "signing.password" to "password"
     "signing.secretKeyRingFile" to File(baseDir, "gnupg/secring.gpg").absolutePath
+}
+
+fun PropertiesEditor.setupAndroidProeprties() {
+    "android.useAndroidX" to "true"
+    "android.enableJetifier" to "true"
+    "kotlin.code.style" to "official"
 }
 
 fun simplePomRoot() =
@@ -187,99 +195,111 @@ fun buildGradlePlugin(): String {
     """.trimIndent()
 }
 
+fun commonSetting(): String {
 
+    return """
+        pluginManagement {
+            repositories {
+                mavenLocal()
+                gradlePluginPortal()
+                mavenCentral()
+            }
+        }
+        include(":lib")
+    """.trimIndent()
+}
 
-fun taskTree(bintray: Boolean = true, plugin: Boolean = false, snapshot: Boolean = false, publications: List<String> = mutableListOf()): String {
+fun commonAndroidRootGradle(): String {
 
-    val taskTree = StringNodeBuilder(":jbPublish").build {
-        +":jbPublishLib" {
-            +":jbPublishLibToMavenLocal" {
-                +":publishLibPluginMarkerMavenPublicationToMavenLocal" {
-                    +":generatePomFileForLibPluginMarkerMavenPublication"
-                }
-                +":publishLibPublicationToMavenLocal" {
-                    +":dokkaJar" {
-                        +":dokka"
-                    }
-                    +":generateMetadataFileForLibPublication" {
-                        +":jar" {
-                            +":classes" {
-                                +":compileJava" {
-                                    +":compileKotlin"
-                                }
-                                +":processResources" {
-                                    +":pluginDescriptors"
-                                }
-                            }
-                            +":compileKotlin *"
-                            +":inspectClassesForKotlinIC" {
-                                +":classes *"
-                            }
-                        }
-                    }
-                    +":generatePomFileForLibPublication"
-                    +":jar *"
-                    if (!snapshot) {
-                        +":signLibPublication" {
-                            +":dokkaJar *"
-                            +":generateMetadataFileForLibPublication *"
-                            +":generatePomFileForLibPublication *"
-                            +":jar *"
-                            +":sourcesJar"
-                        }
-                    }
-                    +":sourcesJar *"
+    return """
+        buildscript {
+            ext.kotlin_version = "1.3.72"
+            repositories {
+                mavenLocal()
+                google()
+                jcenter()
+            }
+            dependencies {
+                classpath "com.android.tools.build:gradle:4.0.0"
+                classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}kotlin_version"
+        
+                // NOTE: Do not place your application dependencies here; they belong
+                // in the individual module build.gradle files
+            }
+        }
+        plugins {
+            id 'io.hkhc.jarbird'
+            id 'com.dorongold.task-tree' version '1.5'
+        }
+        allprojects {
+            repositories {
+                google()
+                jcenter()
+            }
+        }
+    """.trimIndent()
+}
+
+fun commonAndroidGradle(mavenRepo: String = ""): String {
+
+    return """
+        plugins {
+            id 'com.android.library'
+            id 'kotlin-android'
+            id 'kotlin-android-extensions'
+            id 'io.hkhc.jarbird'
+            id 'com.dorongold.task-tree' 
+        }
+
+        sourceSets {
+            main {
+                java.srcDirs("src/main/java", "src/main/kotlin")
+            }
+            release {
+                java.srcDirs("src/release/java", "src/release/kotlin")
+            }
+        }
+
+        android {
+            compileSdkVersion 29
+            buildToolsVersion "29.0.3"
+        
+            defaultConfig {
+                minSdkVersion 21
+                targetSdkVersion 29
+                versionCode 1
+                versionName "1.0a"
+                testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+                consumerProguardFiles "consumer-rules.pro"
+            }
+        
+            buildTypes {
+                release {
+                    minifyEnabled false
+                    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
                 }
             }
-            +":jbPublishLibToMavenRepository" {
-                +":jbPublishLibToMavenmock" {
-                    +":publishLibPluginMarkerMavenPublicationToMavenLibRepository" {
-                        +":generatePomFileForLibPluginMarkerMavenPublication *"
-                    }
-                    +":publishLibPublicationToMavenLibRepository" {
-                        +":dokkaJar *"
-                        +":generateMetadataFileForLibPublication *"
-                        +":generatePomFileForLibPublication *"
-                        +":jar *"
-                        +":signLibPublication *"
-                        +":sourcesJar *"
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_1_8
+                targetCompatibility = JavaVersion.VERSION_1_8
+            }
+        }
+
+        android.libraryVariants.configureEach { v ->
+            def variantName = v.name
+            if (variantName == "release") {
+                jarbird {
+                     pub(variantName) { 
+                        ${if (mavenRepo=="") "withMavenByProperties(\"mock\")" else ""}
+                        versionWithVariant = true
+                        useGpg = true
+                        pubComponent = variantName
+//                                sourceSets = sourceSets[0].javaDirectories
                     }
                 }
             }
         }
-        if (bintray) {
-            +":jbPublishToBintray" {
-                +":bintrayUpload" {
-                    +":_bintrayRecordingCopy" {
-                        +":publishLibPublicationToMavenLocal *"
-                    }
-                    +":publishLibPluginMarkerMavenPublicationToMavenLocal *"
-                    +":publishLibPublicationToMavenLocal *"
-                }
-            }
-        }
-        if (plugin) {
-            +":jbPublishToGradlePortal" {
-                +":publishPlugins" {
-                    +":generatePomFileForPluginMavenPublication"
-                    +":jar *"
-                    +":publishPluginJar"
-                    +":publishPluginJavaDocsJar" {
-                        +":javadoc" {
-                            +":classes *"
-                            +":compileKotlin *"
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    val taskTreeWriter = StringWriter().also {
-        TextTree<String>(TextTree.TaskTreeTheme()).dump(taskTree, { line -> it.write(line + "\n") })
-    }
-
-    return taskTreeWriter.toString()
+    """.trimIndent()
 }
 
 fun <T> treeStr(node: TextTree.Node<T>): String {
@@ -329,7 +349,15 @@ fun runTaskWithOutput(tasks: Array<String>, projectDir: File, envs: Map<String, 
         .build()
 
     return BuildOutput(result, stdout.toString(), stderr.toString())
+}
 
+fun assertTaskTree(taskName: String, expectedTree: String, taskDepth: Int, projectDir: File, envs: Map<String, String> = defaultEnvs(projectDir)) {
+
+    val output = runTaskWithOutput(arrayOf(taskName, "taskTree", "--task-depth", "$taskDepth"), projectDir, envs)
+    Assertions.assertEquals(
+        expectedTree,
+        TextCutter(output.stdout).cut(":$taskName", ""), "task tree"
+    )
 }
 
 fun defaultEnvs(projectDir: File) = mutableMapOf(getTestGradleHomePair(projectDir))

@@ -100,17 +100,11 @@ class BuildPluginMavenLocalTest {
             }
         )
 
-        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "3"), tempProjectDir)
-        assertEquals(
-            taskTree,
-            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
-        )
+        assertTaskTree(targetTask, taskTree, 3, tempProjectDir)
 
-//        val task = "clean"
         val result = runTask(targetTask, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        ArtifactChecker()
-            .verifyRepository(localRepoDir, coordinate, "jar")
+        ArtifactChecker().verifyRepository(localRepoDir, coordinate, "jar")
     }
 }

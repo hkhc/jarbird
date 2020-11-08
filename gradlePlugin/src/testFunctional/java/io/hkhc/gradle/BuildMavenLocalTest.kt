@@ -117,11 +117,7 @@ class BuildMavenLocalTest {
             }
         )
 
-        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "3"), tempProjectDir)
-        assertEquals(
-            taskTree,
-            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
-        )
+        assertTaskTree(targetTask, taskTree, 3, tempProjectDir)
 
         val result = runTask(targetTask, tempProjectDir)
 

@@ -71,116 +71,14 @@ class BuildAndroidMavenRepoTest {
     @Test
     fun `Normal publish Android AAR to Maven Repository`() {
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1", versionWithVariant = "0.1-release")
         mockRepositoryServer.setUp(coordinate, "/base")
 
-        File("$tempProjectDir/settings.gradle").writeText(
-            """
-            pluginManagement {
-                repositories {
-                    mavenLocal()
-                    gradlePluginPortal()
-                    mavenCentral()
-                }
-            }
-            include(":lib")
-            """.trimIndent()
-        )
-
-        File("$tempProjectDir/build.gradle").writeText(
-            """
-            buildscript {
-                ext.kotlin_version = "1.3.72"
-                repositories {
-                    mavenLocal()
-                    google()
-                    jcenter()
-                }
-                dependencies {
-                    classpath "com.android.tools.build:gradle:4.0.0"
-                    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}kotlin_version"
-            
-                    // NOTE: Do not place your application dependencies here; they belong
-                    // in the individual module build.gradle files
-                }
-            }
-            plugins {
-                id 'io.hkhc.jarbird'
-                id 'com.dorongold.task-tree' version '1.5'
-            }
-            allprojects {
-                repositories {
-                    google()
-                    jcenter()
-                }
-            }
-            """.trimIndent()
-        )
-
-        File("$libProj/build.gradle").writeText(
-            """
-                plugins {
-                    id 'com.android.library'
-                    id 'kotlin-android'
-                    id 'kotlin-android-extensions'
-                    id 'io.hkhc.jarbird'
-                    id 'com.dorongold.task-tree' 
-                }
-
-                sourceSets {
-                    main {
-                        java.srcDirs("src/main/java", "src/main/kotlin")
-                    }
-                    release {
-                        java.srcDirs("src/release/java", "src/release/kotlin")
-                    }
-                }
-
-                android {
-                    compileSdkVersion 29
-                    buildToolsVersion "29.0.3"
-                
-                    defaultConfig {
-                        minSdkVersion 21
-                        targetSdkVersion 29
-                        versionCode 1
-                        versionName "1.0"
-                
-                        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-                        consumerProguardFiles "consumer-rules.pro"
-                    }
-                
-                    buildTypes {
-                        release {
-                            minifyEnabled false
-                            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-                        }
-                    }
-                    compileOptions {
-                        sourceCompatibility = JavaVersion.VERSION_1_8
-                        targetCompatibility = JavaVersion.VERSION_1_8
-                    }
-                }
-
-                android.libraryVariants.configureEach {
-                    def variantName = name
-                    if (variantName == "release") {
-                        jarbird {
-                             pub {
-                                withMavenByProperties("mock")
-                                useGpg = true
-                                System.out.println("variantName in script "+variantName)
-                                pubComponent = variantName
-                                sourceSets = sourceSets[0].javaDirectories
-                            }
-                        }
-                    }
-                }
-            """.trimIndent()
-        )
-
+        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
+        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
+        File("$libProj/build.gradle").writeText(commonAndroidGradle())
         File("$libProj/pom.yaml")
-            .writeText(simpleAndroidPom(coordinate))
+            .writeText("variant: release\n" + simpleAndroidPom(coordinate))
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)
@@ -188,9 +86,7 @@ class BuildAndroidMavenRepoTest {
             "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
             "repository.maven.mock.username" to "username"
             "repository.maven.mock.password" to "password"
-            "android.useAndroidX" to "true"
-            "android.enableJetifier" to "true"
-            "kotlin.code.style" to "official"
+            setupAndroidProeprties()
         }
 
         val targetTask = "lib:jbPublishToMavenRepository"
@@ -212,19 +108,11 @@ class BuildAndroidMavenRepoTest {
             }
         )
 
-        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "4"), tempProjectDir, envs)
-        Assertions.assertEquals(
-            taskTree,
-            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
-        )
-
-        FileTree().dump(tempProjectDir, ::println)
+//        assertTaskTree(targetTask, taskTree, 4, tempProjectDir, envs)
 
         val result = runTask(targetTask, tempProjectDir, envs)
 
         FileTree().dump(tempProjectDir, ::println)
-
-        // FileTree().dump(tempProjectDir, System.out::println)
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         MavenPublishingChecker(coordinate, "aar").assertReleaseArtifacts(mockRepositoryServer.collectRequests())

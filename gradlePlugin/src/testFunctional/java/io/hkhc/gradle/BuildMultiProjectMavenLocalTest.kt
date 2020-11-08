@@ -133,20 +133,14 @@ class BuildMultiProjectMavenLocalTest {
             }
         )
 
-        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "3"), tempProjectDir)
-        Assertions.assertEquals(
-            taskTree,
-            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
-        )
+        assertTaskTree(targetTask, taskTree, 3, tempProjectDir)
 
         val result = runTask(targetTask, tempProjectDir)
 
         FileTree().dump(tempProjectDir, System.out::println)
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        ArtifactChecker()
-            .verifyRepository(localRepoDir, coordinate1, "jar")
-        ArtifactChecker()
-            .verifyRepository(localRepoDir, coordinate2, "jar")
+        ArtifactChecker().verifyRepository(localRepoDir, coordinate1, "jar")
+        ArtifactChecker().verifyRepository(localRepoDir, coordinate2, "jar")
     }
 }

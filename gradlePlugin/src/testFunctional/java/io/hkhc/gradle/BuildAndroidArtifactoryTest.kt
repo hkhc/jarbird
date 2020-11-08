@@ -73,113 +73,10 @@ class BuildAndroidArtifactoryTest {
         val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT", versionWithVariant = "0.1-release-SNAPSHOT")
         mockRepositoryServer.setUp(coordinate, "/base")
 
-        File("$tempProjectDir/settings.gradle").writeText(
-            """
-            pluginManagement {
-                repositories {
-                    mavenLocal()
-                    gradlePluginPortal()
-                    mavenCentral()
-                }
-            }
-            include(":lib")
-            """.trimIndent()
-        )
-
-        File("$tempProjectDir/build.gradle").writeText(
-            """
-            buildscript {
-                ext.kotlin_version = "1.3.72"
-                repositories {
-                    mavenLocal()
-                    google()
-                    jcenter()
-                }
-                dependencies {
-                    classpath "com.android.tools.build:gradle:4.0.0"
-                    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}kotlin_version"
-            
-                    // NOTE: Do not place your application dependencies here; they belong
-                    // in the individual module build.gradle files
-                }
-            }
-            plugins {
-                id 'io.hkhc.jarbird'
-                id 'com.dorongold.task-tree' version '1.5'
-            }
-            allprojects {
-                repositories {
-                    google()
-                    jcenter()
-                }
-            }
-            """.trimIndent()
-        )
-
-        File("$libProj/build.gradle").writeText(
-            """
-                plugins {
-                    id 'com.android.library'
-                    id 'kotlin-android'
-                    id 'kotlin-android-extensions'
-                    id 'io.hkhc.jarbird'
-                    id 'com.dorongold.task-tree' 
-                }
-
-                sourceSets {
-                    main {
-                        java.srcDirs("src/main/java", "src/main/kotlin")
-                    }
-                    release {
-                        java.srcDirs("src/release/java", "src/release/kotlin")
-                    }
-                }
-
-                android {
-                    compileSdkVersion 29
-                    buildToolsVersion "29.0.3"
-                
-                    defaultConfig {
-                        minSdkVersion 21
-                        targetSdkVersion 29
-                        versionCode 1
-                        versionName "1.0"
-                
-                        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-                        consumerProguardFiles "consumer-rules.pro"
-                    }
-                
-                    buildTypes {
-                        release {
-                            minifyEnabled false
-                            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-                        }
-                    }
-                    compileOptions {
-                        sourceCompatibility = JavaVersion.VERSION_1_8
-                        targetCompatibility = JavaVersion.VERSION_1_8
-                    }
-                }
-
-                android.libraryVariants.configureEach {
-                    def variantName = name
-                    if (variantName == "release") {
-                        jarbird {
-                             pub(variantName) {
-                                withMavenByProperties("mock")
-                                versionWithVariant = true
-                                useGpg = true
-                                pubComponent = variantName
-                                sourceSets = sourceSets[0].javaDirectories
-                            }
-                        }
-                    }
-                }
-            """.trimIndent()
-        )
-
-        File("$libProj/pom.yaml")
-            .writeText("variant: release\n" + simpleAndroidPom(coordinate))
+        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
+        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
+        File("$libProj/build.gradle").writeText(commonAndroidGradle())
+        File("$libProj/pom.yaml").writeText("variant: release\n" + simpleAndroidPom(coordinate))
 
         val username = "username"
         val repo = "maven"
@@ -189,9 +86,7 @@ class BuildAndroidArtifactoryTest {
             "repository.bintray.snapshot" to mockRepositoryServer.getServerUrl()
             "repository.bintray.username" to username
             "repository.bintray.apikey" to "password"
-            "android.useAndroidX" to "true"
-            "android.enableJetifier" to "true"
-            "kotlin.code.style" to "official"
+            setupAndroidProeprties()
         }
 
         val targetTask = "lib:jbPublishToBintray"
@@ -207,20 +102,11 @@ class BuildAndroidArtifactoryTest {
                 }
             }
         )
-
-        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "2"), tempProjectDir, envs)
-        Assertions.assertEquals(
-            taskTree,
-            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
-        )
-
-        FileTree().dump(tempProjectDir, ::println)
+        assertTaskTree(targetTask, taskTree, 2, tempProjectDir, envs)
 
         val result = runTask(targetTask, tempProjectDir, envs)
 
         FileTree().dump(tempProjectDir, ::println)
-
-        // FileTree().dump(tempProjectDir, System.out::println)
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         ArtifactoryPublishingChecker(coordinate, "aar").assertReleaseArtifacts(
