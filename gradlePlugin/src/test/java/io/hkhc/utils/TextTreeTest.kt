@@ -33,7 +33,7 @@ class TextTreeTest : StringSpec({
         }
         result.toString() shouldBe """
             Hello
-        """.trimIndent()+"\n"
+        """.trimIndent() + "\n"
     }
 
     "One Child" {
@@ -48,8 +48,6 @@ class TextTreeTest : StringSpec({
         result.toString() shouldBe """
             Hello
             \--- World
-        """.trimIndent()+"\n"
+        """.trimIndent() + "\n"
     }
-
-
 })

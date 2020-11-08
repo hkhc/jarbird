@@ -20,6 +20,4 @@ package io.hkhc.gradle
 
 import org.gradle.testkit.runner.BuildResult
 
-
-data class BuildOutput(val result: BuildResult, val stdout: String, val stderr: String) {
-}
+data class BuildOutput(val result: BuildResult, val stdout: String, val stderr: String)

@@ -41,7 +41,8 @@ class MavenRepoPatterns(
                     metafile(it) +
                         listOf(
                             "$it/${coordinate.versionWithVariant}/" +
-                                "${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.versionWithVariant)}.pom"
+                                "${coordinate.pluginId}.gradle.plugin-" +
+                                "${versionTransformer(coordinate.versionWithVariant)}.pom"
                         )
                 }
                 .flatMap(::hashedPaths)

@@ -120,10 +120,12 @@ class TaskBuilder(
 
                         description = if (pub.pom.isGradlePlugin()) {
                             "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.variantVersion()}' " +
-                                "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' to the 'Maven${getPubNameCap(pub)}' Repository"
+                                "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' " +
+                                "to the 'Maven${getPubNameCap(pub)}' Repository"
                         } else {
                             // TODO 'Maven${getPubNameCap(pub)}' is wrong
-                            "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.variantVersion()}' to the 'Maven${getPubNameCap(pub)}' Repository"
+                            "Publish Maven publication '${pub.pubNameWithVariant()}:${pub.variantVersion()}' " +
+                                "to the 'Maven${getPubNameCap(pub)}' Repository"
                         }
 
                         dependsOn("publish${getPubId(pub)}To${getMavenRepo(pub)}")
@@ -202,7 +204,8 @@ class TaskBuilder(
                 register("jbPublishToGradlePortal") {
                     group = SP_GROUP
                     // TODO fix description for multiple pom
-                    description = "Publish plugin '${it.plugin?.id}:${pub.variantVersion()}' to the Gradle plugin portal"
+                    description = "Publish plugin '${it.plugin?.id}:${pub.variantVersion()}' " +
+                        "to the Gradle plugin portal"
                     dependsOn("publishPlugins")
                 }
             }
@@ -237,7 +240,8 @@ class TaskBuilder(
                     val repoListStr = repoList.joinToString()
 
                     description = if (pub.pom.isGradlePlugin()) {
-                        "Publish Maven publication '${getPubNameCap(pub)}:${pub.variantVersion()}' and plugin '${pub.pom.plugin?.id}:${pub.pom.version}'" +
+                        "Publish Maven publication '${getPubNameCap(pub)}:${pub.variantVersion()}' " +
+                            "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}'" +
                             "to $repoListStr"
                     } else {
                         "Publish Maven publication '${getPubNameCap(pub)}' to $repoListStr"

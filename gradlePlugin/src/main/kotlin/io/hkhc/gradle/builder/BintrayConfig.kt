@@ -62,6 +62,7 @@ class BintrayConfig(
     // Bintray can perform component signing on behalf of us. However it requires our private key in order to sign
     // archives for us. I don't want to share the key and hence specify the signature files manually and upload
     // them.
+    @Suppress("SpreadOperator")
     private fun BintrayExtension.includeSignatureFiles() {
 
         val includeFileList = pubs
@@ -69,7 +70,10 @@ class BintrayConfig(
             .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
             .fold(mutableListOf<String>()) { acc, pub ->
                 if (pub.pom.group == null) {
-                    throw GradleException("Bintray: group name is not available, failed to configure Bintray extension.")
+                    throw GradleException(
+                        "Bintray: group name is not available, " +
+                            "failed to configure Bintray extension."
+                    )
                 }
                 acc.apply {
                     add("${pub.pom.artifactId}-${pub.variantVersion()}*.asc")
@@ -103,6 +107,7 @@ class BintrayConfig(
         )
     }
 
+    @Suppress("SpreadOperator")
     private fun BintrayExtension.config() {
 
         val firstBintrayPom = pubs.firstOrNull { it.bintray }

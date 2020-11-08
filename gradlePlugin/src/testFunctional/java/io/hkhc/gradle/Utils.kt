@@ -20,7 +20,6 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.PropertiesEditor
-import io.hkhc.utils.StringNodeBuilder
 import io.hkhc.utils.TextCutter
 import io.hkhc.utils.TextTree
 import junit.framework.Assert.assertTrue
@@ -93,11 +92,11 @@ fun simplePom(coordinate: Coordinate, variant: String = "", packaging: String = 
       repoName: test.user/test.repo
     """.trimIndent()
 
-    if (variant != null)
-        "variant: $variant\n"+pom
-    else
+    if (variant != null) {
+        "variant: $variant\n" + pom
+    } else {
         pom
-
+    }
 }
 
 fun pluginPom(id: String, className: String): String {
@@ -273,7 +272,7 @@ fun commonAndroidGradle(mavenRepo: String = ""): String {
             if (variantName == "release") {
                 jarbird {
                      pub(variantName) { 
-                        ${if (mavenRepo=="") "withMavenByProperties(\"mock\")" else ""}
+                        ${if (mavenRepo == "") "withMavenByProperties(\"mock\")" else ""}
                         versionWithVariant = true
                         useGpg = true
                         pubComponent = variantName
@@ -312,7 +311,12 @@ fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultE
     return result
 }
 
-fun runTaskWithOutput(tasks: Array<String>, projectDir: File, envs: Map<String, String> = defaultEnvs(projectDir)): BuildOutput {
+@Suppress("SpreadOperator")
+fun runTaskWithOutput(
+    tasks: Array<String>,
+    projectDir: File,
+    envs: Map<String, String> = defaultEnvs(projectDir)
+): BuildOutput {
 
     assertTrue("Project directory '$projectDir' shall exist", projectDir.exists())
     envs.forEach {
@@ -334,12 +338,19 @@ fun runTaskWithOutput(tasks: Array<String>, projectDir: File, envs: Map<String, 
     return BuildOutput(result, stdout.toString(), stderr.toString())
 }
 
-fun assertTaskTree(taskName: String, expectedTree: String, taskDepth: Int, projectDir: File, envs: Map<String, String> = defaultEnvs(projectDir)) {
+fun assertTaskTree(
+    taskName: String,
+    expectedTree: String,
+    taskDepth: Int,
+    projectDir: File,
+    envs: Map<String, String> = defaultEnvs(projectDir)
+) {
 
     val output = runTaskWithOutput(arrayOf(taskName, "taskTree", "--task-depth", "$taskDepth"), projectDir, envs)
     Assertions.assertEquals(
         expectedTree,
-        TextCutter(output.stdout).cut(":$taskName", ""), "task tree"
+        TextCutter(output.stdout).cut(":$taskName", ""),
+        "task tree"
     )
 }
 

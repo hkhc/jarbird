@@ -61,6 +61,7 @@ import java.io.File
  *
  *
  */
+@Suppress("MagicNumber")
 class BuildMavenPluginRepoTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
@@ -177,7 +178,8 @@ class BuildMavenPluginRepoTest {
         val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "4"), tempProjectDir)
         assertEquals(
             taskTree,
-            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
+            TextCutter(output.stdout).cut(":$targetTask", ""),
+            "task tree"
         )
 
         val result = runTask(targetTask, tempProjectDir)

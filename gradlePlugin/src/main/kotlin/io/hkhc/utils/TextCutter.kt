@@ -24,16 +24,14 @@ class TextCutter(val src: String) {
         var started = false
         src.lines().forEach {
             if (!started) {
-                if (it==startLine) {
+                if (it == startLine) {
                     started = true
                     result.append(it).append("\n")
                 }
-            }
-            else {
-                if (it==endLine) {
+            } else {
+                if (it == endLine) {
                     return@cut result.toString()
-                }
-                else {
+                } else {
                     result.append(it).append("\n")
                 }
             }

@@ -24,7 +24,6 @@ import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
-import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -70,7 +69,12 @@ class BuildAndroidArtifactoryTest {
     @Test
     fun `Normal publish Android AAR to Artifactory Repository`() {
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT", versionWithVariant = "0.1-release-SNAPSHOT")
+        val coordinate = Coordinate(
+            "test.group",
+            "test.artifact",
+            "0.1-SNAPSHOT",
+            versionWithVariant = "0.1-release-SNAPSHOT"
+        )
         mockRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())

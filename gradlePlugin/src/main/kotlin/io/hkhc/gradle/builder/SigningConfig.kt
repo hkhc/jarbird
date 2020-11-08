@@ -19,7 +19,6 @@
 package io.hkhc.gradle.builder
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -39,7 +38,10 @@ class SigningConfig(
     private fun validateConfig(project: Project, pub: JarbirdPub): Boolean {
 
         var complete = if (pub.pom.isSnapshot() && pub.signing) {
-            project.logger.warn("WARNING: $LOG_PREFIX Not performing signing for SNAPSHOT artifact ('${pub.pom.version}')")
+            project.logger.warn(
+                "WARNING: $LOG_PREFIX Not performing signing " +
+                    "for SNAPSHOT artifact ('${pub.pom.version}')"
+            )
             false
         } else if (!isV1ConfigPresents() && !isV2ConfigPresents()) {
             project.logger.warn(
@@ -89,9 +91,7 @@ class SigningConfig(
             } else {
                 project.logger.debug("$LOG_PREFIX Signing info complete")
             }
-
         }
-
 
         (
             project.findByType(SigningExtension::class.java)
@@ -123,6 +123,5 @@ class SigningConfig(
                 }
             }
         }
-
     }
 }

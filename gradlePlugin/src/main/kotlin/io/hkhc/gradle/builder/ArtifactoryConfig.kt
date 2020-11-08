@@ -109,6 +109,7 @@ class ArtifactoryConfig(
     private fun configTask() {
 
         project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
+            @Suppress("SpreadOperator")
             publications(*(pubs.bintrayPubList().toTypedArray()))
             if (project.isMultiProjectRoot()) {
                 skip = true

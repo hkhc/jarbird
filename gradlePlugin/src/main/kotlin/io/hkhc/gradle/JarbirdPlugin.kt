@@ -32,9 +32,7 @@ import io.hkhc.gradle.utils.fatalMessage
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
-import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 import org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
@@ -212,7 +210,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
              * no evaluation listener
              */
             apply(DokkaPlugin::class.java)
-
         }
 
         /* Under the following situation we need plugins to be applied within the Gradle-scope afterEvaluate
@@ -253,9 +250,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
                 PublicationBuilder(project, extension, extension.pubList).buildPhase2()
                 PublicationBuilder(project, extension, extension.pubList).buildPhase3()
-
             }
-
 
 //            extension.pubList.forEach {
 //
@@ -274,9 +269,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 //                    it.pom?.let { pom -> precheck(pom, p) }
 //                }
 //            }
-
-
-
         }
 
         // Gradle plugin publish plugin is not compatible with Android plugin.
@@ -289,7 +281,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 //            System.out.println("after phase 1")
         }
 
-
         // Build phase 3
         project.afterEvaluate {
 
@@ -297,7 +288,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
             extension.removeImplicit()
 
             with(p.pluginManager) {
-
 
                 if (extension.pubList.needSigning()) {
                     /**
@@ -310,10 +300,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                      */
                     apply(SigningPlugin::class.java)
                 }
-
-
             }
-
             PublicationBuilder(project, extension, extension.pubList).buildPhase1()
         }
 
@@ -349,8 +336,5 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
              */
             apply(ArtifactoryPlugin::class.java)
         }
-
-
-
     }
 }

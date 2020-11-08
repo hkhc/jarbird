@@ -40,12 +40,12 @@ class TextTree<T>(val theme: Theme) {
         if (!node.isLeaf()) {
             block.invoke(node.text())
             node.forEachIndexed { count, idx, child ->
-                val headPrefix = if (idx == count-1) {
+                val headPrefix = if (idx == count - 1) {
                     theme.lastChild()
                 } else {
                     theme.child()
                 }
-                val tailPrefix = if (idx == count-1) theme.space() else theme.midpath()
+                val tailPrefix = if (idx == count - 1) theme.space() else theme.midpath()
                 var first = true
                 dump<T>(child) {
                     if (first) {
@@ -61,17 +61,17 @@ class TextTree<T>(val theme: Theme) {
         }
     }
 
-    class FileNode(val file: File): Node<File> {
+    class FileNode(val file: File) : Node<File> {
         private var child: Array<File>? = null
         private fun fillList() {
-            if (child==null) child = file.listFiles()
+            if (child == null) child = file.listFiles()
         }
         override fun isLeaf() = !file.isDirectory()
         override fun forEachIndexed(action: (count: Int, index: Int, child: Node<File>) -> Unit) {
             fillList()
-            child?.let {list ->
+            child?.let { list ->
                 val c = childCount()
-                list.forEachIndexed{ idx, item ->
+                list.forEachIndexed { idx, item ->
                     action.invoke(c, idx, FileNode(item))
                 }
             }
@@ -79,20 +79,19 @@ class TextTree<T>(val theme: Theme) {
         override fun text(): String {
             return if (isLeaf()) {
                 "${file.name} (${file.length()})"
-            }
-            else {
+            } else {
                 file.name
             }
         }
 
         override fun childCount(): Int {
             fillList()
-            return child?.size?:0
+            return child?.size ?: 0
         }
     }
 
     // Box drawing characters https://en.wikipedia.org/wiki/Box-drawing_character
-    class RoundTheme: Theme {
+    class RoundTheme : Theme {
         override fun lastChild(): String {
             return "\u2570\u2500\u2500\u2500 " /* L--- */
         }
@@ -114,7 +113,7 @@ class TextTree<T>(val theme: Theme) {
         dump(FileNode(file), block)
     }
 
-    class StringNode(val str: String): Node<String> {
+    class StringNode(val str: String) : Node<String> {
         private val childs = mutableListOf<Node<String>>()
         override fun isLeaf() = childs.isEmpty()
         override fun forEachIndexed(action: (count: Int, index: Int, child: Node<String>) -> Unit) {
@@ -123,16 +122,14 @@ class TextTree<T>(val theme: Theme) {
         override fun childCount() = childs.size
         override fun text() = str
         fun addChild(node: StringNode) { childs.add(node) }
-
     }
 
-    class TaskTreeTheme: Theme {
+    class TaskTreeTheme : Theme {
         override fun lastChild() = "\\--- "
         override fun child() = "+--- "
         override fun space() = "     "
         override fun midpath() = "|    "
     }
-
 }
 
 class StringNodeBuilder(val root: String) {
@@ -153,7 +150,4 @@ class StringNodeBuilder(val root: String) {
     operator fun String.invoke(block: StringNodeBuilder.() -> Unit): TextTree.StringNode {
         return StringNodeBuilder(this).build(block)
     }
-
 }
-
-

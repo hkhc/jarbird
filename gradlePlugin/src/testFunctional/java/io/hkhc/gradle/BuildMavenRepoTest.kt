@@ -61,6 +61,7 @@ import java.io.File
  * handle publishing rejection
  *
  */
+@Suppress("MagicNumber")
 class BuildMavenRepoTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
@@ -126,7 +127,8 @@ class BuildMavenRepoTest {
         val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "4"), tempProjectDir)
         assertEquals(
             taskTree,
-            TextCutter(output.stdout).cut(":$targetTask", ""), "task tree"
+            TextCutter(output.stdout).cut(":$targetTask", ""),
+            "task tree"
         )
 
         val result = runTask(targetTask, tempProjectDir)

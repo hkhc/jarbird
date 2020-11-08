@@ -23,7 +23,6 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
-import io.hkhc.utils.TextCutter
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -31,6 +30,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
+@Suppress("MagicNumber")
 class BuildMultiProjectMavenLocalTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory

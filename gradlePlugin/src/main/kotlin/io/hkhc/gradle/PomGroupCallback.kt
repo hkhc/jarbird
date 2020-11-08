@@ -20,5 +20,4 @@ package io.hkhc.gradle
 
 interface PomGroupCallback {
     fun initPub(pub: JarbirdPub)
-
 }

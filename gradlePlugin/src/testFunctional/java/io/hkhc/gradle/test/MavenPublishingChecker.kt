@@ -22,8 +22,10 @@ import groovy.util.GroovyTestCase
 import io.kotest.assertions.fail
 import okhttp3.mockwebserver.RecordedRequest
 
-class MavenPublishingChecker(val coordinate: Coordinate,
-val packaging: String = "jar") {
+class MavenPublishingChecker(
+    val coordinate: Coordinate,
+    val packaging: String = "jar"
+) {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
         var matched = requests
