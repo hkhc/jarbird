@@ -38,17 +38,12 @@ class ArtifactChecker {
 
         val fileSet = artifactDir.listFiles().toMutableSet()
 
-        fileSet.forEach {
-            System.out.println("file set = ${it.absolutePath}")
-        }
-
         withClue("In local repository $repoDir") {
             with(coordinate) {
                 listOf(".module", ".pom", ".$packaging", "-javadoc.jar", "-sources.jar")
                     .map { "$artifactId-$versionWithVariant$it" }
                     .forEach {
                         withClue("The generated file $it should presents ") {
-                            System.out.println("check file ${File(artifactDir, it).absolutePath}")
                             verifyArtifact(fileSet, File(artifactDir, it))
                         }
                     }

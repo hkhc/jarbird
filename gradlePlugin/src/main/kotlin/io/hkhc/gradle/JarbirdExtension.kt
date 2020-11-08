@@ -34,7 +34,6 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     /* to be invoked by Groovy Gradle script */
     fun pub(action: Closure<JarbirdPub>) {
-        System.out.println("add new pub by closure")
         val newPub = JarbirdPub(project)
         pubList.add(newPub)
         action.delegate = newPub
@@ -43,7 +42,6 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     }
 
     fun pub(variant: String, action: Closure<JarbirdPub>) {
-        System.out.println("add new pub by closure")
         val newPub = JarbirdPub(project)
         newPub.variant = variant
         pomGroupCallback.initPub(newPub)

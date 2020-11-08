@@ -64,8 +64,6 @@ class BintrayConfig(
     // them.
     private fun BintrayExtension.includeSignatureFiles() {
 
-        System.out.println("BintrayExtension.includeSignatureFiles")
-
         val includeFileList = pubs
             .filter { it.bintray }
             .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
@@ -98,8 +96,6 @@ class BintrayConfig(
             }
             .toTypedArray()
 
-        System.out.println("BintrayExtension.includeSignatureFiles includeFileList ${includeFileList.joinToString()}")
-
         filesSpec(
             closureOf<RecordingCopyTask> {
 
@@ -128,8 +124,6 @@ class BintrayConfig(
 
     private fun BintrayExtension.config() {
 
-        System.out.println("BintrayExtension.config start pub count ${pubs.size}")
-
         val firstBintrayPom = pubs.firstOrNull { it.bintray }
         if (firstBintrayPom == null) return
 
@@ -147,8 +141,6 @@ class BintrayConfig(
         val publicationsList = pubs.bintrayPubList()
         val gradlePublicationsList = publicationsList + pubs.bintrayGradlePluginPubList()
 
-        System.out.println("bintray publication list ${gradlePublicationsList.joinToString()}")
-
         setPublications(*(gradlePublicationsList.toTypedArray()))
 
         pkg.fill(firstBintrayPom)
@@ -162,9 +154,6 @@ class BintrayConfig(
 
         val labelList = pom.bintray.labels?.split(',')?.toTypedArray() ?: arrayOf()
         val licenseList = pom.licenses.map { it.name }.toTypedArray()
-
-        System.out.println("Bintray repo ${pom.bintray.repo}")
-        System.out.println("Bintray userOrg ${pom.bintray.userOrg}")
 
         repo = pom.bintray.repo ?: "maven"
         pom.bintray.userOrg?.let { userOrg = it }

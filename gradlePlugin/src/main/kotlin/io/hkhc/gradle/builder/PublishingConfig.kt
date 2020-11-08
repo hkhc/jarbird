@@ -76,7 +76,6 @@ class PublishingConfig(
         project.logger.debug("$LOG_PREFIX configure Publishing extension")
 
         if (dokka == null) {
-            System.out.println("dokka is null, create a new dokka task")
             try {
                 dokka = project.tasks.named("dokka")
             } catch (e: UnknownTaskException) {
@@ -111,18 +110,12 @@ class PublishingConfig(
 
     private fun PublicationContainer.createPublication() {
 
-        System.out.println("PublicationContainer.createPublication component count ${project.components.size}")
-        project.components.forEach {
-            System.out.println("PublicationContainer.createPublication component ${it.name}")
-        }
-
         pubs.forEach { pub ->
             val dokkaJar = setupDokkaJar(pub)
             val sourcesJar = setupSourcesJar(pub)
 
             val pomSpec = pub.pom
 
-            System.out.println("PublicationContainer.createPublication pubComponent ${pub.pubComponent}")
             register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
                 groupId = pomSpec.group
@@ -134,10 +127,6 @@ class PublishingConfig(
                 version = pub.variantVersion()
 
                 // This is the main artifact
-                project.components.forEach {
-                    System.out.println("components ${it.name}")
-                }
-//                System.out.println("component ${project.components[pub.pubComponent]}")
                 from(project.components[pub.pubComponent])
                 // We are adding documentation artifact
                 project.afterEvaluate {

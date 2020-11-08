@@ -72,7 +72,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
     override fun initPub(pub: JarbirdPub) {
 
         pub.pom = pomGroup[pub.variant]
-        println("pub variant ${pub.variant} pom = ${pub.pom}")
 
         // TODO we ignore that pom overwrite some project properties in the mean time.
         // need to properly take care of it.
@@ -140,8 +139,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
      */
     override fun apply(p: Project) {
 
-        System.out.println("applying jarbird ${p.name}")
-
         project = p
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
         pomGroup = PomGroupFactory(p).resolvePomGroup()
@@ -152,10 +149,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pomGroup")
 
         checkAndroidPlugin(p)
-
-        project.pluginManager.withPlugin("org.gradle.java-gradle-plugin") {
-            System.out.println("JavaGradlePluginPlugin has just applied")
-        }
 
         /*
 
@@ -230,12 +223,9 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         // Build Phase 1
         project.gradleAfterEvaluate { _ ->
 
-            println("0 extension publist count ${extension.pubList.size}")
-
             extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
 
             if (!project.isMultiProjectRoot()) {
-                System.out.println("add a default pub")
                 extension.createImplicit()
             }
 
@@ -261,12 +251,8 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                  */
                 project.pluginManager.apply(JavaGradlePluginPlugin::class.java)
 
-                System.out.println("before phase 2")
                 PublicationBuilder(project, extension, extension.pubList).buildPhase2()
-                System.out.println("after phase 2")
-                System.out.println("before phase 3")
                 PublicationBuilder(project, extension, extension.pubList).buildPhase3()
-                System.out.println("after phase 3")
 
             }
 
@@ -307,8 +293,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         // Build phase 3
         project.afterEvaluate {
 
-            println("A extension publist count ${extension.pubList.size}")
-
             // we created an implicit JarbirdPub and we have more in afterEvaluate
             extension.removeImplicit()
 
@@ -330,17 +314,11 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
             }
 
-            System.out.println("plugin build : ${pomGroup.involveGradlePlugin()} ")
-
-            System.out.println("before phase 1")
             PublicationBuilder(project, extension, extension.pubList).buildPhase1()
-            System.out.println("after phase 1")
         }
 
         project.afterEvaluate {
-            System.out.println("before phase 4")
             PublicationBuilder(project, extension, extension.pubList).buildPhase4()
-            System.out.println("after phase 4")
         }
 
         /*

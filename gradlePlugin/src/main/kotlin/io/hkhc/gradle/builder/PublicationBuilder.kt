@@ -104,12 +104,7 @@ class PublicationBuilder(
 //                    throw GradleException("Publishing snapshot Gradle Plugin to bintray is not supported")
 
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
-                System.out.println("config bintray and artifactory before count ${pubs.size}")
-                pubs.forEach {
-                    System.out.println("pub $it")
-                }
                 if (pubs.bintrayPubList().isNotEmpty()) {
-                    System.out.println("config bintray and artifactory")
                     logger.info("config bintray and artifactory")
                     BintrayConfig(this, extension, pubs).config()
                     ArtifactoryConfig(this, extension, pubs).config()

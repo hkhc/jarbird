@@ -80,8 +80,6 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
             } else {
                 "$ver-$variant"
             }
-        }.apply {
-            System.out.println("**variantVersion [$variant] $this")
         }
     }
 

@@ -111,11 +111,8 @@ class TaskBuilder(
                 group = SP_GROUP
             }.get()
 
-            System.out.println("configuring jbPublishToMavenRepository")
             pubs.forEach { pub ->
-                System.out.println("dependsOn mavenRepository for pub ")
                 pub.mavenRepository?.let { repo ->
-                    System.out.println("dependsOn mavenRepository $repo")
                     val jbPublishPubNameToMavenRepository = register("jbPublish${getPubNameCap(pub)}To${repo.name}") {
                         group = SP_GROUP
 

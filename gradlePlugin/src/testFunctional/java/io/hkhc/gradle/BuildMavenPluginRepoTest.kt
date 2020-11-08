@@ -133,7 +133,6 @@ class BuildMavenPluginRepoTest {
 
         val result = runTask(targetTask, tempProjectDir)
 
-        System.out.println("File dump")
         TextTree<File>(TextTree.TaskTreeTheme()).filedump(tempProjectDir, System.out::println)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
