@@ -19,3 +19,14 @@ import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
  */
 
 fun String?.isSnapshot() = this?.endsWith(SNAPSHOT_SUFFIX) ?: false
+
+/* assume that there is nothing after -SNAPSHOT */
+fun String.appendBeforeSnapshot(s: String): String {
+    val index = indexOf(SNAPSHOT_SUFFIX)
+    return if (index == -1) {
+        "$this-$s"
+    } else {
+        val versionPrefix = substring(0, index)
+        "$versionPrefix-$s$SNAPSHOT_SUFFIX"
+    }
+}

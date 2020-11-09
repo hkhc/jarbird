@@ -78,6 +78,8 @@ class PublicationBuilder(
     fun buildPhase1() {
         with(project) {
 
+            val bintrayPublishPlan = BintrayPublishPlan(pubs)
+
             logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 1 of 4")
 
             // TODO 2 shall we add .configureEach after withType as suggested by
@@ -98,15 +100,13 @@ class PublicationBuilder(
                     }
                 )
 
-//                val invalidBintrayPom = pubs.filter { it.bintray && it.pom.isGradlePlugin() && it.pom.isSnapshot()}
-//
-//                if (invalidBintrayPom.isNotEmpty())
-//                    throw GradleException("Publishing snapshot Gradle Plugin to bintray is not supported")
-
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
-                if (pubs.bintrayPubList().isNotEmpty()) {
-                    logger.info("config bintray and artifactory")
+                if (bintrayPublishPlan.bintray.isNotEmpty()) {
+                    logger.info("config bintray")
                     BintrayConfig(this, extension, pubs).config()
+                }
+                if (bintrayPublishPlan.artifactory.isNotEmpty()) {
+                    logger.info("config artifactory")
                     ArtifactoryConfig(this, extension, pubs).config()
                 }
             }

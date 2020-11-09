@@ -33,6 +33,7 @@ import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
 import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 
+@Suppress("SpreadOperator")
 class ArtifactoryConfig(
     private val project: Project,
     private val extension: JarbirdExtension,
@@ -41,6 +42,8 @@ class ArtifactoryConfig(
 
     private var repoUrl = "https://oss.jfrog.org"
     private val pubConfig = BintrayPublishConfig(project)
+    private val publishPlan = BintrayPublishPlan(pubs)
+    private val artifactoryLibNames = publishPlan.artifactoryLibs.map { it.pubNameWithVariant() }.toTypedArray()
 
     fun config() {
 
@@ -82,7 +85,7 @@ class ArtifactoryConfig(
                 defaults(
                     delegateClosureOf<GroovyObject> {
                         if (!isRootProject) {
-                            invokeMethod("publications", pubs.bintrayPubList())
+                            invokeMethod("publications", artifactoryLibNames)
                         }
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
@@ -114,7 +117,7 @@ class ArtifactoryConfig(
 
         project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
             @Suppress("SpreadOperator")
-            publications(*(pubs.bintrayPubList().toTypedArray()))
+            publications(*artifactoryLibNames)
             if (project.isMultiProjectRoot()) {
                 skip = true
             }
@@ -138,18 +141,7 @@ class ArtifactoryConfig(
                 )
                 defaults(
                     delegateClosureOf<GroovyObject> {
-                        // TODO Not support artifactory snapshot gradle plugin at the moment
-//                        if (extension.gradlePlugin) {
-//                            invokeMethod(
-//                                "publications",
-//                                arrayOf(
-//                                    pubName as Any,
-//                                    "${pubName}PluginMarkerMaven" as Any
-//                                )
-//                            )
-//                        } else {
-                        invokeMethod("publications", pubs.bintrayPubList())
-//                        }
+                        invokeMethod("publications", artifactoryLibNames)
                         setProperty("publishBuildInfo", true)
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
@@ -170,7 +162,7 @@ class ArtifactoryConfig(
 //            if (pub.gradlePlugin) {
 //                publications(pubName, "${pubName}PluginMarkerMaven")
 //            } else {
-            publications(pubs.bintrayPubList())
+            publications(*artifactoryLibNames)
 //            }
             if (project.isMultiProjectRoot()) {
                 skip = true

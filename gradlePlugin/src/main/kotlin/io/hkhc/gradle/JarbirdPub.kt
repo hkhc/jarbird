@@ -18,11 +18,11 @@
 
 package io.hkhc.gradle
 
+import appendBeforeSnapshot
 import io.hkhc.gradle.maven.MavenCentralEndpoint
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.maven.RepoEndpoint
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
 import isSnapshot
 import org.gradle.api.Project
 import java.io.File
@@ -99,21 +99,16 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
     fun variantVersion(): String? {
         return pom.version?.let { ver ->
             when {
-                variantMode != VariantMode.WithVersion -> {
-                    ver
-                }
-                variant == "" -> {
-                    ver
-                }
-                ver.isSnapshot() -> {
-                    val versionPrefix = ver.substring(0, ver.indexOf(SNAPSHOT_SUFFIX))
-                    "$versionPrefix-$variant$SNAPSHOT_SUFFIX"
-                }
-                else -> {
-                    "$ver-$variant"
-                }
+                variantMode != VariantMode.WithVersion -> ver
+                variant == "" -> ver
+                ver.isSnapshot() -> ver.appendBeforeSnapshot(variant)
+                else -> "$ver-$variant"
             }
         }
+    }
+
+    fun getGAV(): String? {
+        return "${pom.group}:${variantArtifactId()}:${variantVersion()}"
     }
 
     /**

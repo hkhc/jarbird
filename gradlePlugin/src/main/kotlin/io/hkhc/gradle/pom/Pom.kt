@@ -19,7 +19,7 @@
 package io.hkhc.gradle.pom
 
 import io.hkhc.gradle.LICENSE_MAP
-import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
+import isSnapshot
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePluginConvention
 import java.util.Calendar
@@ -316,6 +316,8 @@ data class Pom(
             }
         }
     }
+
+    fun isSnapshot() = version.isSnapshot()
 
     fun isGradlePlugin() = plugin != null
 

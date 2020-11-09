@@ -27,7 +27,7 @@ class TextTreeTest : StringSpec({
     "Single Node" {
         val nodes = StringNodeBuilder("Hello").build {}
         val result = StringWriter().also { writer ->
-            TextTree<String>(TextTree.TaskTreeTheme()).dump(nodes) {
+            TextTree(TextTree.TaskTreeTheme()).dump(nodes) {
                 writer.write(it + "\n")
             }
         }
@@ -41,7 +41,7 @@ class TextTreeTest : StringSpec({
             +"World"
         }
         val result = StringWriter().also { writer ->
-            TextTree<String>(TextTree.TaskTreeTheme()).dump(nodes) {
+            TextTree(TextTree.TaskTreeTheme()).dump(nodes) {
                 writer.write(it + "\n")
             }
         }

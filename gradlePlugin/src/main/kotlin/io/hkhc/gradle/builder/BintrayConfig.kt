@@ -35,6 +35,8 @@ class BintrayConfig(
     private val pubs: List<JarbirdPub>
 ) {
 
+    val publishPlan = BintrayPublishPlan(pubs)
+
     fun config() {
         project.logger.debug("$LOG_PREFIX configure Bintray plugin")
         val bintrayExt = project.findByType(BintrayExtension::class.java)
@@ -53,7 +55,7 @@ class BintrayConfig(
             Bintray does not do signing implicitly, we add our own dependency to make sure publication is signed.
          */
         project.tasks.named("_bintrayRecordingCopy").get().apply {
-            pubs.bintrayPubList().forEach {
+            publishPlan.bintrayLibs.map { it.pubNameWithVariant() }.forEach {
                 dependsOn("sign${it.capitalize()}Publication")
             }
         }
@@ -67,33 +69,18 @@ class BintrayConfig(
     @Suppress("SpreadOperator")
     private fun BintrayExtension.includeSignatureFiles() {
 
-        val includeFileList = pubs
-            .filter { it.bintray }
-            .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
-            .fold(mutableListOf<String>()) { acc, pub ->
-                if (pub.pom.group == null) {
-                    throw GradleException(
-                        "Bintray: group name is not available, " +
-                            "failed to configure Bintray extension."
-                    )
-                }
-                acc.apply {
-                    add("${filenameBase(pub)}*.asc")
-                }
-            }
+        val includeFileList = publishPlan.bintray.map { "${filenameBase(it)}*.asc" }
             .toTypedArray()
 
         filesSpec(
             closureOf<RecordingCopyTask> {
 
-                pubs
-                    .filter { it.bintray }
-                    .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
+                publishPlan.bintray
                     .forEach {
                         val groupDir = it.pom.group?.replace('.', '/')
                         from("${project.buildDir}/outputs/aar") {
                             include("*.aar.asc")
-                            rename { _ -> "${it.variantArtifactId()}-${it.variantVersion()}.aar.asc" }
+                            rename { _ -> "${filenameBase(it)}.aar.asc" }
                         }
                         from("${project.buildDir}/publications/${it.pubNameWithVariant()}") {
                             include("pom-default.xml.asc")
@@ -111,6 +98,7 @@ class BintrayConfig(
     @Suppress("SpreadOperator")
     private fun BintrayExtension.config() {
 
+        val publishPlan = BintrayPublishPlan(pubs)
         val firstBintrayPom = pubs.firstOrNull { it.bintray } ?: return
 
         extension.bintrayRepository?.let { endpoint ->
@@ -123,17 +111,14 @@ class BintrayConfig(
             publish = true
         }
 
-        // TODO if we are publishing gradle plugin, we shall use the publication from plugin development plugin directly
-        val publicationsList = pubs.bintrayPubList()
-        val gradlePublicationsList = publicationsList + pubs.bintrayGradlePluginPubList()
-
-        setPublications(*(gradlePublicationsList.toTypedArray()))
+        setPublications(*(publishPlan.bintrayPublications().toTypedArray()))
 
         pkg.fill(firstBintrayPom)
 
         includeSignatureFiles()
     }
 
+    @Suppress("SpreadOperator")
     fun BintrayExtension.PackageConfig.fill(pub: JarbirdPub) {
 
         val pom = pub.pom
@@ -145,7 +130,6 @@ class BintrayConfig(
         pom.bintray.userOrg?.let { userOrg = it }
         name = pub.variantArtifactId()
         desc = pom.description
-        @Suppress("SpreadOperator")
         setLicenses(*licenseList)
         websiteUrl = pom.web.url ?: ""
         vcsUrl = pom.scm.url ?: ""
@@ -160,17 +144,9 @@ class BintrayConfig(
             released = currentZonedDateTime()
             vcsTag = pub.variantVersion()
         }
-        @Suppress("SpreadOperator")
         setLabels(*labelList)
     }
 
     private fun currentZonedDateTime(): String =
         ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
 }
-
-internal fun List<JarbirdPub>.bintrayPubList() =
-    filter { it.bintray && !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
-        .map { it.pubNameWithVariant() }
-internal fun List<JarbirdPub>.bintrayGradlePluginPubList() =
-    filter { it.bintray && it.pom.isGradlePlugin() && !it.pom.isSnapshot() }
-        .map { it.pubNameWithVariant() + "PluginMarkerMaven" }

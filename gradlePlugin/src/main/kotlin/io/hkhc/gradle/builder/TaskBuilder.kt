@@ -21,7 +21,6 @@ package io.hkhc.gradle.builder
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.SP_GROUP
 import io.hkhc.gradle.isMultiProjectRoot
-import io.hkhc.gradle.utils.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
 
@@ -31,6 +30,7 @@ class TaskBuilder(
 ) {
 
     private val mavenLocal = "MavenLocal"
+    private val publishPlan = BintrayPublishPlan(pubs)
 
     private fun registerRootProjectTasks(taskPath: String) {
 
@@ -135,50 +135,12 @@ class TaskBuilder(
         }
     }
 
-    private fun publishingSupported(pub: JarbirdPub): Boolean {
-        val notSupport = pub.pom.isSnapshot() && pub.bintray && pub.pom.isGradlePlugin()
-        if (notSupport) {
-            project.logger.warn(
-                "WARNING: $LOG_PREFIX Publish snapshot Gradle Plugin to Bintray/OSSArtifactory is not supported."
-            )
-        }
-        return !notSupport
-    }
-
     private fun TaskContainer.registerBintrayTask() {
 
         if (project.isMultiProjectRoot()) {
             registerRootProjectTasks("jbPublishToBintray")
         } else {
-
-            pubs.forEach { pub ->
-
-                if (publishingSupported(pub)) {
-
-                    register("jbPublishToBintray") {
-                        group = SP_GROUP
-
-                        val target = if (pub.pom.isSnapshot()) "OSS JFrog" else "Bintray"
-
-                        description = if (pub.pom.isGradlePlugin()) {
-                            "Publish Maven publication '${getPubNameCap(pub)}' " +
-                                "and plugin '${pub.pom.plugin?.id}:${pub.variantVersion()}' to $target"
-                        } else {
-                            "Publish Maven publication '${getPubNameCap(pub)}' to $target"
-                        }
-
-                        /*
-                            bintray repository does not allow publishing SNAPSHOT artifacts, it has to be published
-                            to the OSS JFrog repository
-                         */
-                        if (pub.pom.isSnapshot()) {
-                            dependsOn("artifactoryPublish")
-                        } else {
-                            dependsOn("bintrayUpload")
-                        }
-                    }
-                }
-            }
+            BintrayTaskBuilder(project, pubs).registerBintrayTask(this)
         }
     }
 

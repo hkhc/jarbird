@@ -35,7 +35,7 @@ class BuildAndroidMavenLocalTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
-    private lateinit var tempProjectDir: File
+    lateinit var tempProjectDir: File
 
     private lateinit var libProj: File
     private lateinit var localRepoDir: File

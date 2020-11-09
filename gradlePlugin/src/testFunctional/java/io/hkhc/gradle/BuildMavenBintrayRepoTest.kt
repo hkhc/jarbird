@@ -40,7 +40,7 @@ class BuildMavenBintrayRepoTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
-    private lateinit var tempProjectDir: File
+    lateinit var tempProjectDir: File
     private lateinit var mockMavenRepositoryServer: MockMavenRepositoryServer
     private lateinit var mockBintrayRepositoryServer: MockBintrayRepositoryServer
     private lateinit var mockArtifactoryRepositoryServer: MockArtifactoryRepositoryServer
