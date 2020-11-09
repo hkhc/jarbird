@@ -21,13 +21,10 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.BuildOutput
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.PropertiesEditor
-import io.hkhc.utils.TextCutter
-import io.hkhc.utils.TextTree
 import junit.framework.Assert.assertTrue
 import org.gradle.api.GradleException
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertNotNull
 import java.io.File
 import java.io.StringWriter
@@ -39,7 +36,7 @@ fun PropertiesEditor.setupKeyStore(baseDir: File) {
     "signing.secretKeyRingFile" to File(baseDir, "gnupg/secring.gpg").absolutePath
 }
 
-fun PropertiesEditor.setupAndroidProeprties() {
+fun PropertiesEditor.setupAndroidProperties() {
     "android.useAndroidX" to "true"
     "android.enableJetifier" to "true"
     "kotlin.code.style" to "official"
@@ -72,29 +69,30 @@ fun simpleSubProj(coordinate: Coordinate) = with(coordinate) {
 }
 
 fun simplePom(coordinate: Coordinate, variant: String = "", packaging: String = "jar") = with(coordinate) {
-    val pom = """
-    group: $group
-    artifactId: $artifactId
-    version: $version
-    description: Test artifact
-    packaging: jar
-
-    licenses:
-      - name: Apache-2.0
-        dist: repo
-
-    developers:
-      - id: test.user
-        name: Test User
-        email: test.user@mail.com
-
-    scm:
-      repoType: github.com
-      repoName: test.user/test.repo
-    """.trimIndent()
+    val pom =
+        """
+        group: $group
+        artifactId: $artifactId
+        version: $version
+        description: Test artifact
+        packaging: jar
+    
+        licenses:
+          - name: Apache-2.0
+            dist: repo
+    
+        developers:
+          - id: test.user
+            name: Test User
+            email: test.user@mail.com
+    
+        scm:
+          repoType: github.com
+          repoName: test.user/test.repo
+        """.trimIndent()
 
     if (variant != "") {
-        "variant: $variant\n" + pom
+        "variant: $variant\n$pom"
     } else {
         pom
     }
@@ -285,13 +283,6 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
     """.trimIndent()
 }
 
-fun <T> treeStr(node: TextTree.Node<T>): String {
-    val treeWriter = StringWriter().also {
-        TextTree<String>(TextTree.TaskTreeTheme()).dump(node, { line -> it.write(line + "\n") })
-    }
-    return treeWriter.toString()
-}
-
 fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultEnvs(projectDir)): BuildResult {
 
     assertTrue("Project directory '$projectDir' shall exist", projectDir.exists())
@@ -299,15 +290,13 @@ fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultE
         assertNotNull("Environment Variable '${it.key}' should have non null value", it.value)
     }
 
-    val result = GradleRunner.create()
+    return GradleRunner.create()
         .withProjectDir(projectDir)
         .withEnvironment(envs)
         .withArguments("--stacktrace", "tasks", "--all", task)
         .withPluginClasspath()
 //        .forwardOutput()
         .build()
-
-    return result
 }
 
 @Suppress("SpreadOperator")
@@ -337,22 +326,6 @@ fun runTaskWithOutput(
     return BuildOutput(result, stdout.toString(), stderr.toString())
 }
 
-fun assertTaskTree(
-    taskName: String,
-    expectedTree: String,
-    taskDepth: Int,
-    projectDir: File,
-    envs: Map<String, String> = defaultEnvs(projectDir)
-) {
-
-    val output = runTaskWithOutput(arrayOf(taskName, "taskTree", "--task-depth", "$taskDepth"), projectDir, envs)
-    Assertions.assertEquals(
-        expectedTree,
-        TextCutter(output.stdout).cut(":$taskName", ""),
-        "task tree"
-    )
-}
-
 fun defaultEnvs(projectDir: File) = mutableMapOf(getTestGradleHomePair(projectDir))
 
 fun getTestGradleHomePair(projectDir: File): Pair<String, String> {
@@ -365,8 +338,6 @@ fun getTestGradleHomePair(projectDir: File): Pair<String, String> {
 
 fun getTestAndroidSdkHomePair(): Pair<String, String> {
     val path = System.getenv()["ANDROID_HOME"] ?: System.getenv()["ANDROID_SDK_ROOT"]
-    if (path == null) {
-        throw GradleException("environment variable 'ANDROID_SDK_ROOT' is missed. It shall contain path to Android SDK")
-    }
+        ?: throw GradleException("environment variable 'ANDROID_SDK_ROOT' is missed. It shall contain path to Android SDK")
     return "ANDROID_SDK_ROOT" to path
 }
