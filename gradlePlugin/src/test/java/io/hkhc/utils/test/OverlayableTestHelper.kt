@@ -157,7 +157,7 @@ fun <T : Overlayable, Field, ElementField> `ArrayFields merged properly when ove
         p2: ${mutableProp.getter.call(p2)}
         """.trimIndent()
     ) {
-        mutableProp.getter.call(p2) shouldBe v1 + v2.filter { !v1.contains(it) }
+        mutableProp.getter.call(p2) shouldBe v2 + (v1.filter { !v2.contains(it) })
     }
 }
 

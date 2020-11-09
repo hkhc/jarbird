@@ -247,18 +247,18 @@ data class Pom(
             return mutableListOf<T>().also { newList ->
                 // add those
                 newList.addAll(
-                    other.filter {
-                        me.none { meItem -> matcher.invoke(meItem, it) }
+                    other.map { otherItem ->
+                        val matched = me.find { matcher.invoke(otherItem, it) }
+                        if (matched == null) {
+                            otherItem
+                        } else {
+                            matched.overlayTo(otherItem) as T
+                        }
                     }
                 )
                 newList.addAll(
-                    me.map { meItem ->
-                        val matched = other.find { matcher.invoke(meItem, it) }
-                        if (matched == null) {
-                            meItem
-                        } else {
-                            meItem.overlayTo(matched) as T
-                        }
+                    me.filter {
+                        other.none { otherItem -> matcher.invoke(otherItem, it) }
                     }
                 )
             }
