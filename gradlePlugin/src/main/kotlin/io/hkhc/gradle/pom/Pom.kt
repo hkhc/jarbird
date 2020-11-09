@@ -243,7 +243,7 @@ data class Pom(
         const val DEFAULT_VARIANT = "---DEFAULT-POM---"
         const val SNAPSHOT_PREFIX = "-SNAPSHOT"
 
-        fun <T : Overlayable> overlayToList(me: List<T>, other: List<T>, matcher: (T, T) -> Boolean): List<T> {
+        fun <T : Overlayable> overlayToList(me: List<T>, other: List<T>, matcher: (T, T) -> Boolean): MutableList<T> {
             return mutableListOf<T>().also { newList ->
                 // add those
                 newList.addAll(
@@ -283,9 +283,9 @@ data class Pom(
             url?.let { other.url = it }
             description?.let { other.description = it }
 
-            overlayToList(licenses, other.licenses, License::match)
-            overlayToList(developers, other.developers, Person::match)
-            overlayToList(contributors, other.contributors, Person::match)
+            other.licenses = overlayToList(licenses, other.licenses, License::match)
+            other.developers = overlayToList(developers, other.developers, Person::match)
+            other.contributors = overlayToList(contributors, other.contributors, Person::match)
 
             organization.overlayTo(other.organization)
             web.overlayTo(other.web)

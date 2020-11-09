@@ -20,6 +20,7 @@ package io.hkhc.utils.test
 
 import io.hkhc.gradle.pom.Overlayable
 import io.kotest.assertions.fail
+import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.property.checkAll
 import io.kotest.property.exhaustive.exhaustive
@@ -122,7 +123,16 @@ fun <T : Overlayable, Field, ElementField> `ArrayFields merged properly when ove
 
     p1.overlayTo(p2)
 
-    mutableProp.getter.call(p2) shouldBe v2 + v1
+    withClue(
+        """
+        Non-overlap 
+        v1: $v1
+        v2: $v2
+        p2: ${mutableProp.getter.call(p2)}
+        """.trimIndent()
+    ) {
+        mutableProp.getter.call(p2) shouldBe v2 + v1
+    }
 }
 
 fun <T : Overlayable, Field, ElementField> `ArrayFields merged properly when overlaying with overlap`(
@@ -139,7 +149,16 @@ fun <T : Overlayable, Field, ElementField> `ArrayFields merged properly when ove
 
     p1.overlayTo(p2)
 
-    mutableProp.getter.call(p2) shouldBe v2 + v1.filter { !v2.contains(it) }
+    withClue(
+        """
+        Overlap 
+        v1: $v1
+        v2: $v2
+        p2: ${mutableProp.getter.call(p2)}
+        """.trimIndent()
+    ) {
+        mutableProp.getter.call(p2) shouldBe v1 + v2.filter { !v1.contains(it) }
+    }
 }
 
 /**
