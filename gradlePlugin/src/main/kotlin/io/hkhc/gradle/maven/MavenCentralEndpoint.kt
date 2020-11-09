@@ -23,8 +23,6 @@ import org.gradle.api.Project
 
 class MavenCentralEndpoint(val project: Project) : RepoEndpoint {
 
-    private val keyPrefix = "repository"
-
     override val releaseUrl: String
         get() = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
 
@@ -33,27 +31,27 @@ class MavenCentralEndpoint(val project: Project) : RepoEndpoint {
 
     override val username: String
         get() {
-            try {
-                return resolveProperty(
+            return try {
+                resolveProperty(
                     project,
                     "repository.mavencentral.username"
                 )
             } catch (g: GradleException) {
                 project.logger.warn("Maven Central username is not found.")
-                return ""
+                ""
             }
         }
 
     override val password: String
         get() {
-            try {
-                return resolveProperty(
+            return try {
+                resolveProperty(
                     project,
                     "repository.mavencentral.password"
                 )
             } catch (g: GradleException) {
                 project.logger.warn("Maven Central password is not found.")
-                return ""
+                ""
             }
         }
 

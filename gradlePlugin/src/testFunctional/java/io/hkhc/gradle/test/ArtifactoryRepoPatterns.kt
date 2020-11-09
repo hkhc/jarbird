@@ -27,14 +27,13 @@ class ArtifactoryRepoPatterns(
 ) {
 
     private val isSnapshot = coordinate.versionWithVariant.endsWith("-SNAPSHOT")
-    private val METADATA_FILE = "maven-metadata.xml"
 
     private fun artifactTypes(path: String) =
         listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
             .map { suffix -> "$path$suffix" }
 
     fun list(versionTransformer: (String) -> String) = with(coordinate) {
-        (if (withBuildInfo) listOf(Regex("/base/api/build")) else listOf<Regex>()) +
+        (if (withBuildInfo) listOf(Regex("/base/api/build")) else listOf()) +
             (
                 listOf(
                     "/base/oss-snapshot-local/${getPath()}/$artifactIdWithVariant-$versionWithVariant"

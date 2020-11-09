@@ -27,7 +27,7 @@ import org.gradle.api.publish.maven.MavenPom
 
 internal class MavenPomAdapter {
 
-    fun MavenPom.fillLicenses(pomLicenses: List<License>) {
+    private fun MavenPom.fillLicenses(pomLicenses: List<License>) {
         licenses {
             pomLicenses.forEach { lic ->
                 license {
@@ -39,7 +39,7 @@ internal class MavenPomAdapter {
         }
     }
 
-    fun MavenPom.fillDevelopers(pomPeople: List<Person>) {
+    private fun MavenPom.fillDevelopers(pomPeople: List<Person>) {
         developers {
             pomPeople.forEach { dev ->
                 developer {
@@ -55,7 +55,7 @@ internal class MavenPomAdapter {
         }
     }
 
-    fun MavenPom.fillContributors(pomPeople: List<Person>) {
+    private fun MavenPom.fillContributors(pomPeople: List<Person>) {
         contributors {
             pomPeople.forEach { dev ->
                 contributor {
@@ -70,7 +70,7 @@ internal class MavenPomAdapter {
         }
     }
 
-    fun MavenPom.fillOrganization(pomOrgn: Organization) {
+    private fun MavenPom.fillOrganization(pomOrgn: Organization) {
         organization {
             pomOrgn.also { ogn ->
                 name.set(ogn.name)
@@ -79,7 +79,7 @@ internal class MavenPomAdapter {
         }
     }
 
-    fun MavenPom.fillScm(pomScm: Scm) {
+    private fun MavenPom.fillScm(pomScm: Scm) {
         scm {
             pomScm.also { scm ->
                 connection.set(scm.connection)
@@ -90,7 +90,7 @@ internal class MavenPomAdapter {
         }
     }
 
-    fun MavenPom.fillIssueManagement(pomScm: Scm) {
+    private fun MavenPom.fillIssueManagement(pomScm: Scm) {
         issueManagement {
             system.set(pomScm.issueType)
             url.set(pomScm.issueUrl)

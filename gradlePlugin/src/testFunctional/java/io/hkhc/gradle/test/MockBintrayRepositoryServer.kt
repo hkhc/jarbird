@@ -39,7 +39,7 @@ class MockBintrayRepositoryServer : BaseMockRepositoryServer() {
             }
         ).apply {
             forEach {
-                System.out.println("matcher ${it.path}")
+                println("matcher ${it.path}")
             }
         }
     }

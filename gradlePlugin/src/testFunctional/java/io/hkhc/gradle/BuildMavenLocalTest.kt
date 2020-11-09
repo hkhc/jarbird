@@ -99,7 +99,7 @@ class BuildMavenLocalTest : StringSpec({
         result.task(":tasks")?.outcome shouldBe TaskOutcome.SUCCESS
     }
 
-    "Normal publish to Maven Local"() {
+    "Normal publish to Maven Local" {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1")
         commonSetup(coordinate)

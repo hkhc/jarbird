@@ -35,8 +35,8 @@ import java.io.File
 class BuildArtifactoryRepoTest {
 
     @TempDir
-    lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockArtifactoryRepositoryServer
+    private lateinit var tempProjectDir: File
+    private lateinit var mockRepositoryServer: MockArtifactoryRepositoryServer
 
     @BeforeEach
     fun setUp() {

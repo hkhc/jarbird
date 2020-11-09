@@ -48,14 +48,18 @@ class ArtifactoryConfig(
         repoUrl = extension.bintrayRepository?.snapshotUrl ?: repoUrl
 
         val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
-        if (project.isSingleProject()) {
-            convention.configSingle(false)
-            configTask()
-        } else if (project.isMultiProjectRoot()) {
-//            convention.configSingle(true)
-        } else {
-            convention.configSingle(false)
-            configTask()
+        when {
+            project.isSingleProject() -> {
+                convention.configSingle(false)
+                configTask()
+            }
+            project.isMultiProjectRoot() -> {
+                // convention.configSingle(true)
+            }
+            else -> {
+                convention.configSingle(false)
+                configTask()
+            }
         }
 //        project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
     }

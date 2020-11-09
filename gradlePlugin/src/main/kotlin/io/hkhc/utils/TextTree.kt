@@ -20,7 +20,7 @@ package io.hkhc.utils
 
 import java.io.File
 
-class TextTree<T>(val theme: Theme) {
+class TextTree(private val theme: Theme) {
 
     interface Node<T> {
         fun isLeaf(): Boolean
@@ -47,7 +47,7 @@ class TextTree<T>(val theme: Theme) {
                 }
                 val tailPrefix = if (idx == count - 1) theme.space() else theme.midpath()
                 var first = true
-                dump<T>(child) {
+                dump(child) {
                     if (first) {
                         block.invoke(headPrefix + it)
                         first = false
@@ -66,7 +66,7 @@ class TextTree<T>(val theme: Theme) {
         private fun fillList() {
             if (child == null) child = file.listFiles()
         }
-        override fun isLeaf() = !file.isDirectory()
+        override fun isLeaf() = !file.isDirectory
         override fun forEachIndexed(action: (count: Int, index: Int, child: Node<File>) -> Unit) {
             fillList()
             child?.let { list ->

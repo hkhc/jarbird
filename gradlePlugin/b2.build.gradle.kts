@@ -39,7 +39,7 @@ plugins {
     kotlin("jvm")
     `kotlin-dsl`
     `maven-publish`
-    id("com.dorongold.task-tree") version "1.5"
+    id("com.dorongold.task-tree") version taskTreeVersion
     id("com.gradle.plugin-publish") version "0.11.0"
 }
 

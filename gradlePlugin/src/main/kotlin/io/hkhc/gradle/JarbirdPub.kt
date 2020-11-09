@@ -51,7 +51,7 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
 
     /**
      * the variant is string that as suffix of pubName to form a final publication name. It is also used
-     * to suffix the dokka jar task and souruce set jar task.
+     * to suffix the dokka jar task and source set jar task.
      * It is usually used for building Android artifact
      */
     var variant: String = ""
@@ -80,27 +80,36 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
 
     fun variantArtifactId(): String? {
         return pom.artifactId?.let { id ->
-            if (variantMode != VariantMode.WithArtifactId) {
-                id
-            } else if (variant == "") {
-                id
-            } else {
-                "$id-$variant"
+            when {
+                variantMode != VariantMode.WithArtifactId -> {
+                    id
+                }
+                variant == "" -> {
+                    id
+                }
+                else -> {
+                    "$id-$variant"
+                }
             }
         }
     }
 
     fun variantVersion(): String? {
         return pom.version?.let { ver ->
-            if (variantMode != VariantMode.WithVersion) {
-                ver
-            } else if (variant == "") {
-                ver
-            } else if (ver.endsWith("-SNAPSHOT")) {
-                val versionPrefix = ver.substring(0, ver.indexOf("-SNAPSHOT"))
-                "$versionPrefix-$variant-SNAPSHOT"
-            } else {
-                "$ver-$variant"
+            when {
+                variantMode != VariantMode.WithVersion -> {
+                    ver
+                }
+                variant == "" -> {
+                    ver
+                }
+                ver.endsWith("-SNAPSHOT") -> {
+                    val versionPrefix = ver.substring(0, ver.indexOf("-SNAPSHOT"))
+                    "$versionPrefix-$variant-SNAPSHOT"
+                }
+                else -> {
+                    "$ver-$variant"
+                }
             }
         }
     }

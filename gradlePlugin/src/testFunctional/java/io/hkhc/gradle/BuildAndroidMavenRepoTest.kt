@@ -37,12 +37,12 @@ class BuildAndroidMavenRepoTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
-    lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockMavenRepositoryServer
-    lateinit var libProj: File
+    private lateinit var tempProjectDir: File
+    private lateinit var mockRepositoryServer: MockMavenRepositoryServer
+    private lateinit var libProj: File
 
-    lateinit var localRepoDir: File
-    lateinit var envs: MutableMap<String, String>
+    private lateinit var localRepoDir: File
+    private lateinit var envs: MutableMap<String, String>
 
     @BeforeEach
     fun setUp() {
@@ -102,7 +102,7 @@ class BuildAndroidMavenRepoTest {
             "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
             "repository.maven.mock.username" to "username"
             "repository.maven.mock.password" to "password"
-            setupAndroidProeprties()
+            setupAndroidProperties()
         }
 
         val targetTask = "lib:jbPublishToMavenRepository"
@@ -140,7 +140,7 @@ class BuildAndroidMavenRepoTest {
             "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
             "repository.maven.mock.username" to "username"
             "repository.maven.mock.password" to "password"
-            setupAndroidProeprties()
+            setupAndroidProperties()
         }
 
         val targetTask = "lib:jbPublishToMavenRepository"

@@ -35,8 +35,8 @@ import java.io.File
 class BuildBintrayPluginRepoTest {
 
     @TempDir
-    lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockBintrayRepositoryServer
+    private lateinit var tempProjectDir: File
+    private lateinit var mockRepositoryServer: MockBintrayRepositoryServer
 
     @BeforeEach
     fun setUp() {

@@ -68,7 +68,7 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     fun createImplicit() {
         /*
-        if implicit != null, we have alrady got an implicit, no need to create another
+        if implicit != null, we have already got an implicit, no need to create another
         if pubList.isNotEmpty() and implicit == null, we have an non-implicit pub, no need to create implicit
          */
         if (implicited != null || pubList.isNotEmpty()) return

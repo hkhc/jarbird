@@ -22,10 +22,10 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class BintrayPublishingChecker(val coordinate: Coordinate, val packaging: String = "jar") {
+class BintrayPublishingChecker(val coordinate: Coordinate, private val packaging: String = "jar") {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
-        var matched = requests
+        val matched = requests
             .filter { it.method == "PUT" }
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
         Assertions.assertTrue(

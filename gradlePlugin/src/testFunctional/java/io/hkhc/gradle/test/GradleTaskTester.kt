@@ -39,7 +39,7 @@ class GradleTaskTester(
 
     fun runTask(task: String) = runTasks(arrayOf(task))
 
-    @Suppress("SpreadOperator")
+    @Suppress("SpreadOperator", "UnstableApiUsage")
     fun runTasks(tasks: Array<String>): BuildResult {
 
         withClue("Project directory '$projectDir' shall exist") {
@@ -51,14 +51,12 @@ class GradleTaskTester(
                 it.value.shouldNotBeNull()
             }
         }
-        val result = GradleRunner.create()
+        return GradleRunner.create()
             .withProjectDir(projectDir)
             .withEnvironment(envs)
             .withArguments("--stacktrace", *tasks)
             .withPluginClasspath()
 //        .forwardOutput()
             .build()
-
-        return result
     }
 }

@@ -51,7 +51,7 @@ class PropertiesEditor(val filename: String, spec: PropertiesEditor.() -> Unit) 
 
     fun print() {
         props.forEach {
-            System.out.println("${it.key} = ${it.value}")
+            println("${it.key} = ${it.value}")
         }
     }
 }

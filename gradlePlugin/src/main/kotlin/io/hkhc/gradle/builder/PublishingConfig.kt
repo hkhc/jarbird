@@ -197,7 +197,7 @@ class PublishingConfig(
         return try {
             project.tasks.named(sourcesJarTaskName, Jar::class.java) {
                 archiveClassifier.set(CLASSIFIER_SOURCE)
-                // TODO look like it affect other JAR tasks, may beed a better place for that
+                // TODO look like it affect other JAR tasks, may be a better place for that
                 archiveBaseName.set(pub.variantArtifactId())
                 archiveVersion.set(pub.variantVersion())
             }

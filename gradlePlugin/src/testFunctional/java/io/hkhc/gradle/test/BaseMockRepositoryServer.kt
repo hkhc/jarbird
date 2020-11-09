@@ -27,7 +27,7 @@ abstract class BaseMockRepositoryServer {
     private lateinit var server: MockWebServer
     private var baseUrl = "/release"
     private lateinit var coordinate: Coordinate
-    lateinit var matcher: List<RequestMatcher>
+    private lateinit var matcher: List<RequestMatcher>
 
     abstract fun setupMatcher(coordinate: Coordinate): List<RequestMatcher>
 
@@ -51,17 +51,9 @@ abstract class BaseMockRepositoryServer {
 
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                with(request) {
-                    println("mock server request : $method $path")
-//                    headers.forEach {
-//                        println("headers : ${it.first} = ${it.second}")
-//                    }
-//                    if (method == "POST") {
-//                        println("mock server request body : ${body.readString(Charset.defaultCharset())}")
-//                    }
-                    return pathMatcher(request).apply {
-                        println("mock server response : $status")
-                    }
+                println("mock server request : ${request.method} ${request.path}")
+                return pathMatcher(request).apply {
+                    println("mock server response : $status")
                 }
             }
         }
@@ -77,7 +69,7 @@ abstract class BaseMockRepositoryServer {
         println("$count recorded requests")
         return List(count) { server.takeRequest() }.also {
             it.forEach {
-                System.out.println("recorded request = ${it.path}")
+                println("recorded request = ${it.path}")
             }
         }
     }

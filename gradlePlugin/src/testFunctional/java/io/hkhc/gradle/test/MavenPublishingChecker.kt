@@ -24,11 +24,11 @@ import okhttp3.mockwebserver.RecordedRequest
 
 class MavenPublishingChecker(
     val coordinate: Coordinate,
-    val packaging: String = "jar"
+    private val packaging: String = "jar"
 ) {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
-        var matched = requests
+        val matched = requests
             .filter { it.method == "PUT" }
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
         if (!matched) {

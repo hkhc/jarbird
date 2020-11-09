@@ -48,5 +48,5 @@ class PropertyRepoEndpoint(private val project: Project, private val key: String
         get() = resolveProperty(project, "$keyPrefix.$key.apikey")
 
     override val name: String
-        get() = "${key.replace(".","").capitalize()}"
+        get() = key.replace(".", "").capitalize()
 }

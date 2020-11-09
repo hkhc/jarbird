@@ -26,12 +26,12 @@ class BintrayRepoPatterns(
 ) {
 
     private val isSnapshot = coordinate.versionWithVariant.endsWith("-SNAPSHOT")
-    private val METADATA_FILE = "maven-metadata.xml"
+    private val metafileName = "maven-metadata.xml"
 
     fun metafile(base: String): List<String> {
         return mutableListOf<String>().apply {
-            add("$base/$METADATA_FILE")
-            if (isSnapshot) add("$base/${coordinate.versionWithVariant}/$METADATA_FILE")
+            add("$base/$metafileName")
+            if (isSnapshot) add("$base/${coordinate.versionWithVariant}/$metafileName")
         }
     }
 

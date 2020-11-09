@@ -30,14 +30,13 @@ class GetMatcherAtEnd(
 
 class MockMavenRepositoryServer : BaseMockRepositoryServer() {
 
-    override fun setupMatcher(coordinate: Coordinate) = with(coordinate) {
+    override fun setupMatcher(coordinate: Coordinate) =
         listOf(
             PutMatcher("", Success),
             GetMatcherAtEnd("maven-metadata.xml") { _, response ->
                 response.setBody(generateMetaDataXML(coordinate))
             }
         )
-    }
 
     private fun generateMetaDataXML(
         coordinate: Coordinate,
@@ -52,7 +51,7 @@ class MockMavenRepositoryServer : BaseMockRepositoryServer() {
                 |    <latest>${coordinate.versionWithVariant}</latest>
                 |    <release>${coordinate.versionWithVariant}</release>
                 |    <versions>
-                |       ${pastVersions.fold("") { c, v -> c + "<version>$v</version>\n"} }
+                |       ${pastVersions.fold("") { c, v -> "$c<version>$v</version>\n"} }
                 |       <version>0.1</version>
                 |    </versions>
                 |    <lastUpdated>20200513071913</lastUpdated>

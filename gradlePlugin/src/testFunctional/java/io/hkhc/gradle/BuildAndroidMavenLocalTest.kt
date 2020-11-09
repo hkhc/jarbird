@@ -35,11 +35,11 @@ class BuildAndroidMavenLocalTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
-    lateinit var tempProjectDir: File
+    private lateinit var tempProjectDir: File
 
-    lateinit var libProj: File
-    lateinit var localRepoDir: File
-    lateinit var envs: MutableMap<String, String>
+    private lateinit var libProj: File
+    private lateinit var localRepoDir: File
+    private lateinit var envs: MutableMap<String, String>
 
     @BeforeEach
     fun setUp() {
@@ -84,7 +84,7 @@ class BuildAndroidMavenLocalTest {
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)
-            setupAndroidProeprties()
+            setupAndroidProperties()
         }
 
         val targetTask = "lib:jbPublishToMavenLocal"
@@ -117,7 +117,7 @@ class BuildAndroidMavenLocalTest {
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)
-            setupAndroidProeprties()
+            setupAndroidProperties()
         }
 
         val targetTask = "lib:jbPublishToMavenLocal"

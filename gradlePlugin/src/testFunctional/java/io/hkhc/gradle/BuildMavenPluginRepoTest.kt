@@ -67,7 +67,7 @@ class BuildMavenPluginRepoTest {
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
     lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockMavenRepositoryServer
+    private lateinit var mockRepositoryServer: MockMavenRepositoryServer
 
     @BeforeEach
     fun setUp() {
@@ -134,7 +134,7 @@ class BuildMavenPluginRepoTest {
 
         val result = runTask(targetTask, tempProjectDir)
 
-        TextTree<File>(TextTree.TaskTreeTheme()).filedump(tempProjectDir, System.out::println)
+        TextTree(TextTree.TaskTreeTheme()).filedump(tempProjectDir, System.out::println)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockRepositoryServer.collectRequests())

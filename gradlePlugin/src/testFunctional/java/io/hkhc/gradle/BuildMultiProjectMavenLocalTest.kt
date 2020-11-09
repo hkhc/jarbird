@@ -139,7 +139,7 @@ class BuildMultiProjectMavenLocalTest : StringSpec({
 
         val result = tester.runTask(targetTask)
         result.tasks.forEach {
-            System.out.println("\"${it}\",")
+            println("\"${it}\",")
         }
 
         withClue("expected list of tasks executed with expected result") {

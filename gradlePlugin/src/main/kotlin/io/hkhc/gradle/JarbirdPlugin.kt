@@ -47,7 +47,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
     /*
         We need to know which project this plugin instance refer to.
-        We got call back from ProjectEveluationListener once for every root/sub project, and we
+        We got call back from ProjectEvaluationListener once for every root/sub project, and we
         want to proceed if the project param in callback match this plugin instance
      */
     private lateinit var project: Project
@@ -78,7 +78,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         // pre-check of final data, for child project
         // TODO handle multiple level child project?
         if (!project.isMultiProjectRoot()) {
-            pub.pom.let { pom -> precheck(pom, project) }
+            precheck(pub.pom, project)
         }
     }
 
@@ -144,7 +144,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         extension = project.extensions.create(SP_EXT_NAME, JarbirdExtension::class.java, project)
         extension.pomGroupCallback = this
 
-        project.logger.debug("$LOG_PREFIX Aggregrated POM configuration: $pomGroup")
+        project.logger.debug("$LOG_PREFIX Aggregated POM configuration: $pomGroup")
 
         checkAndroidPlugin(p)
 
@@ -154,7 +154,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
             - Sync POM
             - Phase 1
                 - config bintray extension
-                - config artifactory exctension
+                - config artifactory extension
             - plugin: bintray gradle.afterEvaluate
             - Phase 2
                 - config plugin publishing
@@ -218,7 +218,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
          */
 
         // Build Phase 1
-        project.gradleAfterEvaluate { _ ->
+        project.gradleAfterEvaluate {
 
             extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
 
@@ -275,7 +275,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         // apply it only if needed, otherwise android aar build will fail
         // Defer the configuration with afterEvaluate so that Android plugin has a chance
         // to setup itself before we configure the bintray plugin
-        project.gradleAfterEvaluate { _ ->
+        project.gradleAfterEvaluate {
 //            System.out.println("before phase 1")
 //            PublicationBuilder(project, extension.pubList).buildPhase1()
 //            System.out.println("after phase 1")
@@ -332,7 +332,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
              *     afterEvaluate:
              *         artifactoryTasks task depends on subProject
              *     projectEvaluated:
-             *         finialize artifactoryTasks task
+             *         finalize artifactoryTasks task
              */
             apply(ArtifactoryPlugin::class.java)
         }

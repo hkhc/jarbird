@@ -65,8 +65,8 @@ class PluginPublishingConfig(
     fun config2() {
         pubs.forEach {
             if (it.pom.isGradlePlugin()) {
-                it.variantArtifactId()?.let {
-                    updatePluginPublication(project, it)
+                it.variantArtifactId()?.let { artifactId ->
+                    updatePluginPublication(project, artifactId)
                 }
             }
         }

@@ -23,7 +23,7 @@ class MockArtifactoryRepositoryServer : BaseMockRepositoryServer() {
     override fun setupMatcher(coordinate: Coordinate) = with(coordinate) {
         listOf(
             PutMatcher(
-                "/base/oss-snapshot-local/${coordinate.getPath()}",
+                "/base/oss-snapshot-local/${getPath()}",
                 Success
             ),
             GetMatcher("/base/api/system/version") { _, response ->

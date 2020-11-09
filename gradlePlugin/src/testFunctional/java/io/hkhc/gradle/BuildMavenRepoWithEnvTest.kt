@@ -36,7 +36,7 @@ class BuildMavenRepoWithEnvTest {
 
     @TempDir
     lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockMavenRepositoryServer
+    private lateinit var mockRepositoryServer: MockMavenRepositoryServer
 
     @BeforeEach
     fun setUp() {

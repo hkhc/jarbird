@@ -45,7 +45,7 @@ fun Project.byProperty(key: String): RepoEndpoint {
     return PropertyRepoEndpoint(this, key)
 }
 fun resolveProperty(project: Project, propertyName: String): String {
-    var value: String? = try {
+    val value: String? = try {
         project.property(propertyName) as String?
     } catch (e: MissingPropertyException) {
         ""

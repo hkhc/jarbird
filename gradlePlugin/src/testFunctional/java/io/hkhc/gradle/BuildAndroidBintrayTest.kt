@@ -37,12 +37,12 @@ class BuildAndroidBintrayTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
     @TempDir
-    lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockBintrayRepositoryServer
-    lateinit var libProj: File
+    private lateinit var tempProjectDir: File
+    private lateinit var mockRepositoryServer: MockBintrayRepositoryServer
+    private lateinit var libProj: File
 
-    lateinit var localRepoDir: File
-    lateinit var envs: MutableMap<String, String>
+    private lateinit var localRepoDir: File
+    private lateinit var envs: MutableMap<String, String>
 
     @BeforeEach
     fun setUp() {
@@ -110,7 +110,7 @@ class BuildAndroidBintrayTest {
             "repository.bintray.release" to mockRepositoryServer.getServerUrl()
             "repository.bintray.username" to username
             "repository.bintray.apikey" to "password"
-            setupAndroidProeprties()
+            setupAndroidProperties()
         }
 
         val targetTask = "lib:jbPublishToBintray"
@@ -154,7 +154,7 @@ class BuildAndroidBintrayTest {
             "repository.bintray.release" to mockRepositoryServer.getServerUrl()
             "repository.bintray.username" to username
             "repository.bintray.apikey" to "password"
-            setupAndroidProeprties()
+            setupAndroidProperties()
         }
 
         val targetTask = "lib:jbPublishToBintray"
