@@ -22,6 +22,8 @@ import io.hkhc.gradle.maven.MavenCentralEndpoint
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.maven.RepoEndpoint
 import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
+import isSnapshot
 import org.gradle.api.Project
 import java.io.File
 
@@ -103,9 +105,9 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
                 variant == "" -> {
                     ver
                 }
-                ver.endsWith("-SNAPSHOT") -> {
-                    val versionPrefix = ver.substring(0, ver.indexOf("-SNAPSHOT"))
-                    "$versionPrefix-$variant-SNAPSHOT"
+                ver.isSnapshot() -> {
+                    val versionPrefix = ver.substring(0, ver.indexOf(SNAPSHOT_SUFFIX))
+                    "$versionPrefix-$variant$SNAPSHOT_SUFFIX"
                 }
                 else -> {
                     "$ver-$variant"

@@ -19,6 +19,7 @@
 package io.hkhc.gradle.pom
 
 import io.hkhc.gradle.LICENSE_MAP
+import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePluginConvention
 import java.util.Calendar
@@ -241,7 +242,6 @@ data class Pom(
     companion object {
 
         const val DEFAULT_VARIANT = "---DEFAULT-POM---"
-        const val SNAPSHOT_PREFIX = "-SNAPSHOT"
 
         fun <T : Overlayable> overlayToList(me: List<T>, other: List<T>, matcher: (T, T) -> Boolean): MutableList<T> {
             return mutableListOf<T>().also { newList ->
@@ -316,8 +316,6 @@ data class Pom(
             }
         }
     }
-
-    fun isSnapshot() = version?.endsWith(SNAPSHOT_PREFIX) ?: false
 
     fun isGradlePlugin() = plugin != null
 

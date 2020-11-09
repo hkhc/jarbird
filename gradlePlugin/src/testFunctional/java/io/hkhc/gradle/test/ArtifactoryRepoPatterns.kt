@@ -18,6 +18,8 @@
 
 package io.hkhc.gradle.test
 
+import isSnapshot
+
 class ArtifactoryRepoPatterns(
     val coordinate: Coordinate,
     val username: String,
@@ -26,7 +28,7 @@ class ArtifactoryRepoPatterns(
     private val packaging: String = "jar"
 ) {
 
-    private val isSnapshot = coordinate.versionWithVariant.endsWith("-SNAPSHOT")
+    private val isSnapshot = coordinate.versionWithVariant.isSnapshot()
 
     private fun artifactTypes(path: String) =
         listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")

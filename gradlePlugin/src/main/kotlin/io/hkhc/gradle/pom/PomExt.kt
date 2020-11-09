@@ -1,3 +1,5 @@
+import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
+
 /*
  * Copyright (c) 2020. Herman Cheung
  *
@@ -15,12 +17,5 @@
  *
  *
  */
-@file:JvmName("Constants")
-package io.hkhc.gradle.utils
 
-import io.hkhc.gradle.PLUGIN_ID
-
-const val LOG_PREFIX = "[$PLUGIN_ID]"
-const val ANDROID_LIBRARY_PLUGIN_ID = "com.android.library"
-
-const val SNAPSHOT_SUFFIX = "-SNAPSHOT"
+fun String?.isSnapshot() = this?.endsWith(SNAPSHOT_SUFFIX) ?: false

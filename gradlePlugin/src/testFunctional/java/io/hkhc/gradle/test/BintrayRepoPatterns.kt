@@ -18,6 +18,8 @@
 
 package io.hkhc.gradle.test
 
+import isSnapshot
+
 class BintrayRepoPatterns(
     val coordinate: Coordinate,
     val username: String,
@@ -25,7 +27,7 @@ class BintrayRepoPatterns(
     private val packaging: String = "jar"
 ) {
 
-    private val isSnapshot = coordinate.versionWithVariant.endsWith("-SNAPSHOT")
+    private val isSnapshot = coordinate.versionWithVariant.isSnapshot()
     private val metafileName = "maven-metadata.xml"
 
     fun metafile(base: String): List<String> {

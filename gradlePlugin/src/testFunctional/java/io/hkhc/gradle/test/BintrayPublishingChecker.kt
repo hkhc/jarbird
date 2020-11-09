@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.test
 
+import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,7 +39,7 @@ class BintrayPublishingChecker(val coordinate: Coordinate, private val packaging
     private fun transformReleaseVersion(version: String) = version
 
     private fun transformSnapshotVersion(version: String): String {
-        val snapshotVersion = version.indexOf("-SNAPSHOT")
+        val snapshotVersion = version.indexOf(SNAPSHOT_SUFFIX)
             .let { if (it == -1) version else version.substring(0, it) }
         return "$snapshotVersion-[0-9]+.[0-9]+-[0-9]+"
     }

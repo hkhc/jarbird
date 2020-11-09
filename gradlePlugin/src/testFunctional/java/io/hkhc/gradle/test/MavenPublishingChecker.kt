@@ -19,6 +19,7 @@
 package io.hkhc.gradle.test
 
 import groovy.util.GroovyTestCase
+import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
 import io.kotest.assertions.fail
 import okhttp3.mockwebserver.RecordedRequest
 
@@ -39,7 +40,7 @@ class MavenPublishingChecker(
     private fun transformReleaseVersion(version: String) = version
 
     private fun transformSnapshotVersion(version: String): String {
-        val snapshotVersion = version.indexOf("-SNAPSHOT")
+        val snapshotVersion = version.indexOf(SNAPSHOT_SUFFIX)
             .let { if (it == -1) version else version.substring(0, it) }
         return "$snapshotVersion-[0-9]+.[0-9]+-[0-9]+"
     }
