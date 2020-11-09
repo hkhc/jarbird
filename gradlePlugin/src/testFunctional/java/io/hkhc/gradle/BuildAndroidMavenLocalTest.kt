@@ -103,7 +103,12 @@ class BuildAndroidMavenLocalTest {
     @Test
     fun `Normal publish Android AAR to Maven Local with artifactId variant`() {
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1", artifactIdWithVariant = "test.artifact-release")
+        val coordinate = Coordinate(
+            "test.group",
+            "test.artifact",
+            "0.1",
+            artifactIdWithVariant = "test.artifact-release"
+        )
 
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())

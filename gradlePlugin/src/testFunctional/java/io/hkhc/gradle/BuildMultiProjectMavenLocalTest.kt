@@ -116,7 +116,6 @@ class BuildMultiProjectMavenLocalTest : StringSpec({
                 getTestGradleHomePair(tempProjectDir)
             )
         )
-
     }
 
     beforeTest {
@@ -180,17 +179,19 @@ class BuildMultiProjectMavenLocalTest : StringSpec({
     }
 })
 
-//val taskTree = treeStr(
-//    StringNodeBuilder(":$targetTask").build {
-//        +":lib1:jbPublishToMavenLocal" {
-//            +":lib1:jbPublishLibToMavenLocal" {
-//                +":lib1:publishLibPublicationToMavenLocal ..>"
-//            }
-//        }
-//        +":lib2:jbPublishToMavenLocal" {
-//            +":lib2:jbPublishLibToMavenLocal" {
-//                +":lib2:publishLibPublicationToMavenLocal ..>"
-//            }
-//        }
-//    }
-//)
+/*
+val taskTree = treeStr(
+    StringNodeBuilder(":$targetTask").build {
+        +":lib1:jbPublishToMavenLocal" {
+            +":lib1:jbPublishLibToMavenLocal" {
+                +":lib1:publishLibPublicationToMavenLocal ..>"
+            }
+        }
+        +":lib2:jbPublishToMavenLocal" {
+            +":lib2:jbPublishLibToMavenLocal" {
+                +":lib2:publishLibPublicationToMavenLocal ..>"
+            }
+        }
+    }
+)
+*/

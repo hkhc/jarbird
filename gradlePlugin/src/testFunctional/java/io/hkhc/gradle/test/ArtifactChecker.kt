@@ -19,8 +19,6 @@
 package io.hkhc.gradle.test
 
 import io.kotest.assertions.withClue
-import io.kotest.matchers.Matcher
-import io.kotest.matchers.MatcherResult
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -58,4 +56,3 @@ class ArtifactChecker {
         }
     }
 }
-

@@ -33,7 +33,7 @@ class MockBintrayRepositoryServer : BaseMockRepositoryServer() {
             PutMatcher("/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant") { request, response ->
                 postFileCount++
                 Success.invoke(request, response)
-             },
+            },
             PostMatcher("/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant/publish") { _, response ->
                 response.setBody("{ \"files\": $postFileCount }").setResponseCode(HTTP_SUCCESS)
             }

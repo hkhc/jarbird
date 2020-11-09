@@ -126,20 +126,22 @@ class BuildPluginMavenLocalTest : StringSpec({
     }
 })
 
-//val taskTree = treeStr(
-//    StringNodeBuilder(":$targetTask").build {
-//        +":jbPublishLibToMavenLocal" {
-//            +":publishLibPluginMarkerMavenPublicationToMavenLocal" {
-//                +":generatePomFileForLibPluginMarkerMavenPublication"
-//            }
-//            +":publishLibPublicationToMavenLocal" {
-//                +":dokkaJar ..>"
-//                +":generateMetadataFileForLibPublication ..>"
-//                +":generatePomFileForLibPublication"
-//                +":jar ..>"
-//                +":signLibPublication ..>"
-//                +":sourcesJar"
-//            }
-//        }
-//    }
-//)
+/*
+val taskTree = treeStr(
+    StringNodeBuilder(":$targetTask").build {
+        +":jbPublishLibToMavenLocal" {
+            +":publishLibPluginMarkerMavenPublicationToMavenLocal" {
+                +":generatePomFileForLibPluginMarkerMavenPublication"
+            }
+            +":publishLibPublicationToMavenLocal" {
+                +":dokkaJar ..>"
+                +":generateMetadataFileForLibPublication ..>"
+                +":generatePomFileForLibPublication"
+                +":jar ..>"
+                +":signLibPublication ..>"
+                +":sourcesJar"
+            }
+        }
+    }
+)
+*/

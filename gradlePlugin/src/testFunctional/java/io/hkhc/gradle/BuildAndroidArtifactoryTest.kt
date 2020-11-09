@@ -171,5 +171,4 @@ class BuildAndroidArtifactoryTest {
             repo
         )
     }
-
 }

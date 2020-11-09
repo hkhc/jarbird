@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
+@Suppress("MagicNumber")
 class BuildAndroidMavenRepoTest {
 
     // https://www.baeldung.com/junit-5-temporary-directory
@@ -119,7 +120,12 @@ class BuildAndroidMavenRepoTest {
     @Test
     fun `Normal publish Android AAR to Maven Repository with artifactId variant`() {
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1", artifactIdWithVariant = "test.artifact-release")
+        val coordinate = Coordinate(
+            "test.group",
+            "test.artifact",
+            "0.1",
+            artifactIdWithVariant = "test.artifact-release"
+        )
         mockRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
@@ -148,5 +154,4 @@ class BuildAndroidMavenRepoTest {
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         MavenPublishingChecker(coordinate, "aar").assertReleaseArtifacts(mockRepositoryServer.collectRequests())
     }
-
 }

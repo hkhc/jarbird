@@ -29,4 +29,3 @@ object Library : Tag()
 object Plugin : Tag()
 object Variant : Tag()
 object Multi : Tag()
-

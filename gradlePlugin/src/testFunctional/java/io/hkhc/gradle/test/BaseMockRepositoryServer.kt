@@ -60,7 +60,7 @@ abstract class BaseMockRepositoryServer {
 //                        println("mock server request body : ${body.readString(Charset.defaultCharset())}")
 //                    }
                     return pathMatcher(request).apply {
-                        println("mock server response : ${status}")
+                        println("mock server response : $status")
                     }
                 }
             }

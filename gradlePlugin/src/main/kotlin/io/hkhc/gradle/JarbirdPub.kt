@@ -29,10 +29,6 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
 
     lateinit var pom: Pom
 
-    private val VARIANT_WITH_VERSION = 0
-    private val VARIANT_WITH_ARTIFACTID = 1
-    private val VARIANT_INVISIBLE = 2
-
     /**
      * Configure for Maven publishing or not (No matter maven central or alternate maven repository)
      */
@@ -71,20 +67,20 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
      * version = "1.0-SNAPSHOT", variant = "debug" -> "1.0-debug-SNAPSHOT"
      */
 
-    private var variantMode: Int = VARIANT_INVISIBLE
+    private var variantMode: VariantMode = VariantMode.Invisible
     fun variantWithVersion() {
-        variantMode = VARIANT_WITH_VERSION
+        variantMode = VariantMode.WithVersion
     }
     fun variantWithArtifactId() {
-        variantMode = VARIANT_WITH_ARTIFACTID
+        variantMode = VariantMode.WithArtifactId
     }
     fun variantInvisible() {
-        variantMode = VARIANT_INVISIBLE
+        variantMode = VariantMode.Invisible
     }
 
     fun variantArtifactId(): String? {
         return pom.artifactId?.let { id ->
-            if (variantMode != VARIANT_WITH_ARTIFACTID) {
+            if (variantMode != VariantMode.WithArtifactId) {
                 id
             } else if (variant == "") {
                 id
@@ -96,7 +92,7 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
 
     fun variantVersion(): String? {
         return pom.version?.let { ver ->
-            if (variantMode != VARIANT_WITH_VERSION) {
+            if (variantMode != VariantMode.WithVersion) {
                 ver
             } else if (variant == "") {
                 ver
