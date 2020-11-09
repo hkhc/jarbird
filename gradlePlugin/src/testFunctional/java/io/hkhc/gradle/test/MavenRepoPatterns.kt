@@ -24,7 +24,7 @@ class MavenRepoPatterns(
     private val packaging: String = "jar"
 ) {
 
-    private val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
+    private val isSnapshot = coordinate.versionWithVariant.endsWith("-SNAPSHOT")
     private val METADATA_FILE = "maven-metadata.xml"
 
     private fun metafile(base: String): List<String> {
@@ -58,12 +58,12 @@ class MavenRepoPatterns(
 
     fun list(versionTransformer: (String) -> String) = (
         listPluginRepo(coordinate.pluginId, versionTransformer) +
-            listOf("$baseUrl/${coordinate.group.replace('.', '/')}/${coordinate.artifactId}")
+            listOf("$baseUrl/${coordinate.group.replace('.', '/')}/${coordinate.artifactIdWithVariant}")
                 .flatMap {
                     metafile(it) +
                         listOf(
                             "$it/${coordinate.versionWithVariant}/" +
-                                "${coordinate.artifactId}-${versionTransformer(coordinate.versionWithVariant)}"
+                                "${coordinate.artifactIdWithVariant}-${versionTransformer(coordinate.versionWithVariant)}"
                         )
                             .flatMap(::artifactTypes)
                             .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }

@@ -66,15 +66,33 @@ class BuildAndroidMavenRepoTest {
         mockRepositoryServer.teardown()
     }
 
+    fun taskTree(taskName: String) = treeStr(
+        StringNodeBuilder(":$taskName").build {
+            +":lib:jbPublishLibReleaseToMavenRepository" {
+                +":lib:jbPublishLibReleaseToMavenmock" {
+                    +":lib:publishLibReleasePublicationToMavenLibReleaseRepository" {
+                        +":lib:bundleReleaseAar ..>"
+                        +":lib:dokkaJarRelease ..>"
+                        +":lib:generateMetadataFileForLibReleasePublication ..>"
+                        +":lib:generatePomFileForLibReleasePublication"
+                        +":lib:signLibReleasePublication ..>"
+                        +":lib:sourcesJarRelease"
+                    }
+                }
+            }
+        }
+    )
+
     @Test
-    fun `Normal publish Android AAR to Maven Repository`() {
+    fun `Normal publish Android AAR to Maven Repository with version variant`() {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1", versionWithVariant = "0.1-release")
         mockRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle())
+        File("$libProj/build.gradle")
+            .writeText(commonAndroidGradle(variantMode = "variantWithVersion()", mavenRepo = true))
         File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
@@ -88,24 +106,7 @@ class BuildAndroidMavenRepoTest {
 
         val targetTask = "lib:jbPublishToMavenRepository"
 
-        val taskTree = treeStr(
-            StringNodeBuilder(":$targetTask").build {
-                +":lib:jbPublishLibToMavenRepository" {
-                    +":lib:jbPublishLibToMavenmock" {
-                        +":lib:publishLibPublicationToMavenLibRepository" {
-                            +":lib:bundleReleaseAar ..>"
-                            +":lib:dokkaJar ..>"
-                            +":lib:generateMetadataFileForLibPublication ..>"
-                            +":lib:generatePomFileForLibPublication"
-                            +":lib:signLibPublication ..>"
-                            +":lib:sourcesJar"
-                        }
-                    }
-                }
-            }
-        )
-
-//        assertTaskTree(targetTask, taskTree, 4, tempProjectDir, envs)
+        assertTaskTree(targetTask, taskTree(targetTask), 4, tempProjectDir, envs)
 
         val result = runTask(targetTask, tempProjectDir, envs)
 
@@ -114,4 +115,38 @@ class BuildAndroidMavenRepoTest {
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
         MavenPublishingChecker(coordinate, "aar").assertReleaseArtifacts(mockRepositoryServer.collectRequests())
     }
+
+    @Test
+    fun `Normal publish Android AAR to Maven Repository with artifactId variant`() {
+
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1", artifactIdWithVariant = "test.artifact-release")
+        mockRepositoryServer.setUp(coordinate, "/base")
+
+        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
+        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
+        File("$libProj/build.gradle")
+            .writeText(commonAndroidGradle(variantMode = "variantWithArtifactId()", mavenRepo = true))
+        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
+
+        PropertiesEditor("$tempProjectDir/gradle.properties") {
+            setupKeyStore(tempProjectDir)
+            "repository.maven.mock.release" to mockRepositoryServer.getServerUrl()
+            "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
+            "repository.maven.mock.username" to "username"
+            "repository.maven.mock.password" to "password"
+            setupAndroidProeprties()
+        }
+
+        val targetTask = "lib:jbPublishToMavenRepository"
+
+        assertTaskTree(targetTask, taskTree(targetTask), 4, tempProjectDir, envs)
+
+        val result = runTask(targetTask, tempProjectDir, envs)
+
+        FileTree().dump(tempProjectDir, ::println)
+
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
+        MavenPublishingChecker(coordinate, "aar").assertReleaseArtifacts(mockRepositoryServer.collectRequests())
+    }
+
 }

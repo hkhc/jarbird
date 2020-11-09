@@ -28,7 +28,6 @@ class GetMatcherAtEnd(
     override fun matches(request: RecordedRequest) = request.method == method && (request.path?.endsWith(path) ?: false)
 }
 
-@Suppress("TooManyFunctions")
 class MockMavenRepositoryServer : BaseMockRepositoryServer() {
 
     override fun setupMatcher(coordinate: Coordinate) = with(coordinate) {
@@ -48,10 +47,10 @@ class MockMavenRepositoryServer : BaseMockRepositoryServer() {
         return """
                 |<metadata>
                 |    <groupId>${coordinate.group}</groupId>
-                |    <artifactId>${coordinate.artifactId}</artifactId>
+                |    <artifactId>${coordinate.artifactIdWithVariant}</artifactId>
                 |    <versioning>
-                |    <latest>${coordinate.version}</latest>
-                |    <release>${coordinate.version}</release>
+                |    <latest>${coordinate.versionWithVariant}</latest>
+                |    <release>${coordinate.versionWithVariant}</release>
                 |    <versions>
                 |       ${pastVersions.fold("") { c, v -> c + "<version>$v</version>\n"} }
                 |       <version>0.1</version>

@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.test
 
-@Suppress("TooManyFunctions")
 class MockBintrayRepositoryServer : BaseMockRepositoryServer() {
 
     var postFileCount = 0
@@ -27,17 +26,21 @@ class MockBintrayRepositoryServer : BaseMockRepositoryServer() {
 
     override fun setupMatcher(coordinate: Coordinate) = with(coordinate) {
         listOf(
-            HeadMatcher("/packages/$username/$repo/$artifactId", FileNotFound),
+            HeadMatcher("/packages/$username/$repo/$artifactIdWithVariant", FileNotFound),
             PostMatcher("/packages/$username/$repo", Success),
-            HeadMatcher("/packages/$username/$repo/$artifactId/versions/$versionWithVariant", FileNotFound),
-            PostMatcher("/packages/$username/$repo/$artifactId/versions", Success),
-            PutMatcher("/content/$username/$repo/$artifactId/$versionWithVariant") { request, response ->
+            HeadMatcher("/packages/$username/$repo/$artifactIdWithVariant/versions/$versionWithVariant", FileNotFound),
+            PostMatcher("/packages/$username/$repo/$artifactIdWithVariant/versions", Success),
+            PutMatcher("/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant") { request, response ->
                 postFileCount++
                 Success.invoke(request, response)
-            },
-            PostMatcher("/content/$username/$repo/$artifactId/$versionWithVariant/publish") { _, response ->
+             },
+            PostMatcher("/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant/publish") { _, response ->
                 response.setBody("{ \"files\": $postFileCount }").setResponseCode(HTTP_SUCCESS)
             }
-        )
+        ).apply {
+            forEach {
+                System.out.println("matcher ${it.path}")
+            }
+        }
     }
 }

@@ -38,7 +38,7 @@ class BintrayRepoPatterns(
     private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) = with(coordinate) {
         pluginId?.let {
             listOf(
-                "/content/$username/$repo/$artifactId/$versionWithVariant/" +
+                "/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant/" +
                     "${pluginId.replace('.', '/')}/$pluginId.gradle.plugin"
             )
                 .flatMap {
@@ -59,10 +59,10 @@ class BintrayRepoPatterns(
                 .map { "$it\\?override=1" } +
                 listOf(
                     "/content/$username/$repo/" +
-                        "$artifactId/$versionWithVariant/" +
+                        "$artifactIdWithVariant/$versionWithVariant/" +
                         "${group.replace('.', '/')}/" +
-                        "$artifactId/$versionWithVariant/" +
-                        "$artifactId-${versionTransformer(versionWithVariant)}"
+                        "$artifactIdWithVariant/$versionWithVariant/" +
+                        "$artifactIdWithVariant-${versionTransformer(versionWithVariant)}"
                 )
                     .flatMap(::artifactTypes)
                     /* no signature for snapshot publishing */

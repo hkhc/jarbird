@@ -120,7 +120,7 @@ class PublishingConfig(
 
                 groupId = pom.group
 
-                artifactId = pom.artifactId
+                artifactId = pub.variantArtifactId()
 
                 // version is gotten from an external plugin
                 //            version = project.versioning.info.display
@@ -173,7 +173,7 @@ class PublishingConfig(
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {
                 group = PUBLISH_GROUP
                 archiveClassifier.set(CLASSIFIER_JAVADOC)
-                archiveBaseName.set(pub.pom.artifactId)
+                archiveBaseName.set(pub.variantArtifactId())
                 archiveVersion.set(pub.variantVersion())
             }
         } catch (e: UnknownTaskException) {
@@ -182,7 +182,7 @@ class PublishingConfig(
                 group = PUBLISH_GROUP
                 description = "Assembles Kotlin docs with Dokka to Jar"
                 archiveClassifier.set(CLASSIFIER_JAVADOC)
-                archiveBaseName.set(pub.pom.artifactId)
+                archiveBaseName.set(pub.variantArtifactId())
                 archiveVersion.set(pub.variantVersion())
                 from(dokka)
                 dependsOn(dokka)
@@ -198,7 +198,7 @@ class PublishingConfig(
             project.tasks.named(sourcesJarTaskName, Jar::class.java) {
                 archiveClassifier.set(CLASSIFIER_SOURCE)
                 // TODO look like it affect other JAR tasks, may beed a better place for that
-                archiveBaseName.set(pub.pom.artifactId)
+                archiveBaseName.set(pub.variantArtifactId())
                 archiveVersion.set(pub.variantVersion())
             }
         } catch (e: UnknownTaskException) {
@@ -214,7 +214,7 @@ class PublishingConfig(
                 group = PUBLISH_GROUP
                 description = desc
                 archiveClassifier.set(CLASSIFIER_SOURCE)
-                archiveBaseName.set(pub.pom.artifactId)
+                archiveBaseName.set(pub.variantArtifactId())
                 archiveVersion.set(pub.variantVersion())
                 from(ss)
             }

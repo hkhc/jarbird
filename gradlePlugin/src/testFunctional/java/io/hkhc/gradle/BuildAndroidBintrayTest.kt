@@ -67,15 +67,38 @@ class BuildAndroidBintrayTest {
         mockRepositoryServer.teardown()
     }
 
-    @Test
-    fun `Normal publish Android AAR to Bintray`() {
+    fun taskTree(taskName: String) = treeStr(
+        StringNodeBuilder(":$taskName").build {
+            +":lib:bintrayUpload" {
+                +":lib:_bintrayRecordingCopy" {
+                    +":lib:signLibReleasePublication ..>"
+                }
+                +":lib:publishLibReleasePublicationToMavenLocal" {
+                    +":lib:bundleReleaseAar ..>"
+                    +":lib:dokkaJarRelease ..>"
+                    +":lib:generateMetadataFileForLibReleasePublication ..>"
+                    +":lib:generatePomFileForLibReleasePublication"
+                    +":lib:signLibReleasePublication ..>"
+                    +":lib:sourcesJarRelease"
+                }
+            }
+        }
+    )
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1", versionWithVariant = "0.1-release")
+    @Test
+    fun `Normal publish Android AAR to Bintray with version variant`() {
+
+        val coordinate = Coordinate(
+            "test.group",
+            "test.artifact",
+            "0.1",
+            versionWithVariant = "0.1-release"
+        )
         mockRepositoryServer.setUp(coordinate, "/base")
 
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle())
+        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithVersion()"))
         File("$libProj/pom.yaml")
             .writeText("variant: release\n" + simplePom(coordinate, "release", "aar"))
 
@@ -92,24 +115,51 @@ class BuildAndroidBintrayTest {
 
         val targetTask = "lib:jbPublishToBintray"
 
-        val taskTree = treeStr(
-            StringNodeBuilder(":$targetTask").build {
-                +":lib:bintrayUpload" {
-                    +":lib:_bintrayRecordingCopy" {
-                        +":lib:signLibReleasePublication ..>"
-                    }
-                    +":lib:publishLibReleasePublicationToMavenLocal" {
-                        +":lib:bundleReleaseAar ..>"
-                        +":lib:dokkaJarRelease ..>"
-                        +":lib:generateMetadataFileForLibReleasePublication ..>"
-                        +":lib:generatePomFileForLibReleasePublication"
-                        +":lib:signLibReleasePublication ..>"
-                        +":lib:sourcesJarRelease"
-                    }
-                }
-            }
+        assertTaskTree(targetTask, taskTree(targetTask), 3, tempProjectDir, envs)
+
+        val result = runTask(targetTask, tempProjectDir, envs)
+
+        FileTree().dump(tempProjectDir, ::println)
+
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
+        BintrayPublishingChecker(coordinate, "aar").assertReleaseArtifacts(
+            mockRepositoryServer.collectRequests(),
+            username,
+            repo
         )
-        assertTaskTree(targetTask, taskTree, 3, tempProjectDir, envs)
+    }
+
+    @Test
+    fun `Normal publish Android AAR to Bintray with artifactId variant`() {
+
+        val coordinate = Coordinate(
+            "test.group",
+            "test.artifact",
+            "0.1",
+            artifactIdWithVariant = "test.artifact-release"
+        )
+        mockRepositoryServer.setUp(coordinate, "/base")
+
+        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
+        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
+        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithArtifactId()"))
+        File("$libProj/pom.yaml")
+            .writeText(simplePom(coordinate, "release", "aar"))
+
+        val username = "username"
+        val repo = "maven"
+
+        PropertiesEditor("$tempProjectDir/gradle.properties") {
+            setupKeyStore(tempProjectDir)
+            "repository.bintray.release" to mockRepositoryServer.getServerUrl()
+            "repository.bintray.username" to username
+            "repository.bintray.apikey" to "password"
+            setupAndroidProeprties()
+        }
+
+        val targetTask = "lib:jbPublishToBintray"
+
+        assertTaskTree(targetTask, taskTree(targetTask), 3, tempProjectDir, envs)
 
         val result = runTask(targetTask, tempProjectDir, envs)
 

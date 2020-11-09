@@ -18,10 +18,14 @@
 
 package io.hkhc.gradle.test
 
+/**
+ * This class is not expected for business logic of the program. It is solely for capturing the unit test parameter.
+ */
 data class Coordinate(
     val group: String,
     val artifactId: String,
     val version: String,
     val pluginId: String? = null,
+    val artifactIdWithVariant: String = artifactId,
     val versionWithVariant: String = version
 )

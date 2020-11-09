@@ -50,17 +50,6 @@ class TaskBuilder(
     private fun getMarkerPubId(pub: JarbirdPub) = "${getPubNameCap(pub)}PluginMarkerMavenPublication"
     private fun getMavenRepo(pub: JarbirdPub) = "Maven${getPubNameCap(pub)}Repository"
 
-//    private val pubName: String
-//        get() = pub.pubNameWithVariant()
-//    private val pubNameCap: String
-//        get() = pubName.capitalize()
-//    private val pubId: String
-//        get() = "${pubNameCap}Publication"
-//    private val markerPubId: String
-//        get() = "${pubNameCap}PluginMarkerMavenPublication"
-//    private val mavenRepo: String
-//        get() = "Maven${pubNameCap}Repository"
-
     private fun TaskContainer.registerMavenLocalTask() {
 
         if (project.isMultiProjectRoot()) {

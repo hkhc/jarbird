@@ -26,7 +26,7 @@ class ArtifactoryRepoPatterns(
     private val packaging: String = "jar"
 ) {
 
-    private val isSnapshot = coordinate.version.endsWith("-SNAPSHOT")
+    private val isSnapshot = coordinate.versionWithVariant.endsWith("-SNAPSHOT")
     private val METADATA_FILE = "maven-metadata.xml"
 
     private fun artifactTypes(path: String) =
@@ -39,8 +39,8 @@ class ArtifactoryRepoPatterns(
                 listOf(
                     "/base/oss-snapshot-local/" +
                         "${group.replace('.', '/')}/" +
-                        "$artifactId/$versionWithVariant/" +
-                        "$artifactId-$versionWithVariant"
+                        "$artifactIdWithVariant/$versionWithVariant/" +
+                        "$artifactIdWithVariant-$versionWithVariant"
                 )
                     .flatMap(::artifactTypes)
                     .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }

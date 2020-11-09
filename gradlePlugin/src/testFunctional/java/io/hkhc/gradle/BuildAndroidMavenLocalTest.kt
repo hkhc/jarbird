@@ -57,14 +57,29 @@ class BuildAndroidMavenLocalTest {
         System.setProperty("maven.repo.local", localRepoDir.absolutePath)
     }
 
+    fun taskTree(taskName: String) = treeStr(
+        StringNodeBuilder(":$taskName").build {
+            +":lib:jbPublishLibReleaseToMavenLocal" {
+                +":lib:publishLibReleasePublicationToMavenLocal" {
+                    +":lib:bundleReleaseAar ..>"
+                    +":lib:dokkaJarRelease ..>"
+                    +":lib:generateMetadataFileForLibReleasePublication ..>"
+                    +":lib:generatePomFileForLibReleasePublication"
+                    +":lib:signLibReleasePublication ..>"
+                    +":lib:sourcesJarRelease"
+                }
+            }
+        }
+    )
+
     @Test
-    fun `Normal publish Android AAR to Maven Local`() {
+    fun `Normal publish Android AAR to Maven Local with version variant`() {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1", versionWithVariant = "0.1-release")
 
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle())
+        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithVersion()"))
         File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {
@@ -74,22 +89,35 @@ class BuildAndroidMavenLocalTest {
 
         val targetTask = "lib:jbPublishToMavenLocal"
 
-        val taskTree = treeStr(
-            StringNodeBuilder(":$targetTask").build {
-                +":lib:jbPublishLibReleaseToMavenLocal" {
-                    +":lib:publishLibReleasePublicationToMavenLocal" {
-                        +":lib:bundleReleaseAar ..>"
-                        +":lib:dokkaJarRelease ..>"
-                        +":lib:generateMetadataFileForLibReleasePublication ..>"
-                        +":lib:generatePomFileForLibReleasePublication"
-                        +":lib:signLibReleasePublication ..>"
-                        +":lib:sourcesJarRelease"
-                    }
-                }
-            }
-        )
+        assertTaskTree(targetTask, taskTree(targetTask), 3, tempProjectDir, envs)
 
-        assertTaskTree(targetTask, taskTree, 3, tempProjectDir, envs)
+        val result = runTask(targetTask, tempProjectDir, envs)
+
+        FileTree().dump(tempProjectDir, ::println)
+
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
+        ArtifactChecker()
+            .verifyRepository(localRepoDir, coordinate, "aar")
+    }
+
+    @Test
+    fun `Normal publish Android AAR to Maven Local with artifactId variant`() {
+
+        val coordinate = Coordinate("test.group", "test.artifact", "0.1", artifactIdWithVariant = "test.artifact-release")
+
+        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
+        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
+        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "versionWithArtifactId()"))
+        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
+
+        PropertiesEditor("$tempProjectDir/gradle.properties") {
+            setupKeyStore(tempProjectDir)
+            setupAndroidProeprties()
+        }
+
+        val targetTask = "lib:jbPublishToMavenLocal"
+
+        assertTaskTree(targetTask, taskTree(targetTask), 3, tempProjectDir, envs)
 
         val result = runTask(targetTask, tempProjectDir, envs)
 

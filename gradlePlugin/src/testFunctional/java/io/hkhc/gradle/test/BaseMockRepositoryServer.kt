@@ -59,7 +59,9 @@ abstract class BaseMockRepositoryServer {
 //                    if (method == "POST") {
 //                        println("mock server request body : ${body.readString(Charset.defaultCharset())}")
 //                    }
-                    return pathMatcher(request)
+                    return pathMatcher(request).apply {
+                        println("mock server response : ${status}")
+                    }
                 }
             }
         }

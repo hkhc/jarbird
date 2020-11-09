@@ -66,8 +66,20 @@ class BuildAndroidArtifactoryTest {
         mockRepositoryServer.teardown()
     }
 
+    fun taskTree(taskName: String) = treeStr(
+        StringNodeBuilder(":$taskName").build {
+            +":lib:artifactoryPublish" {
+                +":lib:bundleReleaseAar ..>"
+                +":lib:dokkaJarRelease ..>"
+                +":lib:generateMetadataFileForLibReleasePublication ..>"
+                +":lib:generatePomFileForLibReleasePublication"
+                +":lib:sourcesJarRelease"
+            }
+        }
+    )
+
     @Test
-    fun `Normal publish Android AAR to Artifactory Repository`() {
+    fun `Normal publish Android AAR to Artifactory Repository with version variant`() {
 
         val coordinate = Coordinate(
             "test.group",
@@ -79,7 +91,7 @@ class BuildAndroidArtifactoryTest {
 
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle())
+        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithVersion()"))
         File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
 
         val username = "username"
@@ -95,18 +107,7 @@ class BuildAndroidArtifactoryTest {
 
         val targetTask = "lib:jbPublishToBintray"
 
-        val taskTree = treeStr(
-            StringNodeBuilder(":$targetTask").build {
-                +":lib:artifactoryPublish" {
-                    +":lib:bundleReleaseAar ..>"
-                    +":lib:dokkaJarRelease ..>"
-                    +":lib:generateMetadataFileForLibReleasePublication ..>"
-                    +":lib:generatePomFileForLibReleasePublication"
-                    +":lib:sourcesJarRelease"
-                }
-            }
-        )
-        assertTaskTree(targetTask, taskTree, 2, tempProjectDir, envs)
+        assertTaskTree(targetTask, taskTree(targetTask), 2, tempProjectDir, envs)
 
         val result = runTask(targetTask, tempProjectDir, envs)
 
@@ -123,4 +124,52 @@ class BuildAndroidArtifactoryTest {
             repo
         )
     }
+
+    @Test
+    fun `Normal publish Android AAR to Artifactory Repository with artifactId variant`() {
+
+        val coordinate = Coordinate(
+            "test.group",
+            "test.artifact",
+            "0.1-SNAPSHOT",
+            artifactIdWithVariant = "test.artifact-release"
+        )
+        mockRepositoryServer.setUp(coordinate, "/base")
+
+        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
+        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
+        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithArtifactId()"))
+        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
+
+        val username = "username"
+        val repo = "maven"
+
+        PropertiesEditor("$tempProjectDir/gradle.properties") {
+            setupKeyStore(tempProjectDir)
+            "repository.bintray.snapshot" to mockRepositoryServer.getServerUrl()
+            "repository.bintray.username" to username
+            "repository.bintray.apikey" to "password"
+            setupAndroidProeprties()
+        }
+
+        val targetTask = "lib:jbPublishToBintray"
+
+        assertTaskTree(targetTask, taskTree(targetTask), 2, tempProjectDir, envs)
+
+        val result = runTask(targetTask, tempProjectDir, envs)
+
+        FileTree().dump(tempProjectDir, ::println)
+
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
+        ArtifactoryPublishingChecker(coordinate, "aar").assertReleaseArtifacts(
+            mockRepositoryServer.collectRequests().apply {
+                forEach {
+                    println("recorded request ${it.method} ${it.path}")
+                }
+            },
+            username,
+            repo
+        )
+    }
+
 }

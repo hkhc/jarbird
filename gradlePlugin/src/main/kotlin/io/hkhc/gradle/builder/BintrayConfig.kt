@@ -59,6 +59,8 @@ class BintrayConfig(
         }
     }
 
+    fun filenameBase(pub: JarbirdPub) = "${pub.variantArtifactId()}-${pub.variantVersion()}"
+
     // Bintray can perform component signing on behalf of us. However it requires our private key in order to sign
     // archives for us. I don't want to share the key and hence specify the signature files manually and upload
     // them.
@@ -76,7 +78,7 @@ class BintrayConfig(
                     )
                 }
                 acc.apply {
-                    add("${pub.pom.artifactId}-${pub.variantVersion()}*.asc")
+                    add("${filenameBase(pub)}*.asc")
                 }
             }
             .toTypedArray()
@@ -89,16 +91,15 @@ class BintrayConfig(
                     .filter { !(it.pom.isGradlePlugin() && it.pom.isSnapshot()) }
                     .forEach {
                         val groupDir = it.pom.group?.replace('.', '/')
-                        val filenamePrefix = "${it.pom.artifactId}-${it.variantVersion()}"
                         from("${project.buildDir}/outputs/aar") {
                             include("*.aar.asc")
-                            rename { _ -> "${it.pom.artifactId}-${it.variantVersion()}.aar.asc" }
+                            rename { _ -> "${it.variantArtifactId()}-${it.variantVersion()}.aar.asc" }
                         }
                         from("${project.buildDir}/publications/${it.pubNameWithVariant()}") {
                             include("pom-default.xml.asc")
-                            rename("pom-default.xml.asc", "$filenamePrefix.pom.asc")
+                            rename("pom-default.xml.asc", "${filenameBase(it)}.pom.asc")
                         }
-                        into("$groupDir/${it.pom.artifactId}/${it.variantVersion()}")
+                        into("$groupDir/${it.variantArtifactId()}/${it.variantVersion()}")
                     }
                 from("${project.buildDir}/libs") {
                     include(*includeFileList)
@@ -110,8 +111,7 @@ class BintrayConfig(
     @Suppress("SpreadOperator")
     private fun BintrayExtension.config() {
 
-        val firstBintrayPom = pubs.firstOrNull { it.bintray }
-        if (firstBintrayPom == null) return
+        val firstBintrayPom = pubs.firstOrNull { it.bintray } ?: return
 
         extension.bintrayRepository?.let { endpoint ->
             if (endpoint.releaseUrl != "") apiUrl = endpoint.releaseUrl
@@ -143,7 +143,7 @@ class BintrayConfig(
 
         repo = pom.bintray.repo ?: "maven"
         pom.bintray.userOrg?.let { userOrg = it }
-        name = pom.artifactId
+        name = pub.variantArtifactId()
         desc = pom.description
         @Suppress("SpreadOperator")
         setLicenses(*licenseList)

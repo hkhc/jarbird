@@ -92,7 +92,7 @@ fun simplePom(coordinate: Coordinate, variant: String = "", packaging: String = 
       repoName: test.user/test.repo
     """.trimIndent()
 
-    if (variant != null) {
+    if (variant != "") {
         "variant: $variant\n" + pom
     } else {
         pom
@@ -222,7 +222,7 @@ fun commonAndroidRootGradle(): String {
     """.trimIndent()
 }
 
-fun commonAndroidGradle(mavenRepo: String = ""): String {
+fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: Boolean = false): String {
 
     return """
         plugins {
@@ -272,8 +272,8 @@ fun commonAndroidGradle(mavenRepo: String = ""): String {
             if (variantName == "release") {
                 jarbird {
                      pub(variantName) { 
-                        ${if (mavenRepo == "") "withMavenByProperties(\"mock\")" else ""}
-                        versionWithVariant = true
+                        ${if (mavenRepo) "withMavenByProperties(\"mock\")" else ""}
+                        ${if (variantMode != "") variantMode else "" } 
                         useGpg = true
                         pubComponent = variantName
 //                                sourceSets = sourceSets[0].javaDirectories
@@ -303,10 +303,8 @@ fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultE
         .withEnvironment(envs)
         .withArguments("--stacktrace", "tasks", "--all", task)
         .withPluginClasspath()
-        .forwardOutput()
+//        .forwardOutput()
         .build()
-
-    // FileTree().dump(projectDir, System.out::println)
 
     return result
 }

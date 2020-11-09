@@ -18,14 +18,13 @@
 
 package io.hkhc.gradle.test
 
-@Suppress("TooManyFunctions")
 class MockArtifactoryRepositoryServer : BaseMockRepositoryServer() {
 
     override fun setupMatcher(coordinate: Coordinate) = with(coordinate) {
         listOf(
             PutMatcher(
                 "/base/oss-snapshot-local/${group.replace('.', '/')}/" +
-                    "$artifactId/$versionWithVariant",
+                    "$artifactIdWithVariant/$versionWithVariant",
                 Success
             ),
             GetMatcher("/base/api/system/version") { _, response ->
