@@ -27,11 +27,12 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.shouldBe
+import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import java.io.File
 
 @Suppress("MagicNumber")
-class BuildMavenLocalTest : StringSpec({
+class BuildMavenLocalKoTest : StringSpec({
 
     lateinit var tempProjectDir: File
     lateinit var tester: GradleTaskTester
@@ -40,7 +41,9 @@ class BuildMavenLocalTest : StringSpec({
 
     lateinit var envs: Map<String, String>
 
-    fun commonSetup(coordinate: Coordinate) {
+    beforeTest {
+
+        tempProjectDir = tempDirectory()
 
         File("functionalTestData/keystore").copyRecursively(tempProjectDir)
         File("functionalTestData/lib").copyRecursively(tempProjectDir)
@@ -60,9 +63,6 @@ class BuildMavenLocalTest : StringSpec({
             """.trimIndent()
         )
 
-        File("$tempProjectDir/pom.yaml")
-            .writeText(simplePom(coordinate))
-
         PropertiesEditor("$tempProjectDir/gradle.properties") {
             setupKeyStore(tempProjectDir)
         }
@@ -75,10 +75,6 @@ class BuildMavenLocalTest : StringSpec({
         )
     }
 
-    beforeTest {
-        tempProjectDir = tempDirectory()
-    }
-
     afterTest {
         if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
             FileTree().dump(tempProjectDir, System.out::println)
@@ -88,18 +84,27 @@ class BuildMavenLocalTest : StringSpec({
     // TODO need a test for zero pub
 
     "Zero Gradle Test" {
+        val result = GradleRunner.create()
+            .withProjectDir(tempProjectDir)
+            .withEnvironment(
+                mapOf(
+                    "GRADLE_USER_HOME" to System.getenv()["HOME"] + "/.gradle"
+                )
+            )
+            .withArguments("--stacktrace", "tasks", "--all")
+            .withPluginClasspath()
+            .forwardOutput()
+            .build()
 
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
-        commonSetup(coordinate)
-
-        val result = tester.runTask("tasks")
         result.task(":tasks")?.outcome shouldBe TaskOutcome.SUCCESS
     }
 
     "Normal publish to Maven Local"() {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1")
-        commonSetup(coordinate)
+
+        File("$tempProjectDir/pom.yaml")
+            .writeText(simplePom(coordinate))
 
         val targetTask = "jbPublishToMavenLocal"
 

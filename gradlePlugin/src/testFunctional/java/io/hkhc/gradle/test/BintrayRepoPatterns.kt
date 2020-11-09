@@ -59,9 +59,7 @@ class BintrayRepoPatterns(
                 .map { "$it\\?override=1" } +
                 listOf(
                     "/content/$username/$repo/" +
-                        "$artifactIdWithVariant/$versionWithVariant/" +
-                        "${group.replace('.', '/')}/" +
-                        "$artifactIdWithVariant/$versionWithVariant/" +
+                        "$artifactIdWithVariant/$versionWithVariant/${getPath()}/" +
                         "$artifactIdWithVariant-${versionTransformer(versionWithVariant)}"
                 )
                     .flatMap(::artifactTypes)

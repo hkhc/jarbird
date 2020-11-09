@@ -37,10 +37,7 @@ class ArtifactoryRepoPatterns(
         (if (withBuildInfo) listOf(Regex("/base/api/build")) else listOf<Regex>()) +
             (
                 listOf(
-                    "/base/oss-snapshot-local/" +
-                        "${group.replace('.', '/')}/" +
-                        "$artifactIdWithVariant/$versionWithVariant/" +
-                        "$artifactIdWithVariant-$versionWithVariant"
+                    "/base/oss-snapshot-local/${getPath()}/$artifactIdWithVariant-$versionWithVariant"
                 )
                     .flatMap(::artifactTypes)
                     .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }

@@ -28,4 +28,9 @@ data class Coordinate(
     val pluginId: String? = null,
     val artifactIdWithVariant: String = artifactId,
     val versionWithVariant: String = version
-)
+) {
+    fun getPath() =
+        "${group.replace('.', '/')}/$artifactIdWithVariant/$versionWithVariant"
+    fun getFilenameBase() = "$artifactIdWithVariant-$versionWithVariant"
+
+}

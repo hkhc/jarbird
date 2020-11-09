@@ -19,49 +19,43 @@
 package io.hkhc.gradle.test
 
 import io.kotest.assertions.withClue
-import org.junit.Assert
+import io.kotest.matchers.Matcher
+import io.kotest.matchers.MatcherResult
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import java.io.File
 
 class ArtifactChecker {
 
-    fun verifyRepository(repoDir: File, coordinate: Coordinate, packaging: String) {
+    fun verifyRepository(repoDir: File, coordinate: Coordinate, packaging: String = "jar") {
 
-        Assert.assertTrue(repoDir.exists())
-        val artifactPath =
-            coordinate.group.replace('.', '/') + "/" +
-                coordinate.artifactIdWithVariant + "/" +
-                coordinate.versionWithVariant
+        withClue("Repository directory $repoDir shall exists") {
+            repoDir.exists() shouldBe true
+        }
 
+        val artifactPath = coordinate.getPath()
         val artifactDir = File(repoDir, artifactPath)
 
-        Assert.assertTrue("The artifact directory $artifactDir in local repo shall exist", artifactDir.exists())
+        withClue("Artifactory directory $artifactDir in Local repository shall exists") {
+            artifactDir.exists() shouldBe true
+        }
 
-        val fileSet = artifactDir.listFiles().toMutableSet()
-
-        withClue("In local repository $repoDir") {
+        withClue("All expected are in local repository $repoDir, and not more") {
             with(coordinate) {
-                listOf(".module", ".pom", ".$packaging", "-javadoc.jar", "-sources.jar")
-                    .map { "$artifactIdWithVariant-$versionWithVariant$it" }
-                    .forEach {
-                        withClue("The generated file $it should presents ") {
-                            verifyArtifact(fileSet, File(artifactDir, it))
+                val files = artifactDir.listFiles()
+
+                files.shouldNotBeNull()
+                files.toList() shouldContainExactlyInAnyOrder
+                    listOf(".module", ".pom", ".$packaging", "-javadoc.jar", "-sources.jar")
+                        .flatMap {
+                            listOf(
+                                File(artifactDir, "${getFilenameBase()}$it"),
+                                File(artifactDir, "${getFilenameBase()}$it.asc")
+                            )
                         }
-                    }
             }
         }
-
-        withClue("With no extra file left out") {
-            Assert.assertTrue(fileSet.isEmpty())
-        }
-    }
-
-    fun verifyArtifact(fileList: MutableSet<File>, file: File) {
-
-        Assert.assertTrue("File ${file.absolutePath} should exists", file.exists())
-        val signature = File(file.absolutePath + ".asc")
-        Assert.assertTrue("Signature file ${signature.absolutePath} should exists", signature.exists())
-
-        fileList.remove(file)
-        fileList.remove(signature)
     }
 }
+
