@@ -38,12 +38,12 @@ import java.io.File
  * +- MavenRepository
  * + Bintray
  * + artifactory
- * Android AAR
- * multivariant Android AAR
+ * + Android AAR
+ * + multivariant Android AAR
  *
- * Multi-project
+ * + Multi-project
  *
- * snapshot / release
+ * + snapshot / release
  * plugin gradle plugin portal
  * + plugin mavenLocal
  * + plugin mavenrepository

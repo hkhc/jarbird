@@ -16,10 +16,10 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.test
 
+import io.hkhc.gradle.getTestGradleHomePair
 import io.kotest.assertions.withClue
-import io.kotest.inspectors.forAll
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.gradle.testkit.runner.BuildResult
@@ -28,10 +28,14 @@ import java.io.File
 
 class GradleTaskTester(
     private val projectDir: File,
-    private val envs: Map<String, String> = defaultEnvs(projectDir)
+    private val envs: Map<String, String> = io.hkhc.gradle.defaultEnvs(projectDir)
 ) {
 
-    private fun defaultEnvs(projectDir: File) = mutableMapOf(getTestGradleHomePair(projectDir))
+    private fun defaultEnvs(projectDir: File) = mutableMapOf(
+        getTestGradleHomePair(
+            projectDir
+        )
+    )
 
     fun runTask(task: String) = runTasks(arrayOf(task))
 
@@ -42,7 +46,7 @@ class GradleTaskTester(
             projectDir.exists() shouldBe true
         }
 
-        envs.entries.forAll {
+        envs.entries.forEach {
             withClue("Environment Variable '${it.key}' should have non null value") {
                 it.value.shouldNotBeNull()
             }
@@ -50,7 +54,7 @@ class GradleTaskTester(
         val result = GradleRunner.create()
             .withProjectDir(projectDir)
             .withEnvironment(envs)
-            .withArguments("--stacktrace", "tasks", "--all", *tasks)
+            .withArguments("--stacktrace", *tasks)
             .withPluginClasspath()
 //        .forwardOutput()
             .build()

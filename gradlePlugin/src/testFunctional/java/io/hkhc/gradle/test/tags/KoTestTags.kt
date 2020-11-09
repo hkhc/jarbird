@@ -16,21 +16,17 @@
  *
  */
 
-const val jvmTargetVersion = "1.8"
-const val kotlinVersion = "1.3.72"
-const val kotlinLanguageVersion = "1.3"
+package io.hkhc.gradle.test.tags
 
-// plugins
-const val dokkaVersion = "0.10.1"
-const val ktlintVersion = "9.4.1"
-const val taskTreeVersion = "1.5"
-const val detektVersion = "1.14.0"
-const val bintrayVersion = "1.8.5"
-const val buildInfoVersion = "4.18.0"
+import io.kotest.core.Tag
 
-// lib
-const val junit5Version = "5.6.1"
-const val snakeYamlVersion = "1.25"
-const val kotestVersion = "4.3.1"
-const val mockWebServerVersion = "4.5.0"
-const val mockkVersion = "1.10.2"
+object MavenLocal : Tag()
+object MavenRepository : Tag()
+object Bintray : Tag()
+object Artifactory : Tag()
+
+object Library : Tag()
+object Plugin : Tag()
+object Variant : Tag()
+object Multi : Tag()
+

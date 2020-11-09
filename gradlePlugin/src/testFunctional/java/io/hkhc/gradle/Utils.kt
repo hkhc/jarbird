@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.test.BuildOutput
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.TextCutter

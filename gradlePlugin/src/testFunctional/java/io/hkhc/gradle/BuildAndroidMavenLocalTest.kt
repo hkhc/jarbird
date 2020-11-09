@@ -107,7 +107,7 @@ class BuildAndroidMavenLocalTest {
 
         File("$tempProjectDir/settings.gradle").writeText(commonSetting())
         File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "versionWithArtifactId()"))
+        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithArtifactId()"))
         File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
 
         PropertiesEditor("$tempProjectDir/gradle.properties") {

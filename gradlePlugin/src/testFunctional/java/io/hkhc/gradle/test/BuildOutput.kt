@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.test
 
 import org.gradle.testkit.runner.BuildResult
 

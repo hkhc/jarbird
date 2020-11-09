@@ -20,10 +20,12 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
+import io.hkhc.gradle.test.GradleTaskTester
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.assertions.withClue
+import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.shouldBe
@@ -31,6 +33,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import java.io.File
 
 @Suppress("MagicNumber")
+@Tags("Library", "MavenLocal")
 class BuildMavenLocalTest : StringSpec({
 
     lateinit var tempProjectDir: File
@@ -38,7 +41,7 @@ class BuildMavenLocalTest : StringSpec({
 
     lateinit var localRepoDir: File
 
-    lateinit var envs: Map<String, String>
+//    lateinit var envs: Map<String, String>
 
     fun commonSetup(coordinate: Coordinate) {
 
@@ -107,7 +110,6 @@ class BuildMavenLocalTest : StringSpec({
 
         withClue("expected list of tasks executed with expected result") {
             result.tasks.map { it.toString() } shouldBe listOf(
-                ":tasks=SUCCESS",
                 ":dokka=SUCCESS",
                 ":dokkaJar=SUCCESS",
                 ":compileJava=SUCCESS",
