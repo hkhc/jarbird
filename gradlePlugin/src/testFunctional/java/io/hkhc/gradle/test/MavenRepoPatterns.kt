@@ -18,57 +18,57 @@
 
 package io.hkhc.gradle.test
 
+import isSnapshot
+
 class MavenRepoPatterns(
-    val baseUrl: String,
+    private val baseUrl: String,
     val coordinate: Coordinate,
-    private val packaging: String = "jar"
+    packaging: String
 ) {
 
-    private val isSnapshot = coordinate.versionWithVariant.endsWith("-SNAPSHOT")
-    private val METADATA_FILE = "maven-metadata.xml"
+    private val hashExts = listOf("", ".md5", ".sha1", ".sha256", ".sha512")
+    private val artifactClassifier = listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
+
+    private val isSnapshot = coordinate.versionWithVariant.isSnapshot()
+    private val metafileName = "maven-metadata.xml"
 
     private fun metafile(base: String): List<String> {
         return mutableListOf<String>().apply {
-            add("$base/$METADATA_FILE")
-            if (isSnapshot) add("$base/${coordinate.versionWithVariant}/$METADATA_FILE")
+            add("$base/$metafileName")
+            if (isSnapshot) add("$base/${coordinate.versionWithVariant}/$metafileName")
         }
     }
 
-    private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) =
+    private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) = with(coordinate) {
         pluginId?.let {
             listOf("$baseUrl/${pluginId.replace('.', '/')}/$pluginId.gradle.plugin")
                 .flatMap {
                     metafile(it) +
-                        listOf(
-                            "$it/${coordinate.versionWithVariant}/" +
-                                "${coordinate.pluginId}.gradle.plugin-" +
-                                "${versionTransformer(coordinate.versionWithVariant)}.pom"
-                        )
+                        "$it/$versionWithVariant/$pluginId.gradle.plugin-${versionTransformer(versionWithVariant)}.pom"
                 }
                 .flatMap(::hashedPaths)
         } ?: listOf()
+    }
 
-    private fun hashedPaths(path: String) =
-        listOf("", ".md5", ".sha1", ".sha256", ".sha512")
-            .map { hash -> "$path$hash" }
+    private fun hashedPaths(path: String) = hashExts.map { hash -> "$path$hash" }
 
-    private fun artifactTypes(path: String) =
-        listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
-            .map { suffix -> "$path$suffix" }
+    private fun artifactTypes(path: String) = artifactClassifier.map { suffix -> "$path$suffix" }
 
-    fun list(versionTransformer: (String) -> String) = (
-        listPluginRepo(coordinate.pluginId, versionTransformer) +
-            listOf("$baseUrl/${coordinate.group.replace('.', '/')}/${coordinate.artifactIdWithVariant}")
-                .flatMap {
-                    metafile(it) +
-                        listOf(
-                            "$it/${coordinate.versionWithVariant}/" +
-                                "${coordinate.artifactIdWithVariant}-${versionTransformer(coordinate.versionWithVariant)}"
-                        )
-                            .flatMap(::artifactTypes)
-                            .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
-                }
-                .flatMap(::hashedPaths)
-        )
-        .map { Regex("$it.*") }
+    fun list(versionTransformer: (String) -> String) = with(coordinate) {
+        (
+            listPluginRepo(pluginId, versionTransformer) +
+                listOf("$baseUrl/${group.replace('.', '/')}/$artifactIdWithVariant")
+                    .flatMap { path ->
+                        metafile(path) +
+                            listOf(
+                                "$path/$versionWithVariant/" +
+                                    "$artifactIdWithVariant-${versionTransformer(versionWithVariant)}"
+                            )
+                                .flatMap(::artifactTypes)
+                                .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
+                    }
+                    .flatMap(::hashedPaths)
+            )
+            .map { Regex("$it.*") }
+    }
 }

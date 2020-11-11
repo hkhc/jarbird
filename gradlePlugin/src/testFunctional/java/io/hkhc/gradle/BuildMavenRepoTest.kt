@@ -19,18 +19,25 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.gradle.test.MavenPublishingChecker
+import io.hkhc.gradle.test.DefaultGradleProjectSetup
+import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
-import io.hkhc.utils.PropertiesEditor
-import io.hkhc.utils.StringNodeBuilder
-import io.hkhc.utils.TextCutter
-import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import io.hkhc.gradle.test.buildGradle
+import io.hkhc.gradle.test.publishedToMavenRepositoryCompletely
+import io.hkhc.gradle.test.simplePom
+import io.hkhc.utils.FileTree
+import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.fail
+import io.kotest.assertions.withClue
+import io.kotest.core.annotation.Tags
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.test.TestStatus
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.should
+import isSnapshot
+import java.io.FileReader
+import java.util.Properties
 
 /**
  * snapshot / release
@@ -60,120 +67,149 @@ import java.io.File
  * credential with env variable
  * handle publishing rejection
  *
+ * - (should fail) try to invoke disabled target (e.g. jbPublishToMavenRepository when maven = false)
+ * - (should fail) build snapshot plugin to bintray
+ * - support javadoc rather than dokka
+ * - build multiple project with maven repository
+ * - build multiple project with bintray
+ * - build multiple project with artifactory
+ * - build multiple artifacts with variant, maven repository
+ * - build multiple artifacts with variant, bintray
+ * - build multiple artifacts with variant, artifactory
+ * - build multiple AAR with flavour, mavenLocal
+ * - build multiple AAR with flavour, mavenRepository
+ * - build multiple AAR with flavour, bintray
+ * - build multiple AAR with flavour, artifactory
+ * - build multiple AAR with buildtype, flavour, mavenLocal
+ * - build multiple AAR with buildtype, flavour, mavenRepository
+ * - build multiple AAR with buildtype, flavour, bintray
+ * - build multiple AAR with buildtype, flavour, artifactory
+ *
+ *
  */
-@Suppress("MagicNumber")
-class BuildMavenRepoTest {
+@Tags("Library", "MavenRepository")
+class BuildMavenRepoTest : FunSpec({
 
-    // https://www.baeldung.com/junit-5-temporary-directory
-    @TempDir
-    lateinit var tempProjectDir: File
-    lateinit var mockRepositoryServer: MockMavenRepositoryServer
-
-    @BeforeEach
-    fun setUp() {
-        mockRepositoryServer = MockMavenRepositoryServer()
-    }
-
-    @AfterEach
-    fun teardown() {
-        mockRepositoryServer.teardown()
-    }
-
-    fun commonSetup(coordinate: Coordinate) {
-        mockRepositoryServer.setUp(coordinate, "/base")
-
-        File("$tempProjectDir/pom.yaml")
-            .writeText(simplePom(coordinate))
-        File("$tempProjectDir/build.gradle.kts")
-            .writeText(buildGradle())
-
-        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib").copyRecursively(tempProjectDir)
-    }
-
-    @Test
-    fun `Normal publish to Maven Repository to release repository`() {
-
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
-        commonSetup(coordinate)
-
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-            "repository.maven.mock.release" to mockRepositoryServer.getServerUrl()
-            "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
-            "repository.maven.mock.username" to "username"
-            "repository.maven.mock.password" to "password"
-        }
+    context("Publish library") {
 
         val targetTask = "jbPublishToMavenRepository"
 
-        val taskTree = treeStr(
-            StringNodeBuilder(":$targetTask").build {
-                +":jbPublishLibToMavenRepository" {
-                    +":jbPublishLibToMavenmock" {
-                        +":publishLibPublicationToMavenLibRepository" {
-                            +":dokkaJar ..>"
-                            +":generateMetadataFileForLibPublication ..>"
-                            +":generatePomFileForLibPublication"
-                            +":jar ..>"
-                            +":signLibPublication ..>"
-                            +":sourcesJar"
-                        }
-                    }
+        fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+
+            val projectDir = tempDirectory()
+
+            return DefaultGradleProjectSetup(projectDir).apply {
+
+                setup()
+                mockServer = MockMavenRepositoryServer().apply {
+                    setUp(coordinate, "/base")
                 }
+
+                writeFile("build.gradle.kts", buildGradle())
+
+                writeFile("pom.yaml", simplePom(coordinate))
+
+                setupGradleProperties {
+                    if (coordinate.version.isSnapshot()) {
+                        "repository.maven.mock.release" to "fake-url-that-is-not-going-to-work"
+                        "repository.maven.mock.snapshot" to mockServer?.getServerUrl()
+                    } else {
+                        "repository.maven.mock.release" to mockServer?.getServerUrl()
+                        "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
+                    }
+                    "repository.maven.mock.username" to "username"
+                    "repository.maven.mock.password" to "password"
+                }
+
+                val prop = Properties()
+                prop.load(FileReader("$projectDir/gradle.properties"))
+                prop.list(System.out)
+
+                this.expectedTaskList = expectedTaskList
             }
-        )
-
-        val output = runTaskWithOutput(arrayOf(targetTask, "taskTree", "--task-depth", "4"), tempProjectDir)
-        assertEquals(
-            taskTree,
-            TextCutter(output.stdout).cut(":$targetTask", ""),
-            "task tree"
-        )
-
-        val result = runTask(targetTask, tempProjectDir)
-
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockRepositoryServer.collectRequests())
-    }
-
-    @Test
-    fun `Normal publish to Maven Repository to snapshot repository`() {
-
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
-        commonSetup(coordinate)
-
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-            "repository.maven.mock.release" to "fake-url-that-is-not-going-to-work"
-            "repository.maven.mock.snapshot" to mockRepositoryServer.getServerUrl()
-            "repository.maven.mock.username" to "username"
-            "repository.maven.mock.password" to "password"
         }
 
-        val targetTask = "jbPublishToMavenRepository"
-
-        val taskTree = treeStr(
-            StringNodeBuilder(":$targetTask").build {
-                +":jbPublishLibToMavenRepository" {
-                    +":jbPublishLibToMavenmock" {
-                        +":publishLibPublicationToMavenLibRepository" {
-                            +":dokkaJar ..>"
-                            +":generateMetadataFileForLibPublication ..>"
-                            +":generatePomFileForLibPublication"
-                            +":jar ..>"
-                            +":sourcesJar"
-                        }
-                    }
+        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
+            afterTest {
+                setup.mockServer?.teardown()
+                if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
+                    FileTree().dump(setup.projectDir, System.out::println)
                 }
             }
-        )
 
-        assertTaskTree(targetTask, taskTree, 4, tempProjectDir)
+            test("execute task '$targetTask'") {
 
-        val result = runTask(targetTask, tempProjectDir)
+                val result = setup.getGradleTaskTester().runTask(targetTask)
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        MavenPublishingChecker(coordinate).assertSnapshotArtifacts(mockRepositoryServer.collectRequests())
+                withClue("expected list of tasks executed with expected result") {
+                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList!!
+                }
+
+                setup.mockServer?.let { server ->
+                    MavenRepoResult(
+                        server.collectRequests(),
+                        coordinate,
+                        "jar"
+                    ) should publishedToMavenRepositoryCompletely()
+                } ?: fail("mock server is not available")
+            }
+        }
+
+        context("to release Maven Repository") {
+
+            val coordinate = Coordinate("test.group", "test.artifact", "0.1")
+            val setup = commonSetup(
+                coordinate,
+                listOf(
+                    ":dokka=SUCCESS",
+                    ":dokkaJar=SUCCESS",
+                    ":compileKotlin=SUCCESS",
+                    ":compileJava=SUCCESS",
+                    ":pluginDescriptors=SUCCESS",
+                    ":processResources=NO_SOURCE",
+                    ":classes=SUCCESS",
+                    ":inspectClassesForKotlinIC=SUCCESS",
+                    ":jar=SUCCESS",
+                    ":generateMetadataFileForLibPublication=SUCCESS",
+                    ":generatePomFileForLibPublication=SUCCESS",
+                    ":sourcesJar=SUCCESS",
+                    ":signLibPublication=SUCCESS",
+                    ":publishLibPublicationToMavenLibRepository=SUCCESS",
+                    ":jbPublishLibToMavenmock=SUCCESS",
+                    ":jbPublishLibToMavenRepository=SUCCESS",
+                    ":jbPublishToMavenRepository=SUCCESS"
+                )
+            )
+
+            testBody(coordinate, setup)
+        }
+
+        context("to snapshot Maven Repository") {
+
+            val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
+            val setup = commonSetup(
+                coordinate,
+                listOf(
+                    ":dokka=SUCCESS",
+                    ":dokkaJar=SUCCESS",
+                    ":compileKotlin=SUCCESS",
+                    ":compileJava=SUCCESS",
+                    ":pluginDescriptors=SUCCESS",
+                    ":processResources=NO_SOURCE",
+                    ":classes=SUCCESS",
+                    ":inspectClassesForKotlinIC=SUCCESS",
+                    ":jar=SUCCESS",
+                    ":generateMetadataFileForLibPublication=SUCCESS",
+                    ":generatePomFileForLibPublication=SUCCESS",
+                    ":sourcesJar=SUCCESS",
+                    ":publishLibPublicationToMavenLibRepository=SUCCESS",
+                    ":jbPublishLibToMavenmock=SUCCESS",
+                    ":jbPublishLibToMavenRepository=SUCCESS",
+                    ":jbPublishToMavenRepository=SUCCESS"
+                )
+            )
+
+            testBody(coordinate, setup)
+        }
     }
-}
+})
