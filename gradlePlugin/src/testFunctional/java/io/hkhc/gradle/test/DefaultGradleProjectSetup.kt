@@ -89,7 +89,8 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
         }
     }
 
-    fun setup(): DefaultGradleProjectSetup {
+    fun setup(block: DefaultGradleProjectSetup.() -> Unit = {}): DefaultGradleProjectSetup {
+        block.invoke(this)
         subProjDirs.forEach {
             File("$projectDir/$it").mkdirs()
         }

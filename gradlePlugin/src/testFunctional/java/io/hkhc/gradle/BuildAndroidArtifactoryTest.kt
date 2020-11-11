@@ -106,9 +106,11 @@ class BuildAndroidArtifactoryTest : FunSpec({
 
             return DefaultGradleProjectSetup(projectDir).apply {
 
-                subProjDirs = arrayOf("lib")
-                sourceSetTemplateDirs = arrayOf("functionalTestData/libaar")
-                setup()
+                setup {
+                    subProjDirs = arrayOf("lib")
+                    sourceSetTemplateDirs = arrayOf("functionalTestData/libaar")
+                }
+
                 mockServer = MockArtifactoryRepositoryServer().apply {
                     setUp(coordinate, "/base")
                 }
