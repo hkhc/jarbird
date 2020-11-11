@@ -25,7 +25,7 @@ class ArtifactoryRepoPatterns(
     val username: String,
     val repo: String,
     private val withBuildInfo: Boolean = true,
-    private val packaging: String = "jar"
+    private val packaging: String
 ) {
 
     private val isSnapshot = coordinate.versionWithVariant.isSnapshot()

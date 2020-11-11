@@ -138,7 +138,7 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
     /**
      * Specify maven repository for publishing.
      */
-    var mavenRepository: RepoEndpoint? = null
+    var mavenRepository: RepoEndpoint = MavenCentralEndpoint(project)
 
     fun withMavenCentral() {
         mavenRepository = MavenCentralEndpoint(project)

@@ -18,118 +18,252 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
+import io.hkhc.gradle.test.DefaultGradleProjectSetup
+import io.hkhc.gradle.test.LocalRepoResult
+import io.hkhc.gradle.test.commonAndroidGradle
+import io.hkhc.gradle.test.commonAndroidRootGradle
+import io.hkhc.gradle.test.getTestAndroidSdkHomePair
+import io.hkhc.gradle.test.publishToMavenLocalCompletely
+import io.hkhc.gradle.test.setupAndroidProperties
+import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
-import io.hkhc.utils.PropertiesEditor
-import io.hkhc.utils.StringNodeBuilder
-import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.withClue
+import io.kotest.core.annotation.Tags
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.test.TestStatus
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.should
 
-@Suppress("MagicNumber")
-class BuildAndroidMavenLocalTest {
+@Tags("Multi", "AAR", "MavenLocal", "Variant")
+class BuildAndroidMavenLocalTest : FunSpec({
 
-    // https://www.baeldung.com/junit-5-temporary-directory
-    @TempDir
-    lateinit var tempProjectDir: File
+    context("Publish Android AAR in to Maven Local") {
 
-    private lateinit var libProj: File
-    private lateinit var localRepoDir: File
-    private lateinit var envs: MutableMap<String, String>
+        val targetTask = "jbPublishToMavenLocal"
 
-    @BeforeEach
-    fun setUp() {
-
-        envs = defaultEnvs(tempProjectDir).apply {
-            val pair = getTestAndroidSdkHomePair()
-            put(pair.first, pair.second)
-        }
-
-        libProj = File(tempProjectDir, "lib")
-        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/libaar").copyRecursively(libProj)
-        localRepoDir = File(tempProjectDir, "localRepo")
-        localRepoDir.mkdirs()
-        System.setProperty("maven.repo.local", localRepoDir.absolutePath)
-    }
-
-    fun taskTree(taskName: String) = treeStr(
-        StringNodeBuilder(":$taskName").build {
-            +":lib:jbPublishLibReleaseToMavenLocal" {
-                +":lib:publishLibReleasePublicationToMavenLocal" {
-                    +":lib:bundleReleaseAar ..>"
-                    +":lib:dokkaJarRelease ..>"
-                    +":lib:generateMetadataFileForLibReleasePublication ..>"
-                    +":lib:generatePomFileForLibReleasePublication"
-                    +":lib:signLibReleasePublication ..>"
-                    +":lib:sourcesJarRelease"
-                }
-            }
-        }
-    )
-
-    @Test
-    fun `Normal publish Android AAR to Maven Local with version variant`() {
-
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1", versionWithVariant = "0.1-release")
-
-        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
-        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithVersion()"))
-        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
-
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-            setupAndroidProperties()
-        }
-
-        val targetTask = "lib:jbPublishToMavenLocal"
-
-        assertTaskTree(targetTask, taskTree(targetTask), 3, tempProjectDir, envs)
-
-        val result = runTask(targetTask, tempProjectDir, envs)
-
-        FileTree().dump(tempProjectDir, ::println)
-
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        ArtifactChecker()
-            .verifyRepository(localRepoDir, coordinate, "aar")
-    }
-
-    @Test
-    fun `Normal publish Android AAR to Maven Local with artifactId variant`() {
-
-        val coordinate = Coordinate(
-            "test.group",
-            "test.artifact",
-            "0.1",
-            artifactIdWithVariant = "test.artifact-release"
+        val releaseExpectedTaskList = listOf(
+            ":lib:preBuild=UP_TO_DATE",
+            ":lib:preReleaseBuild=UP_TO_DATE",
+            ":lib:compileReleaseAidl=NO_SOURCE",
+            ":lib:mergeReleaseJniLibFolders=SUCCESS",
+            ":lib:mergeReleaseNativeLibs=SUCCESS",
+            ":lib:compileReleaseRenderscript=NO_SOURCE",
+            ":lib:generateReleaseBuildConfig=SUCCESS",
+            ":lib:generateReleaseResValues=SUCCESS",
+            ":lib:generateReleaseResources=SUCCESS",
+            ":lib:packageReleaseResources=SUCCESS", // line 10
+            ":lib:parseReleaseLocalResources=SUCCESS",
+            ":lib:processReleaseManifest=SUCCESS",
+            ":lib:javaPreCompileRelease=SUCCESS",
+            ":lib:mergeReleaseShaders=SUCCESS",
+            ":lib:compileReleaseShaders=NO_SOURCE",
+            ":lib:generateReleaseAssets=UP_TO_DATE",
+            ":lib:packageReleaseAssets=SUCCESS",
+            ":lib:packageReleaseRenderscript=NO_SOURCE",
+            ":lib:prepareLintJarForPublish=SUCCESS",
+            ":lib:processReleaseJavaRes=NO_SOURCE", // line 20
+            ":lib:preDebugBuild=UP_TO_DATE",
+            ":lib:compileDebugAidl=NO_SOURCE",
+            ":lib:compileDebugRenderscript=NO_SOURCE",
+            ":lib:generateDebugBuildConfig=SUCCESS",
+            ":lib:generateDebugResValues=SUCCESS",
+            ":lib:generateDebugResources=SUCCESS",
+            ":lib:packageDebugResources=SUCCESS",
+            ":lib:parseDebugLocalResources=SUCCESS",
+            ":lib:processDebugManifest=SUCCESS",
+            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
+            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
+            ":lib:generatePomFileForLibReleasePublication=SUCCESS", // line 30
+            ":lib:sourcesJarRelease=SUCCESS",
+            ":lib:generateDebugRFile=SUCCESS",
+            ":lib:generateReleaseRFile=SUCCESS",
+            ":lib:compileReleaseKotlin=SUCCESS",
+            ":lib:compileReleaseJavaWithJavac=SUCCESS",
+            ":lib:extractReleaseAnnotations=SUCCESS",
+            ":lib:mergeReleaseGeneratedProguardFiles=SUCCESS",
+            ":lib:mergeReleaseConsumerProguardFiles=SUCCESS", // line 40
+            ":lib:mergeReleaseJavaResource=SUCCESS",
+            ":lib:dokka=SUCCESS",
+            ":lib:dokkaJarRelease=SUCCESS",
+            ":lib:syncReleaseLibJars=SUCCESS",
+            ":lib:bundleReleaseAar=SUCCESS",
+            ":lib:generateMetadataFileForLibReleasePublication=SUCCESS",
+            ":lib:signLibReleasePublication=SUCCESS",
+            ":lib:publishLibReleasePublicationToMavenLocal=SUCCESS",
+            ":lib:jbPublishLibReleaseToMavenLocal=SUCCESS",
+            ":lib:jbPublishToMavenLocal=SUCCESS", // line 50
+            ":jbPublishToMavenLocal=SUCCESS"
         )
 
-        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
-        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithArtifactId()"))
-        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
+        val snapshotExpectedTaskList = listOf(
+            ":lib:preBuild=UP_TO_DATE",
+            ":lib:preReleaseBuild=UP_TO_DATE",
+            ":lib:compileReleaseAidl=NO_SOURCE",
+            ":lib:mergeReleaseJniLibFolders=SUCCESS",
+            ":lib:mergeReleaseNativeLibs=SUCCESS",
+            ":lib:compileReleaseRenderscript=NO_SOURCE",
+            ":lib:generateReleaseBuildConfig=SUCCESS",
+            ":lib:generateReleaseResValues=SUCCESS",
+            ":lib:generateReleaseResources=SUCCESS",
+            ":lib:packageReleaseResources=SUCCESS",
+            ":lib:parseReleaseLocalResources=SUCCESS",
+            ":lib:processReleaseManifest=SUCCESS",
+            ":lib:javaPreCompileRelease=SUCCESS",
+            ":lib:mergeReleaseShaders=SUCCESS",
+            ":lib:compileReleaseShaders=NO_SOURCE",
+            ":lib:generateReleaseAssets=UP_TO_DATE",
+            ":lib:packageReleaseAssets=SUCCESS",
+            ":lib:packageReleaseRenderscript=NO_SOURCE",
+            ":lib:prepareLintJarForPublish=SUCCESS",
+            ":lib:processReleaseJavaRes=NO_SOURCE",
+            ":lib:preDebugBuild=UP_TO_DATE",
+            ":lib:compileDebugAidl=NO_SOURCE",
+            ":lib:compileDebugRenderscript=NO_SOURCE",
+            ":lib:generateDebugBuildConfig=SUCCESS",
+            ":lib:generateDebugResValues=SUCCESS",
+            ":lib:generateDebugResources=SUCCESS",
+            ":lib:packageDebugResources=SUCCESS",
+            ":lib:parseDebugLocalResources=SUCCESS",
+            ":lib:processDebugManifest=SUCCESS",
+            ":lib:generatePomFileForLibReleasePublication=SUCCESS",
+            ":lib:sourcesJarRelease=SUCCESS",
+            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
+            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
+            ":lib:generateReleaseRFile=SUCCESS",
+            ":lib:generateDebugRFile=SUCCESS",
+            ":lib:compileReleaseKotlin=SUCCESS",
+            ":lib:compileReleaseJavaWithJavac=SUCCESS",
+            ":lib:extractReleaseAnnotations=SUCCESS",
+            ":lib:mergeReleaseGeneratedProguardFiles=SUCCESS",
+            ":lib:mergeReleaseConsumerProguardFiles=SUCCESS",
+            ":lib:mergeReleaseJavaResource=SUCCESS",
+            ":lib:dokka=SUCCESS",
+            ":lib:dokkaJarRelease=SUCCESS",
+            ":lib:syncReleaseLibJars=SUCCESS",
+            ":lib:bundleReleaseAar=SUCCESS",
+            ":lib:generateMetadataFileForLibReleasePublication=SUCCESS",
+            ":lib:publishLibReleasePublicationToMavenLocal=SUCCESS",
+            ":lib:jbPublishLibReleaseToMavenLocal=SUCCESS",
+            ":lib:jbPublishToMavenLocal=SUCCESS",
+            ":jbPublishToMavenLocal=SUCCESS"
+        )
 
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-            setupAndroidProperties()
+        fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+
+            val projectDir = tempDirectory()
+
+            return DefaultGradleProjectSetup(projectDir).apply {
+
+                subProjDirs = arrayOf("lib")
+                sourceSetTemplateDirs = arrayOf("functionalTestData/libaar")
+                setup()
+                setupGradleProperties {
+                    setupAndroidProperties()
+                }
+
+                envs.apply {
+                    val pair = getTestAndroidSdkHomePair()
+                    put(pair.first, pair.second)
+                }
+
+                setupSettingsGradle(
+                    """
+                    pluginManagement {
+                        repositories {
+                            mavenLocal()
+                            gradlePluginPortal()
+                            mavenCentral()
+                        }
+                    }
+                    """.trimIndent()
+                )
+
+                writeFile("build.gradle", commonAndroidRootGradle())
+
+                // Note: sub-projects build.gradle is specified in test case specific context
+
+                writeFile(
+                    "${subProjDirs[0]}/pom.yaml",
+                    simplePom(coordinate, "release", "aar")
+                )
+
+                this.expectedTaskList = expectedTaskList
+            }
         }
 
-        val targetTask = "lib:jbPublishToMavenLocal"
+        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
 
-        assertTaskTree(targetTask, taskTree(targetTask), 3, tempProjectDir, envs)
+            afterTest {
+                if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
+                    FileTree().dump(setup.projectDir, System.out::println)
+                }
+            }
 
-        val result = runTask(targetTask, tempProjectDir, envs)
+            test("execute task '$targetTask'") {
 
-        FileTree().dump(tempProjectDir, ::println)
+                val result = setup.getGradleTaskTester().runTask(targetTask)
 
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        ArtifactChecker()
-            .verifyRepository(localRepoDir, coordinate, "aar")
+                println(result.tasks.joinToString("\n") { "\"$it\"," })
+
+                withClue("expected list of tasks executed with expected result") {
+                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList!!
+                }
+
+                LocalRepoResult(
+                    setup.localRepoDirFile,
+                    coordinate,
+                    "aar"
+                ) should publishToMavenLocalCompletely()
+            }
+        }
+
+        context("with variant attached to version") {
+            context("to release Mavel Local") {
+                val coordinate = Coordinate(
+                    "test.group",
+                    "test.artifact",
+                    "0.1",
+                    versionWithVariant = "0.1-release"
+                )
+                val setup = commonSetup(coordinate, releaseExpectedTaskList)
+                setup.writeFile(
+                    "${setup.subProjDirs[0]}/build.gradle",
+                    commonAndroidGradle(variantMode = "variantWithVersion()")
+                )
+                testBody(coordinate, setup)
+            }
+            context("to snapshot Mavel Local") {
+                val coordinate = Coordinate(
+                    "test.group",
+                    "test.artifact",
+                    "0.1-SNAPSHOT",
+                    versionWithVariant = "0.1-release-SNAPSHOT"
+                )
+                val setup = commonSetup(coordinate, snapshotExpectedTaskList)
+                setup.writeFile(
+                    "${setup.subProjDirs[0]}/build.gradle",
+                    commonAndroidGradle(variantMode = "variantWithVersion()")
+                )
+                testBody(coordinate, setup)
+            }
+        }
+
+        context("with variant attached to artifactId") {
+            val coordinate = Coordinate(
+                "test.group",
+                "test.artifact",
+                "0.1",
+                artifactIdWithVariant = "test.artifact-release"
+            )
+            val setup = commonSetup(coordinate, releaseExpectedTaskList)
+            setup.writeFile(
+                "${setup.subProjDirs[0]}/build.gradle",
+                commonAndroidGradle(variantMode = "variantWithArtifactId()")
+            )
+            testBody(coordinate, setup)
+        }
     }
-}
+})

@@ -16,10 +16,8 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.test
 
-import io.hkhc.gradle.test.BuildOutput
-import io.hkhc.gradle.test.Coordinate
 import io.hkhc.utils.PropertiesEditor
 import junit.framework.Assert.assertTrue
 import org.gradle.api.GradleException
@@ -75,7 +73,7 @@ fun simplePom(coordinate: Coordinate, variant: String = "", packaging: String = 
         artifactId: $artifactId
         version: $version
         description: Test artifact
-        packaging: jar
+        packaging: $packaging
     
         licenses:
           - name: Apache-2.0
@@ -283,7 +281,13 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
     """.trimIndent()
 }
 
-fun runTask(task: String, projectDir: File, envs: Map<String, String> = defaultEnvs(projectDir)): BuildResult {
+fun runTask(
+    task: String,
+    projectDir: File,
+    envs: Map<String, String> = defaultEnvs(
+        projectDir
+    )
+): BuildResult {
 
     assertTrue("Project directory '$projectDir' shall exist", projectDir.exists())
     envs.forEach {

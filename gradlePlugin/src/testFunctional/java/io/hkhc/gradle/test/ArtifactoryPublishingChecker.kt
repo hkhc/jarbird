@@ -23,7 +23,7 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class ArtifactoryPublishingChecker(val coordinate: Coordinate, private val packaging: String = "jar") {
+class ArtifactoryPublishingChecker(val coordinate: Coordinate, private val packaging: String) {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
         val matched = requests

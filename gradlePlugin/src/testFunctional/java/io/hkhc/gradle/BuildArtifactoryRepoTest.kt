@@ -18,98 +18,110 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.ArtifactoryPublishingChecker
+import io.hkhc.gradle.test.ArtifactoryRepoResult
 import io.hkhc.gradle.test.Coordinate
+import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
-import io.hkhc.utils.PropertiesEditor
-import io.hkhc.utils.StringNodeBuilder
-import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import io.hkhc.gradle.test.buildGradleCustomArtifactrory
+import io.hkhc.gradle.test.publishedToArtifactoryRepositoryCompletely
+import io.hkhc.gradle.test.simplePom
+import io.hkhc.utils.FileTree
+import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.fail
+import io.kotest.assertions.withClue
+import io.kotest.core.annotation.Tags
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.test.TestStatus
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.should
 
-@Suppress("MagicNumber")
-class BuildArtifactoryRepoTest {
+@Tags("Artifactory", "Library")
+class BuildArtifactoryRepoTest : FunSpec({
 
-    @TempDir
-    lateinit var tempProjectDir: File
-    private lateinit var mockRepositoryServer: MockArtifactoryRepositoryServer
-
-    @BeforeEach
-    fun setUp() {
-        mockRepositoryServer = MockArtifactoryRepositoryServer()
-    }
-
-    @AfterEach
-    fun teardown() {
-        mockRepositoryServer.teardown()
-    }
-
-    fun commonSetup(coordinate: Coordinate) {
-        mockRepositoryServer.setUp(coordinate, "/base")
-
-        File("$tempProjectDir/pom.yaml")
-            .writeText(simplePom(coordinate))
-        File("$tempProjectDir/build.gradle.kts")
-            .writeText(buildGradleCustomArtifactrory())
-        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib").copyRecursively(tempProjectDir)
-    }
-
-    @Test
-    fun `Normal publish snapshot to Bintray Repository`() {
-
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
-        commonSetup(coordinate)
-
-        val username = "username"
-        val repo = "maven"
-
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-            "repository.bintray.snapshot" to mockRepositoryServer.getServerUrl()
-            "repository.bintray.username" to username
-            "repository.bintray.apikey" to "password"
-        }
+    context("Publish library") {
 
         val targetTask = "jbPublishToBintray"
 
-        val taskTree = treeStr(
-            StringNodeBuilder(":$targetTask").build {
-                +":artifactoryPublish" {
-                    +":dokkaJar" {
-                        +":dokka"
-                    }
-                    +":generateMetadataFileForLibPublication" {
-                        +":jar ..>"
-                    }
-                    +":generatePomFileForLibPublication"
-                    +":jar" {
-                        +":classes ..>"
-                        +":compileKotlin"
-                        +":inspectClassesForKotlinIC ..>"
-                    }
-                    +":sourcesJar"
+        fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+
+            val projectDir = tempDirectory()
+
+            return DefaultGradleProjectSetup(projectDir).apply {
+
+                setup()
+                mockServer = MockArtifactoryRepositoryServer().apply {
+                    setUp(coordinate, "/base")
+                }
+
+                writeFile("build.gradle.kts", buildGradleCustomArtifactrory())
+
+                writeFile("pom.yaml", simplePom(coordinate))
+
+                setupGradleProperties {
+                    "repository.bintray.snapshot" to mockServer?.getServerUrl()
+                    "repository.bintray.username" to "username"
+                    "repository.bintray.apikey" to "password"
+                }
+
+                this.expectedTaskList = expectedTaskList
+            }
+        }
+
+        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
+            afterTest {
+                setup.mockServer?.teardown()
+                if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
+                    FileTree().dump(setup.projectDir, System.out::println)
                 }
             }
-        )
 
-        assertTaskTree(targetTask, taskTree, 3, tempProjectDir)
+            test("execute task '$targetTask'") {
 
-        val result = runTask(targetTask, tempProjectDir)
+                val result = setup.getGradleTaskTester().runTask(targetTask)
 
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        ArtifactoryPublishingChecker(coordinate).assertReleaseArtifacts(
-            mockRepositoryServer.collectRequests().apply {
-                forEach {
-                    println("recorded request ${it.method} ${it.path}")
+                withClue("expected list of tasks executed with expected result") {
+                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList!!
                 }
-            },
-            username,
-            repo
-        )
+
+                setup.mockServer?.let { server ->
+                    ArtifactoryRepoResult(
+                        server.collectRequests(),
+                        coordinate,
+                        "username",
+                        "maven",
+                        "jar"
+                    ) should publishedToArtifactoryRepositoryCompletely()
+                } ?: fail("mock server is not available")
+            }
+        }
+
+        context("to release Artifactory Repository") {
+
+            val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
+            val setup = commonSetup(
+                coordinate,
+                listOf(
+                    ":dokka=SUCCESS",
+                    ":dokkaJar=SUCCESS",
+                    ":compileKotlin=SUCCESS",
+                    ":compileJava=SUCCESS",
+                    ":pluginDescriptors=SUCCESS",
+                    ":processResources=NO_SOURCE",
+                    ":classes=SUCCESS",
+                    ":inspectClassesForKotlinIC=SUCCESS",
+                    ":jar=SUCCESS",
+                    ":generateMetadataFileForLibPublication=SUCCESS",
+                    ":generatePomFileForLibPublication=SUCCESS",
+                    ":sourcesJar=SUCCESS",
+                    ":artifactoryPublish=SUCCESS",
+                    ":extractModuleInfo=SUCCESS",
+                    ":artifactoryDeploy=SUCCESS",
+                    ":jbPublishToBintray=SUCCESS"
+                )
+            )
+
+            testBody(coordinate, setup)
+        }
     }
-}
+})

@@ -25,6 +25,12 @@ import io.hkhc.gradle.test.MavenPublishingChecker
 import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
 import io.hkhc.gradle.test.MockBintrayRepositoryServer
 import io.hkhc.gradle.test.MockMavenRepositoryServer
+import io.hkhc.gradle.test.assertTaskTree
+import io.hkhc.gradle.test.buildGradle
+import io.hkhc.gradle.test.runTask
+import io.hkhc.gradle.test.setupKeyStore
+import io.hkhc.gradle.test.simplePom
+import io.hkhc.gradle.test.treeStr
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
 import org.gradle.testkit.runner.TaskOutcome
@@ -137,8 +143,8 @@ class BuildMavenBintrayRepoTest {
         val result = runTask(targetTask, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockMavenRepositoryServer.collectRequests())
-        BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
+        MavenPublishingChecker(coordinate, "jar").assertReleaseArtifacts(mockMavenRepositoryServer.collectRequests())
+        BintrayPublishingChecker(coordinate, "jar").assertReleaseArtifacts(
             mockBintrayRepositoryServer.collectRequests(),
             username,
             repo
@@ -169,8 +175,8 @@ class BuildMavenBintrayRepoTest {
         val result = runTask(task, tempProjectDir)
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":$task")?.outcome)
-        MavenPublishingChecker(coordinate).assertSnapshotArtifacts(mockMavenRepositoryServer.collectRequests())
-        ArtifactoryPublishingChecker(coordinate).assertReleaseArtifacts(
+        MavenPublishingChecker(coordinate, "jar").assertSnapshotArtifacts(mockMavenRepositoryServer.collectRequests())
+        ArtifactoryPublishingChecker(coordinate, "jar").assertReleaseArtifacts(
             mockArtifactoryRepositoryServer.collectRequests(),
             username,
             repo

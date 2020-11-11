@@ -18,157 +18,194 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.ArtifactoryPublishingChecker
+import io.hkhc.gradle.test.ArtifactoryRepoResult
 import io.hkhc.gradle.test.Coordinate
+import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
+import io.hkhc.gradle.test.commonAndroidGradle
+import io.hkhc.gradle.test.commonAndroidRootGradle
+import io.hkhc.gradle.test.getTestAndroidSdkHomePair
+import io.hkhc.gradle.test.publishedToArtifactoryRepositoryCompletely
+import io.hkhc.gradle.test.setupAndroidProperties
+import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
-import io.hkhc.utils.PropertiesEditor
-import io.hkhc.utils.StringNodeBuilder
-import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.fail
+import io.kotest.assertions.withClue
+import io.kotest.core.annotation.Tags
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.test.TestStatus
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.should
 
-class BuildAndroidArtifactoryTest {
+@Tags("Multi", "AAR", "Artifactory", "Variant")
+class BuildAndroidArtifactoryTest : FunSpec({
 
-    // https://www.baeldung.com/junit-5-temporary-directory
-    @TempDir
-    lateinit var tempProjectDir: File
-    private lateinit var mockRepositoryServer: MockArtifactoryRepositoryServer
-    private lateinit var libProj: File
+    context("Publish Android AAR in to Bintray Repository") {
 
-    private lateinit var localRepoDir: File
-    private lateinit var envs: MutableMap<String, String>
+        val targetTask = "jbPublishToBintray"
 
-    @BeforeEach
-    fun setUp() {
+        val expectedTaskList = listOf(
+            ":lib:preBuild=UP_TO_DATE",
+            ":lib:preReleaseBuild=UP_TO_DATE",
+            ":lib:compileReleaseAidl=NO_SOURCE",
+            ":lib:mergeReleaseJniLibFolders=SUCCESS",
+            ":lib:mergeReleaseNativeLibs=SUCCESS",
+            ":lib:compileReleaseRenderscript=NO_SOURCE",
+            ":lib:generateReleaseBuildConfig=SUCCESS",
+            ":lib:generateReleaseResValues=SUCCESS",
+            ":lib:generateReleaseResources=SUCCESS",
+            ":lib:packageReleaseResources=SUCCESS",
+            ":lib:parseReleaseLocalResources=SUCCESS",
+            ":lib:processReleaseManifest=SUCCESS",
+            ":lib:javaPreCompileRelease=SUCCESS",
+            ":lib:mergeReleaseShaders=SUCCESS",
+            ":lib:compileReleaseShaders=NO_SOURCE",
+            ":lib:generateReleaseAssets=UP_TO_DATE",
+            ":lib:packageReleaseAssets=SUCCESS",
+            ":lib:packageReleaseRenderscript=NO_SOURCE",
+            ":lib:prepareLintJarForPublish=SUCCESS",
+            ":lib:processReleaseJavaRes=NO_SOURCE",
+            ":lib:preDebugBuild=UP_TO_DATE",
+            ":lib:compileDebugAidl=NO_SOURCE",
+            ":lib:compileDebugRenderscript=NO_SOURCE",
+            ":lib:generateDebugBuildConfig=SUCCESS",
+            ":lib:generateDebugResValues=SUCCESS",
+            ":lib:generateDebugResources=SUCCESS",
+            ":lib:packageDebugResources=SUCCESS",
+            ":lib:parseDebugLocalResources=SUCCESS",
+            ":lib:processDebugManifest=SUCCESS",
+            ":lib:generatePomFileForLibReleasePublication=SUCCESS",
+            ":lib:sourcesJarRelease=SUCCESS",
+            ":lib:generateDebugRFile=SUCCESS",
+            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
+            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
+            ":lib:generateReleaseRFile=SUCCESS",
+            ":lib:compileReleaseKotlin=SUCCESS",
+            ":lib:compileReleaseJavaWithJavac=SUCCESS",
+            ":lib:extractReleaseAnnotations=SUCCESS",
+            ":lib:mergeReleaseGeneratedProguardFiles=SUCCESS",
+            ":lib:mergeReleaseConsumerProguardFiles=SUCCESS",
+            ":lib:mergeReleaseJavaResource=SUCCESS",
+            ":lib:dokka=SUCCESS",
+            ":lib:dokkaJarRelease=SUCCESS",
+            ":lib:syncReleaseLibJars=SUCCESS",
+            ":lib:bundleReleaseAar=SUCCESS",
+            ":lib:generateMetadataFileForLibReleasePublication=SUCCESS",
+            ":lib:artifactoryPublish=SUCCESS",
+            ":extractModuleInfo=SUCCESS",
+            ":lib:extractModuleInfo=SUCCESS",
+            ":artifactoryDeploy=SUCCESS",
+            ":lib:jbPublishToBintray=SUCCESS"
+        )
 
-        mockRepositoryServer = MockArtifactoryRepositoryServer()
+        fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
 
-        envs = defaultEnvs(tempProjectDir).apply {
-            val pair = getTestAndroidSdkHomePair()
-            put(pair.first, pair.second)
-        }
+            val projectDir = tempDirectory()
 
-        libProj = File(tempProjectDir, "lib")
-        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/libaar").copyRecursively(libProj)
-        localRepoDir = File(tempProjectDir, "localRepo")
-        localRepoDir.mkdirs()
-        System.setProperty("maven.repo.local", localRepoDir.absolutePath)
-    }
+            return DefaultGradleProjectSetup(projectDir).apply {
 
-    @AfterEach
-    fun teardown() {
-        mockRepositoryServer.teardown()
-    }
+                subProjDirs = arrayOf("lib")
+                sourceSetTemplateDirs = arrayOf("functionalTestData/libaar")
+                setup()
+                mockServer = MockArtifactoryRepositoryServer().apply {
+                    setUp(coordinate, "/base")
+                }
 
-    fun taskTree(taskName: String) = treeStr(
-        StringNodeBuilder(":$taskName").build {
-            +":lib:artifactoryPublish" {
-                +":lib:bundleReleaseAar ..>"
-                +":lib:dokkaJarRelease ..>"
-                +":lib:generateMetadataFileForLibReleasePublication ..>"
-                +":lib:generatePomFileForLibReleasePublication"
-                +":lib:sourcesJarRelease"
+                envs.apply {
+                    val pair = getTestAndroidSdkHomePair()
+                    put(pair.first, pair.second)
+                }
+
+                setupSettingsGradle(
+                    """
+                    pluginManagement {
+                        repositories {
+                            mavenLocal()
+                            gradlePluginPortal()
+                            mavenCentral()
+                        }
+                    }
+                    """.trimIndent()
+                )
+
+                writeFile("build.gradle", commonAndroidRootGradle())
+                writeFile(
+                    "${subProjDirs[0]}/pom.yaml",
+                    simplePom(coordinate, "release", "aar")
+                )
+
+                setupGradleProperties {
+                    setupAndroidProperties()
+                    "repository.bintray.snapshot" to mockServer?.getServerUrl()
+                    "repository.bintray.username" to "username"
+                    "repository.bintray.apikey" to "password"
+                }
+
+                this.expectedTaskList = expectedTaskList
             }
         }
-    )
 
-    @Test
-    fun `Normal publish Android AAR to Artifactory Repository with version variant`() {
+        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
 
-        val coordinate = Coordinate(
-            "test.group",
-            "test.artifact",
-            "0.1-SNAPSHOT",
-            versionWithVariant = "0.1-release-SNAPSHOT"
-        )
-        mockRepositoryServer.setUp(coordinate, "/base")
+            afterTest {
+                setup.mockServer?.teardown()
+                if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
+                    FileTree().dump(setup.projectDir, System.out::println)
+                }
+            }
 
-        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
-        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithVersion()"))
-        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
+            test("execute task '$targetTask'") {
 
-        val username = "username"
-        val repo = "maven"
+                val result = setup.getGradleTaskTester().runTask(targetTask)
 
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-            "repository.bintray.snapshot" to mockRepositoryServer.getServerUrl()
-            "repository.bintray.username" to username
-            "repository.bintray.apikey" to "password"
-            setupAndroidProperties()
+                println(result.tasks.joinToString("\n") { "\"$it\"," })
+
+                withClue("expected list of tasks executed with expected result") {
+                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList!!
+                }
+
+                setup.mockServer?.let { server ->
+                    ArtifactoryRepoResult(
+                        server.collectRequests(),
+                        coordinate,
+                        "username",
+                        "maven",
+                        "aar"
+                    ) should publishedToArtifactoryRepositoryCompletely()
+                } ?: fail("mock server is not available")
+            }
         }
 
-        val targetTask = "lib:jbPublishToBintray"
-
-        assertTaskTree(targetTask, taskTree(targetTask), 2, tempProjectDir, envs)
-
-        val result = runTask(targetTask, tempProjectDir, envs)
-
-        FileTree().dump(tempProjectDir, ::println)
-
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        ArtifactoryPublishingChecker(coordinate, "aar").assertReleaseArtifacts(
-            mockRepositoryServer.collectRequests().apply {
-                forEach {
-                    println("recorded request ${it.method} ${it.path}")
-                }
-            },
-            username,
-            repo
-        )
-    }
-
-    @Test
-    fun `Normal publish Android AAR to Artifactory Repository with artifactId variant`() {
-
-        val coordinate = Coordinate(
-            "test.group",
-            "test.artifact",
-            "0.1-SNAPSHOT",
-            artifactIdWithVariant = "test.artifact-release"
-        )
-        mockRepositoryServer.setUp(coordinate, "/base")
-
-        File("$tempProjectDir/settings.gradle").writeText(commonSetting())
-        File("$tempProjectDir/build.gradle").writeText(commonAndroidRootGradle())
-        File("$libProj/build.gradle").writeText(commonAndroidGradle(variantMode = "variantWithArtifactId()"))
-        File("$libProj/pom.yaml").writeText(simplePom(coordinate, "release", "aar"))
-
-        val username = "username"
-        val repo = "maven"
-
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-            "repository.bintray.snapshot" to mockRepositoryServer.getServerUrl()
-            "repository.bintray.username" to username
-            "repository.bintray.apikey" to "password"
-            setupAndroidProperties()
+        context("with variant attached to version") {
+            val coordinate = Coordinate(
+                "test.group",
+                "test.artifact",
+                "0.1-SNAPSHOT",
+                versionWithVariant = "0.1-release-SNAPSHOT"
+            )
+            val setup = commonSetup(coordinate, expectedTaskList)
+            setup.writeFile(
+                "${setup.subProjDirs[0]}/build.gradle",
+                commonAndroidGradle(variantMode = "variantWithVersion()")
+            )
+            testBody(coordinate, setup)
         }
 
-        val targetTask = "lib:jbPublishToBintray"
-
-        assertTaskTree(targetTask, taskTree(targetTask), 2, tempProjectDir, envs)
-
-        val result = runTask(targetTask, tempProjectDir, envs)
-
-        FileTree().dump(tempProjectDir, ::println)
-
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        ArtifactoryPublishingChecker(coordinate, "aar").assertReleaseArtifacts(
-            mockRepositoryServer.collectRequests().apply {
-                forEach {
-                    println("recorded request ${it.method} ${it.path}")
-                }
-            },
-            username,
-            repo
-        )
+        context("with variant attached to artifactId") {
+            val coordinate = Coordinate(
+                "test.group",
+                "test.artifact",
+                "0.1-SNAPSHOT",
+                artifactIdWithVariant = "test.artifact-release"
+            )
+            val setup = commonSetup(coordinate, expectedTaskList)
+            setup.writeFile(
+                "${setup.subProjDirs[0]}/build.gradle",
+                commonAndroidGradle(variantMode = "variantWithArtifactId()")
+            )
+            testBody(coordinate, setup)
+        }
     }
-}
+})

@@ -26,22 +26,19 @@ import org.gradle.api.tasks.TaskContainer
 
 class BintrayTaskBuilder(
     private val project: Project,
-    private val pubs: List<JarbirdPub>
+    pubs: List<JarbirdPub>
 ) {
 
     private val publishPlan = BintrayPublishPlan(pubs)
 
     private fun bintrayTaskDescription(): String {
 
-        val bintrayLibs = publishPlan.bintrayLibs
-            .map { "'${it.getGAV()}'" }
-            .joinToString(", ")
-        val bintrayPlgins = publishPlan.bintrayPlugins
-            .map { "'${it.pom.plugin?.id}:${it.variantVersion()}'" }
-            .joinToString(", ")
-        val artifactoryLibs = publishPlan.artifactoryLibs
-            .map { "'${it.getGAV()}'" }
-            .joinToString(", ")
+        val bintrayLibs =
+            publishPlan.bintrayLibs.joinToString(", ") { "'${it.getGAV()}'" }
+        val bintrayPlgins =
+            publishPlan.bintrayPlugins.joinToString(", ") { "'${it.pom.plugin?.id}:${it.variantVersion()}'" }
+        val artifactoryLibs =
+            publishPlan.artifactoryLibs.joinToString(", ") { "'${it.getGAV()}'" }
 
         val bintrayPublicationStr = "publication${if (publishPlan.bintrayLibs.size > 1) "s" else ""}"
         val bintrayPluginStr = "plugin${if (publishPlan.bintrayPlugins.size > 1) "s" else ""}"

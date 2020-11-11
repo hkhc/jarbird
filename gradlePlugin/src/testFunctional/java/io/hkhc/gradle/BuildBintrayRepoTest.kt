@@ -18,101 +18,112 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.BintrayPublishingChecker
+import io.hkhc.gradle.test.BintrayRepoResult
 import io.hkhc.gradle.test.Coordinate
+import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MockBintrayRepositoryServer
+import io.hkhc.gradle.test.buildGradleCustomBintray
+import io.hkhc.gradle.test.publishedToBintrayRepositoryCompletely
+import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
-import io.hkhc.utils.PropertiesEditor
-import io.hkhc.utils.StringNodeBuilder
-import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.fail
+import io.kotest.assertions.withClue
+import io.kotest.core.annotation.Tags
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.test.TestStatus
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.should
 
-@Suppress("MagicNumber")
-class BuildBintrayRepoTest {
+@Tags("Bintray", "Library")
+class BuildBintrayRepoTest : FunSpec({
 
-    @TempDir
-    lateinit var tempProjectDir: File
-    private lateinit var mockRepositoryServer: MockBintrayRepositoryServer
-    private lateinit var localRepoDir: File
-
-    @BeforeEach
-    fun setUp() {
-        mockRepositoryServer = MockBintrayRepositoryServer()
-    }
-
-    @AfterEach
-    fun teardown() {
-        mockRepositoryServer.teardown()
-    }
-
-    fun commonSetup(coordinate: Coordinate) {
-        mockRepositoryServer.setUp(coordinate, "/base")
-
-        File("$tempProjectDir/pom.yaml")
-            .writeText(simplePom(coordinate))
-        File("$tempProjectDir/build.gradle.kts")
-            .writeText(buildGradleCustomBintray())
-
-        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib").copyRecursively(tempProjectDir)
-
-        localRepoDir = File(tempProjectDir, "localRepo")
-        localRepoDir.mkdirs()
-        System.setProperty("maven.repo.local", localRepoDir.absolutePath)
-    }
-
-    @Test
-    fun `Normal release publish to Bintray Repository`() {
-
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
-        commonSetup(coordinate)
-
-        val username = "username"
-        val repo = "maven"
-
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-            "repository.bintray.release" to mockRepositoryServer.getServerUrl()
-            "repository.bintray.username" to username
-            "repository.bintray.apikey" to "password"
-        }
+    context("Publish library") {
 
         val targetTask = "jbPublishToBintray"
 
-        val taskTree = treeStr(
-            StringNodeBuilder(":$targetTask").build {
-                +":bintrayUpload" {
-                    +":_bintrayRecordingCopy" {
-                        +":signLibPublication ..>"
-                    }
-                    +":publishLibPublicationToMavenLocal" {
-                        +":dokkaJar ..>"
-                        +":generateMetadataFileForLibPublication ..>"
-                        +":generatePomFileForLibPublication"
-                        +":jar ..>"
-                        +":signLibPublication ..>"
-                        +":sourcesJar"
-                    }
+        fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+
+            val projectDir = tempDirectory()
+
+            return DefaultGradleProjectSetup(projectDir).apply {
+
+                setup()
+                mockServer = MockBintrayRepositoryServer().apply {
+                    setUp(coordinate, "/base")
+                }
+
+                writeFile("build.gradle.kts", buildGradleCustomBintray())
+
+                writeFile("pom.yaml", simplePom(coordinate))
+
+                setupGradleProperties {
+                    "repository.bintray.release" to mockServer?.getServerUrl()
+                    "repository.bintray.username" to "username"
+                    "repository.bintray.apikey" to "password"
+                }
+
+                this.expectedTaskList = expectedTaskList
+            }
+        }
+
+        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
+            afterTest {
+                setup.mockServer?.teardown()
+                if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
+                    FileTree().dump(setup.projectDir, System.out::println)
                 }
             }
-        )
 
-        assertTaskTree(targetTask, taskTree, 3, tempProjectDir)
+            test("execute task '$targetTask'") {
 
-        val result = runTask(targetTask, tempProjectDir)
+                val result = setup.getGradleTaskTester().runTask(targetTask)
 
-        FileTree().dump(tempProjectDir, System.out::println)
+                withClue("expected list of tasks executed with expected result") {
+                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList!!
+                }
 
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        BintrayPublishingChecker(coordinate).assertReleaseArtifacts(
-            mockRepositoryServer.collectRequests(),
-            username,
-            repo
-        )
+                setup.mockServer?.let { server ->
+                    BintrayRepoResult(
+                        server.collectRequests(),
+                        coordinate,
+                        "username",
+                        "maven",
+                        "jar"
+                    ) should publishedToBintrayRepositoryCompletely()
+                } ?: fail("mock server is not available")
+            }
+        }
+
+        context("to release Bintray Repository") {
+
+            val coordinate = Coordinate("test.group", "test.artifact", "0.1")
+            val setup = commonSetup(
+                coordinate,
+                listOf(
+                    ":dokka=SUCCESS",
+                    ":dokkaJar=SUCCESS",
+                    ":compileKotlin=SUCCESS",
+                    ":compileJava=SUCCESS",
+                    ":pluginDescriptors=SUCCESS",
+                    ":processResources=NO_SOURCE",
+                    ":classes=SUCCESS",
+                    ":inspectClassesForKotlinIC=SUCCESS",
+                    ":jar=SUCCESS",
+                    ":generateMetadataFileForLibPublication=SUCCESS",
+                    ":generatePomFileForLibPublication=SUCCESS",
+                    ":sourcesJar=SUCCESS",
+                    ":signLibPublication=SUCCESS",
+                    ":_bintrayRecordingCopy=SUCCESS",
+                    ":publishLibPublicationToMavenLocal=SUCCESS",
+                    ":bintrayUpload=SUCCESS",
+                    ":bintrayPublish=SUCCESS",
+                    ":jbPublishToBintray=SUCCESS"
+                )
+            )
+
+            testBody(coordinate, setup)
+        }
     }
-}
+})

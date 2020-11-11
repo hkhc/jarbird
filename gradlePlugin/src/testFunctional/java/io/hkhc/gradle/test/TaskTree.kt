@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.test
 
 import io.hkhc.utils.TextCutter
 import io.hkhc.utils.TextTree

@@ -20,38 +20,52 @@ package io.hkhc.gradle.test
 
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.file.shouldExist
 import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
+import isSnapshot
 import java.io.File
 
 class ArtifactChecker {
 
-    fun verifyRepository(repoDir: File, coordinate: Coordinate, packaging: String = "jar") {
+    fun verifyRepository(repoDir: File, coordinate: Coordinate, packaging: String) {
 
-        withClue("Repository directory $repoDir shall exists") {
-            repoDir.exists() shouldBe true
+        withClue("Repository directory '$repoDir' shall exists") {
+            repoDir.shouldExist()
         }
 
         val artifactPath = coordinate.getPath()
         val artifactDir = File(repoDir, artifactPath)
 
-        withClue("Artifactory directory $artifactDir in Local repository shall exists") {
-            artifactDir.exists() shouldBe true
+        withClue("Artifactory directory '$artifactDir' in Local repository shall exists") {
+            artifactDir.shouldExist()
         }
 
-        withClue("All expected are in local repository $repoDir, and not more") {
+        withClue("Local repository '$repoDir' shall contains deployed files, and not more") {
             with(coordinate) {
-                val files = artifactDir.listFiles()
+                val files = artifactDir.listFiles().map { it.relativeTo(artifactDir.parentFile) }
 
-                files.shouldNotBeNull()
-                files.toList() shouldContainExactlyInAnyOrder
+                var expectedFileList = (
                     listOf(".module", ".pom", ".$packaging", "-javadoc.jar", "-sources.jar")
                         .flatMap {
-                            listOf(
-                                File(artifactDir, "${getFilenameBase()}$it"),
-                                File(artifactDir, "${getFilenameBase()}$it.asc")
-                            )
+                            if (coordinate.version.isSnapshot()) {
+                                listOf(
+                                    File("$versionWithVariant/${getFilenameBase()}$it")
+                                )
+                            } else {
+                                listOf(
+                                    File("$versionWithVariant/${getFilenameBase()}$it"),
+                                    File("$versionWithVariant/${getFilenameBase()}$it.asc")
+                                )
+                            }
                         }
+                    )
+
+                if (version.isSnapshot()) {
+                    expectedFileList += listOf(File("$versionWithVariant/maven-metadata-local.xml"))
+                }
+
+                files.shouldNotBeNull()
+                files shouldContainExactlyInAnyOrder expectedFileList
             }
         }
     }

@@ -23,7 +23,7 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 
-class BintrayPublishingChecker(val coordinate: Coordinate, private val packaging: String = "jar") {
+class BintrayPublishingChecker(val coordinate: Coordinate, private val packaging: String) {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
         val matched = requests
@@ -46,10 +46,6 @@ class BintrayPublishingChecker(val coordinate: Coordinate, private val packaging
 
     fun assertReleaseArtifacts(recordedRequests: List<RecordedRequest>, username: String, repo: String) {
         assertArtifacts(recordedRequests, ::transformReleaseVersion, username, repo)
-    }
-
-    fun assertSnapshotArtifacts(recordedRequests: List<RecordedRequest>, username: String, repo: String) {
-        assertArtifacts(recordedRequests, ::transformSnapshotVersion, username, repo)
     }
 
     fun assertArtifacts(

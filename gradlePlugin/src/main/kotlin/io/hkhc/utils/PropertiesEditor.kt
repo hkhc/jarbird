@@ -41,7 +41,7 @@ class PropertiesEditor(val filename: String, spec: PropertiesEditor.() -> Unit) 
         }
     }
 
-    infix fun String.to(that: String) {
+    infix fun String.to(that: String?) {
         props.setProperty(this, that)
     }
 

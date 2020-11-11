@@ -37,7 +37,7 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 class ArtifactoryConfig(
     private val project: Project,
     private val extension: JarbirdExtension,
-    private val pubs: List<JarbirdPub>
+    pubs: List<JarbirdPub>
 ) {
 
     private var repoUrl = "https://oss.jfrog.org"
@@ -47,8 +47,8 @@ class ArtifactoryConfig(
 
     fun config() {
 
-        // TODO we should have one bintray repository per project. need precheck before proceed
-        repoUrl = extension.bintrayRepository?.snapshotUrl ?: repoUrl
+        val customRepoUrl = extension.bintrayRepository?.snapshotUrl ?: ""
+        if (customRepoUrl != "") repoUrl = customRepoUrl
 
         val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
         when {
@@ -118,52 +118,6 @@ class ArtifactoryConfig(
         project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
             @Suppress("SpreadOperator")
             publications(*artifactoryLibNames)
-            if (project.isMultiProjectRoot()) {
-                skip = true
-            }
-        }
-    }
-
-    private fun ArtifactoryPluginConvention.config() {
-
-        project.logger.debug("$LOG_PREFIX configure Artifactory plugin")
-
-        setContextUrl("https://oss.jfrog.org")
-        publish(
-            delegateClosureOf<PublisherConfig> {
-                repository(
-                    delegateClosureOf<GroovyObject> {
-                        setProperty("repoKey", "oss-snapshot-local")
-                        setProperty("username", pubConfig.bintrayUsername)
-                        setProperty("password", pubConfig.bintrayApiKey)
-                        setProperty("maven", true)
-                    }
-                )
-                defaults(
-                    delegateClosureOf<GroovyObject> {
-                        invokeMethod("publications", artifactoryLibNames)
-                        setProperty("publishBuildInfo", true)
-                        setProperty("publishArtifacts", true)
-                        setProperty("publishPom", true)
-                        setProperty("publishIvy", false)
-                    }
-                )
-            }
-        )
-
-        resolve(
-            delegateClosureOf<ResolverConfig> {
-                setProperty("repoKey", "jcenter")
-            }
-        )
-
-        project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
-            // TODO Not support artifactory snapshot gradle plugin at the moment
-//            if (pub.gradlePlugin) {
-//                publications(pubName, "${pubName}PluginMarkerMaven")
-//            } else {
-            publications(*artifactoryLibNames)
-//            }
             if (project.isMultiProjectRoot()) {
                 skip = true
             }

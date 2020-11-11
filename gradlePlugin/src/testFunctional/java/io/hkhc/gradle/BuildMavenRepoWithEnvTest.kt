@@ -21,6 +21,12 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.MavenPublishingChecker
 import io.hkhc.gradle.test.MockMavenRepositoryServer
+import io.hkhc.gradle.test.assertTaskTree
+import io.hkhc.gradle.test.buildGradle
+import io.hkhc.gradle.test.runTask
+import io.hkhc.gradle.test.setupKeyStore
+import io.hkhc.gradle.test.simplePom
+import io.hkhc.gradle.test.treeStr
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.StringNodeBuilder
 import org.gradle.testkit.runner.TaskOutcome
@@ -98,6 +104,6 @@ class BuildMavenRepoWithEnvTest {
         val result = runTask(targetTask, tempProjectDir)
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":$targetTask")?.outcome)
-        MavenPublishingChecker(coordinate).assertReleaseArtifacts(mockRepositoryServer.collectRequests())
+        MavenPublishingChecker(coordinate, "jar").assertReleaseArtifacts(mockRepositoryServer.collectRequests())
     }
 }

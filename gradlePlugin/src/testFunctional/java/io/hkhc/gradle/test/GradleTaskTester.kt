@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.test
 
-import io.hkhc.gradle.getTestGradleHomePair
 import io.kotest.assertions.withClue
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -28,7 +27,7 @@ import java.io.File
 
 class GradleTaskTester(
     private val projectDir: File,
-    private val envs: Map<String, String> = io.hkhc.gradle.defaultEnvs(projectDir)
+    private val envs: Map<String, String> = io.hkhc.gradle.test.defaultEnvs(projectDir)
 ) {
 
     private fun defaultEnvs(projectDir: File) = mutableMapOf(
@@ -56,7 +55,7 @@ class GradleTaskTester(
             .withEnvironment(envs)
             .withArguments("--stacktrace", *tasks)
             .withPluginClasspath()
-//        .forwardOutput()
+            .forwardOutput()
             .build()
     }
 }

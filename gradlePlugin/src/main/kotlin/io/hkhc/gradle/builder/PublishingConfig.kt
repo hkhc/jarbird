@@ -24,7 +24,6 @@ import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.PUBLISH_GROUP
 import io.hkhc.gradle.SP_EXT_NAME
 import io.hkhc.gradle.maven.MavenPomAdapter
-import io.hkhc.gradle.maven.mavenCentral
 import io.hkhc.gradle.utils.LOG_PREFIX
 import io.hkhc.gradle.utils.detailMessageWarning
 import org.gradle.api.GradleException
@@ -144,7 +143,7 @@ class PublishingConfig(
 
         pubs.filter { it.maven }.forEach { pub ->
             // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
-            val endpoint = pub.mavenRepository ?: project.mavenCentral()
+            val endpoint = pub.mavenRepository
 
             maven {
                 name = "Maven${pub.pubNameWithVariant().capitalize()}"

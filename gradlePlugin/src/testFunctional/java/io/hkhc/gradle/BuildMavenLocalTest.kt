@@ -18,135 +18,81 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.ArtifactChecker
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.gradle.test.GradleTaskTester
+import io.hkhc.gradle.test.DefaultGradleProjectSetup
+import io.hkhc.gradle.test.LocalRepoResult
+import io.hkhc.gradle.test.publishToMavenLocalCompletely
+import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
-import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
-import io.kotest.core.spec.style.StringSpec
+import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
-import io.kotest.matchers.shouldBe
-import org.gradle.testkit.runner.TaskOutcome
-import java.io.File
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.should
 
-@Suppress("MagicNumber")
 @Tags("Library", "MavenLocal")
-class BuildMavenLocalTest : StringSpec({
+class BuildMavenLocalTest : FunSpec({
 
-    lateinit var tempProjectDir: File
-    lateinit var tester: GradleTaskTester
-
-    lateinit var localRepoDir: File
-
-//    lateinit var envs: Map<String, String>
-
-    fun commonSetup(coordinate: Coordinate) {
-
-        File("functionalTestData/keystore").copyRecursively(tempProjectDir)
-        File("functionalTestData/lib").copyRecursively(tempProjectDir)
-        localRepoDir = File(tempProjectDir, "localRepo")
-        localRepoDir.mkdirs()
-        System.setProperty("maven.repo.local", localRepoDir.absolutePath)
-
-        File("$tempProjectDir/build.gradle").writeText(
-            """
-            plugins {
-                id 'java'
-                id 'io.hkhc.jarbird'
-            }
-            repositories {
-                jcenter()
-            }
-            """.trimIndent()
-        )
-
-        File("$tempProjectDir/pom.yaml")
-            .writeText(simplePom(coordinate))
-
-        PropertiesEditor("$tempProjectDir/gradle.properties") {
-            setupKeyStore(tempProjectDir)
-        }
-
-        tester = GradleTaskTester(
-            tempProjectDir,
-            mutableMapOf(
-                getTestGradleHomePair(tempProjectDir)
-            )
-        )
-    }
-
-    beforeTest {
-        tempProjectDir = tempDirectory()
-    }
-
-    afterTest {
-        if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-            FileTree().dump(tempProjectDir, System.out::println)
-        }
-    }
-
-    // TODO need a test for zero pub
-
-    "Zero Gradle Test" {
+    context("Publish library to Maven local") {
 
         val coordinate = Coordinate("test.group", "test.artifact", "0.1")
-        commonSetup(coordinate)
-
-        val result = tester.runTask("tasks")
-        result.task(":tasks")?.outcome shouldBe TaskOutcome.SUCCESS
-    }
-
-    "Normal publish to Maven Local" {
-
-        val coordinate = Coordinate("test.group", "test.artifact", "0.1")
-        commonSetup(coordinate)
-
         val targetTask = "jbPublishToMavenLocal"
+        val projectDir = tempDirectory()
+        lateinit var setup: DefaultGradleProjectSetup
 
-        val result = tester.runTask(targetTask)
+        beforeTest {
 
-        withClue("expected list of tasks executed with expected result") {
-            result.tasks.map { it.toString() } shouldBe listOf(
-                ":dokka=SUCCESS",
-                ":dokkaJar=SUCCESS",
-                ":compileJava=SUCCESS",
-                ":processResources=NO_SOURCE",
-                ":classes=SUCCESS",
-                ":jar=SUCCESS",
-                ":generateMetadataFileForLibPublication=SUCCESS",
-                ":generatePomFileForLibPublication=SUCCESS",
-                ":sourcesJar=SUCCESS",
-                ":signLibPublication=SUCCESS",
-                ":publishLibPublicationToMavenLocal=SUCCESS",
-                ":jbPublishLibToMavenLocal=SUCCESS",
-                ":jbPublishToMavenLocal=SUCCESS"
+            setup = DefaultGradleProjectSetup(projectDir).setup()
+
+            setup.writeFile(
+                "build.gradle",
+                """
+                plugins {
+                    id 'java'
+                    id 'io.hkhc.jarbird'
+                }
+                repositories {
+                    jcenter()
+                }
+                """.trimIndent()
             )
+
+            setup.writeFile("pom.yaml", simplePom(coordinate))
+
+            setup.setupGradleProperties()
         }
 
-//        result.tasks.forEach {
-//            System.out.println("\"${it}\",")
-//        }
+        afterTest {
+            if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
+                FileTree().dump(projectDir, System.out::println)
+            }
+        }
 
-        ArtifactChecker().verifyRepository(localRepoDir, coordinate)
+        test("execute task '$targetTask'") {
+
+            val result = setup.getGradleTaskTester().runTask(targetTask)
+
+            withClue("expected list of tasks executed with expected result") {
+                result.tasks.map { it.toString() } shouldContainExactly listOf(
+                    ":dokka=SUCCESS",
+                    ":dokkaJar=SUCCESS",
+                    ":compileJava=SUCCESS",
+                    ":processResources=NO_SOURCE",
+                    ":classes=SUCCESS",
+                    ":jar=SUCCESS",
+                    ":generateMetadataFileForLibPublication=SUCCESS",
+                    ":generatePomFileForLibPublication=SUCCESS",
+                    ":sourcesJar=SUCCESS",
+                    ":signLibPublication=SUCCESS",
+                    ":publishLibPublicationToMavenLocal=SUCCESS",
+                    ":jbPublishLibToMavenLocal=SUCCESS",
+                    ":jbPublishToMavenLocal=SUCCESS"
+                )
+            }
+
+            LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should publishToMavenLocalCompletely()
+        }
     }
 })
-
-//        val taskTree = treeStr(
-//            StringNodeBuilder(":$targetTask").build {
-//                +":jbPublishLibToMavenLocal" {
-//                    +":publishLibPublicationToMavenLocal" {
-//                        +":dokkaJar ..>"
-//                        +":generateMetadataFileForLibPublication ..>"
-//                        +":generatePomFileForLibPublication"
-//                        +":jar ..>"
-//                        +":signLibPublication ..>"
-//                        +":sourcesJar"
-//                    }
-//                }
-//            }
-//        )
-//
-//        assertTaskTree(targetTask, taskTree, 3, tempProjectDir)

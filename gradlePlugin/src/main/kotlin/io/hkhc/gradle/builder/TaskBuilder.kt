@@ -101,7 +101,7 @@ class TaskBuilder(
             }.get()
 
             pubs.forEach { pub ->
-                pub.mavenRepository?.let { repo ->
+                pub.mavenRepository.let { repo ->
                     register("jbPublish${getPubNameCap(pub)}To${repo.name}") {
                         group = SP_GROUP
 
