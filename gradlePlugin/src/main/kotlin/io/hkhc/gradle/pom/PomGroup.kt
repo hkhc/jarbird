@@ -20,47 +20,48 @@ package io.hkhc.gradle.pom
 
 class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
 
-    /* Unflattened groups */
+    private var defaultPom = Pom()
+
     /**
-     * Directly map the initial POMs, including the default POM if exists.
+     * Directly map the initial POMs, default POM is not included
      */
-    private val rawGroup = mutableMapOf<String, Pom>().apply {
-        pomIterable.forEach { add(this, it) }
-    }
+    private val rawGroup = mutableMapOf<String, Pom>()
 
     /* Flattened groups */
     /**
-     * merge the groups with default group. Default group may still be present,
-     * and it is merged with upstream default group
+     * merge the groups with default group. Default group is not present here,
      */
-    private val group: MutableMap<String, Pom> = mutableMapOf<String, Pom>().apply {
+    private val group: MutableMap<String, Pom> = mutableMapOf()
 
-        val defaultPom = rawGroup[Pom.DEFAULT_VARIANT]
+    init {
+        pomIterable.forEach { add(it) }
+    }
 
-        rawGroup.forEach {
-            val newPom = Pom(variant = it.key)
-            defaultPom?.overlayTo(newPom)
-            if (it.key != Pom.DEFAULT_VARIANT) {
-                it.value.overlayTo(newPom)
-            }
-            add(this, newPom)
+    // defaultPom overlayTo raw group item to create new group item
+    private fun updatePom(key: String) {
+        val newPom = Pom(variant = key)
+        rawGroup[key]?.let { rawRom ->
+            defaultPom.overlayTo(newPom)
+            rawRom.overlayTo(newPom)
+            group[key] = newPom
         }
     }
 
-    private fun add(groups: MutableMap<String, Pom>, pom: Pom) {
-        if (groups.containsKey(pom.variant)) {
-            if (pom.variant == Pom.DEFAULT_VARIANT) {
-                throw IllegalArgumentException("POM with default variant has already existed.")
-            } else {
+    private fun add(pom: Pom) {
+        if (pom.variant == Pom.DEFAULT_VARIANT) {
+            defaultPom = pom
+        } else {
+            if (rawGroup.containsKey(pom.variant)) {
                 throw IllegalArgumentException("POM with variant '${pom.variant}' has already existed.")
             }
+            rawGroup[pom.variant] = pom
+            updatePom(pom.variant)
         }
-        groups[pom.variant] = pom
     }
 
-    operator fun get(variant: String) = (if (variant == "") group[Pom.DEFAULT_VARIANT] else group[variant]) ?: Pom()
+    operator fun get(variant: String) = (if (variant == "") defaultPom else group[variant]) ?: Pom()
 
-    fun getDefault() = group[Pom.DEFAULT_VARIANT] ?: Pom()
+    fun getDefault() = defaultPom
 
     override fun overlayTo(other: Overlayable): Overlayable {
 
@@ -70,34 +71,18 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
     }
 
     fun overlaidFrom(upstream: PomGroup) {
-        val upstreamDefault = upstream.rawGroup[Pom.DEFAULT_VARIANT]
-        val rawDefault = rawGroup[Pom.DEFAULT_VARIANT]
-        val newDefault = Pom()
 
-        rawDefault?.let {
-            it.overlayTo(newDefault)
-            group[Pom.DEFAULT_VARIANT] = newDefault
-        }
-        upstreamDefault?.let {
-            it.overlayTo(newDefault)
-            group[Pom.DEFAULT_VARIANT] = newDefault
-        }
+        upstream.defaultPom.overlayTo(defaultPom)
 
-        val newDefault2 = group[Pom.DEFAULT_VARIANT]
-
-        rawGroup.forEach {
-            val newPom = Pom(variant = it.key)
-            newDefault2?.overlayTo(newPom)
-            if (it.key != Pom.DEFAULT_VARIANT) {
-                it.value.overlayTo(newPom)
-                upstream.rawGroup[it.key]?.overlayTo(newPom)
-            }
-            group[it.key] = newPom
+        rawGroup.forEach { rawEntry ->
+            upstream.rawGroup[rawEntry.key]?.overlayTo(rawEntry.value)
+            updatePom(rawEntry.key)
         }
-        upstream.group.entries.filter { !rawGroup.containsKey(it.key) }.forEach {
-            val newPom = Pom(variant = it.key)
-            it.value.overlayTo(newPom)
-            group[it.key] = newPom
+        upstream.rawGroup.entries.filter { !rawGroup.containsKey(it.key) }.forEach {
+            val newRawPom = Pom(variant = it.key)
+            it.value.overlayTo(newRawPom)
+            rawGroup[it.key] = newRawPom
+            updatePom(it.key)
         }
     }
 

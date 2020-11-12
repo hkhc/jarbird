@@ -199,10 +199,10 @@ class PomFactoryTest : StringSpec({
             OverrideMode.SetOrOverride
         ) {
             PomGroupFactory(project).getPomFileList().map { it.path } shouldBe listOf(
-                "dir0/.gradle/pom.yaml",
-                "${project.rootDir}/pom.yaml",
+                "my-pom.yaml",
                 "${project.projectDir}/pom.yaml",
-                "my-pom.yaml"
+                "${project.rootDir}/pom.yaml",
+                "dir0/.gradle/pom.yaml"
             )
         }
     }

@@ -60,14 +60,21 @@ class PomGroupFactory(val project: Project) {
      */
     fun getPomFileList(): List<File> {
         return mutableListOf<File>().apply {
-            getGradleUserHome()?.let { add(File(pomPath(it))) }
-            add(File(pomPath(project.rootDir.absolutePath)))
-            add(File(pomPath(project.projectDir.absolutePath)))
             System.getProperty("pomFile")?.let { add(File(it)) }
+            if (project.projectDir != project.rootDir) {
+                add(File(pomPath(project.projectDir.absolutePath)))
+            }
+            add(File(pomPath(project.rootDir.absolutePath)))
+            getGradleUserHome()?.let { add(File(pomPath(it))) }
         }
     }
 
     fun resolvePomGroup(files: List<File>): PomGroup {
+
+        files.forEach {
+            println("POM file : ${it} ${it.exists()}")
+        }
+
         return files
             .map { readPom(it) }
             .fold(PomGroup()) { acc, currPomGroup -> acc.also { currPomGroup.overlayTo(it) } }

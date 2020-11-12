@@ -20,6 +20,7 @@ package io.hkhc.gradle.pom
 
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -38,9 +39,10 @@ class PomGroupTest : StringSpec({
             listOf(
                 Pom(group = "test.group1")
             )
-        ).getMap() shouldContainExactly mapOf(
-            Pom.DEFAULT_VARIANT to Pom(variant = Pom.DEFAULT_VARIANT, group = "test.group1")
-        )
+        ).apply {
+            getMap() shouldContainExactly mapOf()
+            getDefault() shouldBe Pom(variant = Pom.DEFAULT_VARIANT, group = "test.group1")
+        }
     }
 
     "Create a POM group with list of Pom" {
@@ -63,11 +65,13 @@ class PomGroupTest : StringSpec({
                 Pom(variant = "v1", group = "test.group1"),
                 Pom(variant = "v2", group = "test.group2", description = "group2 description")
             )
-        ).getMap() shouldContainExactly mapOf(
-            Pom.DEFAULT_VARIANT to Pom(description = "common description"),
-            "v1" to Pom(variant = "v1", group = "test.group1", description = "common description"),
-            "v2" to Pom(variant = "v2", group = "test.group2", description = "group2 description")
-        )
+        ).apply {
+            getMap() shouldContainExactly mapOf(
+                "v1" to Pom(variant = "v1", group = "test.group1", description = "common description"),
+                "v2" to Pom(variant = "v2", group = "test.group2", description = "group2 description")
+            )
+            getDefault() shouldBe Pom(description = "common description")
+        }
     }
 
     "Load POMGroup with variant" {
@@ -150,20 +154,74 @@ class PomGroupTest : StringSpec({
             )
         ) as PomGroup
 
-        pomGroup.getMap() shouldContainExactly mapOf(
-            Pom.DEFAULT_VARIANT to Pom(description = "common description", name = "package name"),
-            "v1" to Pom(
-                variant = "v1",
-                group = "test.group1",
-                name = "package name",
-                description = "common description"
-            ),
-            "v2" to Pom(
-                variant = "v2",
-                group = "test.group2",
-                name = "package name",
-                description = "group2 description"
+        pomGroup.apply {
+            getMap() shouldContainExactly mapOf(
+                "v1" to Pom(
+                    variant = "v1",
+                    group = "test.group1",
+                    name = "package name",
+                    description = "common description"
+                ),
+                "v2" to Pom(
+                    variant = "v2",
+                    group = "test.group2",
+                    name = "package name",
+                    description = "group2 description"
+                )
+            )
+            getDefault() shouldBe Pom(description = "common description", name = "package name")
+        }
+
+    }
+
+    "Poms for root project and subproject" {
+        val rootPomFile = tempfile().apply {
+            writeText(
+                """
+            group: io.hkhc.log
+            version: 0.5.3-SNAPSHOT
+            description: Easy Kotlin Logging Library
+
+            licenses:
+              - name: Apache-2.0
+                dist: repo
+
+            developers:
+              - id: hkhc
+                name: Herman Cheung
+                email: herman.kh.cheung+ihlog@gmail.com
+
+            scm:
+              repoType: github.com
+              repoName: hkhc/ihlog
+
+                """.trimIndent()
+            )
+        }
+
+        val subPomFile = tempfile().apply {
+            writeText(
+                """
+            artifactId: ihlog
+            version: 0.5.3-SNAPSHOT
+            packaging: jar
+                """.trimIndent()
+            )
+        }
+
+        val pomGroup = PomGroupFactory(mockk()).resolvePomGroup(
+            listOf(
+                rootPomFile,
+                subPomFile
             )
         )
+
+        val defaultPom = pomGroup.getDefault()
+
+        with(defaultPom) {
+            group shouldBe "io.hkhc.log"
+            artifactId shouldBe "ihlog"
+            version shouldBe "0.5.3-SNAPSHOT"
+        }
     }
 })
