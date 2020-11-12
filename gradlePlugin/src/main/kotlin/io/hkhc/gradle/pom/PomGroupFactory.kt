@@ -71,10 +71,6 @@ class PomGroupFactory(val project: Project) {
 
     fun resolvePomGroup(files: List<File>): PomGroup {
 
-        files.forEach {
-            println("POM file : ${it} ${it.exists()}")
-        }
-
         return files
             .map { readPom(it) }
             .fold(PomGroup()) { acc, currPomGroup -> acc.also { currPomGroup.overlayTo(it) } }

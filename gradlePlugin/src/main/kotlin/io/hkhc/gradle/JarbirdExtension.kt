@@ -37,6 +37,7 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
         val newPub = JarbirdPub(project)
         pubList.add(newPub)
         action.delegate = newPub
+        action.resolveStrategy = Closure.DELEGATE_FIRST
         action.call()
         pomGroupCallback.initPub(newPub)
     }
@@ -47,6 +48,7 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
         pomGroupCallback.initPub(newPub)
         pubList.add(newPub)
         action.delegate = newPub
+        action.resolveStrategy = Closure.DELEGATE_FIRST
         action.call()
     }
 
