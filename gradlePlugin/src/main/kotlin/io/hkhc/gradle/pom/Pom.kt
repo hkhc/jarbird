@@ -243,6 +243,7 @@ data class Pom(
 
         const val DEFAULT_VARIANT = "---DEFAULT-POM---"
 
+        @Suppress("UNCHECKED_CAST")
         fun <T : Overlayable> overlayToList(me: List<T>, other: List<T>, matcher: (T, T) -> Boolean): MutableList<T> {
             return mutableListOf<T>().also { newList ->
                 // add those

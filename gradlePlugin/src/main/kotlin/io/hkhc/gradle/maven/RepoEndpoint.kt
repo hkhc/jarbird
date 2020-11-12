@@ -26,7 +26,14 @@ import org.gradle.api.Project
 interface RepoEndpoint {
 
     companion object {
-        fun create(release: String, snapshot: String, username: String, password: String, apikey: String = ""):
+
+        fun create(
+            release: String,
+            snapshot: String,
+            username: String,
+            password: String,
+            @Suppress("UNUSED_PARAMETER") apikey: String = ""
+        ):
             RepoEndpoint {
                 return SimpleRepoEndpoint(release, snapshot, username, password)
             }
