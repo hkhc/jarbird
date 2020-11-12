@@ -41,6 +41,24 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
     /* mock server to mimic repository servers to accept requests for test */
     var mockServer: BaseMockRepositoryServer? = null
 
+    var mavenMockServer: MockMavenRepositoryServer? = null
+        set(value) {
+            if (mockServer == null) mockServer = value
+            field = value
+        }
+
+    var bintrayMockServer: MockBintrayRepositoryServer? = null
+        set(value) {
+            if (mockServer == null) mockServer = value
+            field = value
+        }
+
+    var artifactoryMockServer: MockArtifactoryRepositoryServer? = null
+        set(value) {
+            if (mockServer == null) mockServer = value
+            field = value
+        }
+
     /* expect list of tasks executed in the Gradle run, should be prefixed by ':' or ':proj:' */
     var expectedTaskList: List<String>? = null
 

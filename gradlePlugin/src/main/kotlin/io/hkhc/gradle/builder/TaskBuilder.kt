@@ -91,10 +91,10 @@ class TaskBuilder(
 
         if (project.isMultiProjectRoot()) {
             // TODO we shall check POM group that pubName is not duplicated among variants.
-            pubs.forEach { pub ->
+            pubs.filter { it.maven }.forEach { pub ->
                 registerRootProjectTasks("jbPublishTo${getMavenRepo(pub)}")
             }
-        } else {
+        } else if (pubs.any { it.maven }) {
 
             val jbPublishToMavenRepository = register("jbPublishToMavenRepository") {
                 group = SP_GROUP
@@ -181,7 +181,9 @@ class TaskBuilder(
                     // assemble a list of repositories
                     val repoList = mutableListOf<String>()
                     repoList.add("Maven Local")
-                    repoList.add("'Maven${getPubNameCap(pub)}' Repository")
+                    if (pub.maven) {
+                        repoList.add("'Maven${getPubNameCap(pub)}' Repository")
+                    }
                     if (pub.bintray) {
                         repoList.add("Bintray")
                     }
@@ -201,7 +203,9 @@ class TaskBuilder(
                     // TODO depends on jbPublish{pubName}To{mavenLocal}
                     // TODO depends on jbPublish{pubName}To{mavenRepository}
                     dependsOn("jbPublish${getPubNameCap(pub)}To$mavenLocal")
-                    dependsOn("jbPublish${getPubNameCap(pub)}ToMavenRepository")
+                    if (pub.maven) {
+                        dependsOn("jbPublish${getPubNameCap(pub)}ToMavenRepository")
+                    }
                 }
 
                 jbPublish.dependsOn("jbPublish${getPubNameCap(pub)}")

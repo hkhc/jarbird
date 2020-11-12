@@ -107,7 +107,7 @@ fun pluginPom(id: String, className: String): String {
 
 // jcenter is required by dokka, mavenCentral alone is not enough
 
-fun buildGradle(): String {
+fun buildGradle(maven: Boolean = true, bintray: Boolean = true): String {
     return """
         plugins {
             kotlin("jvm") version "1.3.72"
@@ -121,6 +121,8 @@ fun buildGradle(): String {
         jarbird {
             pub {
                 withMavenByProperties("mock")
+                ${if (!maven) "maven = false" else ""}
+                ${if (!bintray) "bintray = false" else ""}
             }
         }
     """.trimIndent()
