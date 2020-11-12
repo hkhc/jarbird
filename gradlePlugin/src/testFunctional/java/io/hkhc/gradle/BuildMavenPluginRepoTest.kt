@@ -36,7 +36,9 @@ import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import isSnapshot
+import java.io.File
 
 /**
  * snapshot / release
@@ -127,6 +129,10 @@ class BuildMavenPluginRepoTest : FunSpec({
                 withClue("expected list of tasks executed with expected result") {
                     result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList!!
                 }
+
+                val pluginPom = File(setup.projectDir, "build/publications/libPluginMarkerMaven/pom-default.xml")
+                    .readText()
+                pluginPom shouldBe pluginPom(coordinate)
 
                 setup.mockServer?.let { server ->
                     MavenRepoResult(

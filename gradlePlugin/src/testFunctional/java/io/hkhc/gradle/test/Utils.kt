@@ -19,11 +19,12 @@
 package io.hkhc.gradle.test
 
 import io.hkhc.utils.PropertiesEditor
-import junit.framework.Assert.assertTrue
+import io.kotest.assertions.withClue
+import io.kotest.matchers.file.shouldExist
+import io.kotest.matchers.nulls.shouldNotBeNull
 import org.gradle.api.GradleException
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.junit.jupiter.api.Assertions.assertNotNull
 import java.io.File
 import java.io.StringWriter
 
@@ -102,6 +103,29 @@ fun pluginPom(id: String, className: String): String {
             id: $id
             displayName: Testing Plugin
             implementationClass: $className
+    """.trimIndent()
+}
+
+fun pluginPom(coordinate: Coordinate): String {
+
+    return """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <modelVersion>4.0.0</modelVersion>
+      <groupId>${coordinate.pluginId}</groupId>
+      <artifactId>${coordinate.pluginId}.gradle.plugin</artifactId>
+      <version>${coordinate.versionWithVariant}</version>
+      <packaging>pom</packaging>
+      <name>Testing Plugin</name>
+      <dependencies>
+        <dependency>
+          <groupId>${coordinate.group}</groupId>
+          <artifactId>${coordinate.artifactIdWithVariant}</artifactId>
+          <version>${coordinate.versionWithVariant}</version>
+        </dependency>
+      </dependencies>
+    </project>
+    
     """.trimIndent()
 }
 
@@ -291,9 +315,13 @@ fun runTask(
     )
 ): BuildResult {
 
-    assertTrue("Project directory '$projectDir' shall exist", projectDir.exists())
+    withClue("\"Project directory '$projectDir' shall exist\"") {
+        projectDir.shouldExist()
+    }
     envs.forEach {
-        assertNotNull("Environment Variable '${it.key}' should have non null value", it.value)
+        withClue("Environment Variable '${it.key}' should have non null value") {
+            it.value.shouldNotBeNull()
+        }
     }
 
     return GradleRunner.create()
@@ -312,9 +340,13 @@ fun runTaskWithOutput(
     envs: Map<String, String> = defaultEnvs(projectDir)
 ): BuildOutput {
 
-    assertTrue("Project directory '$projectDir' shall exist", projectDir.exists())
+    withClue("\"Project directory '$projectDir' shall exist\"") {
+        projectDir.shouldExist()
+    }
     envs.forEach {
-        assertNotNull("Environment Variable '${it.key}' should have non null value", it.value)
+        withClue("Environment Variable '${it.key}' should have non null value") {
+            it.value.shouldNotBeNull()
+        }
     }
 
     val stdout = StringWriter()

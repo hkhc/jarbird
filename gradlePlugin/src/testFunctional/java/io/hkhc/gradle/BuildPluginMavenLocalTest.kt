@@ -32,6 +32,8 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
+import java.io.File
 
 @Tags("Plugin", "MavenLocal")
 class BuildPluginMavenLocalTest : FunSpec({
@@ -101,6 +103,15 @@ class BuildPluginMavenLocalTest : FunSpec({
                     ":jbPublishToMavenLocal=SUCCESS"
                 )
             }
+
+            val pluginPom = File(
+                setup.localRepoDirFile,
+                "${coordinate.pluginId?.replace('.','/')}/" +
+                    "${coordinate.pluginId}.gradle.plugin/${coordinate.versionWithVariant}/" +
+                    "${coordinate.pluginId}.gradle.plugin-${coordinate.versionWithVariant}.pom"
+            ).readText()
+
+            pluginPom shouldBe pluginPom(coordinate)
 
             LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should publishToMavenLocalCompletely()
         }
