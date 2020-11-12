@@ -249,6 +249,10 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                 project.pluginManager.apply(JavaGradlePluginPlugin::class.java)
 
                 PublicationBuilder(project, extension, extension.pubList).buildPhase2()
+            }
+
+            // Give a change for JavaGradlePluginPlugin to setup marker publication before we can patch it.
+            project.afterEvaluate {
                 PublicationBuilder(project, extension, extension.pubList).buildPhase3()
             }
 
