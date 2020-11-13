@@ -22,9 +22,10 @@ import groovy.lang.GroovyObject
 import io.hkhc.gradle.BintrayPublishConfig
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.isMultiProjectRoot
-import io.hkhc.gradle.isSingleProject
-import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.internal.pubNameWithVariant
+import io.hkhc.gradle.internal.isMultiProjectRoot
+import io.hkhc.gradle.internal.isSingleProject
+import io.hkhc.gradle.internal.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName
@@ -64,7 +65,6 @@ class ArtifactoryConfig(
                 configTask()
             }
         }
-//        project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory").config()
     }
 
     private fun ArtifactoryPluginConvention.configSingle(isRootProject: Boolean) {

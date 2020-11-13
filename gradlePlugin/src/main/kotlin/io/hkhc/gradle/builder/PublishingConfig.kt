@@ -18,13 +18,16 @@
 
 package io.hkhc.gradle.builder
 
-import io.hkhc.gradle.CLASSIFIER_JAVADOC
-import io.hkhc.gradle.CLASSIFIER_SOURCE
+import io.hkhc.gradle.internal.CLASSIFIER_JAVADOC
+import io.hkhc.gradle.internal.CLASSIFIER_SOURCE
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.PUBLISH_GROUP
-import io.hkhc.gradle.SP_EXT_NAME
+import io.hkhc.gradle.internal.JarbirdPubImpl
+import io.hkhc.gradle.internal.PUBLISH_GROUP
+import io.hkhc.gradle.internal.SP_EXT_NAME
+import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.maven.MavenPomAdapter
-import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.internal.LOG_PREFIX
+import io.hkhc.gradle.internal.pubNameCap
 import io.hkhc.gradle.utils.detailMessageWarning
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -40,9 +43,9 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 
-class PublishingConfig(
+internal class PublishingConfig(
     private val project: Project,
-    private val pubs: List<JarbirdPub>
+    private val pubs: List<JarbirdPubImpl>
 ) {
     private val extensions = (project as ExtensionAware).extensions
     // TODO we shall have one separate dokka task per pub
@@ -143,10 +146,10 @@ class PublishingConfig(
 
         pubs.filter { it.maven }.forEach { pub ->
             // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
-            val endpoint = pub.mavenRepository
+            val endpoint = pub.mavenRepo
 
             maven {
-                name = "Maven${pub.pubNameWithVariant().capitalize()}"
+                name = "Maven${pub.pubNameCap}"
                 val endpointUrl =
                     if (pub.pom.isSnapshot()) {
                         endpoint.snapshotUrl
@@ -171,6 +174,8 @@ class PublishingConfig(
         return try {
             project.tasks.named(dokkaJarTaskName, Jar::class.java) {
                 group = PUBLISH_GROUP
+                // TODO description
+                description = "TODO..."
                 archiveClassifier.set(CLASSIFIER_JAVADOC)
                 archiveBaseName.set(pub.variantArtifactId())
                 archiveVersion.set(pub.variantVersion())

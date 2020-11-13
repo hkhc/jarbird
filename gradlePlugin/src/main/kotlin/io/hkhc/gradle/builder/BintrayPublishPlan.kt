@@ -19,6 +19,8 @@
 package io.hkhc.gradle.builder
 
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.internal.pubNameCap
+import io.hkhc.gradle.internal.pubNameWithVariant
 
 class BintrayPublishPlan(private val pubs: List<JarbirdPub>) {
     val bintray: MutableList<JarbirdPub> = mutableListOf()
@@ -54,7 +56,7 @@ class BintrayPublishPlan(private val pubs: List<JarbirdPub>) {
     fun bintrayPublications(): List<String> {
         return mutableListOf<String>().apply {
             addAll(bintrayLibs.map { it.pubNameWithVariant() })
-            addAll(bintrayPlugins.map { "${it.pubNameWithVariant()}PluginMarkerMaven" })
+            addAll(bintrayPlugins.map { "${it.pubNameWithVariant()}$PLUGIN_MARKER_PUB_SUFFIX" })
         }
     }
 }

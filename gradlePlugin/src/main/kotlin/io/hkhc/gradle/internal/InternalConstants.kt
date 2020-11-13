@@ -16,16 +16,25 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
-/**
- * List of license identifiers and URL to the text as according to SPDX License List
- * https://spdx.org/licenses/
- */
-var LICENSE_MAP = mapOf(
-    "Apache-2.0" to "http://www.apache.org/licenses/LICENSE-2.0.txt",
-    "BSD-3-Clause" to "https://https://opensource.org/licenses/BSD-3-Clause",
-    "MIT" to "http://www.opensource.org/licenses/mit-license.php",
-    "GPLv3" to "https://www.gnu.org/licenses/gpl-3.0.html",
-    "LGPLv3" to "https://www.gnu.org/licenses/lgpl-3.0.html"
-)
+// Plugin constants
+
+internal const val SP_GROUP = "Jarbird publishing"
+internal const val PUBLISH_GROUP = "Publishing"
+
+internal const val SP_EXT_NAME = "jarbird"
+const val PLUGIN_ID = "io.hkhc.jarbird"
+
+internal const val PLUGIN_FRIENDLY_NAME = "Jarbird Plugin"
+
+// Task constants
+
+internal const val CLASSIFIER_JAVADOC = "javadoc"
+internal const val CLASSIFIER_SOURCE = "sources"
+internal const val ANDROID_LIBRARY_PLUGIN_ID = "com.android.library"
+
+// Code constants
+
+internal const val LOG_PREFIX = "[$PLUGIN_ID]"
+const val SNAPSHOT_SUFFIX = "-SNAPSHOT"

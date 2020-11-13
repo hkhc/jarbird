@@ -1,4 +1,6 @@
-import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
+import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.internal.SNAPSHOT_SUFFIX
+import io.hkhc.gradle.pom.Pom
 
 /*
  * Copyright (c) 2020. Herman Cheung
@@ -22,7 +24,7 @@ fun String?.isSnapshot() = this?.endsWith(SNAPSHOT_SUFFIX) ?: false
 
 /* assume that there is nothing after -SNAPSHOT */
 fun String.appendBeforeSnapshot(s: String): String {
-    val index = indexOf(SNAPSHOT_SUFFIX)
+    val index = lastIndexOf(SNAPSHOT_SUFFIX)
     return if (index == -1) {
         "$this-$s"
     } else {
@@ -30,3 +32,33 @@ fun String.appendBeforeSnapshot(s: String): String {
         "$versionPrefix-$s$SNAPSHOT_SUFFIX"
     }
 }
+
+val JarbirdPub.gavPath: String
+    get() {
+        with(pom) {
+            if (group == null || artifactId == null || version == null)
+                throw IllegalStateException(
+                    "GAV in POM is not complete: " +
+                        "group=$group, artifactId=$artifactId, version=$version"
+                )
+            else {
+                return "${group!!.replace('.', '/')}/${variantArtifactId()}/${variantVersion()}"
+            }
+        }
+    }
+
+val JarbirdPub.avFileBase: String
+    get() = "${variantArtifactId()}-${variantVersion()}"
+
+
+/**
+ * List of license identifiers and URL to the text as according to SPDX License List
+ * https://spdx.org/licenses/
+ */
+internal var LICENSE_MAP = mapOf(
+    "Apache-2.0" to "http://www.apache.org/licenses/LICENSE-2.0.txt",
+    "BSD-3-Clause" to "https://https://opensource.org/licenses/BSD-3-Clause",
+    "MIT" to "http://www.opensource.org/licenses/mit-license.php",
+    "GPLv3" to "https://www.gnu.org/licenses/gpl-3.0.html",
+    "LGPLv3" to "https://www.gnu.org/licenses/lgpl-3.0.html"
+)

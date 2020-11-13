@@ -18,16 +18,11 @@
 
 package io.hkhc.gradle
 
-import appendBeforeSnapshot
-import io.hkhc.gradle.maven.MavenCentralEndpoint
-import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.maven.RepoEndpoint
 import io.hkhc.gradle.pom.Pom
-import isSnapshot
-import org.gradle.api.Project
 import java.io.File
 
-class JarbirdPub(@Suppress("unused") private val project: Project) {
+abstract class JarbirdPub() {
 
     lateinit var pom: Pom
 
@@ -58,58 +53,18 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
      */
     var variant: String = ""
 
-    /**
-     * if set, the deployed version will be suffixed with the variant name, delimited by '-'.
-     * if version is a SNAPSHOT, the variant is added before SNAPSHOT.
-     * if variant is empty, the version is not altered
-     *
-     * e.g.
-     * version = "1.0", variant = "" -> "1.0"
-     * version = "1.0", variant = "debug" -> "1.0-debug"
-     * version = "1.0-SNAPSHOT", variant = "debug" -> "1.0-debug-SNAPSHOT"
-     */
 
-    private var variantMode: VariantMode = VariantMode.Invisible
-    fun variantWithVersion() {
-        variantMode = VariantMode.WithVersion
-    }
-    fun variantWithArtifactId() {
-        variantMode = VariantMode.WithArtifactId
-    }
-    fun variantInvisible() {
-        variantMode = VariantMode.Invisible
-    }
+    abstract fun variantWithVersion()
 
-    fun variantArtifactId(): String? {
-        return pom.artifactId?.let { id ->
-            when {
-                variantMode != VariantMode.WithArtifactId -> {
-                    id
-                }
-                variant == "" -> {
-                    id
-                }
-                else -> {
-                    "$id-$variant"
-                }
-            }
-        }
-    }
+    abstract fun variantWithArtifactId()
 
-    fun variantVersion(): String? {
-        return pom.version?.let { ver ->
-            when {
-                variantMode != VariantMode.WithVersion -> ver
-                variant == "" -> ver
-                ver.isSnapshot() -> ver.appendBeforeSnapshot(variant)
-                else -> "$ver-$variant"
-            }
-        }
-    }
+    abstract fun variantInvisible()
 
-    fun getGAV(): String? {
-        return "${pom.group}:${variantArtifactId()}:${variantVersion()}"
-    }
+    abstract fun variantArtifactId(): String?
+
+    abstract fun variantVersion(): String?
+
+    abstract fun getGAV(): String?
 
     /**
      * The name of component to to be published
@@ -138,17 +93,10 @@ class JarbirdPub(@Suppress("unused") private val project: Project) {
     /**
      * Specify maven repository for publishing.
      */
-    var mavenRepository: RepoEndpoint = MavenCentralEndpoint(project)
+    abstract fun withMaven(endpoint: RepoEndpoint)
 
-    fun withMavenCentral() {
-        mavenRepository = MavenCentralEndpoint(project)
-    }
+    abstract fun withMavenCentral()
 
-    fun withMavenByProperties(key: String) {
-        mavenRepository = PropertyRepoEndpoint(project, "maven.$key")
-    }
+    abstract fun withMavenByProperties(key: String)
 }
 
-internal fun List<JarbirdPub>.needSigning() = any { it.signing }
-internal fun List<JarbirdPub>.needBintray() = any { it.bintray }
-internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }

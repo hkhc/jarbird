@@ -21,12 +21,20 @@ package io.hkhc.gradle
 import com.gradle.publish.PublishPlugin
 import com.jfrog.bintray.gradle.BintrayPlugin
 import io.hkhc.gradle.builder.PublicationBuilder
+import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
+import io.hkhc.gradle.internal.PLUGIN_ID
+import io.hkhc.gradle.internal.SP_EXT_NAME
 import io.hkhc.gradle.maven.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.PomGroup
 import io.hkhc.gradle.pom.PomGroupFactory
-import io.hkhc.gradle.utils.ANDROID_LIBRARY_PLUGIN_ID
-import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.internal.ANDROID_LIBRARY_PLUGIN_ID
+import io.hkhc.gradle.internal.JarbirdPubImpl
+import io.hkhc.gradle.internal.LOG_PREFIX
+import io.hkhc.gradle.internal.gradleAfterEvaluate
+import io.hkhc.gradle.internal.isMultiProjectRoot
+import io.hkhc.gradle.internal.needGradlePlugin
+import io.hkhc.gradle.internal.needSigning
 import io.hkhc.gradle.utils.detailMessageError
 import io.hkhc.gradle.utils.fatalMessage
 import org.gradle.api.GradleException
@@ -248,12 +256,12 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                  */
                 project.pluginManager.apply(JavaGradlePluginPlugin::class.java)
 
-                PublicationBuilder(project, extension, extension.pubList).buildPhase2()
+                PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase2()
             }
 
             // Give a change for JavaGradlePluginPlugin to setup marker publication before we can patch it.
             project.afterEvaluate {
-                PublicationBuilder(project, extension, extension.pubList).buildPhase3()
+                PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase3()
             }
 
 //            extension.pubList.forEach {
@@ -305,11 +313,11 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                     apply(SigningPlugin::class.java)
                 }
             }
-            PublicationBuilder(project, extension, extension.pubList).buildPhase1()
+            PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase1()
         }
 
         project.afterEvaluate {
-            PublicationBuilder(project, extension, extension.pubList).buildPhase4()
+            PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase4()
         }
 
         /*

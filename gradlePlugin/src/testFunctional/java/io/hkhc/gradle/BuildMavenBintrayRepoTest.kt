@@ -35,7 +35,6 @@ import io.hkhc.gradle.test.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
-import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
@@ -52,7 +51,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
 
         val targetTask = "jbPublish"
 
-        fun commonSetup(coordinate: Coordinate, maven: Boolean = true, bintray: Boolean = true,  expectedTaskList: List<String>): DefaultGradleProjectSetup {
+        fun commonSetup(coordinate: Coordinate, maven: Boolean = true, bintray: Boolean = true, expectedTaskList: List<String>): DefaultGradleProjectSetup {
 
             val projectDir = tempDirectory()
 

@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
 import org.gradle.api.Project
 import org.gradle.api.ProjectEvaluationListener
@@ -29,6 +29,7 @@ fun Project.isMultiProjectRoot() =
 fun Project.isSingleProject() =
     rootProject == this && childProjects.isEmpty()
 
+// Shortcut to register ProjectEvaluationListener when we need afterEvaluate only.
 fun Project.gradleAfterEvaluate(action: (ProjectState) -> Unit) {
     gradle.addProjectEvaluationListener(
         object : ProjectEvaluationListener {

@@ -19,8 +19,8 @@
 package io.hkhc.gradle.builder
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.SP_GROUP
-import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.internal.SP_GROUP
+import io.hkhc.gradle.internal.LOG_PREFIX
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
 
@@ -45,15 +45,12 @@ class BintrayTaskBuilder(
         val artifactoryPublicationStr = "publication${if (publishPlan.artifactoryLibs.size > 1) "s" else ""}"
 
         val bintrayDesc = when {
-            !bintrayLibs.isBlank() && !bintrayPlgins.isBlank() -> """
-                Publish $bintrayPublicationStr $bintrayLibs and $bintrayPluginStr $bintrayPlgins to Bintray.
-            """.trimIndent()
-            !bintrayLibs.isBlank() && bintrayPlgins.isBlank() -> """
-                Publish $bintrayPublicationStr $bintrayLibs to Bintray.
-            """.trimIndent()
-            bintrayLibs.isBlank() && !bintrayPlgins.isBlank() -> """
-                Publish $bintrayPluginStr $bintrayPlgins to Bintray.
-            """.trimIndent()
+            !bintrayLibs.isBlank() && !bintrayPlgins.isBlank() ->
+                "Publish $bintrayPublicationStr $bintrayLibs and $bintrayPluginStr $bintrayPlgins to Bintray."
+            !bintrayLibs.isBlank() && bintrayPlgins.isBlank() ->
+                "Publish $bintrayPublicationStr $bintrayLibs to Bintray."
+            bintrayLibs.isBlank() && !bintrayPlgins.isBlank() ->
+                "Publish $bintrayPluginStr $bintrayPlgins to Bintray."
             else -> ""
         }
 
@@ -78,7 +75,7 @@ class BintrayTaskBuilder(
         if (publishPlan.bintray.isNotEmpty() || publishPlan.artifactory.isNotEmpty()) {
 
             with(taskContainer) {
-                register("jbPublishToBintray") {
+                register(JB_PUBLISH_TO_BINTRAY_TASK) {
                     group = SP_GROUP
                     description = bintrayTaskDescription()
                     /*
@@ -87,11 +84,11 @@ class BintrayTaskBuilder(
                      */
 
                     if (publishPlan.artifactory.isNotEmpty()) {
-                        dependsOn("artifactoryPublish")
+                        dependsOn(ARTIFACTORY_PUBLISH_TASK)
                     }
 
                     if (publishPlan.bintray.isNotEmpty()) {
-                        dependsOn("bintrayUpload")
+                        dependsOn(BINTRAY_UPLOAD_TASK)
                     }
                 }
             }

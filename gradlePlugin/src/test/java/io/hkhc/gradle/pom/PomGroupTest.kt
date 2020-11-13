@@ -171,7 +171,6 @@ class PomGroupTest : StringSpec({
             )
             getDefault() shouldBe Pom(description = "common description", name = "package name")
         }
-
     }
 
     "Poms for root project and subproject" {

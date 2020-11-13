@@ -26,8 +26,3 @@ internal fun pomPath(base: String): String {
     return base + File.separatorChar + POM_FILENAME
 }
 
-internal fun getGradleUserHome(): String? {
-    return System.getProperty("gradle.user.home")
-        ?: System.getenv("GRADLE_USER_HOME")
-        ?: "${System.getProperty("user.home")}${File.separatorChar}.gradle"
-}

@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.test
 
+import io.hkhc.gradle.internal.PLUGIN_ID
 import io.hkhc.utils.PropertiesEditor
 import io.kotest.assertions.withClue
 import io.kotest.matchers.file.shouldExist
@@ -136,7 +137,7 @@ fun buildGradle(maven: Boolean = true, bintray: Boolean = true): String {
         plugins {
             kotlin("jvm") version "1.3.72"
             `kotlin-dsl`
-            id("io.hkhc.jarbird")
+            id("$PLUGIN_ID")
             id("com.dorongold.task-tree") version "1.5"
         }
         repositories {
@@ -157,7 +158,7 @@ fun buildGradleCustomBintray(): String {
         plugins {
             kotlin("jvm") version "1.3.72"
             `kotlin-dsl`
-            id("io.hkhc.jarbird")
+            id("$PLUGIN_ID")
             id("com.dorongold.task-tree") version "1.5"
         }
         repositories {
@@ -171,7 +172,7 @@ fun buildGradleCustomArtifactrory(): String {
         plugins {
             kotlin("jvm") version "1.3.72"
             `kotlin-dsl`
-            id("io.hkhc.jarbird")
+            id("$PLUGIN_ID")
             id("com.dorongold.task-tree") version "1.5"
         }
         repositories {
@@ -186,7 +187,7 @@ fun buildGradlePlugin(): String {
         plugins {
             kotlin("jvm") version "1.3.72"
             `kotlin-dsl` 
-            id("io.hkhc.jarbird")
+            id("$PLUGIN_ID")
             id("com.dorongold.task-tree") version "1.5"
         }
         repositories {
@@ -233,7 +234,7 @@ fun commonAndroidRootGradle(): String {
             }
         }
         plugins {
-            id 'io.hkhc.jarbird'
+            id '$PLUGIN_ID'
             id 'com.dorongold.task-tree' version '1.5'
         }
         allprojects {
@@ -252,7 +253,7 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
             id 'com.android.library'
             id 'kotlin-android'
             id 'kotlin-android-extensions'
-            id 'io.hkhc.jarbird'
+            id '$PLUGIN_ID'
             id 'com.dorongold.task-tree' 
         }
 

@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.pom
 
+import io.hkhc.gradle.internal.getGradleUserHome
 import io.hkhc.utils.test.mkdir
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.assertions.asClue

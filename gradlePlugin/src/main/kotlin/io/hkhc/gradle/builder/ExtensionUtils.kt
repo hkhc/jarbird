@@ -18,12 +18,7 @@
 
 package io.hkhc.gradle.builder
 
-import io.hkhc.gradle.JarbirdPub
 import org.gradle.api.Project
-
-internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
-    return "${pubName}${variant.capitalize()}"
-}
 
 internal fun <T> Project.findByType(type: Class<T>): T? {
     return extensions.findByType(type)

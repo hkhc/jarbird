@@ -18,11 +18,13 @@
 
 package io.hkhc.gradle.pom
 
+import io.hkhc.gradle.internal.getGradleUserHome
 import org.gradle.api.Project
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 import java.io.File
 
+// TODO get rid of reference to project
 class PomGroupFactory(val project: Project) {
 
     /**

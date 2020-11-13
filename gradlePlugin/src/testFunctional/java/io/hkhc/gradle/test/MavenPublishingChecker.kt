@@ -19,7 +19,7 @@
 package io.hkhc.gradle.test
 
 import groovy.util.GroovyTestCase
-import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
+import io.hkhc.gradle.internal.SNAPSHOT_SUFFIX
 import io.kotest.assertions.fail
 import okhttp3.mockwebserver.RecordedRequest
 

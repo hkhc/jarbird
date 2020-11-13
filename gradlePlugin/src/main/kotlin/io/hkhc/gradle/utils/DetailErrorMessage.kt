@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.utils
 
+import io.hkhc.gradle.internal.LOG_PREFIX
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger

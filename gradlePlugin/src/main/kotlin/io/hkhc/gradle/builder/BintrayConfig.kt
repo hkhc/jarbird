@@ -18,11 +18,14 @@
 
 package io.hkhc.gradle.builder
 
+import avFileBase
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
+import gavPath
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.internal.pubNameWithVariant
+import io.hkhc.gradle.internal.LOG_PREFIX
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.closureOf
@@ -61,7 +64,6 @@ class BintrayConfig(
         }
     }
 
-    fun filenameBase(pub: JarbirdPub) = "${pub.variantArtifactId()}-${pub.variantVersion()}"
 
     // Bintray can perform component signing on behalf of us. However it requires our private key in order to sign
     // archives for us. I don't want to share the key and hence specify the signature files manually and upload
@@ -69,24 +71,23 @@ class BintrayConfig(
     @Suppress("SpreadOperator")
     private fun BintrayExtension.includeSignatureFiles() {
 
-        val includeFileList = publishPlan.bintray.map { "${filenameBase(it)}*.asc" }
+        val includeFileList = publishPlan.bintray.map { "${it.avFileBase}*.asc" }
             .toTypedArray()
 
         filesSpec(
             closureOf<RecordingCopyTask> {
 
                 publishPlan.bintray
-                    .forEach {
-                        val groupDir = it.pom.group?.replace('.', '/')
+                    .forEach { pub ->
                         from("${project.buildDir}/outputs/aar") {
                             include("*.aar.asc")
-                            rename { _ -> "${filenameBase(it)}.aar.asc" }
+                            rename { _ -> "${pub.avFileBase}.aar.asc" }
                         }
-                        from("${project.buildDir}/publications/${it.pubNameWithVariant()}") {
+                        from("${project.buildDir}/publications/${pub.pubNameWithVariant()}") {
                             include("pom-default.xml.asc")
-                            rename("pom-default.xml.asc", "${filenameBase(it)}.pom.asc")
+                            rename("pom-default.xml.asc", "${pub.avFileBase}.pom.asc")
                         }
-                        into("$groupDir/${it.variantArtifactId()}/${it.variantVersion()}")
+                        into(pub.gavPath)
                     }
                 from("${project.buildDir}/libs") {
                     include(*includeFileList)

@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle.test
 
-import io.hkhc.gradle.utils.SNAPSHOT_SUFFIX
+import io.hkhc.gradle.internal.SNAPSHOT_SUFFIX
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals

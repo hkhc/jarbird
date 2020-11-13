@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle.pom
 
-import io.hkhc.gradle.LICENSE_MAP
+import LICENSE_MAP
 import isSnapshot
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePluginConvention

@@ -15,12 +15,13 @@
  *
  *
  */
-@file:JvmName("Constants")
-package io.hkhc.gradle.utils
 
-import io.hkhc.gradle.PLUGIN_ID
+package io.hkhc.gradle.internal
 
-const val LOG_PREFIX = "[$PLUGIN_ID]"
-const val ANDROID_LIBRARY_PLUGIN_ID = "com.android.library"
+import java.io.File
 
-const val SNAPSHOT_SUFFIX = "-SNAPSHOT"
+internal fun getGradleUserHome(): String? {
+    return System.getProperty("gradle.user.home")
+        ?: System.getenv("GRADLE_USER_HOME")
+        ?: "${System.getProperty("user.home")}${File.separatorChar}.gradle"
+}

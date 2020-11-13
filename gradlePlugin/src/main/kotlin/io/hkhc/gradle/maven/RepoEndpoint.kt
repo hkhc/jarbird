@@ -18,7 +18,7 @@
 package io.hkhc.gradle.maven
 
 import groovy.lang.MissingPropertyException
-import io.hkhc.gradle.utils.LOG_PREFIX
+import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.utils.detailMessageError
 import org.gradle.api.GradleException
 import org.gradle.api.Project

@@ -19,6 +19,7 @@
 package io.hkhc.gradle
 
 import groovy.lang.Closure
+import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.maven.RepoEndpoint
 import org.gradle.api.Project
 
@@ -34,7 +35,7 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     /* to be invoked by Groovy Gradle script */
     fun pub(action: Closure<JarbirdPub>) {
-        val newPub = JarbirdPub(project)
+        val newPub = JarbirdPubImpl(project)
         pubList.add(newPub)
         action.delegate = newPub
         action.resolveStrategy = Closure.DELEGATE_FIRST
@@ -43,7 +44,7 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     }
 
     fun pub(variant: String, action: Closure<JarbirdPub>) {
-        val newPub = JarbirdPub(project)
+        val newPub = JarbirdPubImpl(project)
         newPub.variant = variant
         pomGroupCallback.initPub(newPub)
         pubList.add(newPub)
@@ -54,14 +55,14 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
 
     /* to be invoked by Kotlin Gradle script */
     fun pub(action: JarbirdPub.() -> Unit) {
-        val newPub = JarbirdPub(project)
+        val newPub = JarbirdPubImpl(project)
         pubList.add(newPub)
         action.invoke(newPub)
         pomGroupCallback.initPub(newPub)
     }
 
     fun pub(variant: String, action: JarbirdPub.() -> Unit) {
-        val newPub = JarbirdPub(project)
+        val newPub = JarbirdPubImpl(project)
         newPub.variant = variant
         pomGroupCallback.initPub(newPub)
         pubList.add(newPub)
