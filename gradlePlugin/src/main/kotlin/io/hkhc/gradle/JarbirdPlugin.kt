@@ -256,11 +256,13 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                  */
                 project.pluginManager.apply(JavaGradlePluginPlugin::class.java)
 
+                @Suppress("UNCHECKED_CAST")
                 PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase2()
             }
 
             // Give a change for JavaGradlePluginPlugin to setup marker publication before we can patch it.
             project.afterEvaluate {
+                @Suppress("UNCHECKED_CAST")
                 PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase3()
             }
 
@@ -313,10 +315,12 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                     apply(SigningPlugin::class.java)
                 }
             }
+            @Suppress("UNCHECKED_CAST")
             PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase1()
         }
 
         project.afterEvaluate {
+            @Suppress("UNCHECKED_CAST")
             PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase4()
         }
 

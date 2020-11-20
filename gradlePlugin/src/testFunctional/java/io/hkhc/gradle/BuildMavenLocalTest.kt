@@ -44,17 +44,24 @@ class BuildMavenLocalTest : FunSpec({
 
         beforeTest {
 
-            setup = DefaultGradleProjectSetup(projectDir).setup()
+            setup = DefaultGradleProjectSetup(projectDir).apply {
+                sourceSetTemplateDirs = arrayOf("functionalTestData/libJavaKotlin")
+                setup()
+            }
 
             setup.writeFile(
                 "build.gradle",
                 """
                 plugins {
                     id 'java'
+                    id 'org.jetbrains.kotlin.jvm' version '1.3.72'
                     id 'io.hkhc.jarbird'
                 }
                 repositories {
                     jcenter()
+                }
+                dependencies {
+                    implementation "org.jetbrains.kotlin:kotlin-stdlib"
                 }
                 """.trimIndent()
             )
@@ -76,11 +83,26 @@ class BuildMavenLocalTest : FunSpec({
 
             withClue("expected list of tasks executed with expected result") {
                 result.tasks.map { it.toString() } shouldContainExactly listOf(
+//                    ":dokka=SUCCESS",
+//                    ":dokkaJar=SUCCESS",
+//                    ":compileJava=SUCCESS",
+//                    ":processResources=NO_SOURCE",
+//                    ":classes=SUCCESS",
+//                    ":jar=SUCCESS",
+//                    ":generateMetadataFileForLibPublication=SUCCESS",
+//                    ":generatePomFileForLibPublication=SUCCESS",
+//                    ":sourcesJar=SUCCESS",
+//                    ":signLibPublication=SUCCESS",
+//                    ":publishLibPublicationToMavenLocal=SUCCESS",
+//                    ":jbPublishLibToMavenLocal=SUCCESS",
+//                    ":jbPublishToMavenLocal=SUCCESS",
                     ":dokka=SUCCESS",
                     ":dokkaJar=SUCCESS",
+                    ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":processResources=NO_SOURCE",
                     ":classes=SUCCESS",
+                    ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
                     ":generateMetadataFileForLibPublication=SUCCESS",
                     ":generatePomFileForLibPublication=SUCCESS",
