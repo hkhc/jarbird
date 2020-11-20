@@ -257,14 +257,6 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
             id 'com.dorongold.task-tree' 
         }
 
-        sourceSets {
-            main {
-                java.srcDirs("src/main/java", "src/main/kotlin")
-            }
-            release {
-                java.srcDirs("src/release/java", "src/release/kotlin")
-            }
-        }
 
         android {
             compileSdkVersion 29
@@ -289,10 +281,17 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
                 sourceCompatibility = JavaVersion.VERSION_1_8
                 targetCompatibility = JavaVersion.VERSION_1_8
             }
+            
+            sourceSets {
+                main.java.srcDirs += 'src/main/kotlin'
+                release.java.srcDirs += 'src/release/kotlin'
+            }
+            
         }
 
-        android.libraryVariants.configureEach { v ->
-            def variantName = v.name
+        android.libraryVariants.configureEach { variant ->
+            def variantName = variant.name
+            println("variant dir name ${"$"}{variant.dirName}")
             if (variantName == "release") {
                 jarbird {
                      pub(variantName) { 
@@ -300,11 +299,32 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
                         ${if (variantMode != "") variantMode else "" } 
                         useGpg = true
                         pubComponent = variantName
-//                                sourceSets = sourceSets[0].javaDirectories
+                        System.out.println("SourceSet release count " + variant.sourceSets.size())
+                        variant.sourceSets.each {
+                            System.out.println("SourceSet release "+it.javaDirectories)
+                        }
+                        sourceSets = variant.sourceSets.inject([]) { sets, sourceProvider -> 
+                            sets += sourceProvider.javaDirectories  
+                            sets += sourceProvider.resourcesDirectories
+                        }
                     }
                 }
             }
+            else if (variantName == "debug") {
+                System.out.println("SourceSet debug count " + variant.sourceSets.size())
+                variant.sourceSets.each {
+                    System.out.println("SourceSet debug "+it.javaDirectories)
+                }
+            }
+            
         }
+        
+        android {
+            sourceSets.each {
+                System.out.println("Android SourceSet "+it)
+            }
+        }
+        
     """.trimIndent()
 }
 
