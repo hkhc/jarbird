@@ -16,9 +16,11 @@
  *
  */
 
-package io.hkhc.gradle.pom
+package io.hkhc.gradle.pom.internal
 
 import io.hkhc.gradle.internal.getGradleUserHome
+import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor

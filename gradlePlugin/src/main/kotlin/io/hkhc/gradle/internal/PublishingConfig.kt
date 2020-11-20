@@ -16,19 +16,12 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.CLASSIFIER_JAVADOC
-import io.hkhc.gradle.internal.CLASSIFIER_SOURCE
-import io.hkhc.gradle.internal.JarbirdPubImpl
-import io.hkhc.gradle.internal.LOG_PREFIX
-import io.hkhc.gradle.internal.PUBLISH_GROUP
-import io.hkhc.gradle.internal.SP_EXT_NAME
-import io.hkhc.gradle.internal.pubNameCap
-import io.hkhc.gradle.internal.pubNameWithVariant
-import io.hkhc.gradle.maven.MavenPomAdapter
-import io.hkhc.gradle.utils.detailMessageWarning
+import io.hkhc.gradle.internal.maven.MavenPomAdapter
+import io.hkhc.gradle.internal.utils.detailMessageWarning
+import io.hkhc.gradle.internal.utils.findByType
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.UnknownDomainObjectException

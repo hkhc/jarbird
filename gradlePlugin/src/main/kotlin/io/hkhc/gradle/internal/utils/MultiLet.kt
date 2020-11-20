@@ -16,12 +16,12 @@
  *
  */
 
-package io.hkhc.gradle.maven
+package io.hkhc.gradle.internal.utils
 
-data class SimpleRepoEndpoint(
-    override val releaseUrl: String,
-    override val snapshotUrl: String,
-    override val username: String,
-    override val password: String,
-    override val apikey: String = ""
-) : RepoEndpoint
+fun <T1, T2, T3, R> multiLet(it1: T1?, it2: T2?, it3: T3?, block: (T1, T2, T3) -> R): R? {
+    return if (it1 == null || it2 == null || it3 == null) {
+        null
+    } else {
+        block(it1, it2, it3)
+    }
+}

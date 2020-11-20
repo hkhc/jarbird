@@ -16,13 +16,9 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.JarbirdPubImpl
-import io.hkhc.gradle.internal.mavenRepoNameCap
-import io.hkhc.gradle.internal.pubId
-import io.hkhc.gradle.internal.pubNameCap
 
 internal const val JB_TASK_PREFIX = "jbPublish"
 internal const val PUBLISH_TASK_PREFIX = "publish"
@@ -70,4 +66,3 @@ val JarbirdPub.publishPubToCustomMavenRepoTask: String
 
 val JarbirdPub.publishPluginMarkerPubToCustomMavenRepoTask: String
     get() = "$PUBLISH_TASK_PREFIX$pubNameCap${PLUGIN_MARKER_PUB_SUFFIX}PublicationTo$mavenRepoNameCap"
-

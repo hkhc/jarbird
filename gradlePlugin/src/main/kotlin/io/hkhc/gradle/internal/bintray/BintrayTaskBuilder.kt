@@ -16,9 +16,12 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.internal.ARTIFACTORY_PUBLISH_TASK
+import io.hkhc.gradle.internal.BINTRAY_UPLOAD_TASK
+import io.hkhc.gradle.internal.JB_PUBLISH_TO_BINTRAY_TASK
 import io.hkhc.gradle.internal.SP_GROUP
 import io.hkhc.gradle.internal.LOG_PREFIX
 import org.gradle.api.Project

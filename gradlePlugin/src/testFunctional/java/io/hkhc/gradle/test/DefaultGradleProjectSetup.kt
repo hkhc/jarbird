@@ -60,7 +60,7 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
         }
 
     /* expect list of tasks executed in the Gradle run, should be prefixed by ':' or ':proj:' */
-    var expectedTaskList: List<String>? = null
+    lateinit var expectedTaskList: List<String>
 
     val localRepoDirFile = File(projectDir, localRepoDir)
 

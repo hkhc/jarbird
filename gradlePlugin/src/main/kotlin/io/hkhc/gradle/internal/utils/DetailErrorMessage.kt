@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.utils
+package io.hkhc.gradle.internal.utils
 
 import io.hkhc.gradle.internal.LOG_PREFIX
 import org.gradle.api.GradleException

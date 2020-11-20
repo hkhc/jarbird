@@ -18,11 +18,11 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.maven.RepoEndpoint
+import io.hkhc.gradle.endpoint.RepoEndpoint
 import io.hkhc.gradle.pom.Pom
 import java.io.File
 
-abstract class JarbirdPub() {
+abstract class JarbirdPub {
 
     lateinit var pom: Pom
 
@@ -52,7 +52,6 @@ abstract class JarbirdPub() {
      * It is usually used for building Android artifact
      */
     var variant: String = ""
-
 
     abstract fun variantWithVersion()
 
@@ -99,4 +98,3 @@ abstract class JarbirdPub() {
 
     abstract fun withMavenByProperties(key: String)
 }
-

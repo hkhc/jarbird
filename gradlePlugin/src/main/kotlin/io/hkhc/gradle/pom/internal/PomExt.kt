@@ -1,6 +1,24 @@
+/*
+ * Copyright (c) 2020. Herman Cheung
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *
+ */
+
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.SNAPSHOT_SUFFIX
-import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.internal.utils.multiLet
 
 /*
  * Copyright (c) 2020. Herman Cheung
@@ -36,20 +54,17 @@ fun String.appendBeforeSnapshot(s: String): String {
 val JarbirdPub.gavPath: String
     get() {
         with(pom) {
-            if (group == null || artifactId == null || version == null)
-                throw IllegalStateException(
-                    "GAV in POM is not complete: " +
-                        "group=$group, artifactId=$artifactId, version=$version"
-                )
-            else {
-                return "${group!!.replace('.', '/')}/${variantArtifactId()}/${variantVersion()}"
-            }
+            return multiLet(group, artifactId, version) { g, a, v ->
+                "${g.replace('.', '/')}/${variantArtifactId()}/${variantVersion()}"
+            } ?: throw IllegalStateException(
+                "GAV in POM is not complete: " +
+                    "group=$group, artifactId=$artifactId, version=$version"
+            )
         }
     }
 
 val JarbirdPub.avFileBase: String
     get() = "${variantArtifactId()}-${variantVersion()}"
-
 
 /**
  * List of license identifiers and URL to the text as according to SPDX License List

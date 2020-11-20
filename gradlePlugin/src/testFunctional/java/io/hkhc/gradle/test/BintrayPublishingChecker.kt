@@ -30,8 +30,10 @@ class BintrayPublishingChecker(val coordinate: Coordinate, private val packaging
         val matched = requests
             .filter { it.method == "PUT" }
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
-        withClue("$pathRegex does not match any recorded request\n" +
-            requests.map { it.path }.joinToString("\n")) {
+        withClue(
+            "$pathRegex does not match any recorded request\n" +
+                requests.map { it.path }.joinToString("\n")
+        ) {
             matched.shouldBeTrue()
         }
     }

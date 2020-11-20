@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.maven
+package io.hkhc.gradle.endpoint
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project

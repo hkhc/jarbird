@@ -81,7 +81,7 @@ class BuildArtifactoryRepoTest : FunSpec({
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList!!
+                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList
                 }
 
                 setup.mockServer?.let { server ->

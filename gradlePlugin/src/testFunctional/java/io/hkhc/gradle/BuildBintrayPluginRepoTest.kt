@@ -91,7 +91,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList!!
+                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList
                 }
 
                 val pluginPom = File(setup.projectDir, "build/publications/libPluginMarkerMaven/pom-default.xml")

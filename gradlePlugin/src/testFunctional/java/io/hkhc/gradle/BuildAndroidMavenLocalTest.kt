@@ -209,7 +209,7 @@ class BuildAndroidMavenLocalTest : FunSpec({
                 println(result.tasks.joinToString("\n") { "\"$it\"," })
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList!!
+                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList
                 }
 
                 LocalRepoResult(

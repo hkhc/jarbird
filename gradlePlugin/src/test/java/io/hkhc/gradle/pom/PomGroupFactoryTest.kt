@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.pom
 
+import io.hkhc.gradle.pom.internal.PomGroupFactory
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.StringSpec

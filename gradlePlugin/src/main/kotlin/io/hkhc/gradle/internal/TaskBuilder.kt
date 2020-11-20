@@ -16,13 +16,9 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.internal.JarbirdPubImpl
-import io.hkhc.gradle.internal.SP_GROUP
-import io.hkhc.gradle.internal.isMultiProjectRoot
-import io.hkhc.gradle.internal.pubNameCap
-import io.hkhc.gradle.internal.pubNameWithVariant
+import io.hkhc.gradle.internal.bintray.BintrayTaskBuilder
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
 

@@ -16,5 +16,12 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.pom.internal
 
+import java.io.File
+
+internal const val POM_FILENAME = "pom.yaml"
+
+internal fun pomPath(base: String): String {
+    return base + File.separatorChar + POM_FILENAME
+}

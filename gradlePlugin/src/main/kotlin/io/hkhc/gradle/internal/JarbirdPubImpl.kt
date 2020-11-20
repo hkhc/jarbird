@@ -21,9 +21,9 @@ package io.hkhc.gradle.internal
 import appendBeforeSnapshot
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.VariantMode
-import io.hkhc.gradle.maven.MavenCentralEndpoint
-import io.hkhc.gradle.maven.PropertyRepoEndpoint
-import io.hkhc.gradle.maven.RepoEndpoint
+import io.hkhc.gradle.endpoint.MavenCentralEndpoint
+import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
+import io.hkhc.gradle.endpoint.RepoEndpoint
 import isSnapshot
 import org.gradle.api.Project
 
@@ -34,7 +34,8 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
     /**
      * Specify maven repository for publishing.
      */
-    var mavenRepo: RepoEndpoint = MavenCentralEndpoint(project)
+    var mavenRepo: RepoEndpoint =
+        MavenCentralEndpoint(project)
 
     override fun variantWithVersion() {
         variantMode = VariantMode.WithVersion

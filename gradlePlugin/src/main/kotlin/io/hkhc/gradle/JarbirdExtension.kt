@@ -20,7 +20,7 @@ package io.hkhc.gradle
 
 import groovy.lang.Closure
 import io.hkhc.gradle.internal.JarbirdPubImpl
-import io.hkhc.gradle.maven.RepoEndpoint
+import io.hkhc.gradle.endpoint.RepoEndpoint
 import org.gradle.api.Project
 
 // Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.

@@ -16,10 +16,10 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.pubNameCap
+import io.hkhc.gradle.internal.PLUGIN_MARKER_PUB_SUFFIX
 import io.hkhc.gradle.internal.pubNameWithVariant
 
 class BintrayPublishPlan(private val pubs: List<JarbirdPub>) {

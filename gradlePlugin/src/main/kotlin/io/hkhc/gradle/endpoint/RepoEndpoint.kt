@@ -15,11 +15,11 @@
  *
  *
  */
-package io.hkhc.gradle.maven
+package io.hkhc.gradle.endpoint
 
 import groovy.lang.MissingPropertyException
 import io.hkhc.gradle.internal.LOG_PREFIX
-import io.hkhc.gradle.utils.detailMessageError
+import io.hkhc.gradle.internal.utils.detailMessageError
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -35,7 +35,12 @@ interface RepoEndpoint {
             @Suppress("UNUSED_PARAMETER") apikey: String = ""
         ):
             RepoEndpoint {
-                return SimpleRepoEndpoint(release, snapshot, username, password)
+                return SimpleRepoEndpoint(
+                    release,
+                    snapshot,
+                    username,
+                    password
+                )
             }
     }
 

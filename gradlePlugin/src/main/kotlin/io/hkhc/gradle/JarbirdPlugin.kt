@@ -20,14 +20,14 @@ package io.hkhc.gradle
 
 import com.gradle.publish.PublishPlugin
 import com.jfrog.bintray.gradle.BintrayPlugin
-import io.hkhc.gradle.builder.PublicationBuilder
+import io.hkhc.gradle.internal.BuildFlowBuilder
 import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.internal.PLUGIN_ID
 import io.hkhc.gradle.internal.SP_EXT_NAME
-import io.hkhc.gradle.maven.PropertyRepoEndpoint
+import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.PomGroup
-import io.hkhc.gradle.pom.PomGroupFactory
+import io.hkhc.gradle.pom.internal.PomGroupFactory
 import io.hkhc.gradle.internal.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
@@ -35,8 +35,8 @@ import io.hkhc.gradle.internal.gradleAfterEvaluate
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.needGradlePlugin
 import io.hkhc.gradle.internal.needSigning
-import io.hkhc.gradle.utils.detailMessageError
-import io.hkhc.gradle.utils.fatalMessage
+import io.hkhc.gradle.internal.utils.detailMessageError
+import io.hkhc.gradle.internal.utils.fatalMessage
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -228,7 +228,10 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         // Build Phase 1
         project.gradleAfterEvaluate {
 
-            extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
+            extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(
+                project,
+                "bintray"
+            )
 
             if (!project.isMultiProjectRoot()) {
                 extension.createImplicit()
@@ -257,13 +260,21 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                 project.pluginManager.apply(JavaGradlePluginPlugin::class.java)
 
                 @Suppress("UNCHECKED_CAST")
-                PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase2()
+                BuildFlowBuilder(
+                    project,
+                    extension,
+                    extension.pubList as List<JarbirdPubImpl>
+                ).buildPhase2()
             }
 
             // Give a change for JavaGradlePluginPlugin to setup marker publication before we can patch it.
             project.afterEvaluate {
                 @Suppress("UNCHECKED_CAST")
-                PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase3()
+                BuildFlowBuilder(
+                    project,
+                    extension,
+                    extension.pubList as List<JarbirdPubImpl>
+                ).buildPhase3()
             }
 
 //            extension.pubList.forEach {
@@ -316,12 +327,20 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                 }
             }
             @Suppress("UNCHECKED_CAST")
-            PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase1()
+            BuildFlowBuilder(
+                project,
+                extension,
+                extension.pubList as List<JarbirdPubImpl>
+            ).buildPhase1()
         }
 
         project.afterEvaluate {
             @Suppress("UNCHECKED_CAST")
-            PublicationBuilder(project, extension, extension.pubList as List<JarbirdPubImpl>).buildPhase4()
+            BuildFlowBuilder(
+                project,
+                extension,
+                extension.pubList as List<JarbirdPubImpl>
+            ).buildPhase4()
         }
 
         /*

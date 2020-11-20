@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.maven
+package io.hkhc.gradle.internal.maven
 
 import io.hkhc.gradle.pom.License
 import io.hkhc.gradle.pom.Organization

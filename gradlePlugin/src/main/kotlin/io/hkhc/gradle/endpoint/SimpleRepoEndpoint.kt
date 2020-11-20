@@ -16,13 +16,12 @@
  *
  */
 
-package io.hkhc.gradle.pom
+package io.hkhc.gradle.endpoint
 
-import java.io.File
-
-internal const val POM_FILENAME = "pom.yaml"
-
-internal fun pomPath(base: String): String {
-    return base + File.separatorChar + POM_FILENAME
-}
-
+data class SimpleRepoEndpoint(
+    override val releaseUrl: String,
+    override val snapshotUrl: String,
+    override val username: String,
+    override val password: String,
+    override val apikey: String = ""
+) : RepoEndpoint

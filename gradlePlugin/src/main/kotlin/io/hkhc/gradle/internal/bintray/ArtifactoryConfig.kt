@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal.bintray
 
 import groovy.lang.GroovyObject
 import io.hkhc.gradle.BintrayPublishConfig

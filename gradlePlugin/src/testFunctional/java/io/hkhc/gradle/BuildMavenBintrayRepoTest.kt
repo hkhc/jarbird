@@ -51,7 +51,12 @@ class BuildMavenBintrayRepoTest : FunSpec({
 
         val targetTask = "jbPublish"
 
-        fun commonSetup(coordinate: Coordinate, maven: Boolean = true, bintray: Boolean = true, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+        fun commonSetup(
+            coordinate: Coordinate,
+            maven: Boolean = true,
+            bintray: Boolean = true,
+            expectedTaskList: List<String>
+        ): DefaultGradleProjectSetup {
 
             val projectDir = tempDirectory()
 
@@ -117,7 +122,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList!!
+                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList
                 }
 
                 LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should

@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal.utils
 
 import org.gradle.api.Project
 

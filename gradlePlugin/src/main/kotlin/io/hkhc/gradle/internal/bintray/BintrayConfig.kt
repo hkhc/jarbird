@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal.bintray
 
 import avFileBase
 import com.jfrog.bintray.gradle.BintrayExtension
@@ -24,6 +24,7 @@ import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import gavPath
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.internal.utils.findByType
 import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.internal.LOG_PREFIX
 import org.gradle.api.GradleException
@@ -63,7 +64,6 @@ class BintrayConfig(
             }
         }
     }
-
 
     // Bintray can perform component signing on behalf of us. However it requires our private key in order to sign
     // archives for us. I don't want to share the key and hence specify the signature files manually and upload

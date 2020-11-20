@@ -24,7 +24,7 @@ import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 import java.io.File
 
-class SnakeTest: FunSpec({
+class SnakeTest : FunSpec({
 
     test("test1") {
 

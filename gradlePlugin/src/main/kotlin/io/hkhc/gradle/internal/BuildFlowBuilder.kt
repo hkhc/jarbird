@@ -16,16 +16,12 @@
  *
  */
 
-package io.hkhc.gradle.builder
+package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdExtension
-import io.hkhc.gradle.internal.JarbirdPubImpl
-import io.hkhc.gradle.internal.LOG_PREFIX
-import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
-import io.hkhc.gradle.internal.PLUGIN_ID
-import io.hkhc.gradle.internal.isMultiProjectRoot
-import io.hkhc.gradle.internal.needBintray
-import io.hkhc.gradle.internal.needGradlePlugin
+import io.hkhc.gradle.internal.bintray.ArtifactoryConfig
+import io.hkhc.gradle.internal.bintray.BintrayConfig
+import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
 import org.gradle.api.Project
 
 /**
@@ -68,7 +64,7 @@ import org.gradle.api.Project
  *  **** bintray plugin project evaluation listener (project evaluated)
  *  - Create facade tasks
  */
-internal class PublicationBuilder(
+internal class BuildFlowBuilder(
     private val project: Project,
     private val extension: JarbirdExtension,
     private val pubs: List<JarbirdPubImpl>

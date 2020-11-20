@@ -41,4 +41,3 @@ internal fun List<JarbirdPub>.needSigning() = any { it.signing }
 internal fun List<JarbirdPub>.needBintray() = any { it.bintray }
 
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
-
