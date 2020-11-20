@@ -29,7 +29,6 @@ const val bintrayVersion = "1.8.5"
 const val buildInfoVersion = "4.18.0"
 
 // lib
-const val junit5Version = "5.6.1"
 const val snakeYamlVersion = "1.25"
 const val kotestVersion = "4.3.1"
 const val mockWebServerVersion = "4.5.0"

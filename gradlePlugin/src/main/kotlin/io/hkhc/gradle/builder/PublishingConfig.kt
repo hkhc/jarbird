@@ -18,22 +18,19 @@
 
 package io.hkhc.gradle.builder
 
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.CLASSIFIER_JAVADOC
 import io.hkhc.gradle.internal.CLASSIFIER_SOURCE
-import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JarbirdPubImpl
+import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.PUBLISH_GROUP
 import io.hkhc.gradle.internal.SP_EXT_NAME
+import io.hkhc.gradle.internal.pubNameCap
 import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.maven.MavenPomAdapter
-import io.hkhc.gradle.internal.LOG_PREFIX
-import io.hkhc.gradle.internal.SP_GROUP
-import io.hkhc.gradle.internal.dokka.JarbirdDokkaConfig
-import io.hkhc.gradle.internal.pubNameCap
 import io.hkhc.gradle.utils.detailMessageWarning
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.PublishArtifact
@@ -54,7 +51,7 @@ internal class PublishingConfig(
 ) {
     private val extensions = (project as ExtensionAware).extensions
     // TODO we shall have one separate dokka task per pub
-//    private var dokka = pubs.map { it.dokka }.find { it != null }
+    private var dokka = pubs.map { it.dokka }.find { it != null }
 
     companion object {
         private fun printHelpForMissingDokka(project: Project) {
@@ -76,6 +73,27 @@ internal class PublishingConfig(
                 """.trimIndent()
             )
         }
+    }
+
+    fun config() {
+
+        project.logger.debug("$LOG_PREFIX configure Publishing extension")
+
+        if (dokka == null) {
+            try {
+                dokka = project.tasks.named("dokka")
+            } catch (e: UnknownTaskException) {
+                printHelpForMissingDokka(project)
+            }
+        }
+
+        (
+            project.findByType(PublishingExtension::class.java)
+                ?: throw GradleException(
+                    "\"publishing\" extension is not found. " +
+                        "Maybe \"org.gradle.maven-publish\" is not applied?"
+                )
+            ).config()
     }
 
     fun createDokkaSourceRoots(pub: JarbirdPubImpl): Iterable<File> {
@@ -205,41 +223,6 @@ internal class PublishingConfig(
                 }
             }
         }
-    }
-
-    @Suppress("UnstableApiUsage")
-    private fun setupDokkaJar(pub: JarbirdPub): TaskProvider<Jar>? {
-
-//        if (dokka == null) return null
-
-        // TODO pub specific dokkaJar
-
-            println("building dokkaJar")
-
-        val dokkaJarTaskName = pub.pubNameWithVariant("jbDokkaJar${pub.pubNameCap}")
-        return try {
-            project.tasks.register(dokkaJarTaskName, Jar::class.java) {
-                group = "documentation"
-                // TODO description
-                description = "TODO..."
-                archiveClassifier.set(CLASSIFIER_JAVADOC)
-                archiveBaseName.set(pub.variantArtifactId())
-                archiveVersion.set(pub.variantVersion())
-//                dependsOn("dokka${pub.pubNameCap}")
-            }
-        } catch (e: UnknownTaskException) {
-            // TODO add error message here if dokka is null
-            project.tasks.register(dokkaJarTaskName, Jar::class.java) {
-                group = "documentation"
-                description = "Assembles Kotlin docs with Dokka to Jar"
-                archiveClassifier.set(CLASSIFIER_JAVADOC)
-                archiveBaseName.set(pub.variantArtifactId())
-                archiveVersion.set(pub.variantVersion())
-                from(project.tasks.named("jbDokkaHtml${pub.pubNameCap}").get())
-//                dependsOn("dokka${pub.pubNameCap}")
-            }
-        }
-
     }
 
     @Suppress("UnstableApiUsage")

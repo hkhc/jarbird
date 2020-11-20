@@ -19,9 +19,10 @@
 package io.hkhc.gradle.test
 
 import io.hkhc.gradle.internal.SNAPSHOT_SUFFIX
+import io.kotest.assertions.withClue
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.shouldBe
 import okhttp3.mockwebserver.RecordedRequest
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
 
 class ArtifactoryPublishingChecker(val coordinate: Coordinate, private val packaging: String) {
 
@@ -29,11 +30,12 @@ class ArtifactoryPublishingChecker(val coordinate: Coordinate, private val packa
         val matched = requests
             .filter { it.method == "PUT" }
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
-        Assertions.assertTrue(
-            matched,
-            "$pathRegex does not match any recorded request\n" +
-                requests.map { it.path }.joinToString("\n")
-        )
+        withClue(
+            "\"$pathRegex does not match any recorded request\\n\" +\n" +
+                "                requests.map { it.path }.joinToString(\"\\n\""
+        ) {
+            matched.shouldBeTrue()
+        }
     }
 
     private fun transformReleaseVersion(version: String) = version
@@ -79,10 +81,8 @@ class ArtifactoryPublishingChecker(val coordinate: Coordinate, private val packa
                     expectedPaths.none { regex -> it.path?.let { path -> regex.matches(path) } ?: false }
             }
 
-        assertEquals(
-            "",
-            remainingPaths.map { it.path }.joinToString("\n"),
-            "all request to repository server are expected"
-        )
+        withClue("all request to repository server are expected") {
+            remainingPaths.map { it.path }.joinToString("\n") shouldBe ""
+        }
     }
 }

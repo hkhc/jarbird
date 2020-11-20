@@ -19,15 +19,14 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.Pom
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.FunSpec
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 import java.io.File
 
-class SnakeTest {
+class SnakeTest: FunSpec({
 
-    @Test
-    fun `test1`() {
+    test("test1") {
 
         val yaml = Yaml(Constructor(Pom::class.java))
 
@@ -37,4 +36,4 @@ class SnakeTest {
 
         System.out.println(pom)
     }
-}
+})

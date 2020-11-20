@@ -20,7 +20,8 @@ package io.hkhc.gradle.test
 
 import io.hkhc.utils.TextCutter
 import io.hkhc.utils.TextTree
-import org.junit.jupiter.api.Assertions
+import io.kotest.assertions.withClue
+import io.kotest.matchers.shouldBe
 import java.io.File
 import java.io.StringWriter
 
@@ -37,11 +38,9 @@ fun assertTaskTree(
         projectDir,
         envs
     )
-    Assertions.assertEquals(
-        expectedTree,
-        TextCutter(output.stdout).cut(":$taskName", ""),
-        "task tree"
-    )
+    withClue("task tree") {
+        TextCutter(output.stdout).cut(":$taskName", "") shouldBe expectedTree
+    }
 }
 
 fun <T> treeStr(node: TextTree.Node<T>): String {
