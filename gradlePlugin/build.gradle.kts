@@ -94,11 +94,10 @@ tasks {
             freeCompilerArgs = freeCompilerArgs.plus("-XXLanguage:+NewInference")
         }
     }
-
-    dokka {
-        outputFormat = "html"
-        outputDirectory = "$buildDir/dokka"
-    }
+//    dokka {
+//        outputFormat = "html"
+//        outputDirectory = "$buildDir/dokka"
+//    }
 
     withType<Detekt>().configureEach {
         jvmTarget = jvmTargetVersion

@@ -16,21 +16,7 @@
  *
  */
 
-const val jvmTargetVersion = "1.8"
-const val kotlinVersion = "1.4.10"
-const val kotlinLanguageVersion = "1.4"
+package io.hkhc.gradle.internal
 
-// plugins
-const val dokkaVersion = "1.4.10.2"
-// const val dokkaVersion = "0.10.1"
-const val ktlintVersion = "9.4.1"
-const val taskTreeVersion = "1.5"
-const val detektVersion = "1.14.0"
-const val bintrayVersion = "1.8.5"
-const val buildInfoVersion = "4.18.0"
-
-// lib
-const val snakeYamlVersion = "1.25"
-const val kotestVersion = "4.3.1"
-const val mockWebServerVersion = "4.5.0"
-const val mockkVersion = "1.10.2"
+class DokkaConfig {
+}
