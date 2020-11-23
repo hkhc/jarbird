@@ -36,7 +36,6 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
-import java.io.File
 
 internal class PublishingConfig(
     private val project: Project,
@@ -44,7 +43,8 @@ internal class PublishingConfig(
 ) {
     private val extensions = (project as ExtensionAware).extensions
     // TODO we shall have one separate dokka task per pub
-    private var dokka = pubs.map { it.dokka }.find { it != null }
+//    private var dokka = pubs.map { it.dokka }.find { it != null }
+    //private var dokka = project.tasks.named("dokkaHtml").get()
 
     companion object {
         private fun printHelpForMissingDokka(project: Project) {
@@ -72,13 +72,13 @@ internal class PublishingConfig(
 
         project.logger.debug("$LOG_PREFIX configure Publishing extension")
 
-        if (dokka == null) {
-            try {
-                dokka = project.tasks.named("dokka")
-            } catch (e: UnknownTaskException) {
-                printHelpForMissingDokka(project)
-            }
-        }
+//        if (dokka == null) {
+//            try {
+//                dokka = project.tasks.named("dokka")
+//            } catch (e: UnknownTaskException) {
+//                printHelpForMissingDokka(project)
+//            }
+//        }
 
         (
             project.findByType(PublishingExtension::class.java)
@@ -89,19 +89,19 @@ internal class PublishingConfig(
             ).config()
     }
 
-    fun createDokkaSourceRoots(pub: JarbirdPubImpl): Iterable<File> {
-
-        return if (pub.sourceSets == null) {
-            sourceSets.getByName(pub.sourceSetName).allSource.srcDirs
-        } else {
-            pub.sourceSets ?: listOf()
-        }
-    }
+//    fun createDokkaSourceRoots(pub: JarbirdPubImpl): Iterable<File> {
+//
+//        return if (pub.sourceSets == null) {
+//            sourceSets.getByName(pub.sourceSetName).allSource.srcDirs
+//        } else {
+//            pub.sourceSets ?: listOf()
+//        }
+//    }
 
     @Suppress("UnstableApiUsage")
     private fun setupDokkaJar(pub: JarbirdPub): TaskProvider<Jar>? {
 
-        if (dokka == null) return null
+//        if (dokka == null) return null
 
         val dokkaJarTaskName = pub.pubNameWithVariant("dokkaJar")
         return try {
@@ -121,8 +121,8 @@ internal class PublishingConfig(
                 archiveClassifier.set(CLASSIFIER_JAVADOC)
                 archiveBaseName.set(pub.variantArtifactId())
                 archiveVersion.set(pub.variantVersion())
-                from(dokka)
-                dependsOn(dokka)
+//                from(dokka)
+//                dependsOn(dokka)
             }
         }
     }
@@ -165,7 +165,6 @@ internal class PublishingConfig(
 
         pubs.forEach { pub ->
             val dokkaJar = setupDokkaJar(pub)
-            val sourcesJar = setupSourcesJar(pub)
 
             val pom = pub.pom
 
@@ -187,11 +186,12 @@ internal class PublishingConfig(
                 project.afterEvaluate {
                     dokkaJar?.let { artifact(it.get()) }
                     // And sources
-                    sourcesJar?.let { artifact(it.get()) }
+                    artifact(SourceConfig(project).configSourceJarTask(pub))
                 }
 
                 pom { MavenPomAdapter().fill(this, pom) }
             }
+
         }
     }
 
@@ -214,42 +214,6 @@ internal class PublishingConfig(
                     username = endpoint.username
                     password = endpoint.password
                 }
-            }
-        }
-    }
-
-    @Suppress("UnstableApiUsage")
-    private fun setupSourcesJar(pub: JarbirdPub): TaskProvider<Jar>? {
-
-        val sourcesJarTaskName = pub.pubNameWithVariant("sourcesJar")
-        return try {
-            project.tasks.named(sourcesJarTaskName, Jar::class.java) {
-                archiveClassifier.set(CLASSIFIER_SOURCE)
-                // TODO look like it affect other JAR tasks, may be a better place for that
-                archiveBaseName.set(pub.variantArtifactId())
-                archiveVersion.set(pub.variantVersion())
-            }
-        } catch (e: UnknownTaskException) {
-            val desc = if (pub.variant == "") {
-                "Create archive of source code for the binary"
-            } else {
-                "Create archive of source code for the binary of variant '${pub.variant}' "
-            }
-
-            println("PublishingConfig sourceSets count ${sourceSets.size}")
-            sourceSets.forEach {
-                println("PublishingConfig sourceSets ${it.name}")
-            }
-
-            val ss = pub.sourceSets ?: sourceSets.getByName(pub.sourceSetName).allSource
-
-            project.tasks.register(sourcesJarTaskName, Jar::class.java) {
-                group = PUBLISH_GROUP
-                description = desc
-                archiveClassifier.set(CLASSIFIER_SOURCE)
-                archiveBaseName.set(pub.variantArtifactId())
-                archiveVersion.set(pub.variantVersion())
-                from(ss)
             }
         }
     }

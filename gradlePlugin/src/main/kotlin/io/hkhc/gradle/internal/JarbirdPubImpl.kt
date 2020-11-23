@@ -20,6 +20,8 @@ package io.hkhc.gradle.internal
 
 import appendBeforeSnapshot
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.SourceDirs
+import io.hkhc.gradle.SourceSetNames
 import io.hkhc.gradle.VariantMode
 import io.hkhc.gradle.endpoint.MavenCentralEndpoint
 import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
@@ -99,4 +101,9 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
     override fun withMavenByProperties(key: String) {
         mavenRepo = PropertyRepoEndpoint(project, "maven.$key")
     }
+
+    override fun sourceSetNames(vararg names: String): Any = SourceSetNames(project, names)
+    override fun sourceSetNames(names: List<String>): Any = SourceSetNames(project, names.toTypedArray())
+    override fun sourceDirs(dirs: Any): Any = SourceDirs(dirs)
+
 }

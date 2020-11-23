@@ -75,14 +75,23 @@ abstract class JarbirdPub {
      */
     var dokka: Any? = null
 
-    /**
-     * The name of sourceset for archiving.
-     * if sourcesPath is not provided, the plugin try to get the sources set named [sourceSetName] for source jar task
-     */
-    var sourceSetName: String = "main"
+//    /**
+//     * The name of sourceset for archiving.
+//     * if sourcesPath is not provided, the plugin try to get the sources set named [sourceSetName] for source jar task
+//     */
+//    var sourceSetName: String = "main"
+//
+//    fun set
+//
+//    // TODO make it flexible for more data type
+//    var sourceSets: Collection<File>? = null
 
-    // TODO make it flexible for more data type
-    var sourceSets: Collection<File>? = null
+    var sourceSets: Any? = "main"
+
+    abstract fun sourceSetNames(vararg names: String): Any
+    abstract fun sourceSetNames(names: List<String>): Any
+    abstract fun sourceDirs(dirs: Any): Any
+
     /**
      * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
      * We will need useGpg=true if we use new keybox (.kbx) format for pur signing key.
