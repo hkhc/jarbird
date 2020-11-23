@@ -120,9 +120,9 @@ internal class BuildFlowBuilder(
     @Suppress("unused")
     fun buildPhase3() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 3 of 4")
-        if (pubs.needGradlePlugin()) {
-            PluginPublishingConfig(project, pubs).config2()
-        }
+//        if (pubs.needGradlePlugin()) {
+//            PluginPublishingConfig(project, pubs).config2()
+//        }
     }
 
     @Suppress("unused")

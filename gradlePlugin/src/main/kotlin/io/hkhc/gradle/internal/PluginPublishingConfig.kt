@@ -60,17 +60,42 @@ class PluginPublishingConfig(
                         "\"plugin org.gradle.java-gradle-plugin\" is not applied?"
                 )
             ).config()
+
+        presetupPluginMarkerPublication()
     }
 
-    fun config2() {
-        pubs.forEach {
-            if (it.pom.isGradlePlugin()) {
-                it.variantArtifactId()?.let { artifactId ->
-                    updatePluginPublication(project, artifactId)
+    private fun presetupPluginMarkerPublication() {
+
+        // TODO we can have one pluginMaven publication per sub-project only
+
+        pubs.forEach {pub ->
+            // We create the marker pubkication here so that the MavenPluginPublishPlugin may reuse it
+            // and we can do some customization here.
+            if (pub.pom.isGradlePlugin()) {
+                val publishing = project.findByType(PublishingExtension::class.java)
+                publishing?.publications {
+                    val markerPublication = maybeCreate(
+                        "pluginMaven",
+                        MavenPublication::class.java
+                    )
+                    markerPublication.groupId = pub.pom.group
+                    markerPublication.artifactId = pub.pom.artifactId
+                    markerPublication.version = pub.pom.version
                 }
             }
         }
+
     }
+
+//    fun config2() {
+//        pubs.forEach {
+//            if (it.pom.isGradlePlugin()) {
+//                it.variantArtifactId()?.let { artifactId ->
+//                    updatePluginPublication(project, artifactId)
+//                }
+//            }
+//        }
+//    }
 
     private fun PluginBundleExtension.config() {
 
@@ -110,9 +135,12 @@ class PluginPublishingConfig(
      */
     private fun updatePluginPublication(project: Project, artifactId: String) {
 
+        println("updatePluginPublication ${artifactId}")
+
         project.extensions.configure(PublishingExtension::class.java) {
             publications.find { it.name.startsWith("pluginMaven") }?.let {
                 if (it is MavenPublication) {
+                    println("updatePluginPublication ready to update ${artifactId} vs ${it.artifactId}")
                     it.artifactId = artifactId
                 }
             }
