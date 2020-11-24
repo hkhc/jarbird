@@ -88,6 +88,7 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
     fun setupGradleProperties(block: PropertiesEditor.() -> Unit = {}) {
 
         PropertiesEditor("$projectDir/gradle.properties") {
+            "org.gradle.jvmargs" to "-Xmx2000m"
             setupKeyStore(projectDir)
             block.invoke(this)
         }

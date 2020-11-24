@@ -20,7 +20,7 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.endpoint.RepoEndpoint
 import io.hkhc.gradle.pom.Pom
-import java.io.File
+import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
 abstract class JarbirdPub {
 
@@ -106,4 +106,6 @@ abstract class JarbirdPub {
     abstract fun withMavenCentral()
 
     abstract fun withMavenByProperties(key: String)
+
+    var dokkaConfig: AbstractDokkaTask.(pub: JarbirdPub) -> Unit = {}
 }

@@ -116,8 +116,8 @@ class BuildBintrayPluginRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":dokka=SUCCESS",
-                    ":dokkaJar=SUCCESS",
+                    ":jbDokkaHtmlLib=SUCCESS",
+                    ":dokkaJarLib=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
@@ -127,7 +127,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
                     ":jar=SUCCESS",
                     ":generateMetadataFileForLibPublication=SUCCESS",
                     ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJar=SUCCESS",
+                    ":sourcesJarLib=SUCCESS",
                     ":signLibPublication=SUCCESS",
                     ":_bintrayRecordingCopy=SUCCESS",
                     ":generatePomFileForLibPluginMarkerMavenPublication=SUCCESS",

@@ -22,6 +22,7 @@
 plugins {
     kotlin("jvm") version kotlinVersion
     id("io.gitlab.arturbosch.detekt") version detektVersion
+    id("io.hkhc.jarbird.bootstrap") version "1.0.0"
 }
 
 buildscript {
@@ -31,6 +32,7 @@ buildscript {
 
 repositories {
     mavenCentral()
+    jcenter()
 //    gradlePluginPortal()
 }
 

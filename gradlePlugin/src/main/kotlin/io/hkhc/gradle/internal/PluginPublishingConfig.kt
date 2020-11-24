@@ -64,11 +64,17 @@ class PluginPublishingConfig(
         presetupPluginMarkerPublication()
     }
 
+    /*
+        The gradle publish plugin hardcoded to use project name as publication artifact name.
+        We further customize that publication here and replace it with pom.artifactId
+        The default value of pom.name is still project.name so we are not violating the Gradle convention.
+        "publishPluginMavenPublication*" task is created by gradle plugin publish plugin.
+     */
     private fun presetupPluginMarkerPublication() {
 
         // TODO we can have one pluginMaven publication per sub-project only
 
-        pubs.forEach {pub ->
+        pubs.forEach { pub ->
             // We create the marker pubkication here so that the MavenPluginPublishPlugin may reuse it
             // and we can do some customization here.
             if (pub.pom.isGradlePlugin()) {
@@ -84,10 +90,8 @@ class PluginPublishingConfig(
                 }
             }
         }
-
     }
 
-//    fun config2() {
 //        pubs.forEach {
 //            if (it.pom.isGradlePlugin()) {
 //                it.variantArtifactId()?.let { artifactId ->
@@ -127,23 +131,17 @@ class PluginPublishingConfig(
         }
     }
 
-    /*
-        The gradle publish plugin hardcoded to use project name as publication artifact name.
-        We further customize that publication here and replace it with pom.artifactId
-        The default value of pom.name is still project.name so we are not violating the Gradle convention.
-        "publishPluginMavenPublication*" task is created by gradle plugin publish plugin.
-     */
-    private fun updatePluginPublication(project: Project, artifactId: String) {
-
-        println("updatePluginPublication ${artifactId}")
-
-        project.extensions.configure(PublishingExtension::class.java) {
-            publications.find { it.name.startsWith("pluginMaven") }?.let {
-                if (it is MavenPublication) {
-                    println("updatePluginPublication ready to update ${artifactId} vs ${it.artifactId}")
-                    it.artifactId = artifactId
-                }
-            }
-        }
-    }
+//    private fun updatePluginPublication(project: Project, artifactId: String) {
+//
+//        println("updatePluginPublication ${artifactId}")
+//
+//        project.extensions.configure(PublishingExtension::class.java) {
+//            publications.find { it.name.startsWith("pluginMaven") }?.let {
+//                if (it is MavenPublication) {
+//                    println("updatePluginPublication ready to update ${artifactId} vs ${it.artifactId}")
+//                    it.artifactId = artifactId
+//                }
+//            }
+//        }
+//    }
 }

@@ -54,7 +54,7 @@ fun String.appendBeforeSnapshot(s: String): String {
 val JarbirdPub.gavPath: String
     get() {
         with(pom) {
-            return multiLet(group, artifactId, version) { g, a, v ->
+            return multiLet(group, artifactId, version) { g, _, _ ->
                 "${g.replace('.', '/')}/${variantArtifactId()}/${variantVersion()}"
             } ?: throw IllegalStateException(
                 "GAV in POM is not complete: " +

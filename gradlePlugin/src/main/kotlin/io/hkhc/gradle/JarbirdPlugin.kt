@@ -43,7 +43,6 @@ import org.gradle.api.Project
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
 import org.gradle.plugins.signing.SigningPlugin
-import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 
 @Suppress("unused")
@@ -212,12 +211,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
              * no evaluation listener
              */
             apply(MavenPublishPlugin::class.java)
-
-            /**
-             * "org.jetbrains.dokka"
-             * no evaluation listener
-             */
-            apply(DokkaPlugin::class.java)
         }
 
         /* Under the following situation we need plugins to be applied within the Gradle-scope afterEvaluate

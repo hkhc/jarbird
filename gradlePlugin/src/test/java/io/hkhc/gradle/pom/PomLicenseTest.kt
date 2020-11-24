@@ -33,7 +33,7 @@ PomLicenseTest : StringSpec({
 
     // Have one line per property in the class
     "License shall overlay properly" {
-        `Fields overlay properly`(License::class, ::License)
+        `Fields overlay properly`(License::class, { License() })
     }
 
     "Merging list of licenses and obtain new item" {

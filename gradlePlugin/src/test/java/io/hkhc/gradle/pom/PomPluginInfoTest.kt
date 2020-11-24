@@ -34,13 +34,13 @@ class PomPluginInfoTest : StringSpec({
 
         val nonStringFields = arrayOf(
             `Array Fields merged properly when overlaying`(
-                ::PluginInfo,
+                { PluginInfo() },
                 PluginInfo::tags,
                 listOf("tag1", "tag2"),
                 listOf("tag3")
             )
         )
 
-        `Fields overlay properly`(PluginInfo::class, ::PluginInfo, nonStringFields)
+        `Fields overlay properly`(PluginInfo::class, { PluginInfo() }, nonStringFields)
     }
 })

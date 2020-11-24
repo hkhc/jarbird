@@ -20,18 +20,16 @@ pluginManagement {
     repositories {
         // we need mavenaLocal repo here so that we can get the bootstrap plugin
         mavenLocal()
+        // the default place for gradle plugin (marker)
         gradlePluginPortal()
 //        // I wonder if we really need these two if we don't use old style plugin declaration at all
         mavenCentral()
 //        jcenter()
-        // for detekt
-//        maven { url = uri("https://dl.bintray.com/kotlin/kotlinx") }
 //    }
     }
 }
 
 include(":gradlePlugin")
-//include(":gradlePlugin", ":simplepublisherTestLib")
 
 // If you want the root project name to be different from the directory name
-//rootProject.name = "your-project-name"
+// rootProject.name = "your-project-name"

@@ -30,6 +30,6 @@ class PomBintrayTest : StringSpec({
 
     // Have one line per property in the class
     "Bintray shall overlay properly" {
-        `Fields overlay properly`(Bintray::class, ::Bintray)
+        `Fields overlay properly`(Bintray::class, { Bintray() })
     }
 })

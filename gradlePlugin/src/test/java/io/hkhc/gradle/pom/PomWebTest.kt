@@ -30,6 +30,6 @@ class PomWebTest : StringSpec({
 
     // Have one line per property in the class
     "Web shall overlay properly" {
-        `Fields overlay properly`(Web::class, ::Web)
+        `Fields overlay properly`(Web::class, { Web() })
     }
 })

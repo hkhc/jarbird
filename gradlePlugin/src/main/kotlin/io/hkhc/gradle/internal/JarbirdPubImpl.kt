@@ -105,5 +105,4 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
     override fun sourceSetNames(vararg names: String): Any = SourceSetNames(project, names)
     override fun sourceSetNames(names: List<String>): Any = SourceSetNames(project, names.toTypedArray())
     override fun sourceDirs(dirs: Any): Any = SourceDirs(dirs)
-
 }

@@ -295,7 +295,7 @@ data class Pom(
             bintray.overlayTo(other.bintray)
 
             plugin?.let { thisPlugin ->
-                other.plugin = other.plugin?.also(thisPlugin::overlayTo) ?: thisPlugin
+                other.plugin = other.plugin?.also { it -> thisPlugin.overlayTo(it) } ?: thisPlugin
             }
         }
         return other

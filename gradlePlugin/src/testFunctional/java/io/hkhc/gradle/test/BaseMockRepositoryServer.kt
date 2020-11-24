@@ -52,9 +52,7 @@ abstract class BaseMockRepositoryServer {
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 println("mock server request : ${request.method} ${request.path}")
-                return pathMatcher(request).apply {
-                    println("mock server response : $status")
-                }
+                return pathMatcher(request)
             }
         }
         server.start()

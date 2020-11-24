@@ -36,7 +36,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
     id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
     id("com.dorongold.task-tree") version taskTreeVersion
-    id("io.hkhc.jarbird.bootstrap") version "1.0.0"
+    id("io.hkhc.jarbird.bootstrap")
 }
 
 // TODO Simplify functional test creation
@@ -153,7 +153,9 @@ dependencies {
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:$buildInfoVersion")
     implementation("org.yaml:snakeyaml:$snakeYamlVersion")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
-    implementation("com.gradle.publish:plugin-publish-plugin:0.12.0")
+    implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
+    implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
+    implementation("com.gradle.publish:plugin-publish-plugin:$gradlePortalPluginVersion")
 //    implementation("")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {

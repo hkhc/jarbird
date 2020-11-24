@@ -30,6 +30,6 @@ class PomScmTest : StringSpec({
 
     // Have one line per property in the class
     "Scm shall overlay properly" {
-        `Fields overlay properly`(Scm::class, ::Scm)
+        `Fields overlay properly`(Scm::class, { Scm() })
     }
 })

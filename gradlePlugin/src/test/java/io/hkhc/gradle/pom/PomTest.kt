@@ -36,7 +36,7 @@ import java.util.Calendar
 import java.util.GregorianCalendar
 
 // @ExtendWith(MockKExtension::class)
-class PomTest : StringSpec({
+internal class PomTest : StringSpec({
 
     lateinit var project: DefaultProject
 
@@ -55,25 +55,25 @@ class PomTest : StringSpec({
     "Pom shall overlay properly" {
 
         val nonStringFields = arrayOf(
-            `Field perform overlay properly`(::Pom, Pom::bintray, Bintray("names", "repo", "org")),
-            `Field perform overlay properly`(::Pom, Pom::organization, Organization("name", "url_orgn")),
-            `Field perform overlay properly`(::Pom, Pom::web, Web("url", "description")),
-            `Field perform overlay properly`(::Pom, Pom::scm, Scm(url = "url", connection = "connection")),
-            `Field perform overlay properly`(::Pom, Pom::plugin, PluginInfo(id = "123", displayName = "name")),
+            `Field perform overlay properly`({ Pom() }, Pom::bintray, Bintray("names", "repo", "org")),
+            `Field perform overlay properly`({ Pom() }, Pom::organization, Organization("name", "url_orgn")),
+            `Field perform overlay properly`({ Pom() }, Pom::web, Web("url", "description")),
+            `Field perform overlay properly`({ Pom() }, Pom::scm, Scm(url = "url", connection = "connection")),
+            `Field perform overlay properly`({ Pom() }, Pom::plugin, PluginInfo(id = "123", displayName = "name")),
             `Array Fields merged properly when overlaying`(
-                ::Pom,
+                { Pom() },
                 Pom::licenses,
                 listOf(License(name = "A"), License(name = "B")),
                 listOf(License(name = "C"))
             ),
             `Array Fields merged properly when overlaying`(
-                ::Pom,
+                { Pom() },
                 Pom::developers,
                 listOf(Person(name = "A"), Person(name = "B")),
                 listOf(Person(name = "C"))
             ),
             `Array Fields merged properly when overlaying`(
-                ::Pom,
+                { Pom() },
                 Pom::contributors,
                 listOf(Person(name = "A"), Person(name = "B")),
                 listOf(Person(name = "C"))
@@ -81,7 +81,7 @@ class PomTest : StringSpec({
             "variant"
         )
 
-        `Fields overlay properly`(Pom::class, ::Pom, nonStringFields)
+        `Fields overlay properly`(Pom::class, { Pom() }, nonStringFields)
     }
 
     "Pom shall determine if it is snapshot by plugin info version" {

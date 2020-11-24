@@ -22,6 +22,7 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.internal.bintray.ArtifactoryConfig
 import io.hkhc.gradle.internal.bintray.BintrayConfig
 import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
+import io.hkhc.gradle.internal.dokka.DokkaConfig
 import org.gradle.api.Project
 
 /**
@@ -81,6 +82,8 @@ internal class BuildFlowBuilder(
             // TODO 2 shall we add .configureEach after withType as suggested by
             // https://blog.gradle.org/preview-avoiding-task-configuration-time
 
+            println("phase 1 (${project.name}) child ${project.childProjects.size} sub ${project.subprojects.size}")
+
             if (isMultiProjectRoot()) {
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
@@ -120,16 +123,23 @@ internal class BuildFlowBuilder(
     @Suppress("unused")
     fun buildPhase3() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 3 of 4")
-//        if (pubs.needGradlePlugin()) {
-//            PluginPublishingConfig(project, pubs).config2()
-//        }
+
+        DokkaConfig(project, extension).apply {
+            if (project.isMultiProjectRoot()) {
+                configRootDokka()
+            } else {
+                extension.pubList.forEach { pub ->
+                    configDokka(pub as JarbirdPubImpl)
+                }
+            }
+        }
     }
 
     @Suppress("unused")
     fun buildPhase4() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 4 of 4")
         if (!project.isMultiProjectRoot()) {
-            PublishingConfig(project, pubs).config()
+            PublishingConfig(project, extension, pubs).config()
             if (pubs.any { it.signing }) {
                 SigningConfig(project, pubs).config()
             }

@@ -27,7 +27,7 @@ class PomPeopleTest : StringSpec({
 
     // Have one line per property in the class
     "People shall overlay properly" {
-        `Fields overlay properly`(Person::class, ::Person)
+        `Fields overlay properly`(Person::class, { Person() })
     }
 
     "Merging empty lists of people and obtain new empty list" {

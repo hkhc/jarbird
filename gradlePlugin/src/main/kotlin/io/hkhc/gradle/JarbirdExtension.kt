@@ -22,6 +22,7 @@ import groovy.lang.Closure
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.endpoint.RepoEndpoint
 import org.gradle.api.Project
+import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
 // Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.
 open class JarbirdExtension(@Suppress("unused") private val project: Project) {
@@ -29,6 +30,8 @@ open class JarbirdExtension(@Suppress("unused") private val project: Project) {
     var pubList = mutableListOf<JarbirdPub>()
 
     var bintrayRepository: RepoEndpoint? = null
+
+    var dokkaConfig: AbstractDokkaTask.() -> Unit = {}
 
     lateinit var pomGroupCallback: PomGroupCallback
     private var implicited: JarbirdPub? = null

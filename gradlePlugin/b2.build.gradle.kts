@@ -40,7 +40,7 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     id("com.dorongold.task-tree") version taskTreeVersion
-    id("com.gradle.plugin-publish") version "0.11.0"
+    id("com.gradle.plugin-publish")
 }
 
 group = "io.hkhc.gradle"
@@ -97,7 +97,9 @@ dependencies {
     implementation(gradleApi())
     implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:$buildInfoVersion")
-    implementation("org.yaml:snakeyaml:1.25")
+    implementation("org.yaml:snakeyaml:$snakeYamlVersion")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
-    implementation("com.gradle.publish:plugin-publish-plugin:0.11.0")
+    implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
+    implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
+    implementation("com.gradle.publish:plugin-publish-plugin:$gradlePortalPluginVersion")
 }

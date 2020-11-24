@@ -161,8 +161,8 @@ class BuildMavenRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":dokka=SUCCESS",
-                    ":dokkaJar=SUCCESS",
+                    ":jbDokkaHtmlLib=SUCCESS",
+                    ":dokkaJarLib=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
@@ -172,7 +172,7 @@ class BuildMavenRepoTest : FunSpec({
                     ":jar=SUCCESS",
                     ":generateMetadataFileForLibPublication=SUCCESS",
                     ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJar=SUCCESS",
+                    ":sourcesJarLib=SUCCESS",
                     ":signLibPublication=SUCCESS",
                     ":publishLibPublicationToMavenLibRepository=SUCCESS",
                     ":jbPublishLibToMavenmock=SUCCESS",
@@ -190,8 +190,8 @@ class BuildMavenRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":dokka=SUCCESS",
-                    ":dokkaJar=SUCCESS",
+                    ":jbDokkaHtmlLib=SUCCESS",
+                    ":dokkaJarLib=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
@@ -201,7 +201,7 @@ class BuildMavenRepoTest : FunSpec({
                     ":jar=SUCCESS",
                     ":generateMetadataFileForLibPublication=SUCCESS",
                     ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJar=SUCCESS",
+                    ":sourcesJarLib=SUCCESS",
                     ":publishLibPublicationToMavenLibRepository=SUCCESS",
                     ":jbPublishLibToMavenmock=SUCCESS",
                     ":jbPublishLibToMavenRepository=SUCCESS",
