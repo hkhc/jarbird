@@ -82,8 +82,6 @@ internal class BuildFlowBuilder(
             // TODO 2 shall we add .configureEach after withType as suggested by
             // https://blog.gradle.org/preview-avoiding-task-configuration-time
 
-            println("phase 1 (${project.name}) child ${project.childProjects.size} sub ${project.subprojects.size}")
-
             if (isMultiProjectRoot()) {
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 

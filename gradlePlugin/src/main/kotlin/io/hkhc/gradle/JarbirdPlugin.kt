@@ -125,19 +125,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         }
     }
 
-//    private fun pluginStatus(project: Project, tag: String) {
-//        val gradleExt = project.extensions.getByType(GradlePluginDevelopmentExtension::class.java)
-//        System.out.println("$tag gradleExt.plugins.size ${gradleExt.plugins.size}")
-//        System.out.println("$tag isAutomatedPublishing ${gradleExt.isAutomatedPublishing}")
-//        gradleExt.plugins.forEach {
-//            System.out.println("$tag pluginDeclaration ${it.name} [${it.implementationClass}]")
-//        }
-//        val pubExt = project.extensions.getByType(PublishingExtension::class.java)
-//        pubExt.publications.forEach {
-//            System.out.println("$tag publication ${it.name}")
-//        }
-//    }
-
     /**
      * The order of applying plugins and whether they are deferred by the two kind of afterEvaluate listener, are
      * important. So mess around them without know exactly the consequence.
@@ -148,7 +135,8 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
         pomGroup = PomGroupFactory(p).resolvePomGroup()
 
-        extension = project.extensions.create(SP_EXT_NAME, JarbirdExtension::class.java, project)
+        extension = JarbirdExtension(project)
+        project.extensions.add(SP_EXT_NAME, extension)
         extension.pomGroupCallback = this
 
         project.logger.debug("$LOG_PREFIX Aggregated POM configuration: $pomGroup")

@@ -86,7 +86,7 @@ abstract class JarbirdPub {
 //    // TODO make it flexible for more data type
 //    var sourceSets: Collection<File>? = null
 
-    var sourceSets: Any? = "main"
+    var sourceSets: Any = "main"
 
     abstract fun sourceSetNames(vararg names: String): Any
     abstract fun sourceSetNames(names: List<String>): Any

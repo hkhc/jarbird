@@ -20,7 +20,6 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.SourceSetContainer
@@ -29,15 +28,14 @@ import org.gradle.jvm.tasks.Jar
 
 internal class SourceConfig(private val project: Project) {
 
-    private fun getSourceJarSource(source: Any?): Array<out Any> {
-        return source?.let {
-            when (source) {
-                is String -> SourceSetNames(project, arrayOf(source)).getDirs()
-                is SourceSetNames -> source.getDirs()
-                is SourceDirs -> arrayOf(source.getDirs())
-                else -> arrayOf(source)
-            }
-        } ?: SourceSetNames(project, arrayOf("main")).getDirs()
+    private fun getSourceJarSource(source: Any): Array<out Any> {
+        return when (source) {
+            is String -> SourceSetNames(project, arrayOf(source)).getDirs()
+            is SourceSetNames -> source.getDirs()
+            is SourceDirs -> arrayOf(source.getDirs())
+            // TODO is SourceSetContainer -> ...
+            else -> arrayOf(source)
+        }
     }
 
     @Suppress("UnstableApiUsage", "SpreadOperator")
@@ -50,23 +48,13 @@ internal class SourceConfig(private val project: Project) {
             "Create archive of source code for the binary of variant '${pub.variant}' "
         }
 
-        println("PublishingConfig sourceSets count ${sourceSets.size}")
-        sourceSets.forEach {
-            println("PublishingConfig sourceSets ${it.name}")
-        }
-
         return project.tasks.register(sourcesJarTaskName, Jar::class.java) {
             group = PUBLISH_GROUP
             description = desc
             archiveClassifier.set(CLASSIFIER_SOURCE)
             archiveBaseName.set(pub.variantArtifactId())
             archiveVersion.set(pub.variantVersion())
-            from(
-                *getSourceJarSource(
-                    pub.sourceSets
-                        ?: throw GradleException("Source set is not available")
-                )
-            )
+            from(*getSourceJarSource(pub.sourceSets))
         }
     }
 
