@@ -90,6 +90,10 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
         return "${pom.group}:${variantArtifactId()}:${variantVersion()}"
     }
 
+    override fun pluginCoordinate(): String {
+        return if (pom.isGradlePlugin()) "${pom.plugin?.id}:${variantVersion()}" else "NOT-A-PLUGIN"
+    }
+
     override fun withMaven(endpoint: RepoEndpoint) {
         mavenRepo = MavenCentralEndpoint(project)
     }

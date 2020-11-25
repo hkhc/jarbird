@@ -257,37 +257,14 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                     extension.pubList as List<JarbirdPubImpl>
                 ).buildPhase3()
             }
-
-//            extension.pubList.forEach {
-//
-//                it.pom = pomGroup[it.variant]
-//                println("pub variant ${it.variant} pom = ${it.pom}")
-//
-//                // TODO we ignore that pom overwrite some project properties in the mean time.
-//                // need to properly take care of it.
-//                it.pom?.syncWith(p)
-//
-//                it.bintrayRepository = it.bintrayRepository ?: PropertyRepoEndpoint(project, "bintray")
-//
-//                // pre-check of final data, for child project
-//                // TODO handle multiple level child project?
-//                if (!project.isMultiProjectRoot()) {
-//                    it.pom?.let { pom -> precheck(pom, p) }
-//                }
-//            }
         }
 
         // Gradle plugin publish plugin is not compatible with Android plugin.
         // apply it only if needed, otherwise android aar build will fail
         // Defer the configuration with afterEvaluate so that Android plugin has a chance
         // to setup itself before we configure the bintray plugin
-        project.gradleAfterEvaluate {
-//            System.out.println("before phase 1")
-//            PublicationBuilder(project, extension.pubList).buildPhase1()
-//            System.out.println("after phase 1")
-        }
 
-        // Build phase 3
+        // Build phase 1
         project.afterEvaluate {
 
             // we created an implicit JarbirdPub and we have more in afterEvaluate

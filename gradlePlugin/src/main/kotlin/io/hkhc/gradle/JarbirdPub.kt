@@ -64,6 +64,7 @@ abstract class JarbirdPub {
     abstract fun variantVersion(): String?
 
     abstract fun getGAV(): String?
+    abstract fun pluginCoordinate(): String?
 
     /**
      * The name of component to to be published

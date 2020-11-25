@@ -19,57 +19,36 @@
 package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.ARTIFACTORY_PUBLISH_TASK
-import io.hkhc.gradle.internal.BINTRAY_UPLOAD_TASK
-import io.hkhc.gradle.internal.JB_PUBLISH_TO_BINTRAY_TASK
-import io.hkhc.gradle.internal.SP_GROUP
+import io.hkhc.gradle.internal.JbPublishToBintrayTaskInfo
 import io.hkhc.gradle.internal.LOG_PREFIX
+import io.hkhc.gradle.internal.isMultiProjectRoot
+import io.hkhc.gradle.internal.needBintray
+import io.hkhc.gradle.internal.registerRootProjectTasks
 import org.gradle.api.Project
-import org.gradle.api.tasks.TaskContainer
 
 class BintrayTaskBuilder(
     private val project: Project,
-    pubs: List<JarbirdPub>
+    private val pubs: List<JarbirdPub>
 ) {
 
-    private val publishPlan = BintrayPublishPlan(pubs)
+    private val BINTRAY_UPLOAD_TASK = "bintrayUpload"
+    private val ARTIFACTORY_PUBLISH_TASK = "artifactoryPublish"
 
-    private fun bintrayTaskDescription(): String {
+    val publishPlan = BintrayPublishPlan(pubs)
 
-        val bintrayLibs =
-            publishPlan.bintrayLibs.joinToString(", ") { "'${it.getGAV()}'" }
-        val bintrayPlgins =
-            publishPlan.bintrayPlugins.joinToString(", ") { "'${it.pom.plugin?.id}:${it.variantVersion()}'" }
-        val artifactoryLibs =
-            publishPlan.artifactoryLibs.joinToString(", ") { "'${it.getGAV()}'" }
+    fun registerBintrayTask() {
 
-        val bintrayPublicationStr = "publication${if (publishPlan.bintrayLibs.size > 1) "s" else ""}"
-        val bintrayPluginStr = "plugin${if (publishPlan.bintrayPlugins.size > 1) "s" else ""}"
-        val artifactoryPublicationStr = "publication${if (publishPlan.artifactoryLibs.size > 1) "s" else ""}"
-
-        val bintrayDesc = when {
-            !bintrayLibs.isBlank() && !bintrayPlgins.isBlank() ->
-                "Publish $bintrayPublicationStr $bintrayLibs and $bintrayPluginStr $bintrayPlgins to Bintray."
-            !bintrayLibs.isBlank() && bintrayPlgins.isBlank() ->
-                "Publish $bintrayPublicationStr $bintrayLibs to Bintray."
-            bintrayLibs.isBlank() && !bintrayPlgins.isBlank() ->
-                "Publish $bintrayPluginStr $bintrayPlgins to Bintray."
-            else -> ""
+        if (project.isMultiProjectRoot()) {
+            project.registerRootProjectTasks(JbPublishToBintrayTaskInfo(publishPlan).name)
+        } else {
+            registerLeafBintrayTask()
         }
-
-        val artifactoryDesc = when {
-            !artifactoryLibs.isBlank() -> """
-                        Publish $artifactoryPublicationStr $artifactoryLibs to OSS Jfrog.
-            """.trimIndent()
-            else -> ""
-        }
-
-        return "$bintrayDesc $artifactoryDesc".trim()
     }
 
-    fun registerBintrayTask(taskContainer: TaskContainer) {
+    private fun registerLeafBintrayTask() {
 
-        if (publishPlan.invalidPlugins.isNotEmpty()) {
+        // no need to show message if we do not enable Bintray publishing
+        if (pubs.needBintray() && publishPlan.invalidPlugins.isNotEmpty()) {
             project.logger.warn(
                 "WARNING: $LOG_PREFIX Publish snapshot Gradle Plugin to Bintray/OSSArtifactory is not supported."
             )
@@ -77,22 +56,18 @@ class BintrayTaskBuilder(
 
         if (publishPlan.bintray.isNotEmpty() || publishPlan.artifactory.isNotEmpty()) {
 
-            with(taskContainer) {
-                register(JB_PUBLISH_TO_BINTRAY_TASK) {
-                    group = SP_GROUP
-                    description = bintrayTaskDescription()
-                    /*
-                        bintray repository does not allow publishing SNAPSHOT artifacts, it has to be published
-                        to the OSS JFrog repository
-                     */
+            JbPublishToBintrayTaskInfo(publishPlan).register(project.tasks) {
+                /*
+                    bintray repository does not allow publishing SNAPSHOT artifacts, it has to be published
+                    to the OSS JFrog repository
+                 */
 
-                    if (publishPlan.artifactory.isNotEmpty()) {
-                        dependsOn(ARTIFACTORY_PUBLISH_TASK)
-                    }
+                if (publishPlan.artifactory.isNotEmpty()) {
+                    dependsOn(ARTIFACTORY_PUBLISH_TASK)
+                }
 
-                    if (publishPlan.bintray.isNotEmpty()) {
-                        dependsOn(BINTRAY_UPLOAD_TASK)
-                    }
+                if (publishPlan.bintray.isNotEmpty()) {
+                    dependsOn(BINTRAY_UPLOAD_TASK)
                 }
             }
         }
