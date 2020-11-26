@@ -23,7 +23,6 @@ import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
 import io.hkhc.gradle.internal.bintray.BintrayTaskBuilder
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.UnknownTaskException
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 
@@ -32,13 +31,18 @@ internal class TaskBuilder(
     private val pubs: List<JarbirdPub>
 ) {
 
+    private val bintrayTaskBuilder = BintrayTaskBuilder(project, pubs)
+    private val mavenTaskBuilder = MavenTaskBuilder(project, pubs)
+
     private fun TaskContainer.registerGradlePortalTask() {
 
+        val taskInfo = JbPublishToGradlePortalTaskInfo()
+
         if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(JbPublishToGradlePortalTaskInfo().name)
+            project.registerRootProjectTasks(taskInfo.name)
         } else {
 
-            val parentTask = JbPublishToGradlePortalTaskInfo().register(project.tasks).get()
+            val parentTask = taskInfo.register(project.tasks).get()
 
             val pub = pubs.firstOrNull { it.pom.isGradlePlugin() }
             val pom = pub?.pom
@@ -53,16 +57,14 @@ internal class TaskBuilder(
 
     private fun TaskContainer.registerPublishTask() {
 
-        if (project.isMultiProjectRoot()) {
-            pubs.forEach { pub ->
-                project.registerRootProjectTasks(JbPublishPubTaskInfo(pub).name)
-            }
-            project.registerRootProjectTasks(JbPublishToBintrayTaskInfo(BintrayPublishPlan(pubs)).name)
-        } else {
+        pubs.forEach { pub ->
 
-            pubs.forEach { pub ->
+            val taskInfo = JbPublishPubTaskInfo(pub)
 
-                val publishPubTask = JbPublishPubTaskInfo(pub).register(this) {
+            if (project.isMultiProjectRoot()) {
+                    project.registerRootProjectTasks(taskInfo.name)
+            } else {
+                taskInfo.register(this) {
                     // TODO depends on jbPublish{pubName}To{mavenLocal}
                     // TODO depends on jbPublish{pubName}To{mavenRepository}
                     dependsOn(JbPublishPubToMavenLocalTaskInfo(pub).name)
@@ -70,16 +72,11 @@ internal class TaskBuilder(
                         dependsOn(JbPublishPubToMavenRepoTaskInfo(pub).name)
                     }
                 }
-//                jbPublish.dependsOn(publishPubTask)
             }
 
-            findByName(JbPublishToBintrayTaskInfo(BintrayPublishPlan(pubs)).name)?.let {
-//                jbPublish.dependsOn(it)
-            }
-            findByName(JB_PUBLISH_TO_GRADLE_PORTAL_TASK)?.let {
-//                jbPublish.dependsOn(it)
-            }
         }
+
+
     }
 
 //    private fun registerRootTask(project: Project): Task {
@@ -93,22 +90,32 @@ internal class TaskBuilder(
 //        }
 //    }
 
+    fun registerRootTask(): TaskProvider<Task> {
+        return JbPubishTashInfo().register(project.tasks) {
+            dependsOn(JbPublishToGradlePortalTaskInfo().name)
+            dependsOn(mavenTaskBuilder.getLocalTaskInfo().name)
+            dependsOn(mavenTaskBuilder.getRepoTaskInfo().name)
+            dependsOn(bintrayTaskBuilder.getTaskInfo().name)
+        }
+    }
+
     fun build() {
 
         println("TaskBuilder build")
 
-//        with(project.tasks) {
-//            MavenTaskBuilder(project, pubs).also {
-//                it.registerMavenLocalTask(this)
-//                it.registerMavenRepositoryTask(this)
-//            }
-//            if (pubs.any { it.bintray }) {
-//                BintrayTaskBuilder(project, pubs).registerBintrayTask()
-//            }
-//            if (pubs.any { it.pom.isGradlePlugin() }) {
-//                registerGradlePortalTask()
-//            }
-//            registerPublishTask()
-//        }
+        with(project.tasks) {
+            registerPublishTask()
+            mavenTaskBuilder.also {
+                it.registerMavenLocalTask(this)
+                it.registerMavenRepositoryTask(this)
+            }
+            if (pubs.any { it.bintray }) {
+                bintrayTaskBuilder.registerBintrayTask()
+            }
+            if (pubs.any { it.pom.isGradlePlugin() }) {
+                registerGradlePortalTask()
+            }
+            registerRootTask().get()
+        }
     }
 }

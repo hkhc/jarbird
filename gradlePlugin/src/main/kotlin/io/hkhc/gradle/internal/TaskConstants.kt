@@ -57,6 +57,13 @@ interface TaskInfo {
     }
 }
 
+class JbPubishTashInfo : TaskInfo {
+    override val name: String
+        get() = JB_TASK_PREFIX
+    override val description: String
+        get() = "TODO..."
+}
+
 class JbPublishToMavenLocalTaskInfo : TaskInfo {
     override val name: String
         get() = JB_PUBLISH_TO_MAVEN_LOCAL_TASK

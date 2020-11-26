@@ -21,6 +21,7 @@ package io.hkhc.gradle.internal.bintray
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JbPublishToBintrayTaskInfo
 import io.hkhc.gradle.internal.LOG_PREFIX
+import io.hkhc.gradle.internal.TaskInfo
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.needBintray
 import io.hkhc.gradle.internal.registerRootProjectTasks
@@ -36,10 +37,14 @@ class BintrayTaskBuilder(
 
     val publishPlan = BintrayPublishPlan(pubs)
 
+    private val taskInfo: TaskInfo = JbPublishToBintrayTaskInfo(publishPlan)
+
+    fun getTaskInfo() = taskInfo
+
     fun registerBintrayTask() {
 
         if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(JbPublishToBintrayTaskInfo(publishPlan).name)
+            project.registerRootProjectTasks(taskInfo.name)
         } else {
             registerLeafBintrayTask()
         }
@@ -56,7 +61,7 @@ class BintrayTaskBuilder(
 
         if (publishPlan.bintray.isNotEmpty() || publishPlan.artifactory.isNotEmpty()) {
 
-            JbPublishToBintrayTaskInfo(publishPlan).register(project.tasks) {
+            taskInfo.register(project.tasks) {
                 /*
                     bintray repository does not allow publishing SNAPSHOT artifacts, it has to be published
                     to the OSS JFrog repository

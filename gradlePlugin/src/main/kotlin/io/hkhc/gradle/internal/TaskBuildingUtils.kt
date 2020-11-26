@@ -25,14 +25,14 @@ import org.gradle.api.tasks.TaskProvider
 fun Project.registerRootProjectTasks(taskPath: String) {
 
     println("registerRootProjectTasks $taskPath")
-//    return project.tasks.register(taskPath) {
-//        val rootTask = this
-//        group = SP_GROUP
-//        description = "TODO..."
-//        project.childProjects.forEach { (_, child) ->
-//            child.tasks.findByPath(taskPath)?.let { childTask ->
-//                rootTask.dependsOn(childTask.path)
-//            }
-//        }
-//    }
+    project.tasks.register(taskPath) {
+        val rootTask = this
+        group = SP_GROUP
+        description = "TODO..."
+        project.childProjects.forEach { (_, child) ->
+            child.tasks.findByPath(taskPath)?.let { childTask ->
+                rootTask.dependsOn(childTask.path)
+            }
+        }
+    }
 }

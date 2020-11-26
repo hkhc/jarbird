@@ -24,10 +24,16 @@ import org.gradle.api.tasks.TaskContainer
 
 class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
+    private val localTaskInfo = JbPublishToMavenLocalTaskInfo()
+    private val repoTaskInfo = JbPublishToMavenRepoTaskInfo()
+
+    fun getLocalTaskInfo(): TaskInfo = localTaskInfo
+    fun getRepoTaskInfo(): TaskInfo = repoTaskInfo
+
     fun registerMavenLocalTask(container: TaskContainer) {
 
         if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(JbPublishToMavenLocalTaskInfo().name)
+            project.registerRootProjectTasks(localTaskInfo.name)
         } else {
 
             /*
@@ -37,11 +43,13 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                     + pub.publishPluginMarkerPubToMavenLocalTask
              */
 
-            val parentTask = JbPublishToMavenLocalTaskInfo().register(container).get()
+            val parentTask = localTaskInfo.register(container).get()
 
             pubs.forEach { pub ->
 
-                JbPublishPubToMavenLocalTaskInfo(pub).register(container) {
+                val pubTaskInfo = JbPublishPubToMavenLocalTaskInfo(pub)
+
+                pubTaskInfo.register(container) {
                     dependsOn(pub.publishPubToMavenLocalTask)
 
                     if (pub.pom.isGradlePlugin()) {
@@ -55,11 +63,10 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
     fun registerMavenRepositoryTask(container: TaskContainer) {
 
+
         if (project.isMultiProjectRoot()) {
+            project.registerRootProjectTasks(repoTaskInfo.name)
             // TODO we shall check POM group that pubName is not duplicated among variants.
-            pubs.filter { it.maven }.forEach { pub ->
-                project.registerRootProjectTasks(JbPublishPubToCustomMavenRepoTaskInfo(pub).name)
-            }
         } else if (pubs.any { it.maven }) {
 
             /*
@@ -70,25 +77,29 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                         + pub.publishPluginMarkerPubToCustomMavenRepoTask
              */
 
-            val allMavenRepoTask = JbPublishToMavenRepoTaskInfo().register(container).get()
-
             pubs.filter { it.maven } .forEach { pub ->
+
                 (pub as JarbirdPubImpl).mavenRepo.also {
                     // TODO shall repo.name be capitalized?
 
-                    val customMavenRepoTask = JbPublishPubToCustomMavenRepoTaskInfo(pub).register(container) {
-                        dependsOn(pub.publishPubToCustomMavenRepoTask)
+                    val customRepoTaskInfo = JbPublishPubToCustomMavenRepoTaskInfo(pub)
 
+                    customRepoTaskInfo.register(container) {
+                        dependsOn(pub.publishPubToCustomMavenRepoTask)
                         if (pub.pom.isGradlePlugin()) {
                             dependsOn(pub.publishPluginMarkerPubToCustomMavenRepoTask)
                         }
-                    }.get()
-
-                    val mavenRepoTask = JbPublishPubToMavenRepoTaskInfo(pub).register(container) {
-                        dependsOn(customMavenRepoTask)
                     }
 
-                    allMavenRepoTask.dependsOn(mavenRepoTask)
+                    val pubTaskInfo = JbPublishPubToMavenRepoTaskInfo(pub)
+                    pubTaskInfo.register(container) {
+                        dependsOn(customRepoTaskInfo)
+                    }
+
+                    repoTaskInfo.register(container) {
+                        dependsOn(pubTaskInfo.name)
+                    }
+
                 }
             }
         }
