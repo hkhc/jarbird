@@ -19,7 +19,6 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
 import io.hkhc.gradle.internal.bintray.BintrayTaskBuilder
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -39,18 +38,17 @@ internal class TaskBuilder(
         val taskInfo = JbPublishToGradlePortalTaskInfo()
 
         if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(taskInfo.name)
+            project.registerRootProjectTasks(taskInfo)
         } else {
-
-            val parentTask = taskInfo.register(project.tasks).get()
-
             val pub = pubs.firstOrNull { it.pom.isGradlePlugin() }
-            val pom = pub?.pom
-            pom?.let {
-                val task = JbPublishPubToGradlePortalTaskInfo(pub).register(this) {
+            pub?.let {
+                val pubTask = JbPublishPubToGradlePortalTaskInfo(pub)
+                val task = pubTask.register(this) {
                     dependsOn("publishPlugins")
                 }
-                parentTask.dependsOn(task)
+                taskInfo.register(project.tasks) {
+                    dependsOn(pubTask.name)
+                }
             }
         }
     }
@@ -62,7 +60,7 @@ internal class TaskBuilder(
             val taskInfo = JbPublishPubTaskInfo(pub)
 
             if (project.isMultiProjectRoot()) {
-                    project.registerRootProjectTasks(taskInfo.name)
+                project.registerRootProjectTasks(taskInfo)
             } else {
                 taskInfo.register(this) {
                     // TODO depends on jbPublish{pubName}To{mavenLocal}
@@ -73,10 +71,7 @@ internal class TaskBuilder(
                     }
                 }
             }
-
         }
-
-
     }
 
 //    private fun registerRootTask(project: Project): Task {
@@ -92,16 +87,20 @@ internal class TaskBuilder(
 
     fun registerRootTask(): TaskProvider<Task> {
         return JbPubishTashInfo().register(project.tasks) {
-            dependsOn(JbPublishToGradlePortalTaskInfo().name)
             dependsOn(mavenTaskBuilder.getLocalTaskInfo().name)
-            dependsOn(mavenTaskBuilder.getRepoTaskInfo().name)
-            dependsOn(bintrayTaskBuilder.getTaskInfo().name)
+            if (pubs.needGradlePlugin()) {
+                dependsOn(JbPublishToGradlePortalTaskInfo().name)
+            }
+            if (pubs.needMaven()) {
+                dependsOn(mavenTaskBuilder.getRepoTaskInfo().name)
+            }
+            if (pubs.needBintray()) {
+                dependsOn(bintrayTaskBuilder.getTaskInfo().name)
+            }
         }
     }
 
     fun build() {
-
-        println("TaskBuilder build")
 
         with(project.tasks) {
             registerPublishTask()
@@ -115,7 +114,7 @@ internal class TaskBuilder(
             if (pubs.any { it.pom.isGradlePlugin() }) {
                 registerGradlePortalTask()
             }
-            registerRootTask().get()
+            registerRootTask()
         }
     }
 }

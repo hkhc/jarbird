@@ -27,13 +27,13 @@ import io.hkhc.gradle.internal.needBintray
 import io.hkhc.gradle.internal.registerRootProjectTasks
 import org.gradle.api.Project
 
+internal const val BINTRAY_UPLOAD_TASK = "bintrayUpload"
+internal const val ARTIFACTORY_PUBLISH_TASK = "artifactoryPublish"
+
 class BintrayTaskBuilder(
     private val project: Project,
     private val pubs: List<JarbirdPub>
 ) {
-
-    private val BINTRAY_UPLOAD_TASK = "bintrayUpload"
-    private val ARTIFACTORY_PUBLISH_TASK = "artifactoryPublish"
 
     val publishPlan = BintrayPublishPlan(pubs)
 
@@ -44,7 +44,7 @@ class BintrayTaskBuilder(
     fun registerBintrayTask() {
 
         if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(taskInfo.name)
+            project.registerRootProjectTasks(taskInfo)
         } else {
             registerLeafBintrayTask()
         }

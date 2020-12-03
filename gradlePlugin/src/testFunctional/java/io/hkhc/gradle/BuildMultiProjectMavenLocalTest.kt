@@ -24,6 +24,7 @@ import io.hkhc.gradle.test.GradleTaskTester
 import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.getTestGradleHomePair
 import io.hkhc.gradle.test.publishToMavenLocalCompletely
+import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePomRoot
 import io.hkhc.gradle.test.simpleSubProj
 import io.hkhc.utils.FileTree
@@ -32,7 +33,6 @@ import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.should
 
 @Tags("Library", "MavenLocal", "Multi")
@@ -100,7 +100,7 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
             val result = tester.runTask(targetTask)
 
             withClue("expected list of tasks executed with expected result") {
-                result.tasks.map { it.toString() } shouldContainExactly listOf(
+                result.tasks.map { it.toString() } shouldBeNoDifference listOf(
                     ":lib1:jbDokkaHtmlLib=SUCCESS",
                     ":lib1:dokkaJarLib=SUCCESS",
                     ":lib1:compileJava=SUCCESS",

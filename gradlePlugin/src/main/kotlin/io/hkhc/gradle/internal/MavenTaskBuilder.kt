@@ -33,7 +33,7 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
     fun registerMavenLocalTask(container: TaskContainer) {
 
         if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(localTaskInfo.name)
+            project.registerRootProjectTasks(localTaskInfo)
         } else {
 
             /*
@@ -43,7 +43,12 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                     + pub.publishPluginMarkerPubToMavenLocalTask
              */
 
-            val parentTask = localTaskInfo.register(container).get()
+            val parentTask = localTaskInfo.register(container) {
+                pubs.forEach { pub ->
+                    val pubTaskInfo = JbPublishPubToMavenLocalTaskInfo(pub)
+                    dependsOn(pubTaskInfo.name)
+                }
+            }
 
             pubs.forEach { pub ->
 
@@ -55,7 +60,6 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                     if (pub.pom.isGradlePlugin()) {
                         dependsOn(pub.publishPluginMarkerPubToMavenLocalTask)
                     }
-                    parentTask.dependsOn(this)
                 }
             }
         }
@@ -63,9 +67,8 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
     fun registerMavenRepositoryTask(container: TaskContainer) {
 
-
         if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(repoTaskInfo.name)
+            project.registerRootProjectTasks(repoTaskInfo)
             // TODO we shall check POM group that pubName is not duplicated among variants.
         } else if (pubs.any { it.maven }) {
 
@@ -77,7 +80,7 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                         + pub.publishPluginMarkerPubToCustomMavenRepoTask
              */
 
-            pubs.filter { it.maven } .forEach { pub ->
+            pubs.filter { it.maven }.forEach { pub ->
 
                 (pub as JarbirdPubImpl).mavenRepo.also {
                     // TODO shall repo.name be capitalized?
@@ -93,13 +96,12 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
                     val pubTaskInfo = JbPublishPubToMavenRepoTaskInfo(pub)
                     pubTaskInfo.register(container) {
-                        dependsOn(customRepoTaskInfo)
+                        dependsOn(customRepoTaskInfo.name)
                     }
 
                     repoTaskInfo.register(container) {
                         dependsOn(pubTaskInfo.name)
                     }
-
                 }
             }
         }

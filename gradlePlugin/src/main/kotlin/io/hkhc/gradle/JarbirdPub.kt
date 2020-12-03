@@ -53,45 +53,12 @@ abstract class JarbirdPub {
      */
     var variant: String = ""
 
-    abstract fun variantWithVersion()
-
-    abstract fun variantWithArtifactId()
-
-    abstract fun variantInvisible()
-
-    abstract fun variantArtifactId(): String?
-
-    abstract fun variantVersion(): String?
-
-    abstract fun getGAV(): String?
-    abstract fun pluginCoordinate(): String?
-
     /**
      * The name of component to to be published
      */
     var pubComponent: String = "java"
 
-    /**
-     * the dokka task provider object for documentation. If it is not specified, the default dokka task will be used.
-     */
-    var dokka: Any? = null
-
-//    /**
-//     * The name of sourceset for archiving.
-//     * if sourcesPath is not provided, the plugin try to get the sources set named [sourceSetName] for source jar task
-//     */
-//    var sourceSetName: String = "main"
-//
-//    fun set
-//
-//    // TODO make it flexible for more data type
-//    var sourceSets: Collection<File>? = null
-
     var sourceSets: Any = "main"
-
-    abstract fun sourceSetNames(vararg names: String): Any
-    abstract fun sourceSetNames(names: List<String>): Any
-    abstract fun sourceDirs(dirs: Any): Any
 
     /**
      * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
@@ -99,14 +66,25 @@ abstract class JarbirdPub {
      */
     var useGpg = false
 
+    var dokkaConfig: AbstractDokkaTask.(pub: JarbirdPub) -> Unit = {}
+
+    abstract fun variantWithVersion()
+    abstract fun variantWithArtifactId()
+    abstract fun variantInvisible()
+
+    abstract fun variantArtifactId(): String?
+    abstract fun variantVersion(): String?
+    abstract fun getGAV(): String?
+    abstract fun pluginCoordinate(): String?
+
+    abstract fun sourceSetNames(vararg names: String): Any
+    abstract fun sourceSetNames(names: List<String>): Any
+    abstract fun sourceDirs(dirs: Any): Any
+
     /**
      * Specify maven repository for publishing.
      */
     abstract fun withMaven(endpoint: RepoEndpoint)
-
     abstract fun withMavenCentral()
-
     abstract fun withMavenByProperties(key: String)
-
-    var dokkaConfig: AbstractDokkaTask.(pub: JarbirdPub) -> Unit = {}
 }

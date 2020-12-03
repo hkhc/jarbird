@@ -23,6 +23,7 @@ import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.pluginPom
 import io.hkhc.gradle.test.publishToMavenLocalCompletely
+import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
@@ -30,7 +31,6 @@ import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import java.io.File
@@ -84,7 +84,7 @@ class BuildPluginMavenLocalTest : FunSpec({
             val result = setup.getGradleTaskTester().runTask(targetTask)
 
             withClue("expected list of tasks executed with expected result") {
-                result.tasks.map { it.toString() } shouldContainExactly listOf(
+                result.tasks.map { it.toString() } shouldBeNoDifference listOf(
                     ":generatePomFileForLibPluginMarkerMavenPublication=SUCCESS",
                     ":publishLibPluginMarkerMavenPublicationToMavenLocal=SUCCESS",
                     ":jbDokkaHtmlLib=SUCCESS",

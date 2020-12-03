@@ -23,10 +23,11 @@ import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import io.hkhc.gradle.internal.CLASSIFIER_JAVADOC
+import io.hkhc.gradle.internal.DokkaJarPubTaskInfo
 import io.hkhc.gradle.internal.JarbirdPubImpl
-import io.hkhc.gradle.internal.PUBLISH_GROUP
+import io.hkhc.gradle.internal.JbDokkaPubTaskInfo
+import io.hkhc.gradle.internal.JbDokkaTaskInfo
 import io.hkhc.gradle.internal.pubNameCap
-import io.hkhc.gradle.internal.pubNameWithVariant
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
@@ -38,7 +39,6 @@ internal class DokkaConfig(private val project: Project, private val extension: 
 
     private val docType = "Html"
 
-    private fun rootTaskName() = "jbDokka${docType}MultiModule"
     private fun moduleTaskName(pub: JarbirdPub) = "jbDokka${docType}${pub.pubNameCap}"
 
     private fun getSourceJarSource(source: Any): Array<out Any> {
@@ -51,43 +51,36 @@ internal class DokkaConfig(private val project: Project, private val extension: 
         }
     }
 
-    fun configRootDokka() {
+    fun configRootDokka(pubs: List<JarbirdPub>) {
 
-        project.tasks.create(rootTaskName(), DokkaMultiModuleTask::class.java) {
-            description = "Generates documentation in 'html' format"
+        JbDokkaTaskInfo().register(project.tasks, DokkaMultiModuleTask::class.java) {
             extension.dokkaConfig.invoke(this)
+            pubs.forEach { pub ->
+                addSubprojectChildTasks(moduleTaskName(pub))
+            }
         }
     }
 
     @Suppress("SpreadOperator")
-    fun configDokka(pub: JarbirdPubImpl) {
-
-        project.tasks.create(moduleTaskName(pub), DokkaTask::class.java) {
-            description = "Generates documentation in 'html' format for publication ${pub.pubName}"
-//            moduleName.set("${pub.pom.group}:${pub.pom.artifactId}")
-            dokkaSourceSets.create("${pub.pom.group}:${pub.pom.artifactId}") {
-                sourceRoots.setFrom(
-                    *(getSourceJarSource(pub.sourceSets))
-                )
+    fun configDokka(pubs: List<JarbirdPub>) {
+        pubs.forEach { pub ->
+            JbDokkaPubTaskInfo(pub).register(project.tasks, DokkaTask::class.java) {
+                dokkaSourceSets.create("${pub.pom.group}:${pub.pom.artifactId}") {
+                    sourceRoots.setFrom(
+                        *(getSourceJarSource(pub.sourceSets))
+                    )
+                }
+                extension.dokkaConfig.invoke(this)
+                pub.dokkaConfig.invoke(this, pub)
             }
-            extension.dokkaConfig.invoke(this)
-            pub.dokkaConfig.invoke(this, pub)
-        }
-
-        val rootTask = project.rootProject.tasks.findByName(rootTaskName())
-        rootTask?.let {
-            (it as DokkaMultiModuleTask).addSubprojectChildTasks(moduleTaskName(pub))
         }
     }
 
     @Suppress("UnstableApiUsage")
     fun setupDokkaJar(pub: JarbirdPubImpl): TaskProvider<Jar>? {
 
-        val dokkaJarTaskName = pub.pubNameWithVariant("dokkaJar${pub.pubNameCap}")
         // TODO add error message here if dokka is null
-        return project.tasks.register(dokkaJarTaskName, Jar::class.java) {
-            group = PUBLISH_GROUP
-            description = "Assembles Kotlin docs with Dokka to Jar"
+        return DokkaJarPubTaskInfo(pub).register(project.tasks, Jar::class.java) {
             archiveClassifier.set(CLASSIFIER_JAVADOC)
             archiveBaseName.set(pub.variantArtifactId())
             archiveVersion.set(pub.variantVersion())

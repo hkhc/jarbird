@@ -24,6 +24,7 @@ import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.gradle.test.buildGradle
 import io.hkhc.gradle.test.publishedToMavenRepositoryCompletely
+import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
@@ -33,7 +34,6 @@ import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.should
 import isSnapshot
 import java.io.FileReader
@@ -142,7 +142,7 @@ class BuildMavenRepoTest : FunSpec({
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList
+                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
                 }
 
                 setup.mockServer?.let { server ->

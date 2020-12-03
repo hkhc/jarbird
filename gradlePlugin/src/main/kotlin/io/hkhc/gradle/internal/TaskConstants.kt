@@ -28,7 +28,7 @@ internal const val JB_TASK_PREFIX = "jbPublish"
 internal const val PUBLISH_TASK_PREFIX = "publish"
 internal const val MAVEN_LOCAL_CAP = "MavenLocal"
 
-internal const val TO_MAVEN_LOCAL = "ToMavenLocal"
+internal const val TO_MAVEN_LOCAL = "To$MAVEN_LOCAL_CAP"
 internal const val TO_MAVEN_REPO = "ToMavenRepository"
 internal const val TO_GRADLE_PORTAL = "ToGradlePortal"
 internal const val TO_BINTRAY = "ToBintray"
@@ -52,7 +52,16 @@ interface TaskInfo {
             val task = this
             task.group = this@TaskInfo.group
             task.description = this@TaskInfo.description
-            block.invoke(this)
+            block.invoke(task)
+        }
+    }
+
+    fun <T : Task> register(container: TaskContainer, type: Class<T>, block: T.() -> Unit = {}): TaskProvider<T> {
+        return container.register(name, type) {
+            val task = this
+            task.group = this@TaskInfo.group
+            task.description = this@TaskInfo.description
+            block.invoke(task)
         }
     }
 }
@@ -109,7 +118,7 @@ class JbPublishPubToCustomMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo {
         }
 }
 
-class JbPublishToGradlePortalTaskInfo() : TaskInfo {
+class JbPublishToGradlePortalTaskInfo : TaskInfo {
     override val name: String
         get() = JB_PUBLISH_TO_GRADLE_PORTAL_TASK
     override val description: String
@@ -189,6 +198,53 @@ class JbPublishPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
                 "Publish Maven publication '${pub.pubNameWithVariant()}' to $repoListStr"
             }
         }
+}
+
+class SourceJarPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
+    override val group: String
+        get() = PUBLISH_GROUP
+    override val name: String
+        get() = pub.pubNameWithVariant("sourcesJar${pub.pubNameCap}")
+    override val description: String
+        get() = if (pub.variant == "") {
+            "Create archive of source code for the binary"
+        } else {
+            "Create archive of source code for the binary of variant '${pub.variant}' "
+        }
+}
+
+class JbDokkaTaskInfo : TaskInfo {
+
+    private val docType = "Html"
+
+    override val group: String
+        get() = "documentation"
+    override val name: String
+        get() = "jbDokka${docType}MultiModule"
+    override val description: String
+        get() = "Generates documentation in 'html' format"
+}
+
+class JbDokkaPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
+
+    private val docType = "Html"
+
+    override val name: String
+        get() = "jbDokka${docType}${pub.pubNameCap}"
+
+    override val description: String
+        get() = "Generates documentation in 'html' format for publication ${pub.pubName}"
+}
+
+class DokkaJarPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
+
+    override val group: String
+        get() = "documentation"
+    override val name: String
+        get() = pub.pubNameWithVariant("dokkaJar${pub.pubNameCap}")
+
+    override val description: String
+        get() = "Assembles Kotlin docs with Dokka to Jar"
 }
 
 val JarbirdPub.mavenRepoName: String

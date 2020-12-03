@@ -50,15 +50,18 @@ class BintrayConfig(
         /*
             Why does bintrayUpload not depends on _bintrayRecordingCopy by default?
          */
-        project.tasks.named("bintrayUpload").get().apply {
-            // Bintray Gradle Plugin expect RecordingCopyTask dependency in task directly rather than name in String
+        project.tasks.named("bintrayUpload") {
+            /*
+                *** Important
+                Bintray Gradle Plugin expect RecordingCopyTask dependency in task directly rather than name in String
+             */
             dependsOn(project.tasks.named("_bintrayRecordingCopy").get())
         }
 
         /*
             Bintray does not do signing implicitly, we add our own dependency to make sure publication is signed.
          */
-        project.tasks.named("_bintrayRecordingCopy").get().apply {
+        project.tasks.named("_bintrayRecordingCopy") {
             publishPlan.bintrayLibs.map { it.pubNameWithVariant() }.forEach {
                 dependsOn("sign${it.capitalize()}Publication")
             }
@@ -73,6 +76,8 @@ class BintrayConfig(
 
         val includeFileList = publishPlan.bintray.map { "${it.avFileBase}*.asc" }
             .toTypedArray()
+
+        println("includeFileList ${includeFileList.joinToString(",")}")
 
         filesSpec(
             closureOf<RecordingCopyTask> {

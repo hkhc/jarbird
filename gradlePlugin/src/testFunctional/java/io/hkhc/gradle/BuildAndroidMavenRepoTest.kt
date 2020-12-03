@@ -18,15 +18,19 @@
 
 package io.hkhc.gradle
 
+import com.github.difflib.DiffUtils
+import com.github.difflib.algorithm.myers.MyersDiff
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.gradle.test.commonAndroidGradle
 import io.hkhc.gradle.test.commonAndroidRootGradle
+import io.hkhc.gradle.test.except
 import io.hkhc.gradle.test.getTestAndroidSdkHomePair
 import io.hkhc.gradle.test.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.setupAndroidProperties
+import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
@@ -36,7 +40,6 @@ import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.should
 import isSnapshot
 
@@ -60,8 +63,6 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:packageReleaseResources=SUCCESS",
             ":lib:parseReleaseLocalResources=SUCCESS",
             ":lib:processReleaseManifest=SUCCESS",
-            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
-            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
             ":lib:javaPreCompileRelease=SUCCESS",
             ":lib:mergeReleaseShaders=SUCCESS",
             ":lib:compileReleaseShaders=NO_SOURCE",
@@ -69,6 +70,8 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:packageReleaseAssets=SUCCESS",
             ":lib:packageReleaseRenderscript=NO_SOURCE",
             ":lib:prepareLintJarForPublish=SUCCESS",
+            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
+            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
             ":lib:processReleaseJavaRes=NO_SOURCE",
             ":lib:jbDokkaHtmlLibRelease=SUCCESS",
             ":lib:dokkaJarLibReleaseRelease=SUCCESS",
@@ -88,7 +91,8 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:publishLibReleasePublicationToMavenLibReleaseRepository=SUCCESS",
             ":lib:jbPublishLibReleaseToMavenmock=SUCCESS",
             ":lib:jbPublishLibReleaseToMavenRepository=SUCCESS",
-            ":lib:jbPublishToMavenRepository=SUCCESS"
+            ":lib:jbPublishToMavenRepository=SUCCESS",
+            ":jbPublishToMavenRepository=SUCCESS"
         )
 
         val snapshotExpectedTaskList = listOf(
@@ -103,6 +107,8 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:generateReleaseResources=SUCCESS",
             ":lib:packageReleaseResources=SUCCESS",
             ":lib:parseReleaseLocalResources=SUCCESS",
+            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
+            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
             ":lib:processReleaseManifest=SUCCESS",
             ":lib:javaPreCompileRelease=SUCCESS",
             ":lib:mergeReleaseShaders=SUCCESS",
@@ -117,8 +123,6 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:generatePomFileForLibReleasePublication=SUCCESS",
             ":lib:sourcesJarLibReleaseRelease=SUCCESS",
             ":lib:generateReleaseRFile=SUCCESS",
-            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
-            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
             ":lib:compileReleaseKotlin=SUCCESS",
             ":lib:compileReleaseJavaWithJavac=SUCCESS",
             ":lib:extractReleaseAnnotations=SUCCESS",
@@ -131,7 +135,8 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:publishLibReleasePublicationToMavenLibReleaseRepository=SUCCESS",
             ":lib:jbPublishLibReleaseToMavenmock=SUCCESS",
             ":lib:jbPublishLibReleaseToMavenRepository=SUCCESS",
-            ":lib:jbPublishToMavenRepository=SUCCESS"
+            ":lib:jbPublishToMavenRepository=SUCCESS",
+            ":jbPublishToMavenRepository=SUCCESS"
         )
 
         fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
@@ -200,10 +205,36 @@ class BuildAndroidMavenRepoTest : FunSpec({
 
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
-                println(result.tasks.joinToString("\n") { "\"$it\"," })
-
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList
+                    println(result.tasks.joinToString(",\n") { "\"$it\"" })
+
+                    val patch = DiffUtils.diff(
+                        setup.expectedTaskList,
+                        result.tasks.map { it.toString() },
+                        MyersDiff()
+                    )
+
+                    patch.deltas.forEach {
+                        println("${it.type} ")
+                        println("source : ${it.source.position}")
+                        it.source.lines.forEach {
+                            println("=== $it")
+                        }
+                        println("target : ${it.target.position}")
+                        it.target.lines.forEach {
+                            println("=== $it")
+                        }
+                    }
+
+//                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList
+                    result.tasks.map { it.toString() } shouldBeNoDifference (
+                        setup.expectedTaskList except listOf(
+                            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
+                            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
+                            ":lib:generateReleaseRFile=SUCCESS",
+                            ":lib:mergeReleaseJavaResource=SUCCESS"
+                        )
+                        )
                 }
 
                 setup.mockServer?.let { server ->

@@ -24,9 +24,11 @@ import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MockBintrayRepositoryServer
 import io.hkhc.gradle.test.commonAndroidGradle
 import io.hkhc.gradle.test.commonAndroidRootGradle
+import io.hkhc.gradle.test.except
 import io.hkhc.gradle.test.getTestAndroidSdkHomePair
 import io.hkhc.gradle.test.publishedToBintrayRepositoryCompletely
 import io.hkhc.gradle.test.setupAndroidProperties
+import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
@@ -36,7 +38,6 @@ import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.should
 
 @Tags("Multi", "Bintray", "AAR", "Variant")
@@ -154,7 +155,14 @@ class BuildAndroidBintrayTest : FunSpec({
                 println(result.tasks.joinToString(",\n") { "\"$it\"" })
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList
+//                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList
+                    result.tasks.map { it.toString() } shouldBeNoDifference (
+                        setup.expectedTaskList except listOf(
+                            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
+                            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
+                            ":lib:generateReleaseRFile=SUCCESS"
+                        )
+                        )
                 }
 
                 setup.mockServer?.let { server ->

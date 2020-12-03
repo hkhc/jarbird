@@ -19,13 +19,10 @@
 package io.hkhc.gradle.internal
 
 import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.tasks.TaskProvider
 
 fun Project.registerRootProjectTasks(taskPath: String) {
 
-    println("registerRootProjectTasks $taskPath")
-    project.tasks.register(taskPath) {
+    tasks.register(taskPath) {
         val rootTask = this
         group = SP_GROUP
         description = "TODO..."
@@ -35,4 +32,17 @@ fun Project.registerRootProjectTasks(taskPath: String) {
             }
         }
     }
+}
+
+fun Project.registerRootProjectTasks(taskInfo: TaskInfo) {
+
+    taskInfo.register(project.tasks) {
+        val rootTask = this
+        project.childProjects.forEach { (_, child) ->
+            child.tasks.findByPath(taskInfo.name)?.let { childTask ->
+                rootTask.dependsOn(childTask.path)
+            }
+        }
+    }
+
 }

@@ -25,6 +25,7 @@ import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.gradle.test.buildGradlePlugin
 import io.hkhc.gradle.test.pluginPom
 import io.hkhc.gradle.test.publishedToMavenRepositoryCompletely
+import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
@@ -34,7 +35,6 @@ import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import isSnapshot
@@ -127,7 +127,7 @@ class BuildMavenPluginRepoTest : FunSpec({
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldContainExactly setup.expectedTaskList
+                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
                 }
 
                 val pluginPom = File(setup.projectDir, "build/publications/libPluginMarkerMaven/pom-default.xml")

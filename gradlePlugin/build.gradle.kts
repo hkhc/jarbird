@@ -91,6 +91,7 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "1.8"
+            this.languageVersion = "1.4"
         }
     }
 
@@ -178,6 +179,7 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("io.github.java-diff-utils:java-diff-utils:4.5")
 
     testFunctionalImplementation(gradleTestKit())
     testFunctionalImplementation("com.squareup.okhttp3:mockwebserver:$mockWebServerVersion")

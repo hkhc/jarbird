@@ -124,11 +124,9 @@ internal class BuildFlowBuilder(
 
         DokkaConfig(project, extension).apply {
             if (project.isMultiProjectRoot()) {
-                configRootDokka()
+                configRootDokka(pubs)
             } else {
-                extension.pubList.forEach { pub ->
-                    configDokka(pub as JarbirdPubImpl)
-                }
+                configDokka(pubs)
             }
         }
     }

@@ -39,18 +39,11 @@ internal class SourceConfig(private val project: Project) {
     }
 
     @Suppress("UnstableApiUsage", "SpreadOperator")
-    fun configSourceJarTask(pub: JarbirdPubImpl): TaskProvider<Jar>? {
+    fun configSourceJarTask(pub: JarbirdPubImpl): TaskProvider<Jar> {
 
-        val sourcesJarTaskName = pub.pubNameWithVariant("sourcesJar${pub.pubNameCap}")
-        val desc = if (pub.variant == "") {
-            "Create archive of source code for the binary"
-        } else {
-            "Create archive of source code for the binary of variant '${pub.variant}' "
-        }
+        val taskInfo = SourceJarPubTaskInfo(pub)
 
-        return project.tasks.register(sourcesJarTaskName, Jar::class.java) {
-            group = PUBLISH_GROUP
-            description = desc
+        return taskInfo.register(project.tasks, Jar::class.java) {
             archiveClassifier.set(CLASSIFIER_SOURCE)
             archiveBaseName.set(pub.variantArtifactId())
             archiveVersion.set(pub.variantVersion())
