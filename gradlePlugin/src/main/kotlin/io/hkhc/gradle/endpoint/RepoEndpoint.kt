@@ -28,18 +28,23 @@ interface RepoEndpoint {
     companion object {
 
         fun create(
+            id: String,
             release: String,
             snapshot: String,
             username: String,
             password: String,
-            @Suppress("UNUSED_PARAMETER") apikey: String = ""
+            @Suppress("UNUSED_PARAMETER") apikey: String = "",
+            description: String = id
         ):
             RepoEndpoint {
                 return SimpleRepoEndpoint(
+                    id,
                     release,
                     snapshot,
                     username,
-                    password
+                    password,
+                    apikey,
+                    description
                 )
             }
     }
@@ -49,8 +54,9 @@ interface RepoEndpoint {
     val username: String
     val password: String
     val apikey: String
-    val name: String
+    val description: String
         get() = ""
+    val id: String
 }
 
 fun Project.byProperty(key: String): RepoEndpoint {

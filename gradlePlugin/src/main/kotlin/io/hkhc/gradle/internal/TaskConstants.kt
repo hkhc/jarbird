@@ -77,7 +77,7 @@ class JbPublishToMavenLocalTaskInfo : TaskInfo {
     override val name: String
         get() = JB_PUBLISH_TO_MAVEN_LOCAL_TASK
     override val description: String
-        get() = "Publish all maven publication to the local Maven Repository"
+        get() = "Publish all maven publicationx to the local Maven Repository"
 }
 
 class JbPublishPubToMavenLocalTaskInfo(val pub: JarbirdPub) : TaskInfo {
@@ -85,7 +85,7 @@ class JbPublishPubToMavenLocalTaskInfo(val pub: JarbirdPub) : TaskInfo {
         get() = "$JB_TASK_PREFIX${pub.pubNameCap}$TO_MAVEN_LOCAL"
     override val description: String
         get() = if (pub.pom.isGradlePlugin()) {
-            "Publish '${pub.getGAV()}' and plugin '${pub.pluginCoordinate()}' to the local Maven Repository"
+            "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' to the local Maven Repository"
         } else {
             "Publish '${pub.getGAV()}' to the local Maven Repository"
         }
@@ -95,26 +95,31 @@ class JbPublishToMavenRepoTaskInfo : TaskInfo {
     override val name: String
         get() = JB_PUBLISH_TO_MAVEN_REPO_TASK
     override val description: String
-        get() = "Publish all Maven publications to the Maven Repository"
+        get() = "Publish all Maven publications to the respective maven Repository"
 }
 
 class JbPublishPubToMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo {
     override val name: String
         get() = "$JB_TASK_PREFIX${pub.pubNameCap}$TO_MAVEN_REPO"
     override val description: String
-        get() = "Publish all Maven publications to the 'Maven${pub.pubNameCap}' Repository"
+        get() = if (pub.pom.isGradlePlugin()) {
+            "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' to "+
+                ((pub as JarbirdPubImpl).mavenRepo.description)
+        } else {
+            "Publish '${pub.getGAV()}' to the local Maven Repository"
+        }
 }
 
 class JbPublishPubToCustomMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo {
     override val name: String
-        get() = "$JB_TASK_PREFIX${pub.pubNameCap}To${(pub as JarbirdPubImpl).mavenRepo.name}"
+        get() = "$JB_TASK_PREFIX${pub.pubNameCap}To${(pub as JarbirdPubImpl).mavenRepo.id}"
     override val description: String
         get() = if (pub.pom.isGradlePlugin()) {
-            "Publish '${pub.getGAV()}' and plugin '${pub.pluginCoordinate()}' " +
-                "to the 'Maven${pub.pubNameCap}' Repository"
+            "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' " +
+                "to ${(pub as JarbirdPubImpl).mavenRepo.description}"
         } else {
             // TODO 'Maven${pub.pubNameCap}' is wrong
-            "Publish '${pub.getGAV()}' to the 'Maven${pub.pubNameCap}' Repository"
+            "Publish '${pub.getGAV()}' to ${(pub as JarbirdPubImpl).mavenRepo.description}"
         }
 }
 
@@ -122,15 +127,14 @@ class JbPublishToGradlePortalTaskInfo : TaskInfo {
     override val name: String
         get() = JB_PUBLISH_TO_GRADLE_PORTAL_TASK
     override val description: String
-        get() = "TODO..."
+        get() = "Publish all publications and plugin markers to Gradle plugin portal"
 }
 
 class JbPublishPubToGradlePortalTaskInfo(val pub: JarbirdPub) : TaskInfo {
     override val name: String
         get() = "$JB_TASK_PREFIX${pub.pubNameCap}$TO_GRADLE_PORTAL"
     override val description: String
-        get() = "Publish plugin '${pub.pluginCoordinate()}' " +
-            "to the Gradle plugin portal"
+        get() = "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' to Gradle plugin portal"
 }
 
 class JbPublishToBintrayTaskInfo(private val publishPlan: BintrayPublishPlan) : TaskInfo {

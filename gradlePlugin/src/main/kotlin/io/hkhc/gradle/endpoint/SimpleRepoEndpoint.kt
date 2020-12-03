@@ -19,9 +19,11 @@
 package io.hkhc.gradle.endpoint
 
 data class SimpleRepoEndpoint(
+    override val id: String,
     override val releaseUrl: String,
     override val snapshotUrl: String,
     override val username: String,
     override val password: String,
-    override val apikey: String = ""
+    override val apikey: String = "",
+    override val description: String = id
 ) : RepoEndpoint

@@ -86,7 +86,7 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
         }
     }
 
-    override fun getGAV(): String? {
+    override fun getGAV(): String {
         return "${pom.group}:${variantArtifactId()}:${variantVersion()}"
     }
 
@@ -95,7 +95,7 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
     }
 
     override fun withMaven(endpoint: RepoEndpoint) {
-        mavenRepo = MavenCentralEndpoint(project)
+        mavenRepo = endpoint
     }
 
     override fun withMavenCentral() {

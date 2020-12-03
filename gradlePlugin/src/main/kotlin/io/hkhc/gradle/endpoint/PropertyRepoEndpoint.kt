@@ -47,6 +47,16 @@ class PropertyRepoEndpoint(private val project: Project, private val key: String
     override val apikey: String
         get() = resolveProperty(project, "$keyPrefix.$key.apikey")
 
-    override val name: String
-        get() = key.replace(".", "").capitalize()
+    override val description: String
+        get() {
+            val customDescription = resolveProperty(project, "$keyPrefix.$key.description")
+            return if (customDescription == "") {
+                "Maven Repository specified by repository.${key.replace(".", "")}.* in gradle.properties"
+            } else {
+                customDescription
+            }
+        }
+
+    override val id: String
+        get() = "Maven${key.replace(".", "").capitalize()}"
 }
