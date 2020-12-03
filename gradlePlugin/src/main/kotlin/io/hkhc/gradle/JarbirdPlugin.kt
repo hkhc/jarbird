@@ -82,6 +82,8 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         // need to properly take care of it.
         pub.pom.syncWith(project)
 
+        pub.pubName = pub.pom.artifactId ?: "Lib"
+
         // pre-check of final data, for child project
         // TODO handle multiple level child project?
         if (!project.isMultiProjectRoot()) {

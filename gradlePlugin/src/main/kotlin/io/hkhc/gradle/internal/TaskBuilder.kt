@@ -86,7 +86,7 @@ internal class TaskBuilder(
 //    }
 
     fun registerRootTask(): TaskProvider<Task> {
-        return JbPubishTashInfo().register(project.tasks) {
+        return JbPubishTaskInfo().register(project.tasks) {
             dependsOn(mavenTaskBuilder.getLocalTaskInfo().name)
             if (pubs.needGradlePlugin()) {
                 dependsOn(JbPublishToGradlePortalTaskInfo().name)

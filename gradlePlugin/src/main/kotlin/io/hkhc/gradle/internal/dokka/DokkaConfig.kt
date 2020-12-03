@@ -39,8 +39,6 @@ internal class DokkaConfig(private val project: Project, private val extension: 
 
     private val docType = "Html"
 
-    private fun moduleTaskName(pub: JarbirdPub) = "jbDokka${docType}${pub.pubNameCap}"
-
     private fun getSourceJarSource(source: Any): Array<out Any> {
         return when (source) {
             is String -> SourceSetNames(project, arrayOf(source)).getDirs()
@@ -56,7 +54,7 @@ internal class DokkaConfig(private val project: Project, private val extension: 
         JbDokkaTaskInfo().register(project.tasks, DokkaMultiModuleTask::class.java) {
             extension.dokkaConfig.invoke(this)
             pubs.forEach { pub ->
-                addSubprojectChildTasks(moduleTaskName(pub))
+                addSubprojectChildTasks(JbDokkaPubTaskInfo(pub).name)
             }
         }
     }
@@ -77,15 +75,15 @@ internal class DokkaConfig(private val project: Project, private val extension: 
     }
 
     @Suppress("UnstableApiUsage")
-    fun setupDokkaJar(pub: JarbirdPubImpl): TaskProvider<Jar>? {
+    fun setupDokkaJar(pub: JarbirdPubImpl): TaskProvider<Jar> {
 
         // TODO add error message here if dokka is null
         return DokkaJarPubTaskInfo(pub).register(project.tasks, Jar::class.java) {
             archiveClassifier.set(CLASSIFIER_JAVADOC)
             archiveBaseName.set(pub.variantArtifactId())
             archiveVersion.set(pub.variantVersion())
-            from(project.tasks.named(moduleTaskName(pub)))
-            dependsOn(project.tasks.named(moduleTaskName(pub)))
+            from(project.tasks.named(JbDokkaPubTaskInfo(pub).name))
+            dependsOn(project.tasks.named(JbDokkaPubTaskInfo(pub).name))
         }
     }
 }

@@ -66,11 +66,11 @@ interface TaskInfo {
     }
 }
 
-class JbPubishTashInfo : TaskInfo {
+class JbPubishTaskInfo : TaskInfo {
     override val name: String
         get() = JB_TASK_PREFIX
     override val description: String
-        get() = "TODO..."
+        get() = "Publish everything"
 }
 
 class JbPublishToMavenLocalTaskInfo : TaskInfo {
@@ -229,6 +229,8 @@ class JbDokkaPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
 
     private val docType = "Html"
 
+    override val group: String
+        get() = "documentation"
     override val name: String
         get() = "jbDokka${docType}${pub.pubNameCap}"
 
@@ -241,7 +243,7 @@ class DokkaJarPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
     override val group: String
         get() = "documentation"
     override val name: String
-        get() = pub.pubNameWithVariant("dokkaJar${pub.pubNameCap}")
+        get() = pub.pubNameWithVariant("jbDokkaJar${pub.pubNameCap}")
 
     override val description: String
         get() = "Assembles Kotlin docs with Dokka to Jar"
