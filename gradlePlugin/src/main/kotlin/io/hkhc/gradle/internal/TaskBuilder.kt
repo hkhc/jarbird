@@ -43,7 +43,7 @@ internal class TaskBuilder(
             val pub = pubs.firstOrNull { it.pom.isGradlePlugin() }
             pub?.let {
                 val pubTask = JbPublishPubToGradlePortalTaskInfo(pub)
-                val task = pubTask.register(this) {
+                pubTask.register(this) {
                     dependsOn("publishPlugins")
                 }
                 taskInfo.register(project.tasks) {

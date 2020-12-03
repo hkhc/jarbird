@@ -17,7 +17,7 @@
  */
 
 const val jvmTargetVersion = "1.8"
-const val kotlinVersion = "1.4.10"
+const val kotlinVersion = "1.4.20"
 const val kotlinLanguageVersion = "1.4"
 
 // plugins

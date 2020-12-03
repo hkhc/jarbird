@@ -34,10 +34,8 @@ class DiffPresenterTest : FunSpec({
             "Apple"
         )
 
-        val patch = DiffUtils.diff(listA, listB, MyersDiff())
-
         val stringWriter = StringWriter()
-        DiffPresenter<String>().print(listA, listB, patch, stringWriter)
+        DiffPresenter<String>().print(listA, listB, stringWriter)
 
         stringWriter.toString() shouldBe """
             1   1    Apple
@@ -56,10 +54,8 @@ class DiffPresenterTest : FunSpec({
             "Orange"
         )
 
-        val patch = DiffUtils.diff(listA, listB, MyersDiff())
-
         val stringWriter = StringWriter()
-        DiffPresenter<String>().print(listA, listB, patch, stringWriter)
+        DiffPresenter<String>().print(listA, listB, stringWriter)
 
         stringWriter.toString() shouldBe """
                 1  + Zero
@@ -81,10 +77,8 @@ class DiffPresenterTest : FunSpec({
             "Banana"
         )
 
-        val patch = DiffUtils.diff(listA, listB, MyersDiff())
-
         val stringWriter = StringWriter()
-        DiffPresenter<String>().print(listA, listB, patch, stringWriter)
+        DiffPresenter<String>().print(listA, listB, stringWriter)
 
         stringWriter.toString() shouldBe """
             1      - Zero
@@ -108,10 +102,8 @@ class DiffPresenterTest : FunSpec({
             "Orange"
         )
 
-        val patch = DiffUtils.diff(listA, listB, MyersDiff())
-
         val stringWriter = StringWriter()
-        DiffPresenter<String>().print(listA, listB, patch, stringWriter)
+        DiffPresenter<String>().print(listA, listB, stringWriter)
 
         stringWriter.toString() shouldBe """
             1   1    Zero
@@ -136,10 +128,8 @@ class DiffPresenterTest : FunSpec({
             "Orange"
         )
 
-        val patch = DiffUtils.diff(listA, listB, MyersDiff())
-
         val stringWriter = StringWriter()
-        DiffPresenter<String>().print(listA, listB, patch, stringWriter)
+        DiffPresenter<String>().print(listA, listB, stringWriter)
 
         stringWriter.toString() shouldBe """
             1   1    Zero

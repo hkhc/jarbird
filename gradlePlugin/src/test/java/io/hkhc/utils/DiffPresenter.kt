@@ -58,7 +58,7 @@ class DiffPresenter<T> {
         }
     }
 
-    fun print(source: List<T>, target: List<T>, patch: Patch<T>, writer: Writer) {
+    fun print(source: List<T>, target: List<T>, writer: Writer) {
 
         var sourceLineNumber = LineNumber(source)
         var targetLineNumber = LineNumber(target)

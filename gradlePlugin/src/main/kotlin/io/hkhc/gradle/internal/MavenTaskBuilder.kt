@@ -43,7 +43,7 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                     + pub.publishPluginMarkerPubToMavenLocalTask
              */
 
-            val parentTask = localTaskInfo.register(container) {
+            localTaskInfo.register(container) {
                 pubs.forEach { pub ->
                     val pubTaskInfo = JbPublishPubToMavenLocalTaskInfo(pub)
                     dependsOn(pubTaskInfo.name)
