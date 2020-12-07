@@ -179,7 +179,7 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("io.github.java-diff-utils:java-diff-utils:4.5")
+    testImplementation("io.github.java-diff-utils:java-diff-utils:$javaDiffUtilsVersion")
 
     testFunctionalImplementation(gradleTestKit())
     testFunctionalImplementation("com.squareup.okhttp3:mockwebserver:$mockWebServerVersion")
