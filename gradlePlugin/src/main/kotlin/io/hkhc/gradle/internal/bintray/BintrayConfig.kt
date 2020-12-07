@@ -24,6 +24,7 @@ import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import gavPath
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.utils.findByType
 import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.internal.LOG_PREFIX
@@ -35,7 +36,7 @@ import java.time.format.DateTimeFormatter
 
 class BintrayConfig(
     private val project: Project,
-    private val extension: JarbirdExtension,
+    private val extension: JarbirdExtensionImpl,
     private val pubs: List<JarbirdPub>
 ) {
 

@@ -44,7 +44,7 @@ fun <T> noDifferentWithException(expected: ListWithException<T>) = object : Matc
             )
 
             val failureMessageWriter = StringWriter()
-            DiffPresenter<T>().print(filteredExpected, filteredActual, patch, failureMessageWriter)
+            DiffPresenter<T>().print(filteredExpected, filteredActual, failureMessageWriter)
 
             return MatcherResult(
                 patch.deltas.isEmpty(),

@@ -94,7 +94,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
                     result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
                 }
 
-                val pluginPom = File(setup.projectDir, "build/publications/libPluginMarkerMaven/pom-default.xml")
+                val pluginPom = File(setup.projectDir, "build/publications/testArtifactPluginMarkerMaven/pom-default.xml")
                     .readText()
                 pluginPom shouldBe pluginPom(coordinate)
 
@@ -116,8 +116,6 @@ class BuildBintrayPluginRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":jbDokkaHtmlLib=SUCCESS",
-                    ":dokkaJarLib=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
@@ -125,14 +123,16 @@ class BuildBintrayPluginRepoTest : FunSpec({
                     ":classes=SUCCESS",
                     ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
-                    ":generateMetadataFileForLibPublication=SUCCESS",
-                    ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJarLib=SUCCESS",
-                    ":signLibPublication=SUCCESS",
+                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
+                    ":generatePomFileForTestArtifactPublication=SUCCESS",
+                    ":jbDokkaHtmlTestArtifact=SUCCESS",
+                    ":jbDokkaJarTestArtifact=SUCCESS",
+                    ":sourcesJarTestArtifact=SUCCESS",
+                    ":signTestArtifactPublication=SUCCESS",
                     ":_bintrayRecordingCopy=SUCCESS",
-                    ":generatePomFileForLibPluginMarkerMavenPublication=SUCCESS",
-                    ":publishLibPluginMarkerMavenPublicationToMavenLocal=SUCCESS",
-                    ":publishLibPublicationToMavenLocal=SUCCESS",
+                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
+                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenLocal=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
                     ":bintrayUpload=SUCCESS",
                     ":bintrayPublish=SUCCESS",
                     ":jbPublishToBintray=SUCCESS"

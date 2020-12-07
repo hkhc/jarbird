@@ -102,8 +102,6 @@ class BuildArtifactoryRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":jbDokkaHtmlLib=SUCCESS",
-                    ":dokkaJarLib=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
@@ -111,9 +109,11 @@ class BuildArtifactoryRepoTest : FunSpec({
                     ":classes=SUCCESS",
                     ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
-                    ":generateMetadataFileForLibPublication=SUCCESS",
-                    ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJarLib=SUCCESS",
+                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
+                    ":generatePomFileForTestArtifactPublication=SUCCESS",
+                    ":jbDokkaHtmlTestArtifact=SUCCESS",
+                    ":jbDokkaJarTestArtifact=SUCCESS",
+                    ":sourcesJarTestArtifact=SUCCESS",
                     ":artifactoryPublish=SUCCESS",
                     ":extractModuleInfo=SUCCESS",
                     ":artifactoryDeploy=SUCCESS",

@@ -20,12 +20,12 @@ package io.hkhc.gradle.internal.bintray
 
 import groovy.lang.GroovyObject
 import io.hkhc.gradle.BintrayPublishConfig
-import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.pubNameWithVariant
+import io.hkhc.gradle.internal.JarbirdExtensionImpl
+import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isSingleProject
-import io.hkhc.gradle.internal.LOG_PREFIX
+import io.hkhc.gradle.internal.pubNameWithVariant
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName
@@ -37,7 +37,7 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 @Suppress("SpreadOperator")
 class ArtifactoryConfig(
     private val project: Project,
-    private val extension: JarbirdExtension,
+    private val extension: JarbirdExtensionImpl,
     pubs: List<JarbirdPub>
 ) {
 

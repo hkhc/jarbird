@@ -23,6 +23,7 @@ import com.jfrog.bintray.gradle.BintrayPlugin
 import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
 import io.hkhc.gradle.internal.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.internal.BuildFlowBuilder
+import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
@@ -48,7 +49,7 @@ import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 @Suppress("unused")
 class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
-    private lateinit var extension: JarbirdExtension
+    private lateinit var extension: JarbirdExtensionImpl
     private lateinit var pomGroup: PomGroup
     private var androidPluginAppliedBeforeUs = false
 
@@ -58,6 +59,33 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         want to proceed if the project param in callback match this plugin instance
      */
     private lateinit var project: Project
+
+    companion object {
+        internal fun normalizePubName(name: String): String {
+            val newName = StringBuffer()
+            var newWord = true
+            var firstWord = true
+            name.forEach {
+                if (it.isLetterOrDigit()) {
+                    if (newWord) {
+                        if (firstWord) {
+                            newName.append(it.toLowerCase())
+                        } else {
+                            newName.append(it.toUpperCase())
+                        }
+                        newWord = false
+                    } else {
+                        newName.append(it)
+                        firstWord = false
+                    }
+                } else {
+                    // ignore non letter or digit char
+                    newWord = true
+                }
+            }
+            return newName.toString()
+        }
+    }
 
     // TODO check if POM fulfill minimal requirements for publishing
     // TODO maven publishing dry-run
@@ -82,7 +110,8 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         // need to properly take care of it.
         pub.pom.syncWith(project)
 
-        pub.pubName = pub.pom.artifactId ?: "Lib"
+        // TODO handle two publications of same artifactaId in the same module.
+        pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
 
         // pre-check of final data, for child project
         // TODO handle multiple level child project?
@@ -137,7 +166,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
         pomGroup = PomGroupFactory(p).resolvePomGroup()
 
-        extension = JarbirdExtension(project)
+        extension = JarbirdExtensionImpl(project)
         project.extensions.add(JarbirdExtension::class.java, SP_EXT_NAME, extension)
         extension.pomGroupCallback = this
 
@@ -246,7 +275,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                 BuildFlowBuilder(
                     project,
                     extension,
-                    extension.pubList as List<JarbirdPubImpl>
+                    extension.pubList
                 ).buildPhase2()
             }
 
@@ -256,7 +285,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
                 BuildFlowBuilder(
                     project,
                     extension,
-                    extension.pubList as List<JarbirdPubImpl>
+                    extension.pubList
                 ).buildPhase3()
             }
         }
@@ -299,7 +328,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
             BuildFlowBuilder(
                 project,
                 extension,
-                extension.pubList as List<JarbirdPubImpl>
+                extension.pubList
             ).buildPhase4()
         }
 

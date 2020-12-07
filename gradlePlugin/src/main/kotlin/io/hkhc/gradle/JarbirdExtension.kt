@@ -25,70 +25,70 @@ import org.gradle.api.Project
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
 // Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.
-open class JarbirdExtension(@Suppress("unused") private val project: Project) {
+interface JarbirdExtension   {
 
-    var pubList = mutableListOf<JarbirdPub>()
-
-    var bintrayRepository: RepoEndpoint? = null
-
-    var dokkaConfig: AbstractDokkaTask.() -> Unit = {}
-
-    lateinit var pomGroupCallback: PomGroupCallback
-    private var implicited: JarbirdPub? = null
-
-    /* to be invoked by Groovy Gradle script */
-    fun pub(action: Closure<JarbirdPub>) {
-        val newPub = JarbirdPubImpl(project)
-        pubList.add(newPub)
-        action.delegate = newPub
-        action.resolveStrategy = Closure.DELEGATE_FIRST
-        action.call()
-        pomGroupCallback.initPub(newPub)
-    }
-
-    fun pub(variant: String, action: Closure<JarbirdPub>) {
-        val newPub = JarbirdPubImpl(project)
-        newPub.variant = variant
-        pomGroupCallback.initPub(newPub)
-        pubList.add(newPub)
-        action.delegate = newPub
-        action.resolveStrategy = Closure.DELEGATE_FIRST
-        action.call()
-    }
-
-    /* to be invoked by Kotlin Gradle script */
-    fun pub(action: JarbirdPub.() -> Unit) {
-        val newPub = JarbirdPubImpl(project)
-        pubList.add(newPub)
-        action.invoke(newPub)
-        pomGroupCallback.initPub(newPub)
-    }
-
-    fun pub(variant: String, action: JarbirdPub.() -> Unit) {
-        val newPub = JarbirdPubImpl(project)
-        newPub.variant = variant
-        pomGroupCallback.initPub(newPub)
-        pubList.add(newPub)
-        action.invoke(newPub)
-    }
-
-    fun createImplicit() {
-        /*
-        if implicit != null, we have already got an implicit, no need to create another
-        if pubList.isNotEmpty() and implicit == null, we have an non-implicit pub, no need to create implicit
-         */
-        if (implicited != null || pubList.isNotEmpty()) return
-        pub {}
-        implicited = pubList[0]
-    }
-
-    fun removeImplicit() {
-        /*
-        If implicit == null , means we have not created an implicit pub, no need to remove
-        If pubList.size == 1 and implicit != null, this means it is the only pub, so we still need it, don't remove
-         */
-        if (implicited == null || pubList.size == 1) return
-        pubList.remove(implicited)
-        implicited = null
-    }
+//    var pubList = mutableListOf<JarbirdPub>()
+//
+//    var bintrayRepository: RepoEndpoint? = null
+//
+//    var dokkaConfig: AbstractDokkaTask.() -> Unit = {}
+//
+//    lateinit var pomGroupCallback: PomGroupCallback
+//    private var implicited: JarbirdPub? = null
+//
+//    /* to be invoked by Groovy Gradle script */
+    fun pub(action: Closure<JarbirdPub>)
+//        val newPub = JarbirdPubImpl(project)
+//        pubList.add(newPub)
+//        action.delegate = newPub
+//        action.resolveStrategy = Closure.DELEGATE_FIRST
+//        action.call()
+//        pomGroupCallback.initPub(newPub)
+//    }
+//
+    fun pub(variant: String, action: Closure<JarbirdPub>)
+//        val newPub = JarbirdPubImpl(project)
+//        newPub.variant = variant
+//        pomGroupCallback.initPub(newPub)
+//        pubList.add(newPub)
+//        action.delegate = newPub
+//        action.resolveStrategy = Closure.DELEGATE_FIRST
+//        action.call()
+//    }
+//
+//    /* to be invoked by Kotlin Gradle script */
+    fun pub(action: JarbirdPub.() -> Unit)
+//        val newPub = JarbirdPubImpl(project)
+//        pubList.add(newPub)
+//        action.invoke(newPub)
+//        pomGroupCallback.initPub(newPub)
+//    }
+//
+    fun pub(variant: String, action: JarbirdPub.() -> Unit)
+//        val newPub = JarbirdPubImpl(project)
+//        newPub.variant = variant
+//        pomGroupCallback.initPub(newPub)
+//        pubList.add(newPub)
+//        action.invoke(newPub)
+//    }
+//
+//    fun createImplicit() {
+//        /*
+//        if implicit != null, we have already got an implicit, no need to create another
+//        if pubList.isNotEmpty() and implicit == null, we have an non-implicit pub, no need to create implicit
+//         */
+//        if (implicited != null || pubList.isNotEmpty()) return
+//        pub {}
+//        implicited = pubList[0]
+//    }
+//
+//    fun removeImplicit() {
+//        /*
+//        If implicit == null , means we have not created an implicit pub, no need to remove
+//        If pubList.size == 1 and implicit != null, this means it is the only pub, so we still need it, don't remove
+//         */
+//        if (implicited == null || pubList.size == 1) return
+//        pubList.remove(implicited)
+//        implicited = null
+//    }
 }

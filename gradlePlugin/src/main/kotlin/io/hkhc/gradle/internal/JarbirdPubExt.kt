@@ -30,8 +30,8 @@ internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): Stri
 internal val JarbirdPub.pubNameCap: String
     get() = pubNameWithVariant().capitalize()
 
-internal val JarbirdPub.pubId: String
-    get() = "${pubNameCap}Publication"
+//internal val JarbirdPub.pubId: String
+//    get() = "${pubNameCap}Publication"
 
 internal val JarbirdPub.mavenRepoNameCap: String
     get() = "Maven${pubNameCap}Repository"

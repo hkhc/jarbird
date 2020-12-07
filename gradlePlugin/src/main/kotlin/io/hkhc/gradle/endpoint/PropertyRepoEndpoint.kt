@@ -58,5 +58,5 @@ class PropertyRepoEndpoint(private val project: Project, private val key: String
         }
 
     override val id: String
-        get() = "Maven${key.replace(".", "").capitalize()}"
+        get() = "${key.replace(".", "").capitalize()}"
 }

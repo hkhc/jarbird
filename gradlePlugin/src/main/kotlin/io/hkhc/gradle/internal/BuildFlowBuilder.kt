@@ -87,7 +87,7 @@ internal class BuildFlowBuilder(
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
                 if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) && pubs.needBintray()) {
-                    ArtifactoryConfig(this, extension, pubs).config()
+                    ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()
                 }
             } else {
                 logger.info(
@@ -101,11 +101,11 @@ internal class BuildFlowBuilder(
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
                 if (bintrayPublishPlan.bintray.isNotEmpty()) {
                     logger.info("config bintray")
-                    BintrayConfig(this, extension, pubs).config()
+                    BintrayConfig(this, extension as JarbirdExtensionImpl, pubs).config()
                 }
                 if (bintrayPublishPlan.artifactory.isNotEmpty()) {
                     logger.info("config artifactory")
-                    ArtifactoryConfig(this, extension, pubs).config()
+                    ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()
                 }
             }
         }

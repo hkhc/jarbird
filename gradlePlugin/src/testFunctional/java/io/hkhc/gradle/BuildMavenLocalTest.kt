@@ -83,20 +83,20 @@ class BuildMavenLocalTest : FunSpec({
 
             withClue("expected list of tasks executed with expected result") {
                 result.tasks.map { it.toString() } shouldBeNoDifference listOf(
-                    ":jbDokkaHtmlLib=SUCCESS",
-                    ":dokkaJarLib=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":processResources=NO_SOURCE",
                     ":classes=SUCCESS",
                     ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
-                    ":generateMetadataFileForLibPublication=SUCCESS",
-                    ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJarLib=SUCCESS",
-                    ":signLibPublication=SUCCESS",
-                    ":publishLibPublicationToMavenLocal=SUCCESS",
-                    ":jbPublishLibToMavenLocal=SUCCESS",
+                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
+                    ":generatePomFileForTestArtifactPublication=SUCCESS",
+                    ":jbDokkaHtmlTestArtifact=SUCCESS",
+                    ":jbDokkaJarTestArtifact=SUCCESS",
+                    ":sourcesJarTestArtifact=SUCCESS",
+                    ":signTestArtifactPublication=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
+                    ":jbPublishTestArtifactToMavenLocal=SUCCESS",
                     ":jbPublishToMavenLocal=SUCCESS"
                 )
             }

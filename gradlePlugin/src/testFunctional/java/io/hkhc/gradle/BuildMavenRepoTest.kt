@@ -161,8 +161,6 @@ class BuildMavenRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":jbDokkaHtmlLib=SUCCESS",
-                    ":dokkaJarLib=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
@@ -170,13 +168,15 @@ class BuildMavenRepoTest : FunSpec({
                     ":classes=SUCCESS",
                     ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
-                    ":generateMetadataFileForLibPublication=SUCCESS",
-                    ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJarLib=SUCCESS",
-                    ":signLibPublication=SUCCESS",
-                    ":publishLibPublicationToMavenLibRepository=SUCCESS",
-                    ":jbPublishLibToMavenmock=SUCCESS",
-                    ":jbPublishLibToMavenRepository=SUCCESS",
+                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
+                    ":generatePomFileForTestArtifactPublication=SUCCESS",
+                    ":jbDokkaHtmlTestArtifact=SUCCESS",
+                    ":jbDokkaJarTestArtifact=SUCCESS",
+                    ":sourcesJarTestArtifact=SUCCESS",
+                    ":signTestArtifactPublication=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS"
                 )
             )
@@ -190,8 +190,6 @@ class BuildMavenRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":jbDokkaHtmlLib=SUCCESS",
-                    ":dokkaJarLib=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
@@ -199,12 +197,14 @@ class BuildMavenRepoTest : FunSpec({
                     ":classes=SUCCESS",
                     ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
-                    ":generateMetadataFileForLibPublication=SUCCESS",
-                    ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJarLib=SUCCESS",
-                    ":publishLibPublicationToMavenLibRepository=SUCCESS",
-                    ":jbPublishLibToMavenmock=SUCCESS",
-                    ":jbPublishLibToMavenRepository=SUCCESS",
+                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
+                    ":generatePomFileForTestArtifactPublication=SUCCESS",
+                    ":jbDokkaHtmlTestArtifact=SUCCESS",
+                    ":jbDokkaJarTestArtifact=SUCCESS",
+                    ":sourcesJarTestArtifact=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS"
                 )
             )

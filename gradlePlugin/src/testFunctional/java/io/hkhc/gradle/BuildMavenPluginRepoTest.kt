@@ -130,7 +130,7 @@ class BuildMavenPluginRepoTest : FunSpec({
                     result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
                 }
 
-                val pluginPom = File(setup.projectDir, "build/publications/libPluginMarkerMaven/pom-default.xml")
+                val pluginPom = File(setup.projectDir, "build/publications/testArtifactPluginMarkerMaven/pom-default.xml")
                     .readText()
                 pluginPom shouldBe pluginPom(coordinate)
 
@@ -150,10 +150,8 @@ class BuildMavenPluginRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":generatePomFileForLibPluginMarkerMavenPublication=SUCCESS",
-                    ":publishLibPluginMarkerMavenPublicationToMavenLibRepository=SUCCESS",
-                    ":jbDokkaHtmlLib=SUCCESS",
-                    ":dokkaJarLib=SUCCESS",
+                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
+                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenTestArtifactRepository=SUCCESS",
                     ":compileKotlin=NO_SOURCE",
                     ":compileJava=NO_SOURCE",
                     ":pluginDescriptors=SUCCESS",
@@ -161,13 +159,15 @@ class BuildMavenPluginRepoTest : FunSpec({
                     ":classes=SUCCESS",
                     ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
-                    ":generateMetadataFileForLibPublication=SUCCESS",
-                    ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJarLib=SUCCESS",
-                    ":signLibPublication=SUCCESS",
-                    ":publishLibPublicationToMavenLibRepository=SUCCESS",
-                    ":jbPublishLibToMavenmock=SUCCESS",
-                    ":jbPublishLibToMavenRepository=SUCCESS",
+                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
+                    ":generatePomFileForTestArtifactPublication=SUCCESS",
+                    ":jbDokkaHtmlTestArtifact=SUCCESS",
+                    ":jbDokkaJarTestArtifact=SUCCESS",
+                    ":sourcesJarTestArtifact=SUCCESS",
+                    ":signTestArtifactPublication=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS"
                 )
             )
@@ -181,10 +181,8 @@ class BuildMavenPluginRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
-                    ":generatePomFileForLibPluginMarkerMavenPublication=SUCCESS",
-                    ":publishLibPluginMarkerMavenPublicationToMavenLibRepository=SUCCESS",
-                    ":jbDokkaHtmlLib=SUCCESS",
-                    ":dokkaJarLib=SUCCESS",
+                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
+                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenTestArtifactRepository=SUCCESS",
                     ":compileKotlin=NO_SOURCE",
                     ":compileJava=NO_SOURCE",
                     ":pluginDescriptors=SUCCESS",
@@ -192,12 +190,14 @@ class BuildMavenPluginRepoTest : FunSpec({
                     ":classes=SUCCESS",
                     ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
-                    ":generateMetadataFileForLibPublication=SUCCESS",
-                    ":generatePomFileForLibPublication=SUCCESS",
-                    ":sourcesJarLib=SUCCESS",
-                    ":publishLibPublicationToMavenLibRepository=SUCCESS",
-                    ":jbPublishLibToMavenmock=SUCCESS",
-                    ":jbPublishLibToMavenRepository=SUCCESS",
+                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
+                    ":generatePomFileForTestArtifactPublication=SUCCESS",
+                    ":jbDokkaHtmlTestArtifact=SUCCESS",
+                    ":jbDokkaJarTestArtifact=SUCCESS",
+                    ":sourcesJarTestArtifact=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS"
                 )
             )

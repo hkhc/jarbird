@@ -69,12 +69,12 @@ class BuildAndroidArtifactoryTest : FunSpec({
             ":lib:packageReleaseAssets=SUCCESS",
             ":lib:packageReleaseRenderscript=NO_SOURCE",
             ":lib:prepareLintJarForPublish=SUCCESS",
-            ":lib:processReleaseJavaRes=NO_SOURCE",
-            ":lib:jbDokkaHtmlLibRelease=SUCCESS",
-            ":lib:dokkaJarLibReleaseRelease=SUCCESS",
-            ":lib:generatePomFileForLibReleasePublication=SUCCESS",
-            ":lib:sourcesJarLibReleaseRelease=SUCCESS",
             ":lib:generateReleaseRFile=SUCCESS",
+            ":lib:processReleaseJavaRes=NO_SOURCE",
+            ":lib:generatePomFileForTestArtifactReleasePublication=SUCCESS",
+            ":lib:jbDokkaHtmlTestArtifactRelease=SUCCESS",
+            ":lib:jbDokkaJarTestArtifactReleaseRelease=SUCCESS",
+            ":lib:sourcesJarTestArtifactReleaseRelease=SUCCESS",
             ":lib:compileReleaseKotlin=SUCCESS",
             ":lib:compileReleaseJavaWithJavac=SUCCESS",
             ":lib:extractReleaseAnnotations=SUCCESS",
@@ -83,7 +83,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
             ":lib:mergeReleaseJavaResource=SUCCESS",
             ":lib:syncReleaseLibJars=SUCCESS",
             ":lib:bundleReleaseAar=SUCCESS",
-            ":lib:generateMetadataFileForLibReleasePublication=SUCCESS",
+            ":lib:generateMetadataFileForTestArtifactReleasePublication=SUCCESS",
             ":lib:artifactoryPublish=SUCCESS",
             ":extractModuleInfo=SUCCESS",
             ":lib:extractModuleInfo=SUCCESS",
@@ -160,7 +160,8 @@ class BuildAndroidArtifactoryTest : FunSpec({
                     result.tasks.map { it.toString() } shouldBeNoDifference (
                         setup.expectedTaskList except listOf(
                             ":lib:stripReleaseDebugSymbols=NO_SOURCE",
-                            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS"
+                            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
+                            ":lib:generateReleaseRFile=SUCCESS"
                         )
                         )
                 }

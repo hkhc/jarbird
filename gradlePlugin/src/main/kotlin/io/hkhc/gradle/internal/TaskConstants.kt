@@ -257,12 +257,12 @@ val JarbirdPub.mavenRepoName: String
     get() = "Maven$pubNameCap"
 
 val JarbirdPub.publishPubToMavenLocalTask: String
-    get() = "$PUBLISH_TASK_PREFIX${pubId.capitalize()}$TO_MAVEN_LOCAL"
+    get() = "$PUBLISH_TASK_PREFIX${pubNameCap}Publication$TO_MAVEN_LOCAL"
 
 val JarbirdPub.publishPluginMarkerPubToMavenLocalTask: String
     get() = "$PUBLISH_TASK_PREFIX$pubNameCap${PLUGIN_MARKER_PUB_SUFFIX}Publication$TO_MAVEN_LOCAL"
 val JarbirdPub.publishPubToCustomMavenRepoTask: String
-    get() = "$PUBLISH_TASK_PREFIX${pubId}To$mavenRepoNameCap"
+    get() = "$PUBLISH_TASK_PREFIX${pubNameCap}PublicationTo$mavenRepoNameCap"
 
 val JarbirdPub.publishPluginMarkerPubToCustomMavenRepoTask: String
     get() = "$PUBLISH_TASK_PREFIX$pubNameCap${PLUGIN_MARKER_PUB_SUFFIX}PublicationTo$mavenRepoNameCap"

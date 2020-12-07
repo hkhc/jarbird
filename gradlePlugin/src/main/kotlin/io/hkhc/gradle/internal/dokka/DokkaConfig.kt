@@ -50,7 +50,7 @@ internal class DokkaConfig(private val project: Project, private val extension: 
     fun configRootDokka(pubs: List<JarbirdPub>) {
 
         JbDokkaTaskInfo().register(project.tasks, DokkaMultiModuleTask::class.java) {
-            extension.dokkaConfig.invoke(this)
+//            extension.dokkaConfig.invoke(this)
             pubs.forEach { pub ->
                 addSubprojectChildTasks(JbDokkaPubTaskInfo(pub).name)
             }
@@ -66,7 +66,7 @@ internal class DokkaConfig(private val project: Project, private val extension: 
                         *(getSourceJarSource(pub.sourceSets))
                     )
                 }
-                extension.dokkaConfig.invoke(this)
+//                extension.dokkaConfig.invoke(this)
                 pub.dokkaConfig.invoke(this, pub)
             }
         }
