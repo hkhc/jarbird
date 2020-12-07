@@ -138,7 +138,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         pomGroup = PomGroupFactory(p).resolvePomGroup()
 
         extension = JarbirdExtension(project)
-        project.extensions.add(SP_EXT_NAME, extension)
+        project.extensions.add(JarbirdExtension::class.java, SP_EXT_NAME, extension)
         extension.pomGroupCallback = this
 
         project.logger.debug("$LOG_PREFIX Aggregated POM configuration: $pomGroup")

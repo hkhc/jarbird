@@ -24,10 +24,8 @@ import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import io.hkhc.gradle.internal.CLASSIFIER_JAVADOC
 import io.hkhc.gradle.internal.DokkaJarPubTaskInfo
-import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.JbDokkaPubTaskInfo
 import io.hkhc.gradle.internal.JbDokkaTaskInfo
-import io.hkhc.gradle.internal.pubNameCap
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
@@ -75,7 +73,7 @@ internal class DokkaConfig(private val project: Project, private val extension: 
     }
 
     @Suppress("UnstableApiUsage")
-    fun setupDokkaJar(pub: JarbirdPubImpl): TaskProvider<Jar> {
+    fun setupDokkaJar(pub: JarbirdPub): TaskProvider<Jar> {
 
         // TODO add error message here if dokka is null
         return DokkaJarPubTaskInfo(pub).register(project.tasks, Jar::class.java) {

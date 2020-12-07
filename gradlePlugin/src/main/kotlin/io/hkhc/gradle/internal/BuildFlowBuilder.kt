@@ -19,6 +19,7 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryConfig
 import io.hkhc.gradle.internal.bintray.BintrayConfig
 import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
@@ -68,7 +69,7 @@ import org.gradle.api.Project
 internal class BuildFlowBuilder(
     private val project: Project,
     private val extension: JarbirdExtension,
-    private val pubs: List<JarbirdPubImpl>
+    private val pubs: List<JarbirdPub>
 ) {
 
     @Suppress("unused")

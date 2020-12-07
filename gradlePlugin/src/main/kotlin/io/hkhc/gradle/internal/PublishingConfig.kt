@@ -19,6 +19,7 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.dokka.DokkaConfig
 import io.hkhc.gradle.internal.maven.MavenPomAdapter
 import io.hkhc.gradle.internal.utils.detailMessageWarning
@@ -38,7 +39,7 @@ import org.gradle.kotlin.dsl.get
 internal class PublishingConfig(
     private val project: Project,
     private val extension: JarbirdExtension,
-    private val pubs: List<JarbirdPubImpl>
+    private val pubs: List<JarbirdPub>
 ) {
     private val extensions = (project as ExtensionAware).extensions
     // TODO we shall have one separate dokka task per pub
@@ -113,7 +114,7 @@ internal class PublishingConfig(
     private fun PublishArtifact.getString() =
         "PublishArtifact(name=$name,file=$file,classifier=$classifier,date=$date,extension=$extension,type=$type)"
 
-    private fun checkComponent(pub: JarbirdPubImpl) {
+    private fun checkComponent(pub: JarbirdPub) {
         try {
             project.components[pub.pubComponent]
         } catch (e: UnknownDomainObjectException) {
@@ -167,7 +168,7 @@ internal class PublishingConfig(
 
         pubs.filter { it.maven }.forEach { pub ->
             // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
-            val endpoint = pub.mavenRepo
+            val endpoint = (pub as JarbirdPubImpl).mavenRepo
 
             maven {
                 name = "Maven${pub.pubNameCap}"

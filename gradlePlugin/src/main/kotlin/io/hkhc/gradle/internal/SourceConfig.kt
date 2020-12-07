@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.internal
 
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import org.gradle.api.Project
@@ -39,7 +40,7 @@ internal class SourceConfig(private val project: Project) {
     }
 
     @Suppress("UnstableApiUsage", "SpreadOperator")
-    fun configSourceJarTask(pub: JarbirdPubImpl): TaskProvider<Jar> {
+    fun configSourceJarTask(pub: JarbirdPub): TaskProvider<Jar> {
 
         val taskInfo = SourceJarPubTaskInfo(pub)
 
