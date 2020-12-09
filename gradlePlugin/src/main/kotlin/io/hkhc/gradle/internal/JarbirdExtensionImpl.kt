@@ -27,7 +27,7 @@ import org.gradle.api.Project
 
 open class JarbirdExtensionImpl(private val project: Project): JarbirdExtension {
 
-    var pubList = mutableListOf<JarbirdPub>()
+    val pubList = mutableListOf<JarbirdPub>()
 
     var bintrayRepository: RepoEndpoint? = null
 
@@ -36,40 +36,53 @@ open class JarbirdExtensionImpl(private val project: Project): JarbirdExtension 
     lateinit var pomGroupCallback: PomGroupCallback
     private var implicited: JarbirdPub? = null
 
-    /* to be invoked by Groovy Gradle script */
-    override fun pub(action: Closure<JarbirdPub>) {
-        val newPub = JarbirdPubImpl(project)
-        pubList.add(newPub)
-        action.delegate = newPub
+    private fun newPub(project: Project): JarbirdPub {
+        return JarbirdPubImpl(project).apply {
+            pubList.add(this)
+        }
+    }
+
+    private fun JarbirdPub.configure(action: Closure<JarbirdPub>) {
+        action.delegate = this
         action.resolveStrategy = Closure.DELEGATE_FIRST
         action.call()
+    }
+
+    private fun JarbirdPub.configure(action: JarbirdPub.() -> Unit) {
+        action.invoke(this)
+    }
+
+    /*
+    we call initPub in pub method after callback is invoked if variant is not available.
+    we call initPub in pub method before callback is invoked if variant is available.
+     */
+
+    /* to be invoked by Groovy Gradle script */
+    override fun pub(action: Closure<JarbirdPub>) {
+        val newPub = newPub(project)
+        newPub.configure(action)
         pomGroupCallback.initPub(newPub)
     }
 
     override fun pub(variant: String, action: Closure<JarbirdPub>) {
-        val newPub = JarbirdPubImpl(project)
-        newPub.variant = variant
+        val newPub = newPub(project)
         pomGroupCallback.initPub(newPub)
-        pubList.add(newPub)
-        action.delegate = newPub
-        action.resolveStrategy = Closure.DELEGATE_FIRST
-        action.call()
+        newPub.configure(action)
     }
 
     /* to be invoked by Kotlin Gradle script */
     override fun pub(action: JarbirdPub.() -> Unit) {
-        val newPub = JarbirdPubImpl(project)
-        pubList.add(newPub)
+        val newPub = newPub(project)
+        newPub.configure(action)
         action.invoke(newPub)
         pomGroupCallback.initPub(newPub)
     }
 
     override fun pub(variant: String, action: JarbirdPub.() -> Unit) {
-        val newPub = JarbirdPubImpl(project)
+        val newPub = newPub(project)
         newPub.variant = variant
         pomGroupCallback.initPub(newPub)
-        pubList.add(newPub)
-        action.invoke(newPub)
+        newPub.configure(action)
     }
 
     fun createImplicit() {
