@@ -46,8 +46,8 @@ class VersionTest : FunSpec({
             Version("1.01.0"),
             Version("1.00.1")
         );
-        Collections.min(versions).get() // return min version
-        Collections.max(versions).get() // return max version
+        Collections.min(versions).get() shouldBe "1.00.1" // return min version
+        Collections.max(versions).get() shouldBe "2" // return max version
     }
 
 })
