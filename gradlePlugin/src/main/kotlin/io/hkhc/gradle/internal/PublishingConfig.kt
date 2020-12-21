@@ -35,6 +35,7 @@ import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.get
 
 internal class PublishingConfig(
@@ -160,22 +161,25 @@ internal class PublishingConfig(
                      artifact supports TaskProvider from Gradle 6.6
                      */
 
-                    System.out.println("Gradle version : " + project.gradle.gradleVersion)
-
-                    if (Version(project.gradle.gradleVersion).compareTo(Version("6.6"))>=0) {
-                        project.afterEvaluate {
-                            artifact(DokkaConfig(project, extension).setupDokkaJar(pub))
-                            artifact(SourceConfig(project).configSourceJarTask(pub))
-                        }
-                    } else {
-                        project.afterEvaluate {
-                            artifact(DokkaConfig(project, extension).setupDokkaJar(pub).get())
-                            artifact(SourceConfig(project).configSourceJarTask(pub).get())
-                        }
+                    project.afterEvaluate {
+                        artifactCompat(DokkaConfig(project, extension).setupDokkaJar(pub))
+                        artifactCompat(SourceConfig(project).configSourceJarTask(pub))
                     }
                 }
 
                 pom { MavenPomAdapter().fill(this, pom) }
+            }
+        }
+    }
+
+    private fun MavenPublication.artifactCompat(source: Any) {
+        if (Version(project.gradle.gradleVersion) >= Version("6.6")) {
+            artifact(source)
+        } else {
+            if (source is TaskProvider<*>) {
+                artifact(source.get())
+            } else {
+                artifact(source)
             }
         }
     }

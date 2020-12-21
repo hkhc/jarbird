@@ -26,16 +26,27 @@ class VersionTest : FunSpec({
 
     test("version comparison") {
         Version("1.1").compareTo(Version("1.1.1")) shouldBe -1
-        Version("1.1").equals(Version("1.1.1")) shouldBe false
+        (Version("1.1") == Version("1.1.1")) shouldBe false
+        (Version("1.1") < Version("1.1.1")) shouldBe true
 
         Version("2.0").compareTo(Version("1.9.9")) shouldBe 1
-        Version("2.0").equals(Version("1.9.9")) shouldBe false
+        (Version("2.0") == Version("1.9.9")) shouldBe false
+        (Version("2.0") > Version("1.9.9")) shouldBe true
 
         Version("1.0").compareTo(Version("1")) shouldBe 0
-        Version("1").equals(Version("1")) shouldBe true
+        (Version("1.0") == Version("1")) shouldBe true
 
         Version("1.1").compareTo(Version("1.1.1")) shouldBe -1
-        Version("1.1").equals(Version("1.1.1")) shouldBe false
+        (Version("1.1") == Version("1.1.1")) shouldBe false
+        (Version("1.1") < Version("1.1.1")) shouldBe true
+
+        Version("1.1-ABC").compareTo(Version("1.1")) shouldBe 1
+        (Version("1.1-ABC") == Version("1.1")) shouldBe false
+        (Version("1.1-ABC") > Version("1.1")) shouldBe true
+
+        Version("1.1-ABC-D").compareTo(Version("1.1")) shouldBe 1
+        (Version("1.1-ABC-D") == Version("1.1")) shouldBe false
+        (Version("1.1-ABC-D") > Version("1.1")) shouldBe true
     }
 
     test("version in collection") {
@@ -49,5 +60,4 @@ class VersionTest : FunSpec({
         Collections.min(versions).get() shouldBe "1.00.1" // return min version
         Collections.max(versions).get() shouldBe "2" // return max version
     }
-
 })

@@ -27,14 +27,36 @@ class Version(version: String?) : Comparable<Version?> {
         return version
     }
 
+    class VersionStruct(v: String) {
+        lateinit var versionParts: Array<String>
+        lateinit var suffixParts: Array<String>
+        init {
+            val prefixDelimiter = v.indexOf('-')
+            if (prefixDelimiter != -1) {
+                versionParts = v.substring(0, prefixDelimiter).split(".").toTypedArray()
+                suffixParts = v.substring(prefixDelimiter + 1, v.length).split("-").toTypedArray()
+            } else {
+                versionParts = v.split(".").toTypedArray()
+                suffixParts = arrayOf()
+            }
+        }
+    }
+
     override fun compareTo(that: Version?): Int {
         if (that == null) return 1
-        val thisParts = this.get().split(".").toTypedArray()
-        val thatParts = that.get().split(".").toTypedArray()
-        val length = Math.max(thisParts.size, thatParts.size)
+        val thisParts = VersionStruct(this.get())
+        val thatParts = VersionStruct(that.get())
+        var length = Math.max(thisParts.versionParts.size, thatParts.versionParts.size)
         for (i in 0 until length) {
-            val thisPart = if (i < thisParts.size) thisParts[i].toInt() else 0
-            val thatPart = if (i < thatParts.size) thatParts[i].toInt() else 0
+            val thisPart = if (i < thisParts.versionParts.size) thisParts.versionParts[i].toInt() else 0
+            val thatPart = if (i < thatParts.versionParts.size) thatParts.versionParts[i].toInt() else 0
+            if (thisPart < thatPart) return -1
+            if (thisPart > thatPart) return 1
+        }
+        length = Math.max(thisParts.suffixParts.size, thatParts.suffixParts.size)
+        for (i in 0 until length) {
+            val thisPart = if (i < thisParts.suffixParts.size) thisParts.suffixParts[i] else ""
+            val thatPart = if (i < thatParts.suffixParts.size) thatParts.suffixParts[i] else ""
             if (thisPart < thatPart) return -1
             if (thisPart > thatPart) return 1
         }
@@ -49,7 +71,9 @@ class Version(version: String?) : Comparable<Version?> {
 
     init {
         requireNotNull(version) { "Version can not be null" }
-        require(version.matches(Regex("[0-9]+(\\.[0-9]+)*"))) { "Invalid version format" }
+        require(version.matches(Regex("[0-9]+(\\.[0-9]+)*(\\-[a-zA-Z0-9\\-]+)*"))) {
+            "'$version' is invalid version format"
+        }
         this.version = version
     }
 }
