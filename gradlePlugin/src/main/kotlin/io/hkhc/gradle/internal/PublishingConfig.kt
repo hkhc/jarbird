@@ -22,6 +22,7 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.dokka.DokkaConfig
 import io.hkhc.gradle.internal.maven.MavenPomAdapter
+import io.hkhc.gradle.internal.utils.Version
 import io.hkhc.gradle.internal.utils.detailMessageWarning
 import io.hkhc.gradle.internal.utils.findByType
 import org.gradle.api.GradleException
@@ -153,9 +154,24 @@ internal class PublishingConfig(
                 from(project.components[pub.pubComponent])
                 // We are adding documentation artifact
                 if (!project.isMultiProjectRoot()) {
-                    project.afterEvaluate {
-                        artifact(DokkaConfig(project, extension).setupDokkaJar(pub))
-                        artifact(SourceConfig(project).configSourceJarTask(pub))
+
+                    /*
+                     https://github.com/gradle/gradle/pull/13505
+                     artifact supports TaskProvider from Gradle 6.6
+                     */
+
+                    System.out.println("Gradle version : " + project.gradle.gradleVersion)
+
+                    if (Version(project.gradle.gradleVersion).compareTo(Version("6.6"))>=0) {
+                        project.afterEvaluate {
+                            artifact(DokkaConfig(project, extension).setupDokkaJar(pub))
+                            artifact(SourceConfig(project).configSourceJarTask(pub))
+                        }
+                    } else {
+                        project.afterEvaluate {
+                            artifact(DokkaConfig(project, extension).setupDokkaJar(pub).get())
+                            artifact(SourceConfig(project).configSourceJarTask(pub).get())
+                        }
                     }
                 }
 
