@@ -25,8 +25,6 @@ import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import io.mockk.mockk
-import org.gradle.api.Project
 import java.io.File
 
 class PomGroupTest : StringSpec({
@@ -90,7 +88,7 @@ class PomGroupTest : StringSpec({
             )
         }
 
-        val pomGroup = PomGroupFactory(mockk<Project>()).loadYaml(pomFile)
+        val pomGroup = PomGroupFactory.loadYaml(pomFile)
         pomGroup.getMap() shouldHaveSize 1
 
         val pom = pomGroup["release"]
@@ -116,7 +114,7 @@ class PomGroupTest : StringSpec({
             )
         }
 
-        val pomGroup = PomGroupFactory(mockk<Project>()).loadYaml(pomFile)
+        val pomGroup = PomGroupFactory.loadYaml(pomFile)
         pomGroup.getMap() shouldHaveSize 1
 
         val pom = pomGroup["release"]
@@ -209,7 +207,7 @@ class PomGroupTest : StringSpec({
             )
         }
 
-        val pomGroup = PomGroupFactory(mockk()).resolvePomGroup(
+        val pomGroup = PomGroupFactory.resolvePomGroup(
             listOf(
                 rootPomFile,
                 subPomFile

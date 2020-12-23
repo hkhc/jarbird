@@ -21,13 +21,11 @@ package io.hkhc.gradle.pom.internal
 import io.hkhc.gradle.internal.getGradleUserHome
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.PomGroup
-import org.gradle.api.Project
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Constructor
 import java.io.File
 
-// TODO get rid of reference to project
-class PomGroupFactory(val project: Project) {
+object PomGroupFactory {
 
     /**
      * read POM spec from a YAML file
@@ -62,13 +60,13 @@ class PomGroupFactory(val project: Project) {
     /**
      * Get the list of File of POM file in order of being resolved.
      */
-    fun getPomFileList(): List<File> {
+    fun getPomFileList(rootDir: File, projectDir: File): List<File> {
         return mutableListOf<File>().apply {
             System.getProperty("pomFile")?.let { add(File(it)) }
-            if (project.projectDir != project.rootDir) {
-                add(File(pomPath(project.projectDir.absolutePath)))
+            if (projectDir != rootDir) {
+                add(File(pomPath(projectDir.absolutePath)))
             }
-            add(File(pomPath(project.rootDir.absolutePath)))
+            add(File(pomPath(rootDir.absolutePath)))
             getGradleUserHome()?.let { add(File(pomPath(it))) }
         }
     }
@@ -87,5 +85,5 @@ class PomGroupFactory(val project: Project) {
     /**
      * resolve POM spec via a series of possible location and accumulate the details
      */
-    fun resolvePomGroup() = resolvePomGroup(getPomFileList())
+    fun resolvePomGroup(rootDir: File, projectDir: File) = resolvePomGroup(getPomFileList(rootDir, projectDir))
 }

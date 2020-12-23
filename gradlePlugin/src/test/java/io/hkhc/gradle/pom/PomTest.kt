@@ -18,9 +18,11 @@
 
 package io.hkhc.gradle.pom
 
+import io.hkhc.gradle.pom.internal.pomPath
 import io.hkhc.utils.test.`Array Fields merged properly when overlaying`
 import io.hkhc.utils.test.`Field perform overlay properly`
 import io.hkhc.utils.test.`Fields overlay properly`
+import io.hkhc.utils.test.tempDirectory
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -32,6 +34,7 @@ import io.mockk.verify
 import org.gradle.api.internal.project.DefaultProject
 import org.gradle.api.plugins.Convention
 import org.gradle.api.plugins.internal.DefaultBasePluginConvention
+import java.io.File
 import java.util.Calendar
 import java.util.GregorianCalendar
 
@@ -45,6 +48,26 @@ internal class PomTest : StringSpec({
         val convention: Convention = mockk(relaxed = true)
         every { convention.plugins } returns mutableMapOf<String, Any>("base" to DefaultBasePluginConvention(project))
         every { project.convention } returns convention
+    }
+
+    "Choose two file extensions" {
+        val tempDir = tempDirectory()
+
+        pomPath(tempDir.absolutePath) shouldBe "$tempDir/pom.yaml"
+
+        File("$tempDir/pom.yaml").writeText("hello")
+        pomPath(tempDir.absolutePath) shouldBe "$tempDir/pom.yaml"
+        File("$tempDir/pom.yaml").delete()
+
+        File("$tempDir/pom.yml").writeText("hello")
+        pomPath(tempDir.absolutePath) shouldBe "$tempDir/pom.yml"
+        File("$tempDir/pom.yml").delete()
+
+        File("$tempDir/pom.yaml").writeText("hello")
+        File("$tempDir/pom.yml").writeText("hello")
+        pomPath(tempDir.absolutePath) shouldBe "$tempDir/pom.yaml"
+        File("$tempDir/pom.yaml").delete()
+        File("$tempDir/pom.yml").delete()
     }
 
     "Pom shall be a data class so that we may assume 'equals' logic is provided" {
@@ -128,7 +151,7 @@ internal class PomTest : StringSpec({
     "Pom shall resolve git details by the repo ID" {
 
         // GIVEN non-existence license name
-        var p1 = Pom(scm = Scm(repoType = "github.com", repoName = "hkhc/abc"))
+        val p1 = Pom(scm = Scm(repoType = "github.com", repoName = "hkhc/abc"))
         // WHEN
         p1.expandScmGit(p1.scm)
         // THEN

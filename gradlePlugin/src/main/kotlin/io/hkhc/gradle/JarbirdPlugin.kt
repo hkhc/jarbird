@@ -88,7 +88,6 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
     // TODO check if POM fulfill minimal requirements for publishing
     // TODO maven publishing dry-run
-    // TODO accept both pom.yml or pom.yaml
 
     private fun checkAndroidPlugin(project: Project) {
 
@@ -110,6 +109,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         pub.pom.syncWith(project)
 
         // TODO handle two publications of same artifactaId in the same module.
+        // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
         pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
 
         // pre-check of final data, for child project
@@ -163,7 +163,7 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
 
         project = p
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
-        pomGroup = PomGroupFactory(p).resolvePomGroup()
+        pomGroup = PomGroupFactory.resolvePomGroup(p.rootDir, p.projectDir)
 
         extension = JarbirdExtensionImpl(project)
         project.extensions.add(JarbirdExtension::class.java, SP_EXT_NAME, extension)

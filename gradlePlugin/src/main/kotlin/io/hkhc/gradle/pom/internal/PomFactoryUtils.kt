@@ -21,7 +21,15 @@ package io.hkhc.gradle.pom.internal
 import java.io.File
 
 internal const val POM_FILENAME = "pom.yaml"
+internal const val POM_FILENAME_2 = "pom.yml"
 
 internal fun pomPath(base: String): String {
-    return base + File.separatorChar + POM_FILENAME
+
+    val filename = base + File.separatorChar + POM_FILENAME
+    val filename2 = base + File.separatorChar + POM_FILENAME_2
+    return if (!File(filename).exists() && File(filename2).exists()) {
+        filename2
+    } else {
+        filename
+    }
 }

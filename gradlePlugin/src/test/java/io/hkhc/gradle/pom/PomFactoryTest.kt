@@ -61,7 +61,7 @@ class PomFactoryTest : StringSpec({
             |packaging: jar
             """.trimMargin()
         )
-        val pomGroup = PomGroupFactory(project).readPom(file).getDefault()
+        val pomGroup = PomGroupFactory.readPom(file).getDefault()
 
         withClue("Parsed POM should reflect content in file") {
             pomGroup.asClue {
@@ -87,7 +87,7 @@ class PomFactoryTest : StringSpec({
             |packaging: jar
             """.trimMargin()
         )
-        val pomGroup = PomGroupFactory(project).readPom(file)["release"]
+        val pomGroup = PomGroupFactory.readPom(file)["release"]
 
         withClue("Parsed POM should reflect content in file") {
             pomGroup.asClue {
@@ -113,7 +113,7 @@ class PomFactoryTest : StringSpec({
             |packaging: jar
             """.trimMargin()
         )
-        val pomGroup = PomGroupFactory(project).readPom(file.absolutePath).getDefault()
+        val pomGroup = PomGroupFactory.readPom(file.absolutePath).getDefault()
 
         withClue("Parsed POM should reflect content in file") {
             pomGroup.asClue {
@@ -129,7 +129,7 @@ class PomFactoryTest : StringSpec({
     "Load with non-exist file" {
 
         val file = "non-exist-file.txt"
-        val pom = PomGroupFactory(project).readPom(file).getDefault()
+        val pom = PomGroupFactory.readPom(file).getDefault()
 
         pom shouldBe Pom()
     }
@@ -137,7 +137,7 @@ class PomFactoryTest : StringSpec({
     "Load with invalid file" {
 
         val file = tempfile()
-        val pom = PomGroupFactory(project).readPom(file).getDefault()
+        val pom = PomGroupFactory.readPom(file).getDefault()
         // Even if some part of the file is valid yaml, when we've got invalid part, we
         // will only return empty Pom object.
         file.writeText(
@@ -200,7 +200,7 @@ class PomFactoryTest : StringSpec({
             ),
             OverrideMode.SetOrOverride
         ) {
-            PomGroupFactory(project).getPomFileList().map { it.path } shouldBe listOf(
+            PomGroupFactory.getPomFileList(project.rootDir, project.projectDir).map { it.path } shouldBe listOf(
                 "my-pom.yaml",
                 "${project.projectDir}/pom.yaml",
                 "${project.rootDir}/pom.yaml",
@@ -211,7 +211,7 @@ class PomFactoryTest : StringSpec({
 
     "Resolve POM from list of files" {
 
-        val pomGroupFactory = PomGroupFactory(project)
+        val pomGroupFactory = PomGroupFactory
 
         withClue("Single item in list") {
             pomGroupFactory.resolvePomGroup(
@@ -241,7 +241,7 @@ class PomFactoryTest : StringSpec({
 
     "Resolve Pom from User's gradle home" {
 
-        val pomFactory = PomGroupFactory(project)
+        val pomFactory = PomGroupFactory
         val baseDir = tempDirectory()
         val gradleUserHomeDir = baseDir.mkdir("gradle-user-home")
         val pomFile = File(gradleUserHomeDir, "pom.yaml")
@@ -256,7 +256,7 @@ class PomFactoryTest : StringSpec({
         )
 
         withSystemProperty("gradle.user.home", gradleUserHomeDir.absolutePath) {
-            val pomGroup = pomFactory.resolvePomGroup().getDefault()
+            val pomGroup = pomFactory.resolvePomGroup(project.rootDir, project.projectDir).getDefault()
             pomGroup.asClue {
                 it.group shouldBe "test-group"
                 it.artifactId shouldBe "test-id"

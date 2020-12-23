@@ -24,8 +24,6 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import io.mockk.mockk
-import org.gradle.api.Project
 import java.io.File
 
 class PomGroupFactoryTest : StringSpec({
@@ -44,9 +42,7 @@ class PomGroupFactoryTest : StringSpec({
             )
         }
 
-        val project = mockk<Project>()
-
-        val pomGroup = PomGroupFactory(project).resolvePomGroup(listOf(pomFile))
+        val pomGroup = PomGroupFactory.resolvePomGroup(listOf(pomFile))
         val pom = pomGroup.getDefault()
 
         withClue("Given single POM file") {
@@ -71,9 +67,7 @@ class PomGroupFactoryTest : StringSpec({
             )
         }
 
-        val project = mockk<Project>()
-
-        val pomGroup = PomGroupFactory(project).resolvePomGroup(listOf(pomFile))
+        val pomGroup = PomGroupFactory.resolvePomGroup(listOf(pomFile))
         pomGroup.getMap() shouldHaveSize 1
 
         val pom = pomGroup["release"]
