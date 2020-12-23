@@ -22,6 +22,11 @@ package io.hkhc.gradle.internal.utils
  * Adapted from https://stackoverflow.com/a/11024200/181597
  */
 class Version(version: String?) : Comparable<Version?> {
+
+    companion object {
+        private val versionRegex = Regex("[0-9]+(\\.[0-9]+)*(-[a-zA-Z0-9\\-]+)*")
+    }
+
     private val versionText: String
     fun get(): String {
         return versionText
@@ -40,6 +45,12 @@ class Version(version: String?) : Comparable<Version?> {
                 suffixParts = arrayOf()
             }
         }
+        fun partAsInt(i: Int): Int {
+            return if (i < versionParts.size) versionParts[i].toInt() else 0
+        }
+        fun suffixAsString(i: Int): String {
+            return if (i < suffixParts.size) suffixParts[i] else ""
+        }
     }
 
     override fun compareTo(other: Version?): Int {
@@ -47,26 +58,40 @@ class Version(version: String?) : Comparable<Version?> {
         val thisParts = VersionStruct(this.get())
         val thatParts = VersionStruct(other.get())
         var length = Math.max(thisParts.versionParts.size, thatParts.versionParts.size)
+        var result = 0
         for (i in 0 until length) {
-            val thisPart = if (i < thisParts.versionParts.size) thisParts.versionParts[i].toInt() else 0
-            val thatPart = if (i < thatParts.versionParts.size) thatParts.versionParts[i].toInt() else 0
-            if (thisPart < thatPart) return -1
-            if (thisPart > thatPart) return 1
+            val thisPart = thisParts.partAsInt(i)
+            val thatPart = thatParts.partAsInt(i)
+            result = thisPart.compareTo(thatPart)
+            if (result != 0) break
         }
-        length = Math.max(thisParts.suffixParts.size, thatParts.suffixParts.size)
-        for (i in 0 until length) {
-            val thisPart = if (i < thisParts.suffixParts.size) thisParts.suffixParts[i] else ""
-            val thatPart = if (i < thatParts.suffixParts.size) thatParts.suffixParts[i] else ""
-            if (thisPart < thatPart) return -1
-            if (thisPart > thatPart) return 1
+        if (result == 0) {
+            length = Math.max(thisParts.suffixParts.size, thatParts.suffixParts.size)
+            for (i in 0 until length) {
+                val thisPart = thisParts.suffixAsString(i)
+                val thatPart = thatParts.suffixAsString(i)
+                result = thisPart.compareTo(thatPart)
+                if (result != 0) break
+            }
         }
-        return 0
+        return result
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null) return false
-        return if (this.javaClass != other.javaClass) false else this.compareTo(other as Version) == 0
+        return when {
+            this === other -> {
+                true
+            }
+            other == null -> {
+                false
+            }
+            this.javaClass != other.javaClass -> {
+                false
+            }
+            else -> {
+                this.compareTo(other as Version) == 0
+            }
+        }
     }
 
     override fun hashCode(): Int {
@@ -75,7 +100,7 @@ class Version(version: String?) : Comparable<Version?> {
 
     init {
         requireNotNull(version) { "Version can not be null" }
-        require(version.matches(Regex("[0-9]+(\\.[0-9]+)*(-[a-zA-Z0-9\\-]+)*"))) {
+        require(version.matches(versionRegex)) {
             "'$version' is invalid version format"
         }
         this.versionText = version

@@ -18,33 +18,49 @@
 
 package io.hkhc.gradle.internal.utils
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.ints.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import java.util.Collections
 
 class VersionTest : FunSpec({
 
+    test("invalid version") {
+        shouldThrow<IllegalArgumentException> {
+            Version("")
+        }.message shouldBe "'' is invalid version format"
+        shouldThrow<IllegalArgumentException> {
+            Version("x")
+        }.message shouldBe "'x' is invalid version format"
+        shouldThrow<IllegalArgumentException> {
+            Version("1.2.0.a")
+        }.message shouldBe "'1.2.0.a' is invalid version format"
+    }
+
     test("version comparison") {
-        Version("1.1").compareTo(Version("1.1.1")) shouldBe -1
+
+        Version("1.1").compareTo(Version("1.1.1")) shouldBeLessThan 0
         (Version("1.1") == Version("1.1.1")) shouldBe false
         (Version("1.1") < Version("1.1.1")) shouldBe true
 
-        Version("2.0").compareTo(Version("1.9.9")) shouldBe 1
+        Version("2.0").compareTo(Version("1.9.9")) shouldBeGreaterThan 0
         (Version("2.0") == Version("1.9.9")) shouldBe false
         (Version("2.0") > Version("1.9.9")) shouldBe true
 
         Version("1.0").compareTo(Version("1")) shouldBe 0
         (Version("1.0") == Version("1")) shouldBe true
 
-        Version("1.1").compareTo(Version("1.1.1")) shouldBe -1
+        Version("1.1").compareTo(Version("1.1.1")) shouldBeLessThan 0
         (Version("1.1") == Version("1.1.1")) shouldBe false
         (Version("1.1") < Version("1.1.1")) shouldBe true
 
-        Version("1.1-ABC").compareTo(Version("1.1")) shouldBe 1
+        Version("1.1-ABC").compareTo(Version("1.1")) shouldBeGreaterThan 0
         (Version("1.1-ABC") == Version("1.1")) shouldBe false
         (Version("1.1-ABC") > Version("1.1")) shouldBe true
 
-        Version("1.1-ABC-D").compareTo(Version("1.1")) shouldBe 1
+        Version("1.1-ABC-D").compareTo(Version("1.1")) shouldBeGreaterThan 0
         (Version("1.1-ABC-D") == Version("1.1")) shouldBe false
         (Version("1.1-ABC-D") > Version("1.1")) shouldBe true
     }
