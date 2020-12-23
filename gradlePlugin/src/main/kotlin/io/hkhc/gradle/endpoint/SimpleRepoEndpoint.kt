@@ -26,4 +26,4 @@ data class SimpleRepoEndpoint(
     override val password: String,
     override val apikey: String = "",
     override val description: String = id
-) : RepoEndpoint
+) : RepoEndpoint()

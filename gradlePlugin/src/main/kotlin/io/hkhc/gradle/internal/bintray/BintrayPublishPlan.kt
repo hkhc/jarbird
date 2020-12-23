@@ -20,6 +20,7 @@ package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.PLUGIN_MARKER_PUB_SUFFIX
+import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.pubNameWithVariant
 
 class BintrayPublishPlan(private val pubs: List<JarbirdPub>) {
@@ -32,22 +33,20 @@ class BintrayPublishPlan(private val pubs: List<JarbirdPub>) {
     val invalidPlugins: MutableList<JarbirdPub> = mutableListOf()
 
     init {
-        pubs.forEach {
-            if (it.bintray) {
-                if (it.pom.isSnapshot()) {
-                    if (it.pom.isGradlePlugin()) {
-                        invalid.add(it)
-                        invalidPlugins.add(it)
-                    } else {
-                        artifactory.add(it)
-                        artifactoryLibs.add(it)
-                    }
+        pubs.filter { it.needsBintray() }.forEach {
+            if (it.pom.isSnapshot()) {
+                if (it.pom.isGradlePlugin()) {
+                    invalid.add(it)
+                    invalidPlugins.add(it)
                 } else {
-                    bintray.add(it)
-                    bintrayLibs.add(it)
-                    if (it.pom.isGradlePlugin()) {
-                        bintrayPlugins.add(it)
-                    }
+                    artifactory.add(it)
+                    artifactoryLibs.add(it)
+                }
+            } else {
+                bintray.add(it)
+                bintrayLibs.add(it)
+                if (it.pom.isGradlePlugin()) {
+                    bintrayPlugins.add(it)
                 }
             }
         }

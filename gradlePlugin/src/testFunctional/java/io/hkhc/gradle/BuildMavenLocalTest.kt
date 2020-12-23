@@ -27,12 +27,12 @@ import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.assertions.withClue
-import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
 
-@Tags("Library", "MavenLocal")
+// @Suppress("unused")
+// @Tags("Library", "MavenLocal")
 class BuildMavenLocalTest : FunSpec({
 
     context("Publish library to Maven local") {

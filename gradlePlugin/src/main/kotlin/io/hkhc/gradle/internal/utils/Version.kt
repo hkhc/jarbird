@@ -28,8 +28,8 @@ class Version(version: String?) : Comparable<Version?> {
     }
 
     class VersionStruct(v: String) {
-        lateinit var versionParts: Array<String>
-        lateinit var suffixParts: Array<String>
+        var versionParts: Array<String>
+        var suffixParts: Array<String>
         init {
             val prefixDelimiter = v.indexOf('-')
             if (prefixDelimiter != -1) {
@@ -42,10 +42,10 @@ class Version(version: String?) : Comparable<Version?> {
         }
     }
 
-    override fun compareTo(that: Version?): Int {
-        if (that == null) return 1
+    override fun compareTo(other: Version?): Int {
+        if (other == null) return 1
         val thisParts = VersionStruct(this.get())
-        val thatParts = VersionStruct(that.get())
+        val thatParts = VersionStruct(other.get())
         var length = Math.max(thisParts.versionParts.size, thatParts.versionParts.size)
         for (i in 0 until length) {
             val thisPart = if (i < thisParts.versionParts.size) thisParts.versionParts[i].toInt() else 0

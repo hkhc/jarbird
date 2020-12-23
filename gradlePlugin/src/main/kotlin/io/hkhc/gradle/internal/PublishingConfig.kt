@@ -22,6 +22,8 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.dokka.DokkaConfig
 import io.hkhc.gradle.internal.maven.MavenPomAdapter
+import io.hkhc.gradle.internal.repo.MavenCentralSpec
+import io.hkhc.gradle.internal.repo.MavenSpec
 import io.hkhc.gradle.internal.utils.Version
 import io.hkhc.gradle.internal.utils.detailMessageWarning
 import io.hkhc.gradle.internal.utils.findByType
@@ -106,7 +108,7 @@ internal class PublishingConfig(
             createPublication()
         }
 
-        if (pubs.any { it.maven }) {
+        if (pubs.needsNonLocalMaven()) {
             repositories {
                 createRepository()
             }
@@ -186,25 +188,68 @@ internal class PublishingConfig(
 
     private fun RepositoryHandler.createRepository() {
 
-        pubs.filter { it.maven }.forEach { pub ->
-            // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
-            val endpoint = (pub as JarbirdPubImpl).mavenRepo
+        val releaseEndpoints = pubs
+            .filter { !it.pom.isSnapshot() }
+            .flatMap { it.getRepos() }
+            .toSet()
+        val snapshotEndpoint = pubs
+            .filter { it.pom.isSnapshot() }
+            .flatMap { it.getRepos() }
+            .toSet()
 
+        releaseEndpoints.forEach {
             maven {
-                name = "Maven${pub.pubNameCap}"
-                val endpointUrl =
-                    if (pub.pom.isSnapshot()) {
-                        endpoint.snapshotUrl
-                    } else {
-                        endpoint.releaseUrl
+                with(it.getEndpoint()) {
+                    val ep = this
+                    name = ep.id
+                    url = project.uri(ep.releaseUrl)
+                    credentials {
+                        username = ep.username
+                        password = ep.password
                     }
-                url = project.uri(endpointUrl)
-                credentials {
-                    username = endpoint.username
-                    password = endpoint.password
                 }
             }
         }
+
+        snapshotEndpoint.forEach {
+            maven {
+                with(it.getEndpoint()) {
+                    val ep = this
+                    name = ep.id
+                    url = project.uri(ep.snapshotUrl)
+                    credentials {
+                        username = ep.username
+                        password = ep.password
+                    }
+                }
+            }
+        }
+
+//        pubs.filter { it.needsNonLocalMaven() }.forEach { pub ->
+//            // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
+//
+//            val endpoints = pub.getRepos().filter { it is MavenSpec }.map { it.getEndpoint() }
+//
+////            val endpoint = (pub as JarbirdPubImpl).mavenRepo
+//
+//            endpoints.forEach {
+//
+//            }
+//            maven {
+//                name = "Maven${pub.pubNameCap}"
+//                val endpointUrl =
+//                    if (pub.pom.isSnapshot()) {
+//                        endpoint.snapshotUrl
+//                    } else {
+//                        endpoint.releaseUrl
+//                    }
+//                url = project.uri(endpointUrl)
+//                credentials {
+//                    username = endpoint.username
+//                    password = endpoint.password
+//                }
+//            }
+//        }
     }
 
     private val sourceSets: SourceSetContainer

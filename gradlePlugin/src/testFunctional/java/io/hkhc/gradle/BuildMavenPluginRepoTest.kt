@@ -151,7 +151,7 @@ class BuildMavenPluginRepoTest : FunSpec({
                 coordinate,
                 listOf(
                     ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
-                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenTestArtifactRepository=SUCCESS",
+                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository=SUCCESS",
                     ":compileKotlin=NO_SOURCE",
                     ":compileJava=NO_SOURCE",
                     ":pluginDescriptors=SUCCESS",
@@ -165,8 +165,8 @@ class BuildMavenPluginRepoTest : FunSpec({
                     ":jbDokkaJarTestArtifact=SUCCESS",
                     ":sourcesJarTestArtifact=SUCCESS",
                     ":signTestArtifactPublication=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
                     ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS"
                 )
@@ -182,7 +182,7 @@ class BuildMavenPluginRepoTest : FunSpec({
                 coordinate,
                 listOf(
                     ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
-                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenTestArtifactRepository=SUCCESS",
+                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository=SUCCESS",
                     ":compileKotlin=NO_SOURCE",
                     ":compileJava=NO_SOURCE",
                     ":pluginDescriptors=SUCCESS",
@@ -195,8 +195,8 @@ class BuildMavenPluginRepoTest : FunSpec({
                     ":jbDokkaHtmlTestArtifact=SUCCESS",
                     ":jbDokkaJarTestArtifact=SUCCESS",
                     ":sourcesJarTestArtifact=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
                     ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS"
                 )

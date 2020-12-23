@@ -18,10 +18,14 @@
 
 package io.hkhc.gradle.endpoint
 
+import io.hkhc.gradle.JarbirdPlugin
 import org.gradle.api.Project
 
+/**
+ * TODO add checking if the property for the specified key exist at all. It is not an error, but worth a warning
+ */
 class PropertyRepoEndpoint(private val project: Project, private val key: String) :
-    RepoEndpoint {
+    RepoEndpoint() {
 
     init {
 //        Exception("PropertyMavenEndpoint constructor").printStackTrace()
@@ -58,5 +62,6 @@ class PropertyRepoEndpoint(private val project: Project, private val key: String
         }
 
     override val id: String
-        get() = "${key.replace(".", "").capitalize()}"
+        get() = JarbirdPlugin.normalizePubName(key).capitalize()
+//        get() = "${key.replace(".", "").capitalize()}"
 }

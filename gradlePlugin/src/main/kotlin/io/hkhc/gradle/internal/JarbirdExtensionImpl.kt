@@ -22,21 +22,29 @@ import groovy.lang.Closure
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.PomGroupCallback
+import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.endpoint.RepoEndpoint
+import io.hkhc.gradle.internal.repo.BintraySpec
+import io.hkhc.gradle.internal.repo.GradlePortalSpec
+import io.hkhc.gradle.internal.repo.MavenCentralSpec
+import io.hkhc.gradle.internal.repo.MavenLocalSpec
+import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import org.gradle.api.Project
 
 open class JarbirdExtensionImpl(private val project: Project): JarbirdExtension {
 
     val pubList = mutableListOf<JarbirdPub>()
+    private val repos = mutableSetOf<RepoSpec>()
+    private var isDefaultRepos = true
 
-    var bintrayRepository: RepoEndpoint? = null
+//    var bintrayRepository: RepoEndpoint? = null
 
 //    var dokkaConfig: AbstractDokkaTask.() -> Unit = {}
 
     lateinit var pomGroupCallback: PomGroupCallback
     private var implicited: JarbirdPub? = null
 
-    private fun newPub(project: Project): JarbirdPub {
+    private fun newPub(project: Project): JarbirdPubImpl {
         return JarbirdPubImpl(project).apply {
             pubList.add(this)
         }
@@ -60,12 +68,15 @@ open class JarbirdExtensionImpl(private val project: Project): JarbirdExtension 
     /* to be invoked by Groovy Gradle script */
     override fun pub(action: Closure<JarbirdPub>) {
         val newPub = newPub(project)
+        newPub.parentRepos = this
         newPub.configure(action)
         pomGroupCallback.initPub(newPub)
     }
 
     override fun pub(variant: String, action: Closure<JarbirdPub>) {
         val newPub = newPub(project)
+        newPub.parentRepos = this
+        newPub.variant = variant
         pomGroupCallback.initPub(newPub)
         newPub.configure(action)
     }
@@ -73,13 +84,14 @@ open class JarbirdExtensionImpl(private val project: Project): JarbirdExtension 
     /* to be invoked by Kotlin Gradle script */
     override fun pub(action: JarbirdPub.() -> Unit) {
         val newPub = newPub(project)
+        newPub.parentRepos = this
         newPub.configure(action)
-        action.invoke(newPub)
         pomGroupCallback.initPub(newPub)
     }
 
     override fun pub(variant: String, action: JarbirdPub.() -> Unit) {
         val newPub = newPub(project)
+        newPub.parentRepos = this
         newPub.variant = variant
         pomGroupCallback.initPub(newPub)
         newPub.configure(action)
@@ -103,6 +115,71 @@ open class JarbirdExtensionImpl(private val project: Project): JarbirdExtension 
         if (implicited == null || pubList.size == 1) return
         pubList.remove(implicited)
         implicited = null
+    }
+
+    override fun mavenCentral(): RepoSpec {
+        if (isDefaultRepos) {
+            repos.clear()
+            isDefaultRepos = false
+        }
+        return repos.find { it is MavenCentralSpec } ?: MavenCentralSpec(project).also {
+            repos.add(it)
+        }
+    }
+
+    override fun mavenRepo(key: String): RepoSpec {
+        if (isDefaultRepos) {
+            repos.clear()
+            isDefaultRepos = false
+        }
+        val repo = MavenRepoSpec(project, key)
+        if (!repos.contains(repo)) repos.add(repo)
+        return repo
+    }
+
+    override fun mavenLocal(): RepoSpec {
+        if (isDefaultRepos) {
+            repos.clear()
+            isDefaultRepos = false
+        }
+        return repos.find { it is MavenLocalSpec } ?: MavenLocalSpec().also {
+            repos.add(it)
+        }
+    }
+
+    override fun gradlePortal(): RepoSpec {
+        if (isDefaultRepos) {
+            repos.clear()
+            isDefaultRepos = false
+        }
+        return repos.find { it is GradlePortalSpec } ?: GradlePortalSpec().also {
+            repos.add(it)
+        }
+    }
+
+    override fun bintray(): RepoSpec {
+
+        // validation: only one bintray spec is allowed
+
+        if (isDefaultRepos) {
+            repos.clear()
+            isDefaultRepos = false
+        }
+        return repos.find { it is BintraySpec } ?: BintraySpec(project).also {
+            repos.add(it)
+        }
+    }
+
+    override fun getRepos(): Set<RepoSpec> {
+        return repos
+    }
+
+    fun finalizeRepos() {
+        if (repos.find { it is BintraySpec } != null) {
+            mavenLocal()
+        }
+        pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
+
     }
 
 }

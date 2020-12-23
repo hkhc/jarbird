@@ -20,24 +20,34 @@ package io.hkhc.gradle.internal
 
 import appendBeforeSnapshot
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.RepoDeclaration
+import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import io.hkhc.gradle.VariantMode
 import io.hkhc.gradle.endpoint.MavenCentralEndpoint
 import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
 import io.hkhc.gradle.endpoint.RepoEndpoint
+import io.hkhc.gradle.internal.repo.BintraySpec
+import io.hkhc.gradle.internal.repo.GradlePortalSpec
+import io.hkhc.gradle.internal.repo.MavenCentralSpec
+import io.hkhc.gradle.internal.repo.MavenLocalSpec
+import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import isSnapshot
 import org.gradle.api.Project
 
 internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
 
     private var variantMode: VariantMode = VariantMode.Invisible
+    private val repos = mutableSetOf<RepoSpec>()
+
+    var parentRepos: RepoDeclaration? = null
 
     /**
      * Specify maven repository for publishing.
      */
-    var mavenRepo: RepoEndpoint =
-        MavenCentralEndpoint(project)
+//    var mavenRepo: RepoEndpoint =
+//        MavenCentralEndpoint(project)
 
     override fun variantWithVersion() {
         variantMode = VariantMode.WithVersion
@@ -94,19 +104,82 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
         return if (pom.isGradlePlugin()) "${pom.plugin?.id}:${variantVersion()}" else "NOT-A-PLUGIN"
     }
 
-    override fun withMaven(endpoint: RepoEndpoint) {
-        mavenRepo = endpoint
-    }
-
-    override fun withMavenCentral() {
-        mavenRepo = MavenCentralEndpoint(project)
-    }
-
-    override fun withMavenByProperties(key: String) {
-        mavenRepo = PropertyRepoEndpoint(project, "maven.$key")
-    }
+//    override fun withMaven(endpoint: RepoEndpoint) {
+//        mavenRepo = endpoint
+//    }
+//
+//    override fun withMavenCentral() {
+//        mavenRepo = MavenCentralEndpoint(project)
+//    }
+//
+//    override fun withMavenByProperties(key: String) {
+//        mavenRepo = PropertyRepoEndpoint(project, "maven.$key")
+//    }
 
     override fun sourceSetNames(vararg names: String): Any = SourceSetNames(project, names)
     override fun sourceSetNames(names: List<String>): Any = SourceSetNames(project, names.toTypedArray())
     override fun sourceDirs(dirs: Any): Any = SourceDirs(dirs)
+
+    override fun mavenCentral(): RepoSpec {
+        return repos.find { it is MavenCentralSpec } ?: MavenCentralSpec(project).also {
+            repos.add(it)
+        }
+    }
+
+    override fun mavenRepo(key: String): RepoSpec {
+        val repo = MavenRepoSpec(project, key)
+        if (!repos.contains(repo)) repos.add(repo)
+        return repo
+    }
+
+    override fun mavenLocal(): RepoSpec {
+        return repos.find { it is MavenLocalSpec } ?: MavenLocalSpec().also {
+            repos.add(it)
+        }
+    }
+
+    override fun gradlePortal(): RepoSpec {
+        return repos.find { it is GradlePortalSpec } ?: GradlePortalSpec().also {
+            repos.add(it)
+        }
+    }
+
+    override fun bintray(): RepoSpec {
+        return repos.find { it is BintraySpec } ?: BintraySpec(project).also {
+            repos.add(it)
+        }
+    }
+
+    override fun getRepos(): Set<RepoSpec> {
+//        val item1 = repos.toList().first()
+//        val item2 = parentRepos?.getRepos()?.toList()?.firstOrNull()
+//        println("getRepos parentRepos null ? "+(parentRepos==null))
+//        if (parentRepos!=null) {
+//            println("getRepos pub size ? "+(repos.toList()?.size))
+//            println("getRepos parentRepos size ? "+(parentRepos?.getRepos()?.toList()?.size))
+//        }
+//        if (item2 != null) {
+//            println("getRepos equals ? " + (item1==item2))
+//        } else {
+//            println("getRepos equals ? item2 == null")
+//        }
+        return (repos + (parentRepos?.getRepos() ?: setOf())).apply {
+//            println("getRepos total length = " + size)
+//            forEach {
+//                println("getRepos ${it}")
+//            }
+        }
+    }
+
+    fun finalizeRepos() {
+        if (pom.isGradlePlugin() && parentRepos?.getRepos()?.find { it is GradlePortalSpec } == null) {
+            gradlePortal()
+        }
+    }
+
+    fun needsBintray(): Boolean {
+        return getRepos().find { it is BintraySpec } != null
+    }
+
+
 }

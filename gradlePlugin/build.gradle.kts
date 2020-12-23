@@ -41,6 +41,7 @@ plugins {
 
 // TODO Simplify functional test creation
 
+// e.g. 14 at https://docs.gradle.org/6.7.1/userguide/java_testing.html#sec:configuring_java_integration_tests
 sourceSets {
     create("testFunctional") {
         compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
@@ -48,7 +49,7 @@ sourceSets {
     }
 }
 
-val testFunctionalImplementation by configurations.getting {
+val testFunctionalImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.testImplementation.get())
 }
 
@@ -72,7 +73,8 @@ java {
 
 tasks {
 
-    val functionalTestTask = register<Test>("functionalTest") {
+    // e.g. 15 at https://docs.gradle.org/6.7.1/userguide/java_testing.html#sec:configuring_java_integration_tests
+    val functionalTestTask = register<Test>("testFunctional") {
         description = "Runs the functional tests."
         group = "verification"
         testClassesDirs = sourceSets["testFunctional"].output.classesDirs
@@ -82,7 +84,7 @@ tasks {
 
     functionalTestTask.get().dependsOn(get("pluginUnderTestMetadata"))
 
-    check { dependsOn(get("functionalTest")) }
+    check { dependsOn(get("testFunctional")) }
 
     /*
     Without this Kotlin generate java 6 bytecode, which is hardly fatal.
@@ -175,8 +177,8 @@ dependencies {
         }
     }
 
-    testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.github.java-diff-utils:java-diff-utils:$javaDiffUtilsVersion")

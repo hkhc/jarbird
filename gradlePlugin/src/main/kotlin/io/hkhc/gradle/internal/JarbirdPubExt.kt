@@ -19,6 +19,8 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.internal.repo.BintraySpec
+import io.hkhc.gradle.internal.repo.MavenSpec
 
 internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
     return "${pubName}${variant.capitalize()}"
@@ -30,7 +32,7 @@ internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): Stri
 internal val JarbirdPub.pubNameCap: String
     get() = pubNameWithVariant().capitalize()
 
-//internal val JarbirdPub.pubId: String
+// internal val JarbirdPub.pubId: String
 //    get() = "${pubNameCap}Publication"
 
 internal val JarbirdPub.mavenRepoNameCap: String
@@ -38,8 +40,20 @@ internal val JarbirdPub.mavenRepoNameCap: String
 
 internal fun List<JarbirdPub>.needSigning() = any { it.signing }
 
-internal fun List<JarbirdPub>.needMaven() = any { it.maven }
+// internal fun List<JarbirdPub>.needMaven() = any { it.maven }
 
-internal fun List<JarbirdPub>.needBintray() = any { it.bintray }
+// internal fun List<JarbirdPub>.needBintray() = any { it.bintray }
 
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
+
+internal fun JarbirdPub.needsBintray(): Boolean {
+    return (this as JarbirdPubImpl).getRepos().find { it is BintraySpec } != null
+}
+
+internal fun List<JarbirdPub>.needsBintray() = any { it.needsBintray() }
+
+internal fun JarbirdPub.needsNonLocalMaven(): Boolean {
+    return (this as JarbirdPubImpl).getRepos().find { it is MavenSpec } != null
+}
+
+internal fun List<JarbirdPub>.needsNonLocalMaven() = any { it.needsNonLocalMaven() }

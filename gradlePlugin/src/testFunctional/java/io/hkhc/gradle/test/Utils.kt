@@ -145,11 +145,8 @@ fun buildGradle(maven: Boolean = true, bintray: Boolean = true): String {
             jcenter()
         }
         jarbird {
-            pub {
-                withMavenByProperties("mock")
-                ${if (!maven) "maven = false" else ""}
-                ${if (!bintray) "bintray = false" else ""}
-            }
+            ${if (maven) "mavenRepo(\"mock\")" else ""}
+            ${if (bintray) "bintray()" else ""}
         }
     """.trimIndent()
 }
@@ -165,6 +162,9 @@ fun buildGradleCustomBintray(): String {
         repositories {
             jcenter()
         }
+        jarbird {
+            bintray()
+        }
     """.trimIndent()
 }
 
@@ -175,6 +175,9 @@ fun buildGradleCustomArtifactrory(): String {
             `kotlin-dsl`
             id("$PLUGIN_ID")
             id("com.dorongold.task-tree") version "1.5"
+        }
+        jarbird {
+            bintray()
         }
         repositories {
             jcenter()
@@ -196,7 +199,7 @@ fun buildGradlePlugin(): String {
         }
         jarbird {
             pub {
-                withMavenByProperties("mock")
+                mavenRepo("mock")
             }
         }
     """.trimIndent()
@@ -289,21 +292,20 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
             }
             
         }
+        
+        jarbird {
+            ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
+            bintray()
+        }
 
         android.libraryVariants.configureEach { variant ->
             def variantName = variant.name
-            println("variant dir name ${"$"}{variant.dirName}")
             if (variantName == "release") {
                 jarbird {
                      pub(variantName) { 
-                        ${if (mavenRepo) "withMavenByProperties(\"mock\")" else ""}
                         ${if (variantMode != "") variantMode else "" } 
                         useGpg = true
                         pubComponent = variantName
-                        System.out.println("SourceSet release count " + variant.sourceSets.size())
-                        variant.sourceSets.each {
-                            System.out.println("SourceSet release "+it.javaDirectories)
-                        }
                         sourceSets = variant.sourceSets.inject([]) { sets, sourceProvider -> 
                             sets += sourceProvider.javaDirectories  
                             sets += sourceProvider.resourcesDirectories
@@ -312,20 +314,9 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
                 }
             }
             else if (variantName == "debug") {
-                System.out.println("SourceSet debug count " + variant.sourceSets.size())
-                variant.sourceSets.each {
-                    System.out.println("SourceSet debug "+it.javaDirectories)
-                }
             }
             
-        }
-        
-        android {
-            sourceSets.each {
-                System.out.println("Android SourceSet "+it)
-            }
-        }
-        
+        }        
     """.trimIndent()
 }
 

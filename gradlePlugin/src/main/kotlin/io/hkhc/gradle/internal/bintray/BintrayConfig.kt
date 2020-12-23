@@ -28,6 +28,8 @@ import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.utils.findByType
 import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.internal.LOG_PREFIX
+import io.hkhc.gradle.internal.needsBintray
+import io.hkhc.gradle.internal.repo.BintraySpec
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.closureOf
@@ -78,8 +80,6 @@ class BintrayConfig(
         val includeFileList = publishPlan.bintray.map { "${it.avFileBase}*.asc" }
             .toTypedArray()
 
-        println("includeFileList ${includeFileList.joinToString(",")}")
-
         filesSpec(
             closureOf<RecordingCopyTask> {
 
@@ -106,9 +106,11 @@ class BintrayConfig(
     private fun BintrayExtension.config() {
 
         val publishPlan = BintrayPublishPlan(pubs)
-        val firstBintrayPom = pubs.firstOrNull { it.bintray } ?: return
 
-        extension.bintrayRepository?.let { endpoint ->
+        val firstBintrayPom = pubs.firstOrNull { it.needsBintray() } ?: return
+
+        pubs.flatMap { it.getRepos() }
+            .first { it is BintraySpec }.getEndpoint().let { endpoint ->
             if (endpoint.releaseUrl != "") apiUrl = endpoint.releaseUrl
             if (endpoint.username != "") user = endpoint.username
             if (endpoint.apikey != "") key = endpoint.apikey

@@ -240,14 +240,11 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         // Build Phase 1
         project.gradleAfterEvaluate {
 
-            extension.bintrayRepository = extension.bintrayRepository ?: PropertyRepoEndpoint(
-                project,
-                "bintray"
-            )
-
             if (!project.isMultiProjectRoot()) {
                 extension.createImplicit()
             }
+
+            extension.finalizeRepos()
 
             /*
             JavaGradlePluginPlugin expect plugin declaration at top level and not in afterEvaluate block.

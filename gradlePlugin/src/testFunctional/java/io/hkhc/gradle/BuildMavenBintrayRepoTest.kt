@@ -189,8 +189,8 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     ":jbPublishToBintray=SUCCESS",
                     ":jbPublishTestArtifactToMavenLocal=SUCCESS",
                     ":jbPublishToMavenLocal=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
                     ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS",
                     ":jbPublish=SUCCESS"
@@ -227,8 +227,8 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
                     ":jbPublishTestArtifactToMavenLocal=SUCCESS",
                     ":jbPublishToMavenLocal=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
                     ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS",
                     ":jbPublish=SUCCESS"
@@ -263,8 +263,8 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
                     ":jbPublishTestArtifactToMavenLocal=SUCCESS",
                     ":jbPublishToMavenLocal=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenTestArtifactRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenmock=SUCCESS",
+                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
+                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
                     ":jbPublishTestArtifactToMavenRepository=SUCCESS",
                     ":jbPublishToMavenRepository=SUCCESS",
                     ":jbPublish=SUCCESS"

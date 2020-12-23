@@ -77,7 +77,11 @@ class PomGroupFactory(val project: Project) {
 
         return files
             .map { readPom(it) }
-            .fold(PomGroup()) { acc, currPomGroup -> acc.also { currPomGroup.overlayTo(it) } }
+            .fold(PomGroup()) { acc, currPomGroup ->
+                acc.also {
+                    currPomGroup.overlayTo(it)
+                }
+            }
     }
 
     /**

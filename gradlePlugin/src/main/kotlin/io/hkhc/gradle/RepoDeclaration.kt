@@ -18,15 +18,13 @@
 
 package io.hkhc.gradle
 
-import groovy.lang.Closure
+interface RepoDeclaration {
 
-// Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.
-interface JarbirdExtension : RepoDeclaration {
+    fun mavenLocal(): RepoSpec
+    fun mavenCentral(): RepoSpec
+    fun mavenRepo(key: String): RepoSpec
+    fun gradlePortal(): RepoSpec
+    fun bintray(): RepoSpec
+    fun getRepos(): Set<RepoSpec>
 
-    /* to be invoked by Groovy Gradle script */
-    fun pub(action: Closure<JarbirdPub>)
-    fun pub(variant: String, action: Closure<JarbirdPub>)
-    /* to be invoked by Kotlin Gradle script */
-    fun pub(action: JarbirdPub.() -> Unit)
-    fun pub(variant: String, action: JarbirdPub.() -> Unit)
 }

@@ -86,7 +86,7 @@ internal class BuildFlowBuilder(
             if (isMultiProjectRoot()) {
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
-                if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) && pubs.needBintray()) {
+                if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) && pubs.needsBintray()) {
                     ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()
                 }
             } else {

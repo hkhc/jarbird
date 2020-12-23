@@ -21,7 +21,7 @@ package io.hkhc.gradle.endpoint
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
-class MavenCentralEndpoint(val project: Project) : RepoEndpoint {
+class MavenCentralEndpoint(val project: Project) : RepoEndpoint() {
 
     override val releaseUrl: String
         get() = "https://oss.sonatype.org/service/local/staging/deploy/maven2"

@@ -19,7 +19,9 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
+import io.hkhc.gradle.internal.repo.MavenSpec
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
@@ -103,23 +105,24 @@ class JbPublishPubToMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo {
         get() = "$JB_TASK_PREFIX${pub.pubNameCap}$TO_MAVEN_REPO"
     override val description: String
         get() = if (pub.pom.isGradlePlugin()) {
-            "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' to "+
-                ((pub as JarbirdPubImpl).mavenRepo.description)
+            "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' to TODO... "
+//                ((pub as JarbirdPubImpl).mavenRepo.description)
         } else {
             "Publish '${pub.getGAV()}' to the local Maven Repository"
         }
 }
 
-class JbPublishPubToCustomMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo {
+class JbPublishPubToCustomMavenRepoTaskInfo(val pub: JarbirdPub, val repo: RepoSpec) : TaskInfo {
     override val name: String
-        get() = "$JB_TASK_PREFIX${pub.pubNameCap}To${(pub as JarbirdPubImpl).mavenRepo.id}"
+        get() = "$JB_TASK_PREFIX${pub.pubNameCap}To${repo.getEndpoint().id }"
     override val description: String
         get() = if (pub.pom.isGradlePlugin()) {
-            "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' " +
-                "to ${(pub as JarbirdPubImpl).mavenRepo.description}"
+            "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' to TODO... "
+//                "to ${(pub as JarbirdPubImpl).mavenRepo.description}"
         } else {
             // TODO 'Maven${pub.pubNameCap}' is wrong
-            "Publish '${pub.getGAV()}' to ${(pub as JarbirdPubImpl).mavenRepo.description}"
+            "Publish '${pub.getGAV()}' to TODO...}"
+//            "Publish '${pub.getGAV()}' to ${(pub as JarbirdPubImpl).mavenRepo.description}"
         }
 }
 
@@ -183,10 +186,11 @@ class JbPublishPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
             // assemble a list of repositories
             val repoList = mutableListOf<String>()
             repoList.add("Maven Local")
-            if (pub.maven) {
-                repoList.add("'${pub.mavenRepoName}' Repository")
+            if (pub.needsNonLocalMaven()) {
+                val repoNames = pub.getRepos().joinToString(",", "'", "'") { it.getEndpoint().id }
+                repoList.add("$repoNames Repository")
             }
-            if (pub.bintray) {
+            if (pub.needsBintray()) {
                 repoList.add("Bintray")
             }
             if (pub.pom.isGradlePlugin()) {
@@ -261,8 +265,11 @@ val JarbirdPub.publishPubToMavenLocalTask: String
 
 val JarbirdPub.publishPluginMarkerPubToMavenLocalTask: String
     get() = "$PUBLISH_TASK_PREFIX$pubNameCap${PLUGIN_MARKER_PUB_SUFFIX}Publication$TO_MAVEN_LOCAL"
-val JarbirdPub.publishPubToCustomMavenRepoTask: String
-    get() = "$PUBLISH_TASK_PREFIX${pubNameCap}PublicationTo$mavenRepoNameCap"
 
-val JarbirdPub.publishPluginMarkerPubToCustomMavenRepoTask: String
-    get() = "$PUBLISH_TASK_PREFIX$pubNameCap${PLUGIN_MARKER_PUB_SUFFIX}PublicationTo$mavenRepoNameCap"
+fun JarbirdPub.publishPubToCustomMavenRepoTask(repo: RepoSpec): String {
+    return "$PUBLISH_TASK_PREFIX${pubNameCap}PublicationTo${repo.getEndpoint().id}Repository"
+}
+
+fun JarbirdPub.publishPluginMarkerPubToCustomMavenRepoTask(repo: RepoSpec): String {
+    return "$PUBLISH_TASK_PREFIX$pubNameCap${PLUGIN_MARKER_PUB_SUFFIX}PublicationTo${repo.getEndpoint().id}Repository"
+}

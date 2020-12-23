@@ -22,19 +22,19 @@ import io.hkhc.gradle.endpoint.RepoEndpoint
 import io.hkhc.gradle.pom.Pom
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
-abstract class JarbirdPub {
+abstract class JarbirdPub : RepoDeclaration {
 
     lateinit var pom: Pom
 
-    /**
-     * Configure for Maven publishing or not (No matter maven central or alternate maven repository)
-     */
-    var maven = true
-
-    /**
-     * Configure for Bintray publishing or not
-     */
-    var bintray = true
+//    /**
+//     * Configure for Maven publishing or not (No matter maven central or alternate maven repository)
+//     */
+//    var maven = true
+//
+//    /**
+//     * Configure for Bintray publishing or not
+//     */
+//    var bintray = true
 
     /**
      * Configure for artifact signing or not
@@ -84,7 +84,7 @@ abstract class JarbirdPub {
     /**
      * Specify maven repository for publishing.
      */
-    abstract fun withMaven(endpoint: RepoEndpoint)
-    abstract fun withMavenCentral()
-    abstract fun withMavenByProperties(key: String)
+//    abstract fun withMaven(endpoint: RepoEndpoint)
+//    abstract fun withMavenCentral()
+//    abstract fun withMavenByProperties(key: String)
 }

@@ -23,7 +23,7 @@ import io.hkhc.gradle.internal.utils.detailMessageError
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
-interface RepoEndpoint {
+abstract class RepoEndpoint {
 
     companion object {
 
@@ -49,14 +49,61 @@ interface RepoEndpoint {
             }
     }
 
-    val releaseUrl: String
-    val snapshotUrl: String
-    val username: String
-    val password: String
-    val apikey: String
-    val description: String
+    abstract val releaseUrl: String
+    abstract val snapshotUrl: String
+    abstract val username: String
+    abstract val password: String
+    abstract val apikey: String
+    open val description: String
         get() = ""
-    val id: String
+    abstract val id: String
+
+    override fun equals(other: Any?): Boolean {
+
+        if (other != null) {
+
+            if (this === other) return true
+            if (this::class.java != other::class.java) return false
+
+            val that = other as RepoEndpoint
+
+            if (releaseUrl != that.releaseUrl) return false
+            if (snapshotUrl != that.snapshotUrl) return false
+            if (username != that.username) return false
+            if (password != that.password) return false
+            if (apikey != that.apikey) return false
+            if (description != that.description) return false
+            if (id != that.id) return false
+
+            return true
+        }
+
+        return false
+    }
+
+    override fun hashCode(): Int {
+
+        return """
+            1 - $releaseUrl
+            2 - $snapshotUrl
+            3 - $username
+            4 - $password
+            5 - $apikey
+            6 - $description
+            7 - $id
+        """.trimIndent().hashCode()
+    }
+
+    override fun toString() = """
+        Release URL  : $releaseUrl
+        Snapshot URL : $snapshotUrl
+        Username     : $username
+        Password     : $password
+        API Key      : $apikey
+        Description  : $description
+        ID           : $id
+    """.trimIndent()
+
 }
 
 fun Project.byProperty(key: String): RepoEndpoint {

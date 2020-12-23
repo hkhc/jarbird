@@ -88,8 +88,8 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:bundleReleaseAar=SUCCESS",
             ":lib:generateMetadataFileForTestArtifactReleasePublication=SUCCESS",
             ":lib:signTestArtifactReleasePublication=SUCCESS",
-            ":lib:publishTestArtifactReleasePublicationToMavenTestArtifactReleaseRepository=SUCCESS",
-            ":lib:jbPublishTestArtifactReleaseToMavenmock=SUCCESS",
+            ":lib:publishTestArtifactReleasePublicationToMavenMockRepository=SUCCESS",
+            ":lib:jbPublishTestArtifactReleaseToMavenMock=SUCCESS",
             ":lib:jbPublishTestArtifactReleaseToMavenRepository=SUCCESS",
             ":lib:jbPublishToMavenRepository=SUCCESS",
             ":jbPublishToMavenRepository=SUCCESS"
@@ -132,8 +132,8 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:syncReleaseLibJars=SUCCESS",
             ":lib:bundleReleaseAar=SUCCESS",
             ":lib:generateMetadataFileForTestArtifactReleasePublication=SUCCESS",
-            ":lib:publishTestArtifactReleasePublicationToMavenTestArtifactReleaseRepository=SUCCESS",
-            ":lib:jbPublishTestArtifactReleaseToMavenmock=SUCCESS",
+            ":lib:publishTestArtifactReleasePublicationToMavenMockRepository=SUCCESS",
+            ":lib:jbPublishTestArtifactReleaseToMavenMock=SUCCESS",
             ":lib:jbPublishTestArtifactReleaseToMavenRepository=SUCCESS",
             ":lib:jbPublishToMavenRepository=SUCCESS",
             ":jbPublishToMavenRepository=SUCCESS"
@@ -214,19 +214,6 @@ class BuildAndroidMavenRepoTest : FunSpec({
                         MyersDiff()
                     )
 
-                    patch.deltas.forEach {
-                        println("${it.type} ")
-                        println("source : ${it.source.position}")
-                        it.source.lines.forEach {
-                            println("=== $it")
-                        }
-                        println("target : ${it.target.position}")
-                        it.target.lines.forEach {
-                            println("=== $it")
-                        }
-                    }
-
-//                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList
                     result.tasks.map { it.toString() } shouldBeNoDifference (
                         setup.expectedTaskList except listOf(
                             ":lib:stripReleaseDebugSymbols=NO_SOURCE",

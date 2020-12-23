@@ -26,6 +26,7 @@ import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isSingleProject
 import io.hkhc.gradle.internal.pubNameWithVariant
+import io.hkhc.gradle.internal.repo.BintraySpec
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName
@@ -38,7 +39,7 @@ import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 class ArtifactoryConfig(
     private val project: Project,
     private val extension: JarbirdExtensionImpl,
-    pubs: List<JarbirdPub>
+    private val pubs: List<JarbirdPub>
 ) {
 
     private var repoUrl = "https://oss.jfrog.org"
@@ -48,7 +49,9 @@ class ArtifactoryConfig(
 
     fun config() {
 
-        val customRepoUrl = extension.bintrayRepository?.snapshotUrl ?: ""
+        val endpoint = pubs.flatMap { it.getRepos() }.filter { it is BintraySpec }.first().getEndpoint()
+
+        val customRepoUrl = endpoint.snapshotUrl
         if (customRepoUrl != "") repoUrl = customRepoUrl
 
         val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
