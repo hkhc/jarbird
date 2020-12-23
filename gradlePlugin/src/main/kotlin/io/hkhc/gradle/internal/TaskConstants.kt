@@ -21,7 +21,6 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
-import io.hkhc.gradle.internal.repo.MavenSpec
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider

@@ -18,8 +18,6 @@
 
 package io.hkhc.utils
 
-import com.github.difflib.DiffUtils
-import com.github.difflib.algorithm.myers.MyersDiff
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.io.StringWriter

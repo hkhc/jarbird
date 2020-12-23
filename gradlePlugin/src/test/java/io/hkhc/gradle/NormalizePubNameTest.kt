@@ -21,7 +21,7 @@ package io.hkhc.gradle
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class NormalizePubNameTest: FunSpec({
+class NormalizePubNameTest : FunSpec({
 
     test("empty string") {
         JarbirdPlugin.normalizePubName("") shouldBe ""
@@ -58,5 +58,4 @@ class NormalizePubNameTest: FunSpec({
     test("two words with hyphen at the end") {
         JarbirdPlugin.normalizePubName("helloWorld-") shouldBe "helloWorld"
     }
-
 })

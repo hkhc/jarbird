@@ -21,7 +21,6 @@ package io.hkhc.utils
 import com.github.difflib.DiffUtils
 import com.github.difflib.algorithm.myers.MyersDiff
 import com.github.difflib.patch.DeltaType
-import com.github.difflib.patch.Patch
 import java.io.PrintWriter
 import java.io.Writer
 import kotlin.math.ceil

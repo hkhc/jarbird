@@ -102,5 +102,4 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
         }
         return builder.toString()
     }
-
 }

@@ -94,8 +94,10 @@ class BuildBintrayPluginRepoTest : FunSpec({
                     result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
                 }
 
-                val pluginPom = File(setup.projectDir, "build/publications/testArtifactPluginMarkerMaven/pom-default.xml")
-                    .readText()
+                val pluginPom = File(
+                    setup.projectDir,
+                    "build/publications/testArtifactPluginMarkerMaven/pom-default.xml"
+                ).readText()
                 pluginPom shouldBe pluginPom(coordinate)
 
                 setup.mockServer?.let { server ->

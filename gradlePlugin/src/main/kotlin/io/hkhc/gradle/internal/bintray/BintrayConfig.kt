@@ -22,14 +22,13 @@ import avFileBase
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import gavPath
-import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
-import io.hkhc.gradle.internal.utils.findByType
-import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.needsBintray
+import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.internal.repo.BintraySpec
+import io.hkhc.gradle.internal.utils.findByType
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.closureOf
@@ -111,14 +110,14 @@ class BintrayConfig(
 
         pubs.flatMap { it.getRepos() }
             .first { it is BintraySpec }.getEndpoint().let { endpoint ->
-            if (endpoint.releaseUrl != "") apiUrl = endpoint.releaseUrl
-            if (endpoint.username != "") user = endpoint.username
-            if (endpoint.apikey != "") key = endpoint.apikey
+                if (endpoint.releaseUrl != "") apiUrl = endpoint.releaseUrl
+                if (endpoint.username != "") user = endpoint.username
+                if (endpoint.apikey != "") key = endpoint.apikey
 
-            override = true
-            dryRun = false
-            publish = true
-        }
+                override = true
+                dryRun = false
+                publish = true
+            }
 
         setPublications(*(publishPlan.bintrayPublications().toTypedArray()))
 

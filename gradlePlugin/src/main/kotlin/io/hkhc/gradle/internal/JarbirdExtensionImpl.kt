@@ -23,7 +23,6 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.PomGroupCallback
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.endpoint.RepoEndpoint
 import io.hkhc.gradle.internal.repo.BintraySpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralSpec
@@ -31,15 +30,11 @@ import io.hkhc.gradle.internal.repo.MavenLocalSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import org.gradle.api.Project
 
-open class JarbirdExtensionImpl(private val project: Project): JarbirdExtension {
+open class JarbirdExtensionImpl(private val project: Project) : JarbirdExtension {
 
     val pubList = mutableListOf<JarbirdPub>()
     private val repos = mutableSetOf<RepoSpec>()
     private var isDefaultRepos = true
-
-//    var bintrayRepository: RepoEndpoint? = null
-
-//    var dokkaConfig: AbstractDokkaTask.() -> Unit = {}
 
     lateinit var pomGroupCallback: PomGroupCallback
     private var implicited: JarbirdPub? = null
@@ -179,7 +174,5 @@ open class JarbirdExtensionImpl(private val project: Project): JarbirdExtension 
             mavenLocal()
         }
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
-
     }
-
 }

@@ -20,7 +20,6 @@ package io.hkhc.gradle
 
 import com.gradle.publish.PublishPlugin
 import com.jfrog.bintray.gradle.BintrayPlugin
-import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
 import io.hkhc.gradle.internal.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.internal.BuildFlowBuilder
 import io.hkhc.gradle.internal.JarbirdExtensionImpl

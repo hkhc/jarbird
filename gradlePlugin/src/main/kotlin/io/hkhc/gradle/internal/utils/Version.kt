@@ -22,9 +22,9 @@ package io.hkhc.gradle.internal.utils
  * Adapted from https://stackoverflow.com/a/11024200/181597
  */
 class Version(version: String?) : Comparable<Version?> {
-    private val version: String
+    private val versionText: String
     fun get(): String {
-        return version
+        return versionText
     }
 
     class VersionStruct(v: String) {
@@ -63,17 +63,21 @@ class Version(version: String?) : Comparable<Version?> {
         return 0
     }
 
-    override fun equals(that: Any?): Boolean {
-        if (this === that) return true
-        if (that == null) return false
-        return if (this.javaClass != that.javaClass) false else this.compareTo(that as Version) == 0
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null) return false
+        return if (this.javaClass != other.javaClass) false else this.compareTo(other as Version) == 0
+    }
+
+    override fun hashCode(): Int {
+        return versionText.hashCode()
     }
 
     init {
         requireNotNull(version) { "Version can not be null" }
-        require(version.matches(Regex("[0-9]+(\\.[0-9]+)*(\\-[a-zA-Z0-9\\-]+)*"))) {
+        require(version.matches(Regex("[0-9]+(\\.[0-9]+)*(-[a-zA-Z0-9\\-]+)*"))) {
             "'$version' is invalid version format"
         }
-        this.version = version
+        this.versionText = version
     }
 }

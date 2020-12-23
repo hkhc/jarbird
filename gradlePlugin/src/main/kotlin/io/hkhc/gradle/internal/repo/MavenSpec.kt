@@ -18,5 +18,4 @@
 
 package io.hkhc.gradle.internal.repo
 
-interface MavenSpec {
-}
+interface MavenSpec

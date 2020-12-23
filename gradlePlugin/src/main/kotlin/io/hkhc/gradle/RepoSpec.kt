@@ -31,5 +31,4 @@ abstract class RepoSpec {
     override fun hashCode(): Int {
         return getEndpoint().hashCode()
     }
-
 }

@@ -103,7 +103,6 @@ abstract class RepoEndpoint {
         Description  : $description
         ID           : $id
     """.trimIndent()
-
 }
 
 fun Project.byProperty(key: String): RepoEndpoint {

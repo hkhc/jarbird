@@ -44,5 +44,4 @@ fun Project.registerRootProjectTasks(taskInfo: TaskInfo) {
             }
         }
     }
-
 }

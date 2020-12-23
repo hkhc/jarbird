@@ -25,9 +25,6 @@ import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import io.hkhc.gradle.VariantMode
-import io.hkhc.gradle.endpoint.MavenCentralEndpoint
-import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
-import io.hkhc.gradle.endpoint.RepoEndpoint
 import io.hkhc.gradle.internal.repo.BintraySpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralSpec
@@ -151,24 +148,7 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
     }
 
     override fun getRepos(): Set<RepoSpec> {
-//        val item1 = repos.toList().first()
-//        val item2 = parentRepos?.getRepos()?.toList()?.firstOrNull()
-//        println("getRepos parentRepos null ? "+(parentRepos==null))
-//        if (parentRepos!=null) {
-//            println("getRepos pub size ? "+(repos.toList()?.size))
-//            println("getRepos parentRepos size ? "+(parentRepos?.getRepos()?.toList()?.size))
-//        }
-//        if (item2 != null) {
-//            println("getRepos equals ? " + (item1==item2))
-//        } else {
-//            println("getRepos equals ? item2 == null")
-//        }
-        return (repos + (parentRepos?.getRepos() ?: setOf())).apply {
-//            println("getRepos total length = " + size)
-//            forEach {
-//                println("getRepos ${it}")
-//            }
-        }
+        return (repos + (parentRepos?.getRepos() ?: setOf()))
     }
 
     fun finalizeRepos() {
@@ -180,6 +160,4 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
     fun needsBintray(): Boolean {
         return getRepos().find { it is BintraySpec } != null
     }
-
-
 }

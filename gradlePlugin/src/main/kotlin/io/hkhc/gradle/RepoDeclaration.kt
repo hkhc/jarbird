@@ -26,5 +26,4 @@ interface RepoDeclaration {
     fun gradlePortal(): RepoSpec
     fun bintray(): RepoSpec
     fun getRepos(): Set<RepoSpec>
-
 }

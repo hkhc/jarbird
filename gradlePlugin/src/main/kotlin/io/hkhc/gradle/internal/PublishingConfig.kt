@@ -22,8 +22,6 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.dokka.DokkaConfig
 import io.hkhc.gradle.internal.maven.MavenPomAdapter
-import io.hkhc.gradle.internal.repo.MavenCentralSpec
-import io.hkhc.gradle.internal.repo.MavenSpec
 import io.hkhc.gradle.internal.utils.Version
 import io.hkhc.gradle.internal.utils.detailMessageWarning
 import io.hkhc.gradle.internal.utils.findByType
@@ -224,32 +222,6 @@ internal class PublishingConfig(
                 }
             }
         }
-
-//        pubs.filter { it.needsNonLocalMaven() }.forEach { pub ->
-//            // even if we don't publish to maven repository, we still need to set it up as bintray needs it.
-//
-//            val endpoints = pub.getRepos().filter { it is MavenSpec }.map { it.getEndpoint() }
-//
-////            val endpoint = (pub as JarbirdPubImpl).mavenRepo
-//
-//            endpoints.forEach {
-//
-//            }
-//            maven {
-//                name = "Maven${pub.pubNameCap}"
-//                val endpointUrl =
-//                    if (pub.pom.isSnapshot()) {
-//                        endpoint.snapshotUrl
-//                    } else {
-//                        endpoint.releaseUrl
-//                    }
-//                url = project.uri(endpointUrl)
-//                credentials {
-//                    username = endpoint.username
-//                    password = endpoint.password
-//                }
-//            }
-//        }
     }
 
     private val sourceSets: SourceSetContainer
