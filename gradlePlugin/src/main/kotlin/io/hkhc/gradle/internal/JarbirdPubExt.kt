@@ -19,6 +19,7 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.repo.BintraySpec
 import io.hkhc.gradle.internal.repo.MavenSpec
 
@@ -32,28 +33,27 @@ internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): Stri
 internal val JarbirdPub.pubNameCap: String
     get() = pubNameWithVariant().capitalize()
 
-// internal val JarbirdPub.pubId: String
-//    get() = "${pubNameCap}Publication"
+internal val JarbirdPub.markerPubName: String
+    get() = pubNameWithVariant() + PLUGIN_MARKER_PUB_SUFFIX
 
-internal val JarbirdPub.mavenRepoNameCap: String
-    get() = "Maven${pubNameCap}Repository"
+internal val JarbirdPub.markerPubNameCap: String
+    get() = (pubNameWithVariant() + PLUGIN_MARKER_PUB_SUFFIX).capitalize()
+
+internal val RepoSpec.repoName: String
+    get() = getEndpoint().id
 
 internal fun List<JarbirdPub>.needSigning() = any { it.signing }
-
-// internal fun List<JarbirdPub>.needMaven() = any { it.maven }
-
-// internal fun List<JarbirdPub>.needBintray() = any { it.bintray }
 
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
 
 internal fun JarbirdPub.needsBintray(): Boolean {
-    return (this as JarbirdPubImpl).getRepos().find { it is BintraySpec } != null
+    return (this as JarbirdPubImpl).getRepos().filterIsInstance<BintraySpec>().isNotEmpty()
 }
 
 internal fun List<JarbirdPub>.needsBintray() = any { it.needsBintray() }
 
 internal fun JarbirdPub.needsNonLocalMaven(): Boolean {
-    return (this as JarbirdPubImpl).getRepos().find { it is MavenSpec } != null
+    return (this as JarbirdPubImpl).getRepos().filterIsInstance<MavenSpec>().isNotEmpty()
 }
 
 internal fun List<JarbirdPub>.needsNonLocalMaven() = any { it.needsNonLocalMaven() }

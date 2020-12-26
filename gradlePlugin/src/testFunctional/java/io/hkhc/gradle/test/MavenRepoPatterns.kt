@@ -22,50 +22,59 @@ import isSnapshot
 
 class MavenRepoPatterns(
     private val baseUrl: String,
-    val coordinate: Coordinate,
-    packaging: String
+    val coordinates: List<Coordinate>,
+    packaging: String,
+    private val releaseVersionTransformer: (String) -> String,
+    private val snapshotVersionTransformer: (String) -> String
 ) {
 
     private val hashExts = listOf("", ".md5", ".sha1", ".sha256", ".sha512")
     private val artifactClassifier = listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
 
-    private val isSnapshot = coordinate.versionWithVariant.isSnapshot()
     private val metafileName = "maven-metadata.xml"
 
-    private fun metafile(base: String): List<String> {
+    private fun isSnapshot(coordinate: Coordinate) = coordinate.versionWithVariant.isSnapshot()
+
+    private fun metafile(base: String, coordinate: Coordinate): List<String> {
         return mutableListOf<String>().apply {
             add("$base/$metafileName")
-            if (isSnapshot) add("$base/${coordinate.versionWithVariant}/$metafileName")
+            if (isSnapshot(coordinate)) add("$base/${coordinate.versionWithVariant}/$metafileName")
         }
     }
 
-    private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) = with(coordinate) {
-        pluginId?.let {
-            listOf("$baseUrl/${pluginId.replace('.', '/')}/$pluginId.gradle.plugin")
+    private fun listPluginRepo(coordinate: Coordinate, versionTransformer: (String) -> String) =
+        coordinate.pluginId?.let {
+            listOf("$baseUrl/${coordinate.pluginId.replace('.', '/')}/${coordinate.pluginId}.gradle.plugin")
                 .flatMap {
-                    metafile(it) +
-                        "$it/$versionWithVariant/$pluginId.gradle.plugin-${versionTransformer(versionWithVariant)}.pom"
+                    metafile(it, coordinate) +
+                        "$it/${coordinate.versionWithVariant}/${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.versionWithVariant)}.pom"
                 }
                 .flatMap(::hashedPaths)
         } ?: listOf()
-    }
 
     private fun hashedPaths(path: String) = hashExts.map { hash -> "$path$hash" }
 
     private fun artifactTypes(path: String) = artifactClassifier.map { suffix -> "$path$suffix" }
 
-    fun list(versionTransformer: (String) -> String) = with(coordinate) {
+    private fun versionTransformer(coordinate: Coordinate): (String) -> String {
+        return if (coordinate.version.isSnapshot())
+            snapshotVersionTransformer
+        else
+            releaseVersionTransformer
+    }
+
+    fun list() = coordinates.flatMap { coordinate ->
         (
-            listPluginRepo(pluginId, versionTransformer) +
-                listOf("$baseUrl/${group.replace('.', '/')}/$artifactIdWithVariant")
+            listPluginRepo(coordinate, versionTransformer(coordinate)) +
+                listOf("$baseUrl/${coordinate.group.replace('.', '/')}/${coordinate.artifactIdWithVariant}")
                     .flatMap { path ->
-                        metafile(path) +
+                        metafile(path, coordinate) +
                             listOf(
-                                "$path/$versionWithVariant/" +
-                                    "$artifactIdWithVariant-${versionTransformer(versionWithVariant)}"
+                                "$path/${coordinate.versionWithVariant}/" +
+                                    "${coordinate.artifactIdWithVariant}-${versionTransformer(coordinate)(coordinate.versionWithVariant)}"
                             )
                                 .flatMap(::artifactTypes)
-                                .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
+                                .flatMap { if (isSnapshot(coordinate)) listOf(it) else listOf(it, "$it.asc") }
                     }
                     .flatMap(::hashedPaths)
             )

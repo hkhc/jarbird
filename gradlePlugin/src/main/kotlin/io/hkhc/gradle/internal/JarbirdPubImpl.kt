@@ -21,22 +21,24 @@ package io.hkhc.gradle.internal
 import appendBeforeSnapshot
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoDeclaration
-import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import io.hkhc.gradle.VariantMode
+import io.hkhc.gradle.internal.repo.AbstractRepoSpec
 import io.hkhc.gradle.internal.repo.BintraySpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralSpec
 import io.hkhc.gradle.internal.repo.MavenLocalSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
+import io.hkhc.gradle.internal.utils.detailMessageWarning
 import isSnapshot
 import org.gradle.api.Project
 
 internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
 
+    private var projectProperty: ProjectProperty = DefaultProjectProperty(project)
     private var variantMode: VariantMode = VariantMode.Invisible
-    private val repos = mutableSetOf<RepoSpec>()
+    private val repos = mutableSetOf<AbstractRepoSpec>()
 
     var parentRepos: RepoDeclaration? = null
 
@@ -117,42 +119,47 @@ internal class JarbirdPubImpl(val project: Project) : JarbirdPub() {
     override fun sourceSetNames(names: List<String>): Any = SourceSetNames(project, names.toTypedArray())
     override fun sourceDirs(dirs: Any): Any = SourceDirs(dirs)
 
-    override fun mavenCentral(): RepoSpec {
-        return repos.find { it is MavenCentralSpec } ?: MavenCentralSpec(project).also {
+    override fun mavenCentral(): AbstractRepoSpec {
+        return repos.find { it is MavenCentralSpec } ?: MavenCentralSpec(projectProperty).also {
             repos.add(it)
         }
     }
 
-    override fun mavenRepo(key: String): RepoSpec {
-        val repo = MavenRepoSpec(project, key)
+    override fun mavenRepo(key: String): AbstractRepoSpec {
+        val repo = MavenRepoSpec(projectProperty, key)
         if (!repos.contains(repo)) repos.add(repo)
         return repo
     }
 
-    override fun mavenLocal(): RepoSpec {
+    override fun mavenLocal(): AbstractRepoSpec {
         return repos.find { it is MavenLocalSpec } ?: MavenLocalSpec().also {
             repos.add(it)
         }
     }
 
-    override fun gradlePortal(): RepoSpec {
+    override fun gradlePortal(): AbstractRepoSpec {
         return repos.find { it is GradlePortalSpec } ?: GradlePortalSpec().also {
             repos.add(it)
         }
     }
 
-    override fun bintray(): RepoSpec {
-        return repos.find { it is BintraySpec } ?: BintraySpec(project).also {
-            repos.add(it)
+    override fun bintray(): AbstractRepoSpec {
+        return repos.find { it is BintraySpec } ?: BintraySpec(projectProperty).also {
+            detailMessageWarning(
+                JarbirdLogger.logger,
+                "Bintray repo will be treated as child project level declaration.",
+                "Because bintray plugin publish components at child project level."
+            )
+            parentRepos?.bintray()
         }
     }
 
-    override fun getRepos(): Set<RepoSpec> {
+    override fun getRepos(): Set<AbstractRepoSpec> {
         return (repos + (parentRepos?.getRepos() ?: setOf()))
     }
 
     fun finalizeRepos() {
-        if (pom.isGradlePlugin() && parentRepos?.getRepos()?.find { it is GradlePortalSpec } == null) {
+        if (pom.isGradlePlugin()) {
             gradlePortal()
         }
     }

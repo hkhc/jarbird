@@ -19,9 +19,8 @@
 package io.hkhc.gradle.pom
 
 import LICENSE_MAP
+import io.hkhc.gradle.internal.ProjectInfo
 import isSnapshot
-import org.gradle.api.Project
-import org.gradle.api.plugins.BasePluginConvention
 import java.util.Calendar
 import java.util.GregorianCalendar
 
@@ -230,7 +229,7 @@ data class Pom(
     /* variant is fixed and not going to be overlaid */
     var variant: String = DEFAULT_VARIANT,
 
-    /* "bintary" is not part of POM, but additional information needs to deploy to bintray repo */
+    /* "bintray" is not part of POM, but additional information needs to deploy to bintray repo */
     /* TODO it may be better to specify repo details in gradle.properties? */
     var bintray: Bintray = Bintray(),
 
@@ -330,29 +329,25 @@ data class Pom(
      * project.group, archiveBaseName of project convention may be updated
      */
     @Suppress("ComplexMethod")
-    fun syncWith(project: Project) {
+    fun syncWith(projectInfo: ProjectInfo) {
 
         // two-way sync with project.group
         // so that the artifact can be build according the setting here.
-        group?.let { project.group = it }
-        group = group ?: project.group.toString()
+        group?.let { projectInfo.group = it }
+        group = group ?: projectInfo.group
 
-        artifactId = artifactId ?: project.name
+        artifactId = artifactId ?: projectInfo.artifactId
 
         // but we are not going to change the project name, because that may distrub the
         // execution of gradle script.
 //        name = name ?: "$group:${project.name}"
         name = artifactId
 
-        // TODO need a way to mock convention to make it testable
-        val convention = project.convention.plugins["base"] as BasePluginConvention?
-        convention?.let { c ->
-            artifactId?.let { c.archivesBaseName = it }
-        }
+        artifactId?.let { projectInfo.archiveBaseName = it }
 
         // two-way sync with project.version
-        version?.let { project.version = it }
-        version = version ?: project.version.toString()
+        version?.let { projectInfo.version = it }
+        version = version ?: projectInfo.version
 
         // set default inception year if we don't provide one
         inceptionYear = if (inceptionYear != -1) inceptionYear else dataHandler().get(Calendar.YEAR)
@@ -362,7 +357,7 @@ data class Pom(
 
         // we get the project description as artifact description,
         // but it seems useless to change he project description here, so we don't do that.
-        description = description ?: project.description
+        description = description ?: projectInfo.description
 
         // resolve license link by the name.
         lookupLicenseLink(licenses)

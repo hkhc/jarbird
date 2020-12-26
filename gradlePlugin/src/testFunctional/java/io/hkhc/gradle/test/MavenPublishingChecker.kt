@@ -24,7 +24,7 @@ import io.kotest.assertions.fail
 import okhttp3.mockwebserver.RecordedRequest
 
 class MavenPublishingChecker(
-    val coordinate: Coordinate,
+    val coordinates: List<Coordinate>,
     private val packaging: String
 ) {
 
@@ -45,22 +45,16 @@ class MavenPublishingChecker(
         return "$snapshotVersion-[0-9]+.[0-9]+-[0-9]+"
     }
 
-    fun assertReleaseArtifacts(recordedRequests: List<RecordedRequest>) {
-        assertArtifacts(recordedRequests, ::transformReleaseVersion)
-    }
-
-    fun assertSnapshotArtifacts(recordedRequests: List<RecordedRequest>) {
-        assertArtifacts(recordedRequests, ::transformSnapshotVersion)
-    }
-
-    fun assertArtifacts(recordedRequests: List<RecordedRequest>, versionTransformer: (String) -> String) {
+    fun assertArtifacts(recordedRequests: List<RecordedRequest>) {
 
         val expectedPaths = MavenRepoPatterns(
             "/base",
-            coordinate,
-            packaging
+            coordinates,
+            packaging,
+            ::transformReleaseVersion,
+            ::transformSnapshotVersion
         ).let {
-            it.list(versionTransformer)
+            it.list()
         }.apply {
             forEach { assertFile(recordedRequests, it) }
         }

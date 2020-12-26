@@ -18,4 +18,6 @@
 
 package io.hkhc.gradle.internal.repo
 
-interface MavenSpec
+import io.hkhc.gradle.RepoSpec
+
+interface MavenSpec : RepoSpec

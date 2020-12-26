@@ -18,9 +18,8 @@
 package io.hkhc.gradle.endpoint
 
 import groovy.lang.MissingPropertyException
-import io.hkhc.gradle.internal.LOG_PREFIX
-import io.hkhc.gradle.internal.utils.detailMessageError
-import org.gradle.api.GradleException
+import io.hkhc.gradle.internal.DefaultProjectProperty
+import io.hkhc.gradle.internal.ProjectProperty
 import org.gradle.api.Project
 
 abstract class RepoEndpoint {
@@ -94,33 +93,34 @@ abstract class RepoEndpoint {
         """.trimIndent().hashCode()
     }
 
-    override fun toString() = """
-        Release URL  : $releaseUrl
-        Snapshot URL : $snapshotUrl
-        Username     : $username
-        Password     : $password
-        API Key      : $apikey
-        Description  : $description
-        ID           : $id
-    """.trimIndent()
+    override fun toString() =
+        """
+            Release URL  : $releaseUrl
+            Snapshot URL : $snapshotUrl
+            Username     : $username
+            Password     : $password
+            API Key      : $apikey
+            Description  : $description
+            ID           : $id
+        """.trimIndent()
 }
 
 fun Project.byProperty(key: String): RepoEndpoint {
-    return PropertyRepoEndpoint(this, key)
+    return PropertyRepoEndpoint(DefaultProjectProperty(this), key)
 }
-fun resolveProperty(project: Project, propertyName: String): String {
-    val value: String? = try {
-        project.property(propertyName) as String?
+fun resolveProperty(projectProperty: ProjectProperty, propertyName: String): String {
+    val value: String = try {
+        projectProperty.property(propertyName) as String? ?: ""
     } catch (e: MissingPropertyException) {
         ""
     }
-    if (value == null) {
-        detailMessageError(
-            project.logger,
-            "Failed to find property '$propertyName'.",
-            "Add it to one of the gradle.properties, or specify -D$propertyName command line option."
-        )
-        throw GradleException("$LOG_PREFIX Failed to find property '$propertyName'")
-    }
+//    if (value == null) {
+//        detailMessageError(
+//            JarbirdLogger.logger,
+//            "Failed to find property '$propertyName'.",
+//            "Add it to one of the gradle.properties, or specify -D$propertyName command line option."
+//        )
+//        throw GradleException("$LOG_PREFIX Failed to find property '$propertyName'")
+//    }
     return value
 }

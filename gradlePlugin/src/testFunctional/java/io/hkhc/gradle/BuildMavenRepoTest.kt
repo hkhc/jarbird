@@ -28,7 +28,6 @@ import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
-import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
@@ -101,9 +100,11 @@ class BuildMavenRepoTest : FunSpec({
             return DefaultGradleProjectSetup(projectDir).apply {
 
                 setup()
-                mockServer = MockMavenRepositoryServer().apply {
-                    setUp(coordinate, "/base")
-                }
+                mockServers.add(
+                    MockMavenRepositoryServer().apply {
+                        setUp(coordinate, "/base")
+                    }
+                )
 
                 writeFile("build.gradle.kts", buildGradle())
 
@@ -112,9 +113,9 @@ class BuildMavenRepoTest : FunSpec({
                 setupGradleProperties {
                     if (coordinate.version.isSnapshot()) {
                         "repository.maven.mock.release" to "fake-url-that-is-not-going-to-work"
-                        "repository.maven.mock.snapshot" to mockServer?.getServerUrl()
+                        "repository.maven.mock.snapshot" to mockServers[0].getServerUrl()
                     } else {
-                        "repository.maven.mock.release" to mockServer?.getServerUrl()
+                        "repository.maven.mock.release" to mockServers[0].getServerUrl()
                         "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
                     }
                     "repository.maven.mock.username" to "username"
@@ -131,7 +132,7 @@ class BuildMavenRepoTest : FunSpec({
 
         suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
             afterTest {
-                setup.mockServer?.teardown()
+                setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
                     FileTree().dump(setup.projectDir, System.out::println)
                 }
@@ -145,13 +146,13 @@ class BuildMavenRepoTest : FunSpec({
                     result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
                 }
 
-                setup.mockServer?.let { server ->
+                setup.mockServers.forEach { server ->
                     MavenRepoResult(
                         server.collectRequests(),
-                        coordinate,
+                        listOf(coordinate),
                         "jar"
                     ) should publishedToMavenRepositoryCompletely()
-                } ?: fail("mock server is not available")
+                }
             }
         }
 

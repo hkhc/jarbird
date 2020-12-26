@@ -29,7 +29,6 @@ import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
-import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
@@ -53,9 +52,11 @@ class BuildBintrayPluginRepoTest : FunSpec({
             return DefaultGradleProjectSetup(projectDir).apply {
 
                 setup()
-                mockServer = MockBintrayRepositoryServer().apply {
-                    setUp(coordinate, "/base")
-                }
+                mockServers.add(
+                    MockBintrayRepositoryServer().apply {
+                        setUp(coordinate, "/base")
+                    }
+                )
 
                 writeFile("build.gradle.kts", buildGradleCustomBintray())
 
@@ -69,7 +70,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
                 )
 
                 setupGradleProperties {
-                    "repository.bintray.release" to mockServer?.getServerUrl()
+                    "repository.bintray.release" to mockServers[0].getServerUrl()
                     "repository.bintray.username" to "username"
                     "repository.bintray.apikey" to "password"
                 }
@@ -80,7 +81,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
 
         suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
             afterTest {
-                setup.mockServer?.teardown()
+                setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
                     FileTree().dump(setup.projectDir, System.out::println)
                 }
@@ -100,7 +101,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
                 ).readText()
                 pluginPom shouldBe pluginPom(coordinate)
 
-                setup.mockServer?.let { server ->
+                setup.mockServers[0].let { server ->
                     BintrayRepoResult(
                         server.collectRequests(),
                         coordinate,
@@ -108,7 +109,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
                         "maven",
                         "jar"
                     ) should publishedToBintrayRepositoryCompletely()
-                } ?: fail("mock server is not available")
+                }
             }
         }
 

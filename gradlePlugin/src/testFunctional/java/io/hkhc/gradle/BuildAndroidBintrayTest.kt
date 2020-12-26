@@ -32,7 +32,6 @@ import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
-import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
@@ -101,9 +100,11 @@ class BuildAndroidBintrayTest : FunSpec({
                 subProjDirs = arrayOf("lib")
                 sourceSetTemplateDirs = arrayOf("functionalTestData/libaar")
                 setup()
-                mockServer = MockBintrayRepositoryServer().apply {
-                    setUp(coordinate, "/base")
-                }
+                mockServers.add(
+                    MockBintrayRepositoryServer().apply {
+                        setUp(coordinate, "/base")
+                    }
+                )
 
                 envs.apply {
                     val pair = getTestAndroidSdkHomePair()
@@ -130,7 +131,7 @@ class BuildAndroidBintrayTest : FunSpec({
 
                 setupGradleProperties {
                     setupAndroidProperties()
-                    "repository.bintray.release" to mockServer?.getServerUrl()
+                    "repository.bintray.release" to mockServers[0].getServerUrl()
                     "repository.bintray.username" to "username"
                     "repository.bintray.apikey" to "password"
                 }
@@ -142,7 +143,7 @@ class BuildAndroidBintrayTest : FunSpec({
         suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
 
             afterTest {
-                setup.mockServer?.teardown()
+                setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
                     FileTree().dump(setup.projectDir, System.out::println)
                 }
@@ -165,7 +166,7 @@ class BuildAndroidBintrayTest : FunSpec({
                         )
                 }
 
-                setup.mockServer?.let { server ->
+                setup.mockServers.forEach { server ->
                     BintrayRepoResult(
                         server.collectRequests(),
                         coordinate,
@@ -173,7 +174,7 @@ class BuildAndroidBintrayTest : FunSpec({
                         "maven",
                         "aar"
                     ) should publishedToBintrayRepositoryCompletely()
-                } ?: fail("mock server is not available")
+                }
             }
         }
 

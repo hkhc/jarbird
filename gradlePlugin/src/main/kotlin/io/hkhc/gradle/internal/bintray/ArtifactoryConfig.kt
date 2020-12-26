@@ -49,7 +49,8 @@ class ArtifactoryConfig(
 
     fun config() {
 
-        val endpoint = pubs.flatMap { it.getRepos() }.filter { it is BintraySpec }.first().getEndpoint()
+        // TODO show warning if there are more than one BintraySpec in list
+        val endpoint = pubs.flatMap { it.getRepos() }.filterIsInstance<BintraySpec>().first().getEndpoint()
 
         val customRepoUrl = endpoint.snapshotUrl
         if (customRepoUrl != "") repoUrl = customRepoUrl

@@ -16,11 +16,13 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
+import org.gradle.api.Project
 
-interface RepoSpec {
+class DefaultProjectProperty(private val project: Project) : ProjectProperty {
 
-    fun getEndpoint(): RepoEndpoint
+    override fun property(name: String): Any? {
+        return project.property(name)
+    }
 }

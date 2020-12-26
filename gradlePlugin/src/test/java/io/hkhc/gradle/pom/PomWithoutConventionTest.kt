@@ -18,18 +18,18 @@
 
 package io.hkhc.gradle.pom
 
+import io.hkhc.utils.test.MockProjectInfo
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.every
 import io.mockk.mockk
-import org.gradle.api.internal.project.DefaultProject
+import org.gradle.api.Project
 import java.util.Calendar
 import java.util.GregorianCalendar
 
 // @ExtendWith(MockKExtension::class)
 class PomWithoutConventionTest : StringSpec({
 
-    lateinit var project: DefaultProject
+    lateinit var project: Project
 
     beforeTest {
         project = mockk(relaxed = true)
@@ -39,18 +39,16 @@ class PomWithoutConventionTest : StringSpec({
 
         // GIVEN
         Pom.setDateHandler { GregorianCalendar.getInstance().apply { set(Calendar.YEAR, 1999) } }
-        every { project.group } returns "io.hkhc"
-        every { project.name } returns "mylib"
-        every { project.version } returns "1.0"
-        every { project.description } returns "desc"
 
         val pom = Pom()
         pom.licenses.add(License("Apache-2.0"))
         pom.scm.repoType = "github.com"
         pom.scm.repoName = "hkhc/mylib"
 
+        val mockProject = MockProjectInfo("io.hkhc", "mylib", "1.0", "desc")
+
         // WHEN
-        pom.syncWith(project)
+        pom.syncWith(mockProject)
 
         // THEN
         pom.group shouldBe "io.hkhc"

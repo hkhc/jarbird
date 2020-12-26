@@ -85,9 +85,9 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     if (maven) {
                         if (coordinate.version.isSnapshot()) {
                             "repository.maven.mock.release" to "fake-url-that-is-not-going-to-work"
-                            "repository.maven.mock.snapshot" to mockServer?.getServerUrl()
+                            "repository.maven.mock.snapshot" to mavenMockServer?.getServerUrl()
                         } else {
-                            "repository.maven.mock.release" to mockServer?.getServerUrl()
+                            "repository.maven.mock.release" to mavenMockServer?.getServerUrl()
                             "repository.maven.mock.snapshot" to "fake-url-that-is-not-going-to-work"
                         }
                         "repository.maven.mock.username" to "username"
@@ -111,7 +111,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
 
         suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
             afterTest {
-                setup.mockServer?.teardown()
+                setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
                     FileTree().dump(setup.projectDir, System.out::println)
                 }
@@ -132,7 +132,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
                 setup.mavenMockServer?.let { server ->
                     MavenRepoResult(
                         server.collectRequests(),
-                        coordinate,
+                        listOf(coordinate),
                         "jar"
                     ) should publishedToMavenRepositoryCompletely()
                 }

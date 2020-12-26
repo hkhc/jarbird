@@ -22,6 +22,7 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.dokka.DokkaConfig
 import io.hkhc.gradle.internal.maven.MavenPomAdapter
+import io.hkhc.gradle.internal.repo.MavenSpec
 import io.hkhc.gradle.internal.utils.Version
 import io.hkhc.gradle.internal.utils.detailMessageWarning
 import io.hkhc.gradle.internal.utils.findByType
@@ -141,6 +142,7 @@ internal class PublishingConfig(
 
             checkComponent(pub)
 
+            println("register ${pub.pubNameWithVariant()} task")
             register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
                 groupId = pom.group
@@ -189,13 +191,18 @@ internal class PublishingConfig(
         val releaseEndpoints = pubs
             .filter { !it.pom.isSnapshot() }
             .flatMap { it.getRepos() }
+            .filterIsInstance<MavenSpec>()
             .toSet()
         val snapshotEndpoint = pubs
             .filter { it.pom.isSnapshot() }
             .flatMap { it.getRepos() }
+            .filterIsInstance<MavenSpec>()
             .toSet()
 
         releaseEndpoints.forEach {
+
+            println("releaseEndpoint ${it::class.java.name} ${it.getEndpoint().id} ${it.getEndpoint().description}")
+
             maven {
                 with(it.getEndpoint()) {
                     val ep = this
@@ -210,6 +217,8 @@ internal class PublishingConfig(
         }
 
         snapshotEndpoint.forEach {
+            println("snapshotEndpoint ${it::class.java.name} ${it.getEndpoint().id} ${it.getEndpoint().description}")
+
             maven {
                 with(it.getEndpoint()) {
                     val ep = this

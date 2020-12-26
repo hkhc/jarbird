@@ -22,6 +22,8 @@ import org.gradle.api.Project
 import org.gradle.api.ProjectEvaluationListener
 import org.gradle.api.ProjectState
 
+fun Project.isRoot() = rootProject == this
+
 @Suppress("unused")
 fun Project.isMultiProjectRoot() =
     rootProject == this && childProjects.isNotEmpty()

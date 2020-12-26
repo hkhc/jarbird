@@ -99,6 +99,13 @@ class JbPublishToMavenRepoTaskInfo : TaskInfo {
         get() = "Publish all Maven publications to the respective maven Repository"
 }
 
+class JbPublishToCustomMavenRepoTaskInfo(val repo: RepoSpec) : TaskInfo {
+    override val name: String
+        get() = "${JB_TASK_PREFIX}To${repo.getEndpoint().id}"
+    override val description: String
+        get() = "Publish Maven publications to the maven Repository '${repo.getEndpoint().id}'"
+}
+
 class JbPublishPubToMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo {
     override val name: String
         get() = "$JB_TASK_PREFIX${pub.pubNameCap}$TO_MAVEN_REPO"
@@ -256,19 +263,17 @@ class DokkaJarPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
         get() = "Assembles Kotlin docs with Dokka to Jar"
 }
 
-val JarbirdPub.mavenRepoName: String
-    get() = "Maven$pubNameCap"
+// val JarbirdPub.mavenRepoName: String
+//     get() = "Maven$pubNameCap"
 
 val JarbirdPub.publishPubToMavenLocalTask: String
     get() = "$PUBLISH_TASK_PREFIX${pubNameCap}Publication$TO_MAVEN_LOCAL"
 
 val JarbirdPub.publishPluginMarkerPubToMavenLocalTask: String
-    get() = "$PUBLISH_TASK_PREFIX$pubNameCap${PLUGIN_MARKER_PUB_SUFFIX}Publication$TO_MAVEN_LOCAL"
+    get() = "$PUBLISH_TASK_PREFIX${markerPubNameCap}Publication$TO_MAVEN_LOCAL"
 
-fun JarbirdPub.publishPubToCustomMavenRepoTask(repo: RepoSpec): String {
-    return "$PUBLISH_TASK_PREFIX${pubNameCap}PublicationTo${repo.getEndpoint().id}Repository"
-}
+fun JarbirdPub.publishPubToCustomMavenRepoTask(repo: RepoSpec) =
+    "$PUBLISH_TASK_PREFIX${pubNameCap}PublicationTo${repo.repoName}Repository"
 
-fun JarbirdPub.publishPluginMarkerPubToCustomMavenRepoTask(repo: RepoSpec): String {
-    return "$PUBLISH_TASK_PREFIX$pubNameCap${PLUGIN_MARKER_PUB_SUFFIX}PublicationTo${repo.getEndpoint().id}Repository"
-}
+fun JarbirdPub.publishPluginMarkerPubToCustomMavenRepoTask(repo: RepoSpec) =
+    "$PUBLISH_TASK_PREFIX${markerPubNameCap}PublicationTo${repo.repoName}Repository"

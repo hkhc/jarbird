@@ -98,6 +98,37 @@ fun simplePom(coordinate: Coordinate, variant: String = "", packaging: String = 
     }
 }
 
+fun simpleTwoPoms(coordinate: List<Coordinate>, variant1: String, variant2: String, packaging: String = "jar") =
+    """
+        ---    
+        licenses:
+          - name: Apache-2.0
+            dist: repo
+    
+        developers:
+          - id: test.user
+            name: Test User
+            email: test.user@mail.com
+    
+        scm:
+          repoType: github.com
+          repoName: test.user/test.repo
+        --- 
+        variant: $variant1
+        group: ${coordinate[0].group}
+        artifactId: ${coordinate[0].artifactId}
+        version: ${coordinate[0].version}
+        description: Test artifact
+        packaging: $packaging
+        --- 
+        variant: $variant2
+        group: ${coordinate[1].group}
+        artifactId: ${coordinate[1].artifactId}
+        version: ${coordinate[1].version}
+        description: Test artifact
+        packaging: $packaging
+    """.trimIndent()
+
 fun pluginPom(id: String, className: String): String {
     return """
         plugin:
@@ -147,6 +178,50 @@ fun buildGradle(maven: Boolean = true, bintray: Boolean = true): String {
         jarbird {
             ${if (maven) "mavenRepo(\"mock\")" else ""}
             ${if (bintray) "bintray()" else ""}
+        }
+    """.trimIndent()
+}
+
+fun buildTwoGlobalGradle(): String {
+    return """
+        plugins {
+            kotlin("jvm") version "1.3.72"
+            `kotlin-dsl`
+            id("$PLUGIN_ID")
+            id("com.dorongold.task-tree") version "1.5"
+        }
+        repositories {
+            jcenter()
+        }
+        jarbird {
+            mavenRepo("mock1")
+            mavenRepo("mock2")
+            pub("lib1") {
+            }
+            pub("lib2") {
+            }
+        }
+    """.trimIndent()
+}
+
+fun buildTwoLocalGradle(): String {
+    return """
+        plugins {
+            kotlin("jvm") version "1.3.72"
+            `kotlin-dsl`
+            id("$PLUGIN_ID")
+            id("com.dorongold.task-tree") version "1.5"
+        }
+        repositories {
+            jcenter()
+        }
+        jarbird {
+            pub("lib1") {
+                mavenRepo("mock1")
+            }
+            pub("lib2") {
+                mavenRepo("mock2")
+            }
         }
     """.trimIndent()
 }
@@ -240,6 +315,9 @@ fun commonAndroidRootGradle(): String {
         plugins {
             id '$PLUGIN_ID'
             id 'com.dorongold.task-tree' version '1.5'
+        }
+        jarbird {
+            mavenRepo("mock")
         }
         allprojects {
             repositories {

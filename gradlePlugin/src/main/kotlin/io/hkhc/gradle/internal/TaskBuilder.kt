@@ -92,7 +92,9 @@ internal class TaskBuilder(
                 dependsOn(JbPublishToGradlePortalTaskInfo().name)
             }
             if (pubs.needsNonLocalMaven()) {
-                dependsOn(mavenTaskBuilder.getRepoTaskInfo().name)
+                mavenTaskBuilder.getRepoTaskInfos().forEach {
+                    dependsOn(it.name)
+                }
             }
             if (pubs.needsBintray()) {
                 dependsOn(bintrayTaskBuilder.getTaskInfo().name)
@@ -108,7 +110,8 @@ internal class TaskBuilder(
                 it.registerMavenLocalTask(this)
                 it.registerMavenRepositoryTask(this)
             }
-            if (pubs.any { it.needsBintray() }) {
+            println("taskbuilder build needs bintray ${pubs.needsBintray()}")
+            if (pubs.needsBintray()) {
                 bintrayTaskBuilder.registerBintrayTask()
             }
             if (pubs.any { it.pom.isGradlePlugin() }) {

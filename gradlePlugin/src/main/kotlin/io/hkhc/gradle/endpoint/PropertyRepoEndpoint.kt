@@ -19,9 +19,9 @@
 package io.hkhc.gradle.endpoint
 
 import io.hkhc.gradle.JarbirdPlugin
-import org.gradle.api.Project
+import io.hkhc.gradle.internal.ProjectProperty
 
-class PropertyRepoEndpoint(private val project: Project, private val key: String) :
+class PropertyRepoEndpoint(private val projectProperty: ProjectProperty, private val key: String) :
     RepoEndpoint() {
 
     init {
@@ -33,24 +33,24 @@ class PropertyRepoEndpoint(private val project: Project, private val key: String
     override val releaseUrl: String
         get() {
 //            Exception("PropertyMavenEndpoint release get").printStackTrace()
-            return resolveProperty(project, "$keyPrefix.$key.release")
+            return resolveProperty(projectProperty, "$keyPrefix.$key.release")
         }
 
     override val snapshotUrl: String
-        get() = resolveProperty(project, "$keyPrefix.$key.snapshot")
+        get() = resolveProperty(projectProperty, "$keyPrefix.$key.snapshot")
 
     override val username: String
-        get() = resolveProperty(project, "$keyPrefix.$key.username")
+        get() = resolveProperty(projectProperty, "$keyPrefix.$key.username")
 
     override val password: String
-        get() = resolveProperty(project, "$keyPrefix.$key.password")
+        get() = resolveProperty(projectProperty, "$keyPrefix.$key.password")
 
     override val apikey: String
-        get() = resolveProperty(project, "$keyPrefix.$key.apikey")
+        get() = resolveProperty(projectProperty, "$keyPrefix.$key.apikey")
 
     override val description: String
         get() {
-            val customDescription = resolveProperty(project, "$keyPrefix.$key.description")
+            val customDescription = resolveProperty(projectProperty, "$keyPrefix.$key.description")
             return if (customDescription == "") {
                 "Maven Repository specified by repository.${key.replace(".", "")}.* in gradle.properties"
             } else {

@@ -39,23 +39,29 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
     var envs = defaultEnvs(projectDir)
 
     /* mock server to mimic repository servers to accept requests for test */
-    var mockServer: BaseMockRepositoryServer? = null
+    var mockServers = mutableListOf<BaseMockRepositoryServer>()
 
     var mavenMockServer: MockMavenRepositoryServer? = null
         set(value) {
-            if (mockServer == null) mockServer = value
+            if (value != null) {
+                mockServers.add(value)
+            }
             field = value
         }
 
     var bintrayMockServer: MockBintrayRepositoryServer? = null
         set(value) {
-            if (mockServer == null) mockServer = value
+            if (value != null) {
+                mockServers.add(value)
+            }
             field = value
         }
 
     var artifactoryMockServer: MockArtifactoryRepositoryServer? = null
         set(value) {
-            if (mockServer == null) mockServer = value
+            if (value != null) {
+                mockServers.add(value)
+            }
             field = value
         }
 

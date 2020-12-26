@@ -16,11 +16,12 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
+import groovy.lang.MissingPropertyException
 
-interface RepoSpec {
+interface ProjectProperty {
 
-    fun getEndpoint(): RepoEndpoint
+    @Throws(MissingPropertyException::class)
+    fun property(name: String): Any?
 }

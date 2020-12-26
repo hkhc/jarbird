@@ -20,24 +20,54 @@ package io.hkhc.gradle.internal
 
 import groovy.lang.Closure
 import io.hkhc.gradle.JarbirdExtension
+import io.hkhc.gradle.JarbirdPlugin
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.PomGroupCallback
-import io.hkhc.gradle.RepoSpec
+import io.hkhc.gradle.internal.repo.AbstractRepoSpec
 import io.hkhc.gradle.internal.repo.BintraySpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralSpec
 import io.hkhc.gradle.internal.repo.MavenLocalSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
+import io.hkhc.gradle.pom.PomGroup
+import io.hkhc.gradle.pom.internal.PomGroupFactory
 import org.gradle.api.Project
 
 open class JarbirdExtensionImpl(private val project: Project) : JarbirdExtension {
 
+    private var pomGroup: PomGroup = PomGroupFactory.resolvePomGroup(project.rootDir, project.projectDir)
+    private var projectProperty: ProjectProperty = DefaultProjectProperty(project)
     val pubList = mutableListOf<JarbirdPub>()
-    private val repos = mutableSetOf<RepoSpec>()
+    internal val repos = mutableSetOf<AbstractRepoSpec>()
     private var isDefaultRepos = true
 
-    lateinit var pomGroupCallback: PomGroupCallback
     private var implicited: JarbirdPub? = null
+
+    init {
+        println(pomGroup.dump())
+        project.logger.debug("$LOG_PREFIX Aggregated POM configuration: $pomGroup")
+    }
+
+    private fun initPub(pub: JarbirdPub) {
+
+        pub.pom = pomGroup[pub.variant]
+
+        println("initPub pubName 0 ${pub.variant} ${pub.pubName} ${pub.pom.artifactId}")
+        // TODO we ignore that pom overwrite some project properties in the mean time.
+        // need to properly take care of it.
+        // pub.pom.syncWith(DefaultProjectInfo(project))
+
+        // TODO handle two publications of same artifactaId in the same module.
+        // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
+        pub.pubName = JarbirdPlugin.normalizePubName(pub.pom.artifactId ?: "Lib")
+
+        println("initPub pubName 1 ${pub.pubName} ${pub.pom.artifactId}")
+
+        // pre-check of final data, for child project
+        // TODO handle multiple level child project?
+//        if (!project.isMultiProjectRoot()) {
+//            precheck(pub.pom, project)
+//        }
+    }
 
     private fun newPub(project: Project): JarbirdPubImpl {
         return JarbirdPubImpl(project).apply {
@@ -65,14 +95,14 @@ open class JarbirdExtensionImpl(private val project: Project) : JarbirdExtension
         val newPub = newPub(project)
         newPub.parentRepos = this
         newPub.configure(action)
-        pomGroupCallback.initPub(newPub)
+        initPub(newPub)
     }
 
     override fun pub(variant: String, action: Closure<JarbirdPub>) {
         val newPub = newPub(project)
         newPub.parentRepos = this
         newPub.variant = variant
-        pomGroupCallback.initPub(newPub)
+        initPub(newPub)
         newPub.configure(action)
     }
 
@@ -81,14 +111,14 @@ open class JarbirdExtensionImpl(private val project: Project) : JarbirdExtension
         val newPub = newPub(project)
         newPub.parentRepos = this
         newPub.configure(action)
-        pomGroupCallback.initPub(newPub)
+        initPub(newPub)
     }
 
     override fun pub(variant: String, action: JarbirdPub.() -> Unit) {
         val newPub = newPub(project)
         newPub.parentRepos = this
         newPub.variant = variant
-        pomGroupCallback.initPub(newPub)
+        initPub(newPub)
         newPub.configure(action)
     }
 
@@ -112,27 +142,27 @@ open class JarbirdExtensionImpl(private val project: Project) : JarbirdExtension
         implicited = null
     }
 
-    override fun mavenCentral(): RepoSpec {
+    override fun mavenCentral(): AbstractRepoSpec {
         if (isDefaultRepos) {
             repos.clear()
             isDefaultRepos = false
         }
-        return repos.find { it is MavenCentralSpec } ?: MavenCentralSpec(project).also {
+        return repos.find { it is MavenCentralSpec } ?: MavenCentralSpec(projectProperty).also {
             repos.add(it)
         }
     }
 
-    override fun mavenRepo(key: String): RepoSpec {
+    override fun mavenRepo(key: String): AbstractRepoSpec {
         if (isDefaultRepos) {
             repos.clear()
             isDefaultRepos = false
         }
-        val repo = MavenRepoSpec(project, key)
+        val repo = MavenRepoSpec(projectProperty, key)
         if (!repos.contains(repo)) repos.add(repo)
         return repo
     }
 
-    override fun mavenLocal(): RepoSpec {
+    override fun mavenLocal(): AbstractRepoSpec {
         if (isDefaultRepos) {
             repos.clear()
             isDefaultRepos = false
@@ -142,7 +172,7 @@ open class JarbirdExtensionImpl(private val project: Project) : JarbirdExtension
         }
     }
 
-    override fun gradlePortal(): RepoSpec {
+    override fun gradlePortal(): AbstractRepoSpec {
         if (isDefaultRepos) {
             repos.clear()
             isDefaultRepos = false
@@ -152,7 +182,7 @@ open class JarbirdExtensionImpl(private val project: Project) : JarbirdExtension
         }
     }
 
-    override fun bintray(): RepoSpec {
+    override fun bintray(): AbstractRepoSpec {
 
         // validation: only one bintray spec is allowed
 
@@ -160,19 +190,17 @@ open class JarbirdExtensionImpl(private val project: Project) : JarbirdExtension
             repos.clear()
             isDefaultRepos = false
         }
-        return repos.find { it is BintraySpec } ?: BintraySpec(project).also {
+        return repos.find { it is BintraySpec } ?: BintraySpec(projectProperty).also {
             repos.add(it)
         }
     }
 
-    override fun getRepos(): Set<RepoSpec> {
+    override fun getRepos(): Set<AbstractRepoSpec> {
         return repos
     }
 
     fun finalizeRepos() {
-        if (repos.find { it is BintraySpec } != null) {
-            mavenLocal()
-        }
+        mavenLocal()
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
     }
 }

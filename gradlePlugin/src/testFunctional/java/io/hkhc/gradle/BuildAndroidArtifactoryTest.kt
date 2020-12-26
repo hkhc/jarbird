@@ -32,7 +32,6 @@ import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
 import io.hkhc.utils.test.tempDirectory
-import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
@@ -102,9 +101,11 @@ class BuildAndroidArtifactoryTest : FunSpec({
                     sourceSetTemplateDirs = arrayOf("functionalTestData/libaar")
                 }
 
-                mockServer = MockArtifactoryRepositoryServer().apply {
-                    setUp(coordinate, "/base")
-                }
+                mockServers.add(
+                    MockArtifactoryRepositoryServer().apply {
+                        setUp(coordinate, "/base")
+                    }
+                )
 
                 envs.apply {
                     val pair = getTestAndroidSdkHomePair()
@@ -131,7 +132,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
 
                 setupGradleProperties {
                     setupAndroidProperties()
-                    "repository.bintray.snapshot" to mockServer?.getServerUrl()
+                    "repository.bintray.snapshot" to mockServers[0].getServerUrl()
                     "repository.bintray.username" to "username"
                     "repository.bintray.apikey" to "password"
                 }
@@ -143,7 +144,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
         suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
 
             afterTest {
-                setup.mockServer?.teardown()
+                setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
                     FileTree().dump(setup.projectDir, System.out::println)
                 }
@@ -166,7 +167,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
                         )
                 }
 
-                setup.mockServer?.let { server ->
+                setup.mockServers.forEach { server ->
                     ArtifactoryRepoResult(
                         server.collectRequests(),
                         coordinate,
@@ -174,7 +175,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
                         "maven",
                         "aar"
                     ) should publishedToArtifactoryRepositoryCompletely()
-                } ?: fail("mock server is not available")
+                }
             }
         }
 

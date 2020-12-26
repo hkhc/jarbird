@@ -20,15 +20,10 @@ package io.hkhc.gradle.test
 
 import io.kotest.matchers.Matcher
 import io.kotest.matchers.MatcherResult
-import isSnapshot
 
 fun publishedToMavenRepositoryCompletely() = object : Matcher<MavenRepoResult> {
     override fun test(value: MavenRepoResult): MatcherResult {
-        if (value.coordinate.version.isSnapshot()) {
-            MavenPublishingChecker(value.coordinate, value.packaging).assertSnapshotArtifacts(value.recordedRequests)
-        } else {
-            MavenPublishingChecker(value.coordinate, value.packaging).assertReleaseArtifacts(value.recordedRequests)
-        }
+        MavenPublishingChecker(value.coordinates, value.packaging).assertArtifacts(value.recordedRequests)
         return MatcherResult(
             true,
             "All files should be published to Maven repository",

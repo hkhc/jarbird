@@ -59,6 +59,9 @@ class BintrayTaskBuilder(
             )
         }
 
+        println("bintray is not empty ${publishPlan.bintray.isNotEmpty()}")
+        println("artifactory is not empty ${publishPlan.artifactory.isNotEmpty()}")
+
         if (publishPlan.bintray.isNotEmpty() || publishPlan.artifactory.isNotEmpty()) {
 
             taskInfo.register(project.tasks) {

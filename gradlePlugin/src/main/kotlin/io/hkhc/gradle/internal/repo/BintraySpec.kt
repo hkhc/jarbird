@@ -18,14 +18,14 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
 import io.hkhc.gradle.endpoint.RepoEndpoint
-import org.gradle.api.Project
+import io.hkhc.gradle.internal.ProjectProperty
 
-class BintraySpec(project: Project) : RepoSpec() {
+class BintraySpec(projectProperry: ProjectProperty) : AbstractRepoSpec() {
 
-    private val endpoint = PropertyRepoEndpoint(project, "bintray")
+    // TODO need to override the description. the default value is for maven
+    private val endpoint = PropertyRepoEndpoint(projectProperry, "bintray")
 
     override fun getEndpoint(): RepoEndpoint {
         return endpoint

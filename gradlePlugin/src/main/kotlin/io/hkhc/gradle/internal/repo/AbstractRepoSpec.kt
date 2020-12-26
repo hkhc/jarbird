@@ -16,11 +16,24 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
+import io.hkhc.gradle.RepoSpec
 
-interface RepoSpec {
+abstract class AbstractRepoSpec : RepoSpec {
 
-    fun getEndpoint(): RepoEndpoint
+    override fun equals(other: Any?): Boolean {
+
+        return other?.let {
+            if (other is RepoSpec) {
+                return this.getEndpoint() == other.getEndpoint()
+            } else {
+                false
+            }
+        } ?: false
+    }
+
+    override fun hashCode(): Int {
+        return getEndpoint().hashCode()
+    }
 }

@@ -16,11 +16,17 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
+import org.gradle.api.logging.Logger
 
-interface RepoSpec {
+object JarbirdLogger {
 
-    fun getEndpoint(): RepoEndpoint
+    private var backLogger: Logger? = null
+
+    var logger: Logger
+        get() {
+            return backLogger ?: throw IllegalStateException("JarbirdLogger has not setup")
+        }
+        set(value) { backLogger = value }
 }

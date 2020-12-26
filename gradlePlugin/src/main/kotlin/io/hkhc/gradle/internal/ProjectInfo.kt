@@ -16,11 +16,13 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
+interface ProjectInfo {
 
-interface RepoSpec {
-
-    fun getEndpoint(): RepoEndpoint
+    var group: String
+    var artifactId: String
+    var version: String
+    var description: String
+    var archiveBaseName: String
 }

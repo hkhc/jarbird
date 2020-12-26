@@ -19,6 +19,7 @@
 package io.hkhc.gradle.pom
 
 import io.hkhc.gradle.pom.internal.pomPath
+import io.hkhc.utils.test.MockProjectInfo
 import io.hkhc.utils.test.`Array Fields merged properly when overlaying`
 import io.hkhc.utils.test.`Field perform overlay properly`
 import io.hkhc.utils.test.`Fields overlay properly`
@@ -28,12 +29,6 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import org.gradle.api.internal.project.DefaultProject
-import org.gradle.api.plugins.Convention
-import org.gradle.api.plugins.internal.DefaultBasePluginConvention
 import java.io.File
 import java.util.Calendar
 import java.util.GregorianCalendar
@@ -41,13 +36,7 @@ import java.util.GregorianCalendar
 // @ExtendWith(MockKExtension::class)
 internal class PomTest : StringSpec({
 
-    lateinit var project: DefaultProject
-
     beforeTest {
-        project = mockk(relaxed = true)
-        val convention: Convention = mockk(relaxed = true)
-        every { convention.plugins } returns mutableMapOf<String, Any>("base" to DefaultBasePluginConvention(project))
-        every { project.convention } returns convention
     }
 
     "Choose two file extensions" {
@@ -168,10 +157,8 @@ internal class PomTest : StringSpec({
 
         // GIVEN
         Pom.setDateHandler { GregorianCalendar.getInstance().apply { set(Calendar.YEAR, 1999) } }
-        every { project.group } returns "io.hkhc"
-        every { project.name } returns "mylib"
-        every { project.version } returns "1.0"
-        every { project.description } returns "desc"
+
+        val mockProject = MockProjectInfo("io.hkhc", "mylib", "1.0", "desc")
 
         val pom = Pom()
         pom.licenses.add(License("Apache-2.0"))
@@ -179,7 +166,7 @@ internal class PomTest : StringSpec({
         pom.scm.repoName = "hkhc/mylib"
 
         // WHEN
-        pom.syncWith(project)
+        pom.syncWith(mockProject)
 
         // THEN
         pom.group shouldBe "io.hkhc"
@@ -200,17 +187,15 @@ internal class PomTest : StringSpec({
 
         // GIVEN
         Pom.setDateHandler { GregorianCalendar.getInstance().apply { set(Calendar.YEAR, 1999) } }
-        every { project.name } returns "mylib"
         val pom = Pom(group = "io.hkhc", version = "1.0")
 
+        val mockProject = MockProjectInfo()
+
         // WHEN
-        pom.syncWith(project)
+        pom.syncWith(mockProject)
 
         // THEN
 
-        verify {
-            project.group = "io.hkhc"
-            project.name
-        }
+        mockProject.group shouldBe "io.hkhc"
     }
 })

@@ -18,12 +18,14 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.internal.repo.AbstractRepoSpec
+
 interface RepoDeclaration {
 
-    fun mavenLocal(): RepoSpec
-    fun mavenCentral(): RepoSpec
-    fun mavenRepo(key: String): RepoSpec
-    fun gradlePortal(): RepoSpec
-    fun bintray(): RepoSpec
-    fun getRepos(): Set<RepoSpec>
+    fun mavenLocal(): AbstractRepoSpec
+    fun mavenCentral(): AbstractRepoSpec
+    fun mavenRepo(key: String): AbstractRepoSpec
+    fun gradlePortal(): AbstractRepoSpec
+    fun bintray(): AbstractRepoSpec
+    fun getRepos(): Set<AbstractRepoSpec>
 }

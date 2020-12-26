@@ -16,11 +16,14 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.utils.test
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
+import io.hkhc.gradle.internal.ProjectInfo
 
-interface RepoSpec {
-
-    fun getEndpoint(): RepoEndpoint
-}
+data class MockProjectInfo(
+    override var group: String = "",
+    override var artifactId: String = "",
+    override var version: String = "",
+    override var description: String = "",
+    override var archiveBaseName: String = ""
+) : ProjectInfo

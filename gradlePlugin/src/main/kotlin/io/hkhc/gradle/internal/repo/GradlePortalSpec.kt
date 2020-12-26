@@ -18,10 +18,9 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.endpoint.RepoEndpoint
 
-class GradlePortalSpec : RepoSpec() {
+class GradlePortalSpec : AbstractRepoSpec() {
 
     override fun getEndpoint(): RepoEndpoint {
         return NullRepo()

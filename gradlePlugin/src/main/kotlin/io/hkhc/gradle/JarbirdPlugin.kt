@@ -23,6 +23,7 @@ import com.jfrog.bintray.gradle.BintrayPlugin
 import io.hkhc.gradle.internal.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.internal.BuildFlowBuilder
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
+import io.hkhc.gradle.internal.JarbirdLogger
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
@@ -30,13 +31,12 @@ import io.hkhc.gradle.internal.PLUGIN_ID
 import io.hkhc.gradle.internal.SP_EXT_NAME
 import io.hkhc.gradle.internal.gradleAfterEvaluate
 import io.hkhc.gradle.internal.isMultiProjectRoot
+import io.hkhc.gradle.internal.isRoot
 import io.hkhc.gradle.internal.needGradlePlugin
 import io.hkhc.gradle.internal.needSigning
 import io.hkhc.gradle.internal.utils.detailMessageError
 import io.hkhc.gradle.internal.utils.fatalMessage
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.pom.PomGroup
-import io.hkhc.gradle.pom.internal.PomGroupFactory
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -46,10 +46,9 @@ import org.gradle.plugins.signing.SigningPlugin
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 
 @Suppress("unused")
-class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
+class JarbirdPlugin : Plugin<Project> {
 
     private lateinit var extension: JarbirdExtensionImpl
-    private lateinit var pomGroup: PomGroup
     private var androidPluginAppliedBeforeUs = false
 
     /*
@@ -100,26 +99,8 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
         }
     }
 
-    override fun initPub(pub: JarbirdPub) {
-
-        pub.pom = pomGroup[pub.variant]
-
-        // TODO we ignore that pom overwrite some project properties in the mean time.
-        // need to properly take care of it.
-        pub.pom.syncWith(project)
-
-        // TODO handle two publications of same artifactaId in the same module.
-        // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
-        pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
-
-        // pre-check of final data, for child project
-        // TODO handle multiple level child project?
-        if (!project.isMultiProjectRoot()) {
-            precheck(pub.pom, project)
-        }
-    }
-
     @Suppress("ThrowsCount")
+    // TODO revamp precheck to based on POM Group rather than project
     private fun precheck(pom: Pom, project: Project) {
         with(project) {
             if (group.toString().isBlank()) {
@@ -161,15 +142,13 @@ class JarbirdPlugin : Plugin<Project>, PomGroupCallback {
      */
     override fun apply(p: Project) {
 
+        if (p.isRoot()) JarbirdLogger.logger = p.logger
+
         project = p
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
-        pomGroup = PomGroupFactory.resolvePomGroup(p.rootDir, p.projectDir)
 
         extension = JarbirdExtensionImpl(project)
         project.extensions.add(JarbirdExtension::class.java, SP_EXT_NAME, extension)
-        extension.pomGroupCallback = this
-
-        project.logger.debug("$LOG_PREFIX Aggregated POM configuration: $pomGroup")
 
         checkAndroidPlugin(p)
 

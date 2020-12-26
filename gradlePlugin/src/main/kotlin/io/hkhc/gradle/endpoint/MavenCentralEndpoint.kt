@@ -18,10 +18,13 @@
 
 package io.hkhc.gradle.endpoint
 
+import io.hkhc.gradle.internal.DefaultProjectProperty
+import io.hkhc.gradle.internal.JarbirdLogger
+import io.hkhc.gradle.internal.ProjectProperty
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
-class MavenCentralEndpoint(val project: Project) : RepoEndpoint() {
+class MavenCentralEndpoint(val projectProperty: ProjectProperty) : RepoEndpoint() {
 
     override val releaseUrl: String
         get() = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
@@ -33,11 +36,11 @@ class MavenCentralEndpoint(val project: Project) : RepoEndpoint() {
         get() {
             return try {
                 resolveProperty(
-                    project,
+                    projectProperty,
                     "repository.mavencentral.username"
                 )
             } catch (g: GradleException) {
-                project.logger.warn("Maven Central username is not found.")
+                JarbirdLogger.logger.warn("Maven Central username is not found.")
                 ""
             }
         }
@@ -46,11 +49,11 @@ class MavenCentralEndpoint(val project: Project) : RepoEndpoint() {
         get() {
             return try {
                 resolveProperty(
-                    project,
+                    projectProperty,
                     "repository.mavencentral.password"
                 )
             } catch (g: GradleException) {
-                project.logger.warn("Maven Central password is not found.")
+                JarbirdLogger.logger.warn("Maven Central password is not found.")
                 ""
             }
         }
@@ -66,5 +69,5 @@ class MavenCentralEndpoint(val project: Project) : RepoEndpoint() {
 }
 
 fun Project.mavenCentral(): RepoEndpoint {
-    return MavenCentralEndpoint(this)
+    return MavenCentralEndpoint(DefaultProjectProperty(this))
 }

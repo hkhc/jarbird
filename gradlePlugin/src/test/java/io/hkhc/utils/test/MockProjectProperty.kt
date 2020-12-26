@@ -16,24 +16,13 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.utils.test
 
-import io.hkhc.gradle.pom.Pom
-import io.kotest.core.spec.style.FunSpec
-import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.Constructor
-import java.io.File
+import io.hkhc.gradle.internal.ProjectProperty
 
-class SnakeTest : FunSpec({
+class MockProjectProperty(private val map: Map<String, String>) : ProjectProperty {
 
-    test("test1") {
-
-        val yaml = Yaml(Constructor(Pom::class.java))
-
-        val pomStr = File("./pom.yaml").readText()
-
-        val pom: Pom = yaml.load(pomStr)
-
-        System.out.println(pom)
+    override fun property(name: String): Any? {
+        return map[name]
     }
-})
+}

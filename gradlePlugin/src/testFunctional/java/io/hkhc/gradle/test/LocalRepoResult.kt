@@ -29,7 +29,7 @@ data class LocalRepoResult(
 
 data class MavenRepoResult(
     val recordedRequests: List<RecordedRequest>,
-    val coordinate: Coordinate,
+    val coordinates: List<Coordinate>,
     val packaging: String
 )
 
