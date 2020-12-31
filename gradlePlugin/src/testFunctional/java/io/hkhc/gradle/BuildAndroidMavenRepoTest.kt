@@ -90,8 +90,7 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:publishTestArtifactReleasePublicationToMavenMockRepository=SUCCESS",
             ":lib:jbPublishTestArtifactReleaseToMavenMock=SUCCESS",
             ":lib:jbPublishTestArtifactReleaseToMavenRepository=SUCCESS",
-            ":lib:jbPublishToMavenRepository=SUCCESS",
-            ":jbPublishToMavenRepository=SUCCESS"
+            ":lib:jbPublishToMavenRepository=SUCCESS"
         )
 
         val snapshotExpectedTaskList = listOf(
@@ -134,8 +133,7 @@ class BuildAndroidMavenRepoTest : FunSpec({
             ":lib:publishTestArtifactReleasePublicationToMavenMockRepository=SUCCESS",
             ":lib:jbPublishTestArtifactReleaseToMavenMock=SUCCESS",
             ":lib:jbPublishTestArtifactReleaseToMavenRepository=SUCCESS",
-            ":lib:jbPublishToMavenRepository=SUCCESS",
-            ":jbPublishToMavenRepository=SUCCESS"
+            ":lib:jbPublishToMavenRepository=SUCCESS"
         )
 
         fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {

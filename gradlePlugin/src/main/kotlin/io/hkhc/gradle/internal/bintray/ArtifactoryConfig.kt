@@ -19,14 +19,13 @@
 package io.hkhc.gradle.internal.bintray
 
 import groovy.lang.GroovyObject
-import io.hkhc.gradle.BintrayPublishConfig
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isSingleProject
 import io.hkhc.gradle.internal.pubNameWithVariant
-import io.hkhc.gradle.internal.repo.BintraySpec
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName
@@ -43,35 +42,35 @@ class ArtifactoryConfig(
 ) {
 
     private var repoUrl = "https://oss.jfrog.org"
-    private val pubConfig = BintrayPublishConfig(project)
+//    private val pubConfig = BintrayPublishConfig(project)
     private val publishPlan = BintrayPublishPlan(pubs)
     private val artifactoryLibNames = publishPlan.artifactoryLibs.map { it.pubNameWithVariant() }.toTypedArray()
 
     fun config() {
 
         // TODO show warning if there are more than one BintraySpec in list
-        val endpoint = pubs.flatMap { it.getRepos() }.filterIsInstance<BintraySpec>().first().getEndpoint()
+        val repoSpec = pubs.flatMap { it.getRepos() }.filterIsInstance<ArtifactoryRepoSpec>().first()
 
-        val customRepoUrl = endpoint.snapshotUrl
+        val customRepoUrl = if (pubs[0].pom.isSnapshot()) repoSpec.snapshotUrl else repoSpec.releaseUrl
         if (customRepoUrl != "") repoUrl = customRepoUrl
 
         val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
         when {
             project.isSingleProject() -> {
-                convention.configSingle(false)
+                convention.configSingle(false, repoSpec)
                 configTask()
             }
             project.isMultiProjectRoot() -> {
                 // convention.configSingle(true)
             }
             else -> {
-                convention.configSingle(false)
+                convention.configSingle(false, repoSpec)
                 configTask()
             }
         }
     }
 
-    private fun ArtifactoryPluginConvention.configSingle(isRootProject: Boolean) {
+    private fun ArtifactoryPluginConvention.configSingle(isRootProject: Boolean, repoSpec: ArtifactoryRepoSpec) {
 
         project.logger.debug("$LOG_PREFIX configure Artifactory plugin for single project")
 
@@ -80,9 +79,9 @@ class ArtifactoryConfig(
             delegateClosureOf<PublisherConfig> {
                 repository(
                     delegateClosureOf<GroovyObject> {
-                        setProperty("repoKey", "oss-snapshot-local")
-                        setProperty("username", pubConfig.bintrayUsername)
-                        setProperty("password", pubConfig.bintrayApiKey)
+                        setProperty("repoKey", repoSpec.repoKey)
+                        setProperty("username", repoSpec.username)
+                        setProperty("password", repoSpec.password)
                         setProperty("maven", true)
                     }
                 )

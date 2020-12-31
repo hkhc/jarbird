@@ -18,15 +18,4 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
-import io.hkhc.gradle.endpoint.RepoEndpoint
-import io.hkhc.gradle.internal.ProjectProperty
-
-class MavenRepoSpec(projectProperty: ProjectProperty, key: String) : AbstractRepoSpec(), MavenSpec {
-
-    private val endpoint = PropertyRepoEndpoint(projectProperty, "maven.$key")
-
-    override fun getEndpoint(): RepoEndpoint {
-        return endpoint
-    }
-}
+class GradlePortalSpecImpl : NullRepoSpec()

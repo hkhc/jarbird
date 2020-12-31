@@ -31,7 +31,7 @@ class RepoTest : FunSpec({
     }
 
     test("MavenLocalSpec equality") {
-        MavenLocalSpec() shouldBe MavenLocalSpec()
+        MavenLocalRepoSpecImpl() shouldBe MavenLocalRepoSpecImpl()
     }
 
     test("MavenCentralSpec equality") {
@@ -41,11 +41,11 @@ class RepoTest : FunSpec({
                 "repository.mavencentral.password" to "password"
             )
         )
-        MavenCentralSpec(projectProperty) shouldBe MavenCentralSpec(projectProperty)
+        MavenCentralRepoSpecImpl(projectProperty) shouldBe MavenCentralRepoSpecImpl(projectProperty)
     }
 
     test("GradlePortalSpec equality") {
-        GradlePortalSpec() shouldBe GradlePortalSpec()
+        GradlePortalSpecImpl() shouldBe GradlePortalSpecImpl()
     }
 
     test("BintraySpec equality") {
@@ -55,7 +55,7 @@ class RepoTest : FunSpec({
                 "repository.bintray.password" to "password"
             )
         )
-        BintraySpec(projectProperty) shouldBe BintraySpec(projectProperty)
+        BintrayRepoSpecImpl(projectProperty) shouldBe BintrayRepoSpecImpl(projectProperty)
     }
 
     test("MavenRepoSpec equality") {
@@ -70,6 +70,6 @@ class RepoTest : FunSpec({
             )
         )
 
-        MavenRepoSpec(projectProperty, "mock") shouldBe MavenRepoSpec(projectProperty, "mock")
+        MavenRepoSpecImpl(projectProperty, "mock") shouldBe MavenRepoSpecImpl(projectProperty, "mock")
     }
 })

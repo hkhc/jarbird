@@ -96,9 +96,11 @@ class BuildMavenBintrayRepoTest : FunSpec({
 
                     if (bintray) {
                         if (coordinate.version.isSnapshot()) {
+                            "repository.bintray.release" to "fake-url-that-is-not-going-to-work"
                             "repository.bintray.snapshot" to artifactoryMockServer?.getServerUrl()
                         } else {
                             "repository.bintray.release" to bintrayMockServer?.getServerUrl()
+                            "repository.bintray.snapshot" to "fake-url-that-is-not-going-to-work"
                         }
                         "repository.bintray.username" to "username"
                         "repository.bintray.apikey" to "password"
@@ -223,6 +225,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     ":artifactoryPublish=SUCCESS",
                     ":extractModuleInfo=SUCCESS",
                     ":artifactoryDeploy=SUCCESS",
+                    ":jbPublishToArtifactory=SUCCESS",
                     ":jbPublishToBintray=SUCCESS",
                     ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
                     ":jbPublishTestArtifactToMavenLocal=SUCCESS",

@@ -18,8 +18,15 @@
 
 package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.internal.repo.BintraySpec
-import io.hkhc.gradle.internal.repo.MavenLocalSpec
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpecImpl
+import io.hkhc.gradle.internal.repo.BintrayRepoSpecImpl
+import io.hkhc.gradle.internal.repo.BintraySnapshotRepoSpecImpl
+import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
+import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
+import io.hkhc.gradle.pom.PomGroup
+import io.hkhc.gradle.pom.internal.PomGroupFactory
+import io.hkhc.utils.test.MockProjectInfo
+import io.hkhc.utils.test.MockProjectProperty
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -36,6 +43,31 @@ import java.io.File
 class JarbirdExtensionTest : FunSpec({
 
     lateinit var project: Project
+    lateinit var projectProperty: ProjectProperty
+    lateinit var projectInfo: ProjectInfo
+    lateinit var pomGroup: PomGroup
+
+    fun commonPom(version: String) =
+        """
+            group: mygroup
+            artifactId: myplugin
+            version: $version
+            description: Test artifact
+            packaging: jar
+        """.trimIndent()
+
+    fun commonGradlePluginPom(version: String) =
+        """
+            group: mygroup
+            artifactId: myplugin
+            version: $version
+            description: Test artifact
+            packaging: jar
+            plugin:
+                id: mygroup.myplugin
+                displayName: Testing Plugin
+                implementationClass: plugin.class
+        """.trimIndent()
 
     beforeTest {
         val projectDir = tempDirectory()
@@ -54,26 +86,35 @@ class JarbirdExtensionTest : FunSpec({
         every { project.property("repository.bintray.username") } returns "username"
         every { project.property("repository.bintray.password") } returns "password"
         every { project.property(any()) } returns ""
+
+        projectProperty = MockProjectProperty(
+            mapOf(
+                "repository.bintray.username" to "username",
+                "repository.bintray.password" to "password"
+            )
+        )
+        projectInfo = MockProjectInfo()
+        pomGroup = PomGroupFactory.resolvePomGroup(projectDir, File(projectDir, "module"))
     }
 
     context("initialization with no explicit pub declaration") {
 
         test("Plain extension should have some default repo") {
-            val ext = JarbirdExtensionImpl(project)
+            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
             ext.pubList.shouldBeEmpty()
 
             ext.createImplicit()
             ext.pubList.shouldHaveSize(1)
 
-            ext.finalizeRepos()
-            ext.repos.shouldContainExactly(setOf(MavenLocalSpec()))
-
             ext.removeImplicit()
-            ext.repos.shouldHaveSize(1)
+            ext.repos.shouldHaveSize(0)
+
+            ext.finalizeRepos()
+            ext.repos.shouldContainExactly(setOf(MavenLocalRepoSpecImpl()))
         }
 
         test("Implicit pub will be removed if there are explicitly declared pub") {
-            val ext = JarbirdExtensionImpl(project)
+            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
             ext.pubList.shouldBeEmpty()
 
             ext.createImplicit()
@@ -81,16 +122,16 @@ class JarbirdExtensionTest : FunSpec({
 
             ext.pub { }
 
-            ext.finalizeRepos()
-            ext.repos.shouldContainExactly(setOf(MavenLocalSpec()))
-
             ext.removeImplicit()
-            ext.repos.shouldHaveSize(1)
+            ext.repos.shouldHaveSize(0)
+
+            ext.finalizeRepos()
+            ext.repos.shouldContainExactly(setOf(MavenLocalRepoSpecImpl()))
         }
 
         test("Explicitly declared repo") {
 
-            val ext = JarbirdExtensionImpl(project)
+            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
             ext.pubList.shouldBeEmpty()
 
             ext.createImplicit()
@@ -100,32 +141,63 @@ class JarbirdExtensionTest : FunSpec({
 
             ext.pub { }
 
-            ext.finalizeRepos()
-            ext.repos.shouldContainExactlyInAnyOrder(setOf(MavenLocalSpec(), BintraySpec(DefaultProjectProperty(project))))
-
             ext.pubList[0].needsBintray() shouldBe true
             ext.pubList.needsBintray() shouldBe true
+
+            ext.finalizeRepos()
+            ext.repos.shouldContainExactlyInAnyOrder(setOf(
+                MavenLocalRepoSpecImpl(),
+                BintrayRepoSpecImpl(projectProperty)
+            ))
         }
 
-        test("Publish gradle plugin to bintray is supported with release version") {
+        test("Publish to maven repo") {
 
             listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
 
-                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(
-                    """
-                        group: mygroup
-                        artifactId: myplugin
-                        version: $version
-                        description: Test artifact
-                        packaging: jar
-                        plugin:
-                            id: mygroup.myplugin
-                            displayName: Testing Plugin
-                            implementationClass: plugin.class
-                    """.trimIndent()
+                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
+                pomGroup = PomGroupFactory.resolvePomGroup(project.projectDir, File(project.projectDir, "module"))
+
+                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                ext.pubList.shouldBeEmpty()
+
+                ext.createImplicit()
+                ext.pubList.shouldHaveSize(1)
+
+                ext.mavenRepo("mock")
+
+                ext.pub { }
+
+                ext.removeImplicit()
+
+                ext.finalizeRepos()
+
+                ext.repos.shouldContainExactlyInAnyOrder(
+                    setOf(MavenLocalRepoSpecImpl(), MavenRepoSpecImpl(projectProperty, "mock"))
                 )
 
-                val ext = JarbirdExtensionImpl(project)
+                if (ext.pubList[0].pom.isSnapshot()) {
+                    ext.pubList.needsArtifactory() shouldBe false
+                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe true
+                } else {
+                    ext.pubList.needsArtifactory() shouldBe false
+                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe true
+                }
+            }
+        }
+
+        test("Publish to bintray") {
+
+            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
+
+                System.out.println("version " + version)
+
+                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
+                pomGroup = PomGroupFactory.resolvePomGroup(project.projectDir, File(project.projectDir, "module"))
+
+                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
                 ext.pubList.shouldBeEmpty()
 
                 ext.createImplicit()
@@ -135,14 +207,180 @@ class JarbirdExtensionTest : FunSpec({
 
                 ext.pub { }
 
+                ext.removeImplicit()
+
                 ext.finalizeRepos()
+
+                if (ext.pubList[0].pom.isSnapshot()) {
+
+                    ext.repos.shouldContainExactlyInAnyOrder(
+                        setOf(MavenLocalRepoSpecImpl(), BintrayRepoSpecImpl(projectProperty), BintrayRepoSpecImpl(projectProperty))
+                    )
+
+                    (ext.pubList[0] as JarbirdPubImpl).getRepos().shouldContainExactlyInAnyOrder(
+                        setOf(MavenLocalRepoSpecImpl(), BintrayRepoSpecImpl(projectProperty), BintraySnapshotRepoSpecImpl(BintrayRepoSpecImpl(projectProperty)))
+                    )
+
+                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needsBintray() shouldBe true
+                    ext.pubList.needsNonLocalMaven() shouldBe false
+                } else {
+
+                    ext.repos.shouldContainExactlyInAnyOrder(
+                        setOf(MavenLocalRepoSpecImpl(), BintrayRepoSpecImpl(projectProperty))
+                    )
+
+                    (ext.pubList[0] as JarbirdPubImpl).getRepos().shouldContainExactlyInAnyOrder(
+                        setOf(MavenLocalRepoSpecImpl(), BintrayRepoSpecImpl(projectProperty))
+                    )
+
+                    ext.pubList.needsArtifactory() shouldBe false
+                    ext.pubList.needsBintray() shouldBe true
+                    ext.pubList.needsNonLocalMaven() shouldBe false
+                }
+            }
+        }
+
+        test("Publish to maven repo and bintray") {
+
+            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
+
+                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
+
+                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                ext.pubList.shouldBeEmpty()
+
+                ext.createImplicit()
+                ext.pubList.shouldHaveSize(1)
+
+                ext.mavenRepo("mock")
+                ext.bintray()
+
+                ext.pub { }
+
+                ext.removeImplicit()
+
+                ext.finalizeRepos()
+
                 ext.repos.shouldContainExactlyInAnyOrder(
-                    setOf(MavenLocalSpec(), BintraySpec(DefaultProjectProperty(project)))
+                    setOf(MavenLocalRepoSpecImpl(), BintrayRepoSpecImpl(projectProperty), MavenRepoSpecImpl(projectProperty, "mock"))
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList[0].needsBintray() shouldBe false
+                    ext.pubList.needsArtifactory() shouldBe true
                     ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe true
+                } else {
+                    ext.pubList.needsArtifactory() shouldBe false
+                    ext.pubList.needsBintray() shouldBe true
+                    ext.pubList.needsNonLocalMaven() shouldBe true
+                }
+            }
+        }
+        test("Publish to artifactory") {
+
+            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
+
+                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
+
+                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                ext.pubList.shouldBeEmpty()
+
+                ext.createImplicit()
+                ext.pubList.shouldHaveSize(1)
+
+                ext.artifactory()
+
+                ext.pub { }
+
+                ext.removeImplicit()
+
+                ext.finalizeRepos()
+
+                ext.repos.shouldContainExactlyInAnyOrder(
+                    setOf(MavenLocalRepoSpecImpl(), ArtifactoryRepoSpecImpl(projectProperty))
+                )
+
+                if (ext.pubList[0].pom.isSnapshot()) {
+                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe false
+                } else {
+                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe false
+                }
+            }
+        }
+
+        test("Publish to maven repo and artifactory") {
+
+            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
+
+                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
+
+                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                ext.pubList.shouldBeEmpty()
+
+                ext.createImplicit()
+                ext.pubList.shouldHaveSize(1)
+
+                ext.mavenRepo("mock")
+                ext.artifactory()
+
+                ext.pub { }
+
+                ext.removeImplicit()
+
+                ext.finalizeRepos()
+
+                ext.repos.shouldContainExactlyInAnyOrder(
+                    setOf(MavenLocalRepoSpecImpl(), ArtifactoryRepoSpecImpl(projectProperty), MavenRepoSpecImpl(projectProperty, "mock"))
+                )
+
+                if (ext.pubList[0].pom.isSnapshot()) {
+                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe true
+                } else {
+                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe true
+                }
+            }
+        }
+        test("Publish gradle plugin to bintray is supported with release version") {
+
+            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
+
+                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom(version))
+
+                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                ext.pubList.shouldBeEmpty()
+
+                ext.createImplicit()
+                ext.pubList.shouldHaveSize(1)
+
+                ext.bintray()
+
+                ext.pub { }
+
+                ext.removeImplicit()
+
+                ext.finalizeRepos()
+
+                ext.repos.shouldContainExactlyInAnyOrder(
+                    setOf(MavenLocalRepoSpecImpl(), BintrayRepoSpecImpl(projectProperty))
+                )
+
+                if (ext.pubList[0].pom.isSnapshot()) {
+                    ext.pubList.needsArtifactory() shouldBe false
+                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe false
+                } else {
+                    ext.pubList.needsArtifactory() shouldBe false
+                    ext.pubList.needsBintray() shouldBe true
+                    ext.pubList.needsNonLocalMaven() shouldBe false
                 }
             }
         }

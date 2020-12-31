@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.internal
 
+import io.hkhc.gradle.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryConfig
@@ -99,11 +100,13 @@ internal class BuildFlowBuilder(
                 )
 
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
-                if (bintrayPublishPlan.bintray.isNotEmpty()) {
+                if (pubs.needsBintray() &&
+                    pubs.any { !it.pom.isSnapshot() && it.getRepos().any { repo -> repo is BintrayRepoSpec } }
+                ) {
                     logger.info("config bintray")
                     BintrayConfig(this, extension as JarbirdExtensionImpl, pubs).config()
                 }
-                if (bintrayPublishPlan.artifactory.isNotEmpty()) {
+                if (pubs.needsArtifactory()) {
                     logger.info("config artifactory")
                     ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()
                 }

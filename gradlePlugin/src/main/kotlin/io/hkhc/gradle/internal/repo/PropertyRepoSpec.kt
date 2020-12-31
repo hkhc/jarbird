@@ -16,17 +16,14 @@
  *
  */
 
-package io.hkhc.gradle.endpoint
+package io.hkhc.gradle.internal.repo
 
 import io.hkhc.gradle.JarbirdPlugin
+import io.hkhc.gradle.endpoint.resolveProperty
 import io.hkhc.gradle.internal.ProjectProperty
 
-class PropertyRepoEndpoint(private val projectProperty: ProjectProperty, private val key: String) :
-    AbstractRepoEndpoint() {
-
-    init {
-//        Exception("PropertyMavenEndpoint constructor").printStackTrace()
-    }
+open class PropertyRepoSpec(private val projectProperty: ProjectProperty, private val key: String) :
+    AbstractRepoSpec() {
 
     private val keyPrefix = "repository"
 
@@ -44,9 +41,6 @@ class PropertyRepoEndpoint(private val projectProperty: ProjectProperty, private
 
     override val password: String
         get() = resolveProperty(projectProperty, "$keyPrefix.$key.password")
-
-    override val apikey: String
-        get() = resolveProperty(projectProperty, "$keyPrefix.$key.apikey")
 
     override val description: String
         get() {

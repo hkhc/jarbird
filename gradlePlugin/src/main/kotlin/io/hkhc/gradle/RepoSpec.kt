@@ -18,9 +18,12 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
-
 interface RepoSpec {
 
-    fun getEndpoint(): RepoEndpoint
+    val releaseUrl: String
+    val snapshotUrl: String
+    val username: String
+    val password: String
+    val description: String
+    val id: String
 }

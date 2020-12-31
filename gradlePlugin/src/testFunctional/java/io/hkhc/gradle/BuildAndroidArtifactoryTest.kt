@@ -79,7 +79,6 @@ class BuildAndroidArtifactoryTest : FunSpec({
             ":lib:extractReleaseAnnotations=SUCCESS",
             ":lib:mergeReleaseGeneratedProguardFiles=SUCCESS",
             ":lib:mergeReleaseConsumerProguardFiles=SUCCESS",
-            ":lib:mergeReleaseJavaResource=SUCCESS",
             ":lib:syncReleaseLibJars=SUCCESS",
             ":lib:bundleReleaseAar=SUCCESS",
             ":lib:generateMetadataFileForTestArtifactReleasePublication=SUCCESS",
@@ -87,6 +86,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
             ":extractModuleInfo=SUCCESS",
             ":lib:extractModuleInfo=SUCCESS",
             ":artifactoryDeploy=SUCCESS",
+            ":lib:jbPublishToArtifactory=SUCCESS",
             ":lib:jbPublishToBintray=SUCCESS"
         )
 
@@ -162,7 +162,8 @@ class BuildAndroidArtifactoryTest : FunSpec({
                         setup.expectedTaskList except listOf(
                             ":lib:stripReleaseDebugSymbols=NO_SOURCE",
                             ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
-                            ":lib:generateReleaseRFile=SUCCESS"
+                            ":lib:generateReleaseRFile=SUCCESS",
+                            ":lib:mergeReleaseJavaResource=SUCCESS"
                         )
                         )
                 }

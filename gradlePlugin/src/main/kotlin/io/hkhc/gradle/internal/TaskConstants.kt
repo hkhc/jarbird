@@ -33,12 +33,14 @@ internal const val TO_MAVEN_LOCAL = "To$MAVEN_LOCAL_CAP"
 internal const val TO_MAVEN_REPO = "ToMavenRepository"
 internal const val TO_GRADLE_PORTAL = "ToGradlePortal"
 internal const val TO_BINTRAY = "ToBintray"
+internal const val TO_ARTIFACTORY = "ToArtifactory"
 
 internal const val PLUGIN_MARKER_PUB_SUFFIX = "PluginMarkerMaven"
 
 private const val JB_PUBLISH_TO_MAVEN_LOCAL_TASK = "$JB_TASK_PREFIX$TO_MAVEN_LOCAL"
 private const val JB_PUBLISH_TO_MAVEN_REPO_TASK = "$JB_TASK_PREFIX$TO_MAVEN_REPO"
 private const val JB_PUBLISH_TO_BINTRAY_TASK = "$JB_TASK_PREFIX$TO_BINTRAY"
+private const val JB_PUBLISH_TO_ARTIFACTORY_TASK = "$JB_TASK_PREFIX$TO_ARTIFACTORY"
 internal const val JB_PUBLISH_TO_GRADLE_PORTAL_TASK = "$JB_TASK_PREFIX$TO_GRADLE_PORTAL"
 
 interface TaskInfo {
@@ -50,6 +52,7 @@ interface TaskInfo {
 
     fun register(container: TaskContainer, block: Task.() -> Unit = {}): TaskProvider<Task> {
         return container.register(name) {
+            println("TaskInfo: register $name")
             val task = this
             task.group = this@TaskInfo.group
             task.description = this@TaskInfo.description
@@ -101,9 +104,9 @@ class JbPublishToMavenRepoTaskInfo : TaskInfo {
 
 class JbPublishToCustomMavenRepoTaskInfo(val repo: RepoSpec) : TaskInfo {
     override val name: String
-        get() = "${JB_TASK_PREFIX}To${repo.getEndpoint().id}"
+        get() = "${JB_TASK_PREFIX}To${repo.id}"
     override val description: String
-        get() = "Publish Maven publications to the maven Repository '${repo.getEndpoint().id}'"
+        get() = "Publish Maven publications to the maven Repository '${repo.id}'"
 }
 
 class JbPublishPubToMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo {
@@ -120,7 +123,7 @@ class JbPublishPubToMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo {
 
 class JbPublishPubToCustomMavenRepoTaskInfo(val pub: JarbirdPub, val repo: RepoSpec) : TaskInfo {
     override val name: String
-        get() = "$JB_TASK_PREFIX${pub.pubNameCap}To${repo.getEndpoint().id }"
+        get() = "$JB_TASK_PREFIX${pub.pubNameCap}To${repo.id }"
     override val description: String
         get() = if (pub.pom.isGradlePlugin()) {
             "Publish '${pub.getGAV()}' and plugin marker '${pub.pluginCoordinate()}' to TODO... "
@@ -184,6 +187,14 @@ class JbPublishToBintrayTaskInfo(private val publishPlan: BintrayPublishPlan) : 
         }
 }
 
+class JbPublishToArtifactoryTaskInfo(private val publishPlan: BintrayPublishPlan) : TaskInfo {
+
+    override val name: String
+        get() = JB_PUBLISH_TO_ARTIFACTORY_TASK
+    override val description: String
+        get() = "TODO..."
+}
+
 class JbPublishPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
     override val name: String
         get() = "$JB_TASK_PREFIX${pub.pubNameCap}"
@@ -193,7 +204,7 @@ class JbPublishPubTaskInfo(private val pub: JarbirdPub) : TaskInfo {
             val repoList = mutableListOf<String>()
             repoList.add("Maven Local")
             if (pub.needsNonLocalMaven()) {
-                val repoNames = pub.getRepos().joinToString(",", "'", "'") { it.getEndpoint().id }
+                val repoNames = pub.getRepos().joinToString(",", "'", "'") { it.id }
                 repoList.add("$repoNames Repository")
             }
             if (pub.needsBintray()) {

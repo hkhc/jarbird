@@ -16,15 +16,14 @@
  *
  */
 
-package io.hkhc.gradle.endpoint
+package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.internal.DefaultProjectProperty
+import io.hkhc.gradle.endpoint.resolveProperty
 import io.hkhc.gradle.internal.JarbirdLogger
 import io.hkhc.gradle.internal.ProjectProperty
 import org.gradle.api.GradleException
-import org.gradle.api.Project
 
-class MavenCentralEndpoint(val projectProperty: ProjectProperty) : AbstractRepoEndpoint() {
+class MavenCentralRepoSpecImpl(private val projectProperty: ProjectProperty) : AbstractRepoSpec(), MavenSpec {
 
     override val releaseUrl: String
         get() = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
@@ -58,16 +57,9 @@ class MavenCentralEndpoint(val projectProperty: ProjectProperty) : AbstractRepoE
             }
         }
 
-    override val apikey: String
-        get() = ""
-
     override val description: String
         get() = "Maven Central"
 
     override val id: String
         get() = "MavenCentral"
-}
-
-fun Project.mavenCentral(): RepoEndpoint {
-    return MavenCentralEndpoint(DefaultProjectProperty(this))
 }

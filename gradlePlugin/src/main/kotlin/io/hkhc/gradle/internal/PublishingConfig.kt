@@ -201,10 +201,10 @@ internal class PublishingConfig(
 
         releaseEndpoints.forEach {
 
-            println("releaseEndpoint ${it::class.java.name} ${it.getEndpoint().id} ${it.getEndpoint().description}")
+            println("releaseEndpoint ${it::class.java.name} ${it.id} ${it.description}")
 
             maven {
-                with(it.getEndpoint()) {
+                with(it) {
                     val ep = this
                     name = ep.id
                     url = project.uri(ep.releaseUrl)
@@ -217,10 +217,10 @@ internal class PublishingConfig(
         }
 
         snapshotEndpoint.forEach {
-            println("snapshotEndpoint ${it::class.java.name} ${it.getEndpoint().id} ${it.getEndpoint().description}")
+            println("snapshotEndpoint ${it::class.java.name} ${it.id} ${it.description}")
 
             maven {
-                with(it.getEndpoint()) {
+                with(it) {
                     val ep = this
                     name = ep.id
                     url = project.uri(ep.snapshotUrl)

@@ -18,42 +18,39 @@
 
 package io.hkhc.gradle.internal.bintray
 
-import io.hkhc.gradle.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JbPublishToArtifactoryTaskInfo
-import io.hkhc.gradle.internal.JbPublishToBintrayTaskInfo
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.TaskInfo
 import io.hkhc.gradle.internal.isMultiProjectRoot
-import io.hkhc.gradle.internal.needsArtifactory
 import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.registerRootProjectTasks
 import org.gradle.api.Project
 
-internal const val BINTRAY_UPLOAD_TASK = "bintrayUpload"
-// internal const val ARTIFACTORY_PUBLISH_TASK = "artifactoryPublish"
+// internal const val BINTRAY_UPLOAD_TASK = "bintrayUpload"
+internal const val ARTIFACTORY_PUBLISH_TASK = "artifactoryPublish"
 
-class BintrayTaskBuilder(
+class ArtifactoryTaskBuilder(
     private val project: Project,
     private val pubs: List<JarbirdPub>
 ) {
 
     val publishPlan = BintrayPublishPlan(pubs)
 
-    private val taskInfo: TaskInfo = JbPublishToBintrayTaskInfo(publishPlan)
+    private val taskInfo: TaskInfo = JbPublishToArtifactoryTaskInfo(publishPlan)
 
     fun getTaskInfo() = taskInfo
 
-    fun registerBintrayTask() {
+    fun registerArtifactoryTask() {
 
         if (project.isMultiProjectRoot()) {
             project.registerRootProjectTasks(taskInfo)
         } else {
-            registerLeafBintrayTask()
+            registerLeafArtifactoryTask()
         }
     }
 
-    private fun registerLeafBintrayTask() {
+    private fun registerLeafArtifactoryTask() {
 
         // no need to show message if we do not enable Bintray publishing
         if (pubs.needsBintray() && publishPlan.invalidPlugins.isNotEmpty()) {
@@ -65,7 +62,7 @@ class BintrayTaskBuilder(
         println("bintray is not empty ${publishPlan.bintray.isNotEmpty()}")
         println("artifactory is not empty ${publishPlan.artifactory.isNotEmpty()}")
 
-        if (pubs.needsBintray()) {
+        if (publishPlan.artifactory.isNotEmpty()) {
 
             taskInfo.register(project.tasks) {
                 /*
@@ -73,13 +70,7 @@ class BintrayTaskBuilder(
                     to the OSS JFrog repository
                  */
 
-                if (pubs.needsArtifactory()) {
-                    dependsOn(JbPublishToArtifactoryTaskInfo(publishPlan).name)
-                }
-
-                if (pubs.any { !it.pom.isSnapshot() && it.getRepos().any { repo -> repo is BintrayRepoSpec } }) {
-                    dependsOn(BINTRAY_UPLOAD_TASK)
-                }
+                dependsOn(ARTIFACTORY_PUBLISH_TASK)
             }
         }
     }

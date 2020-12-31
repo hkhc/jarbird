@@ -16,14 +16,8 @@
  *
  */
 
-package io.hkhc.gradle.endpoint
+package io.hkhc.gradle.internal.repo
 
-data class SimpleRepoEndpoint(
-    override val id: String,
-    override val releaseUrl: String,
-    override val snapshotUrl: String,
-    override val username: String,
-    override val password: String,
-    override val apikey: String = "",
-    override val description: String = id
-) : AbstractRepoEndpoint()
+import io.hkhc.gradle.internal.ProjectProperty
+
+class BintrayRepoSpecImpl(projectProperty: ProjectProperty) : PropertyBintrayRepoSpec(projectProperty, "bintray")

@@ -26,19 +26,22 @@ import io.kotest.matchers.shouldNotBe
 
 class RepoSpecTest : FunSpec({
 
+    fun createTestEndpoint() = SimpleRepoEndpoint(
+        "id",
+        "releaseUrl",
+        "snapshotUrl",
+        "username",
+        "password",
+        "apikey",
+        "description"
+    )
+
     test("Repo equality") {
 
         // To objects with identical data
 
-        val spec1 = SimpleRepoEndpoint(
-            "id", "releaseUrl", "snapshotUrl", "username", "password",
-            "apikey", "description"
-        )
-        val spec2 = SimpleRepoEndpoint(
-            "id", "releaseUrl", "snapshotUrl", "username", "password",
-            "apikey", "description"
-        )
-
+        val spec1 = createTestEndpoint()
+        val spec2 = createTestEndpoint()
         spec1 shouldBe spec2
     }
 
@@ -46,13 +49,15 @@ class RepoSpecTest : FunSpec({
 
         // To objects with different data
 
-        val spec1 = SimpleRepoEndpoint(
-            "id", "releaseUrl", "snapshotUrl", "username", "password",
-            "apikey", "description"
-        )
+        val spec1 = createTestEndpoint()
         val spec2 = SimpleRepoEndpoint(
-            "id", "releaseUrl", "snapshotUrl", "username", "password",
-            "apikey", "description different"
+            "id",
+            "releaseUrl",
+            "snapshotUrl",
+            "username",
+            "password",
+            "apikey",
+            "description different"
         )
 
         spec1 shouldNotBe spec2
@@ -62,15 +67,8 @@ class RepoSpecTest : FunSpec({
 
         // To objects with identical data
 
-        val spec1 = SimpleRepoEndpoint(
-            "id", "releaseUrl", "snapshotUrl", "username", "password",
-            "apikey", "description"
-        )
-        val spec2 = SimpleRepoEndpoint(
-            "id", "releaseUrl", "snapshotUrl", "username", "password",
-            "apikey", "description"
-        )
-
+        val spec1 = createTestEndpoint()
+        val spec2 = createTestEndpoint()
         val set = mutableSetOf(spec1, spec2)
 
         set shouldHaveSize 1
@@ -80,20 +78,9 @@ class RepoSpecTest : FunSpec({
 
         // To objects with identical data
 
-        val spec1 = mutableSetOf(
-            SimpleRepoEndpoint(
-                "id", "releaseUrl", "snapshotUrl", "username", "password",
-                "apikey", "description"
-            )
-        )
-        val spec2 = mutableSetOf(
-            SimpleRepoEndpoint(
-                "id", "releaseUrl", "snapshotUrl", "username", "password",
-                "apikey", "description"
-            )
-        )
-
-        val set = spec1 + spec2
+        val spec1 = createTestEndpoint()
+        val spec2 = createTestEndpoint()
+        val set = mutableSetOf(spec1) + spec2
 
         set shouldHaveSize 1
     }

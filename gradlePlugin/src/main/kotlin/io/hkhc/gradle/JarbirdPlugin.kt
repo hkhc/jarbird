@@ -22,6 +22,8 @@ import com.gradle.publish.PublishPlugin
 import com.jfrog.bintray.gradle.BintrayPlugin
 import io.hkhc.gradle.internal.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.internal.BuildFlowBuilder
+import io.hkhc.gradle.internal.DefaultProjectInfo
+import io.hkhc.gradle.internal.DefaultProjectProperty
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdLogger
 import io.hkhc.gradle.internal.JarbirdPubImpl
@@ -37,6 +39,7 @@ import io.hkhc.gradle.internal.needSigning
 import io.hkhc.gradle.internal.utils.detailMessageError
 import io.hkhc.gradle.internal.utils.fatalMessage
 import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.pom.internal.PomGroupFactory
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -147,7 +150,12 @@ class JarbirdPlugin : Plugin<Project> {
         project = p
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
 
-        extension = JarbirdExtensionImpl(project)
+        extension = JarbirdExtensionImpl(
+            project,
+            DefaultProjectProperty(project),
+            DefaultProjectInfo(project),
+            PomGroupFactory.resolvePomGroup(project.rootDir, project.projectDir)
+        )
         project.extensions.add(JarbirdExtension::class.java, SP_EXT_NAME, extension)
 
         checkAndroidPlugin(p)
@@ -222,8 +230,6 @@ class JarbirdPlugin : Plugin<Project> {
                 extension.createImplicit()
             }
 
-            extension.finalizeRepos()
-
             /*
             JavaGradlePluginPlugin expect plugin declaration at top level and not in afterEvaluate block.
             So we can safely configuring gradle plugin pub here.
@@ -275,6 +281,8 @@ class JarbirdPlugin : Plugin<Project> {
 
             // we created an implicit JarbirdPub and we have more in afterEvaluate
             extension.removeImplicit()
+
+            extension.finalizeRepos()
 
             with(p.pluginManager) {
 

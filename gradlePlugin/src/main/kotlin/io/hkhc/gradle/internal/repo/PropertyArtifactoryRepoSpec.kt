@@ -16,14 +16,16 @@
  *
  */
 
-package io.hkhc.gradle.endpoint
+package io.hkhc.gradle.internal.repo
 
-data class SimpleRepoEndpoint(
-    override val id: String,
-    override val releaseUrl: String,
-    override val snapshotUrl: String,
-    override val username: String,
-    override val password: String,
-    override val apikey: String = "",
-    override val description: String = id
-) : AbstractRepoEndpoint()
+import io.hkhc.gradle.endpoint.resolveProperty
+import io.hkhc.gradle.internal.ProjectProperty
+
+open class PropertyArtifactoryRepoSpec(private val projectProperty: ProjectProperty, private val key: String) :
+    AbstractArtifactoryRepoSpec(projectProperty, key) {
+
+    private val keyPrefix = "repository"
+
+    override val repoKey: String
+        get() = resolveProperty(projectProperty, "$keyPrefix.$key.repoKey")
+}

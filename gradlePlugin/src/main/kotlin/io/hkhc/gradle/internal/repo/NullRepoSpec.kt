@@ -18,15 +18,17 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.MavenCentralEndpoint
-import io.hkhc.gradle.endpoint.RepoEndpoint
-import io.hkhc.gradle.internal.ProjectProperty
-
-class MavenCentralSpec(projectProperty: ProjectProperty) : AbstractRepoSpec(), MavenSpec {
-
-    private val endpoint = MavenCentralEndpoint(projectProperty)
-
-    override fun getEndpoint(): RepoEndpoint {
-        return endpoint
-    }
+open class NullRepoSpec : AbstractRepoSpec() {
+    override val releaseUrl: String
+        get() = ""
+    override val snapshotUrl: String
+        get() = ""
+    override val username: String
+        get() = ""
+    override val password: String
+        get() = ""
+    override val id: String
+        get() = ""
+    override val description: String
+        get() = ""
 }

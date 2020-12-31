@@ -15,12 +15,12 @@
  *
  *
  */
+package io.hkhc.gradle.endpoint
 
-package io.hkhc.gradle.internal.repo
+import groovy.lang.MissingPropertyException
+import io.hkhc.gradle.internal.ProjectProperty
 
-import io.hkhc.gradle.RepoSpec
-
-abstract class AbstractRepoSpec : RepoSpec {
+abstract class AbstractRepoEndpoint : RepoEndpoint {
 
     override fun equals(other: Any?): Boolean {
 
@@ -28,29 +28,54 @@ abstract class AbstractRepoSpec : RepoSpec {
 
             if (this === it) return true
 
-            val that = it as? RepoSpec ?: return false
+            val that = it as? RepoEndpoint ?: return false
 
             return releaseUrl == that.releaseUrl &&
                 snapshotUrl == that.snapshotUrl &&
                 username == that.username &&
                 password == that.password &&
+                apikey == that.apikey &&
                 description == that.description &&
                 id == that.id
         } ?: false
     }
 
     override fun toString() =
-        "[ ${this::class.java.name} -- releaseUrl: $releaseUrl, snapshotUrl: $snapshotUrl, username: $username, password: $password, " +
-            "description: $description, id: $id]"
+        """
+            Release URL  : $releaseUrl
+            Snapshot URL : $snapshotUrl
+            Username     : $username
+            Password     : $password
+            API Key      : $apikey
+            Description  : $description
+            ID           : $id
+        """.trimIndent()
 
     override fun hashCode(): Int {
-        var result = this::class.java.name.hashCode()
-        result = 31 * result + releaseUrl.hashCode()
+        var result = releaseUrl.hashCode()
         result = 31 * result + snapshotUrl.hashCode()
         result = 31 * result + username.hashCode()
         result = 31 * result + password.hashCode()
+        result = 31 * result + apikey.hashCode()
         result = 31 * result + description.hashCode()
         result = 31 * result + id.hashCode()
         return result
     }
+}
+
+fun resolveProperty(projectProperty: ProjectProperty, propertyName: String): String {
+    val value: String = try {
+        projectProperty.property(propertyName) as String? ?: ""
+    } catch (e: MissingPropertyException) {
+        ""
+    }
+//    if (value == null) {
+//        detailMessageError(
+//            JarbirdLogger.logger,
+//            "Failed to find property '$propertyName'.",
+//            "Add it to one of the gradle.properties, or specify -D$propertyName command line option."
+//        )
+//        throw GradleException("$LOG_PREFIX Failed to find property '$propertyName'")
+//    }
+    return value
 }

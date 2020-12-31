@@ -18,11 +18,4 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
-
-class MavenLocalSpec : AbstractRepoSpec() {
-
-    override fun getEndpoint(): RepoEndpoint {
-        return NullRepo()
-    }
-}
+class MavenLocalRepoSpecImpl : NullRepoSpec()

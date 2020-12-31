@@ -87,6 +87,7 @@ class PluginPublishingConfig(
                     markerPublication.groupId = pub.pom.group
                     markerPublication.artifactId = pub.pom.artifactId
                     markerPublication.version = pub.pom.version
+                    println("markerPublication.version ${markerPublication.version}")
                 }
             }
         }

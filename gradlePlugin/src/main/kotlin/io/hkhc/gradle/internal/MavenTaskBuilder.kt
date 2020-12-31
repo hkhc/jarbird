@@ -86,81 +86,84 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
         if (project.isMultiProjectRoot()) {
 
-            pubs.flatMap { it.getRepos() }.filterIsInstance<MavenSpec>().forEach {
-                project.registerRootProjectTasks(JbPublishToCustomMavenRepoTaskInfo(it))
-            }
+//            if (pubs.flatMap { it.getRepos() }.any { it is MavenSpec }) {
+//                project.registerRootProjectTasks(JbPublishToMavenRepoTaskInfo())
+//            }
             // TODO we shall check POM group that pubName is not duplicated among variants.
         } else if (pubs.needsNonLocalMaven()) {
 
-            /*
-            JbPublishToMavenRepoTaskInfo
-                + JbPublishPubToMavenRepoTaskInfo
-                    + JbPublishPubToCustomMavenRepoTaskInfo
-                        + pub.publishPubToCustomMavenRepoTask
-                        + pub.publishPluginMarkerPubToCustomMavenRepoTask
-             */
-
             // TODO val JbPublishToMavenRepoTaskInfo(it)
+
+            /*
+
+            jbPublish
+                jbPublishToMavenRepo
+                jbPublishToCustomMavenRepo ...
+                    jbPublish[pub]ToMaven[Repo]
+                        publish[pub]PublicationToMaven[Repo]Repository
+
+             */
 
             val taskMap = RepoTasks()
 
             println("check point 0")
-            val pubTaskInfos = pubs.map { pub ->
+            val jbPublishPubToCustomMavenRepoTaskInfo = pubs.map { pub ->
 
-                val customRepoTaskInfos = pub.getRepos().filterIsInstance<MavenSpec>().map {
+                val customRepoTaskInfos = pub.getRepos().filterIsInstance<MavenSpec>().map { repoSpec ->
                     // TODO shall repo.name be capitalized?
 
-                    println("pub repos ${it.getEndpoint().id}")
+                    println("pub repos ${repoSpec.id}")
 
-                    val customRepoTaskInfo = JbPublishPubToCustomMavenRepoTaskInfo(pub, it)
+                    JbPublishPubToCustomMavenRepoTaskInfo(pub, repoSpec).also {
+                        it.register(container) {
+                            println("registering JbPublishPubToCustomMavenRepoTaskInfo 0")
+                            dependsOn(pub.publishPubToCustomMavenRepoTask(repoSpec))
+                            if (pub.pom.isGradlePlugin()) {
+                                dependsOn(pub.publishPluginMarkerPubToCustomMavenRepoTask(repoSpec))
+                            }
+                        }
 
-                    customRepoTaskInfo.register(container) {
-                        println("registering JbPublishPubToCustomMavenRepoTaskInfo")
-                        dependsOn(pub.publishPubToCustomMavenRepoTask(it))
+                        println("registering JbPublishPubToCustomMavenRepoTaskInfo 1")
+                        taskMap.add(repoSpec, pub.publishPubToCustomMavenRepoTask(repoSpec))
                         if (pub.pom.isGradlePlugin()) {
-                            dependsOn(pub.publishPluginMarkerPubToCustomMavenRepoTask(it))
+                            taskMap.add(repoSpec, pub.publishPluginMarkerPubToCustomMavenRepoTask(repoSpec))
                         }
                     }
-
-                    taskMap.add(it, pub.publishPubToCustomMavenRepoTask(it))
-                    if (pub.pom.isGradlePlugin()) {
-                        taskMap.add(it, pub.publishPluginMarkerPubToCustomMavenRepoTask(it))
-                    }
-
-                    customRepoTaskInfo
                 }
+                println("customRepoTaskInfos length " + customRepoTaskInfos.size)
 
-                val pubTaskInfo = JbPublishPubToMavenRepoTaskInfo(pub)
-                println("register JbPublishPubToMavenRepoTaskInfo : ${pubTaskInfo.name} pub.variant ${pub.variant}")
-                pubTaskInfo.register(container) {
-                    customRepoTaskInfos.forEach {
-                        dependsOn(it.name)
+                JbPublishPubToMavenRepoTaskInfo(pub).also {
+                    println("register JbPublishPubToMavenRepoTaskInfo : ${it.name} pub.variant ${pub.variant}")
+                    it.register(container) {
+                        customRepoTaskInfos.forEach {
+                            dependsOn(it.name)
+                        }
                     }
                 }
-
-                pubTaskInfo
             }
 
             println("check point 1")
             JbPublishToMavenRepoTaskInfo().register(container) {
-                pubTaskInfos.forEach {
+                jbPublishPubToCustomMavenRepoTaskInfo.forEach {
                     dependsOn(it.name)
                 }
             }
 
             println("taskMap size ${taskMap.repoTaskInfoMap.size}")
             taskMap.repoTaskInfoMap.forEach { (repo, taskList) ->
-                println("taskMap ${repo.getEndpoint().id} ${taskList.joinWithEscape(',')}")
-                val taskInfo = JbPublishToCustomMavenRepoTaskInfo(repo)
-                repoTaskInfos.add(taskInfo)
-                println("register task ${taskInfo.name}")
-                taskInfo.register(container) {
-                    taskList.forEach { taskName ->
-                        dependsOn(taskName)
+                println("taskMap ${repo.id} ${taskList.joinWithEscape(',')}")
+                JbPublishToCustomMavenRepoTaskInfo(repo).also {
+                    repoTaskInfos.add(it)
+                    println("register task ${it.name}")
+                    it.register(container) {
+                        taskList.forEach { taskName ->
+                            dependsOn(taskName)
+                        }
                     }
                 }
             }
 
+            // Filter unwanted combinations of publications and repositories
             project.tasks.withType<PublishToMavenRepository>().configureEach {
                 onlyIf {
                     println("onlyIf repoasitory ${repository.name} publication ${publication.name}")
@@ -171,10 +174,12 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                             println("pub.pubNameWithVariant ${pub.pubNameWithVariant()}")
                             println("pub.pub.markerPubNameCap ${pub.markerPubName}")
                             if (repo.repoName == repository.name) {
-                                if (pub.pom.isGradlePlugin()) {
-                                    pub.pubNameWithVariant() == publication.name || pub.markerPubName == publication.name
-                                } else {
-                                    pub.pubNameWithVariant() == publication.name
+                                with (pub) {
+                                    if (pom.isGradlePlugin()) {
+                                        pubNameWithVariant() == publication.name || markerPubName == publication.name
+                                    } else {
+                                        pubNameWithVariant() == publication.name
+                                    }
                                 }
                             } else {
                                 false

@@ -18,19 +18,27 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.RepoEndpoint
+import io.hkhc.gradle.BintrayRepoSpec
+import io.hkhc.gradle.internal.ProjectProperty
 
-class NullRepo : RepoEndpoint() {
+class ArtifactoryRepoSpecImpl(projectProperty: ProjectProperty) : PropertyArtifactoryRepoSpec(projectProperty, "artifactory")
+
+class BintraySnapshotRepoSpecImpl(private val bintrayRepoSpec: BintrayRepoSpec) :
+    AbstractRepoSpec(),
+    ArtifactoryRepoSpec {
+
+    override val repoKey: String
+        get() = "oss-snapshot-local"
     override val releaseUrl: String
         get() = ""
     override val snapshotUrl: String
-        get() = ""
+        get() = bintrayRepoSpec.snapshotUrl
     override val username: String
-        get() = ""
+        get() = bintrayRepoSpec.username
     override val password: String
-        get() = ""
-    override val apikey: String
-        get() = ""
+        get() = bintrayRepoSpec.password
+    override val description: String
+        get() = bintrayRepoSpec.description
     override val id: String
-        get() = ""
+        get() = bintrayRepoSpec.id
 }

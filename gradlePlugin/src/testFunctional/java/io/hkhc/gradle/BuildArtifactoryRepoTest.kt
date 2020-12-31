@@ -118,6 +118,7 @@ class BuildArtifactoryRepoTest : FunSpec({
                     ":artifactoryPublish=SUCCESS",
                     ":extractModuleInfo=SUCCESS",
                     ":artifactoryDeploy=SUCCESS",
+                    ":jbPublishToArtifactory=SUCCESS",
                     ":jbPublishToBintray=SUCCESS"
                 )
             )

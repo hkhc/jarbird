@@ -18,9 +18,10 @@
 
 package io.hkhc.gradle.internal
 
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
+import io.hkhc.gradle.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.BintraySpec
 import io.hkhc.gradle.internal.repo.MavenSpec
 
 internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
@@ -40,20 +41,33 @@ internal val JarbirdPub.markerPubNameCap: String
     get() = (pubNameWithVariant() + PLUGIN_MARKER_PUB_SUFFIX).capitalize()
 
 internal val RepoSpec.repoName: String
-    get() = getEndpoint().id
+    get() = id
 
 internal fun List<JarbirdPub>.needSigning() = any { it.signing }
 
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
 
-internal fun JarbirdPub.needsBintray(): Boolean {
-    return (this as JarbirdPubImpl).getRepos().filterIsInstance<BintraySpec>().isNotEmpty()
-}
+internal fun JarbirdPub.needsBintray() =
+    (this as JarbirdPubImpl).getRepos()
+        .filterIsInstance<BintrayRepoSpec>()
+        .isNotEmpty()
 
 internal fun List<JarbirdPub>.needsBintray() = any { it.needsBintray() }
 
-internal fun JarbirdPub.needsNonLocalMaven(): Boolean {
-    return (this as JarbirdPubImpl).getRepos().filterIsInstance<MavenSpec>().isNotEmpty()
-}
+internal fun List<JarbirdPub>.needsArtifactory() = any { it.needsArtifactory() }
+
+internal fun JarbirdPub.needsArtifactory() =
+    if ((pom.isSnapshot() && pom.isGradlePlugin())) {
+        false
+    } else {
+        (this as JarbirdPubImpl).getRepos()
+            .filterIsInstance<ArtifactoryRepoSpec>()
+            .isNotEmpty()
+    }
+
+internal fun JarbirdPub.needsNonLocalMaven() =
+    (this as JarbirdPubImpl).getRepos()
+        .filterIsInstance<MavenSpec>()
+        .isNotEmpty()
 
 internal fun List<JarbirdPub>.needsNonLocalMaven() = any { it.needsNonLocalMaven() }

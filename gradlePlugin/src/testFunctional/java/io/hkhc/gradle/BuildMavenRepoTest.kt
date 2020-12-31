@@ -106,7 +106,7 @@ class BuildMavenRepoTest : FunSpec({
                     }
                 )
 
-                writeFile("build.gradle.kts", buildGradle())
+                writeFile("build.gradle.kts", buildGradle(bintray = false))
 
                 writeFile("pom.yaml", simplePom(coordinate))
 
