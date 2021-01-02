@@ -22,7 +22,7 @@ import avFileBase
 import com.jfrog.bintray.gradle.BintrayExtension
 import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
 import gavPath
-import io.hkhc.gradle.BintrayRepoSpec
+import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.LOG_PREFIX

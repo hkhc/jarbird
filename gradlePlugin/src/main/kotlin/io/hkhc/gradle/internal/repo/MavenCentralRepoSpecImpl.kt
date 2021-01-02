@@ -18,48 +18,12 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.resolveProperty
-import io.hkhc.gradle.internal.JarbirdLogger
-import io.hkhc.gradle.internal.ProjectProperty
-import org.gradle.api.GradleException
-
-class MavenCentralRepoSpecImpl(private val projectProperty: ProjectProperty) : AbstractRepoSpec(), MavenSpec {
-
-    override val releaseUrl: String
-        get() = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-
-    override val snapshotUrl: String
-        get() = "https://oss.sonatype.org/content/repositories/snapshots"
-
-    override val username: String
-        get() {
-            return try {
-                resolveProperty(
-                    projectProperty,
-                    "repository.mavencentral.username"
-                )
-            } catch (g: GradleException) {
-                JarbirdLogger.logger.warn("Maven Central username is not found.")
-                ""
-            }
-        }
-
+data class MavenCentralRepoSpecImpl(
+    override val description: String,
+    override val id: String,
+    override val username: String,
     override val password: String
-        get() {
-            return try {
-                resolveProperty(
-                    projectProperty,
-                    "repository.mavencentral.password"
-                )
-            } catch (g: GradleException) {
-                JarbirdLogger.logger.warn("Maven Central password is not found.")
-                ""
-            }
-        }
-
-    override val description: String
-        get() = "Maven Central"
-
-    override val id: String
-        get() = "MavenCentral"
+) : MavenCentralRepoSpec {
+    override val releaseUrl: String = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+    override val snapshotUrl: String = "https://oss.sonatype.org/content/repositories/snapshots"
 }

@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle.internal.bintray
 
-import io.hkhc.gradle.BintrayRepoSpec
+import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JbPublishToArtifactoryTaskInfo
 import io.hkhc.gradle.internal.JbPublishToBintrayTaskInfo

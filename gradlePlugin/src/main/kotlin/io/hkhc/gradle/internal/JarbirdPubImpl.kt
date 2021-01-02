@@ -19,32 +19,29 @@
 package io.hkhc.gradle.internal
 
 import appendBeforeSnapshot
-import io.hkhc.gradle.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import io.hkhc.gradle.VariantMode
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpecImpl
-import io.hkhc.gradle.internal.repo.BintrayRepoSpecImpl
-import io.hkhc.gradle.internal.repo.BintraySnapshotRepoSpecImpl
-import io.hkhc.gradle.internal.repo.GradlePortalSpecImpl
-import io.hkhc.gradle.internal.repo.MavenCentralRepoSpecImpl
-import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
-import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
+import io.hkhc.gradle.internal.repo.BintrayRepoSpec
+import io.hkhc.gradle.internal.repo.GradlePortalSpec
+import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
+import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
+import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.internal.utils.detailMessageWarning
 import isSnapshot
 import org.gradle.api.Project
 
 internal class JarbirdPubImpl(
     val project: Project,
-    private var projectProperty: ProjectProperty
+    projectProperty: ProjectProperty
 ) : JarbirdPub() {
 
     private var variantMode: VariantMode = VariantMode.Invisible
     private val repos = mutableSetOf<RepoSpec>()
-
+    private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
     var parentRepos: RepoDeclaration? = null
 
     /**
@@ -125,31 +122,32 @@ internal class JarbirdPubImpl(
     override fun sourceDirs(dirs: Any): Any = SourceDirs(dirs)
 
     override fun mavenCentral(): RepoSpec {
-        return repos.find { it is MavenCentralRepoSpecImpl } ?: MavenCentralRepoSpecImpl(projectProperty).also {
+        return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral().also {
             repos.add(it)
         }
     }
 
     override fun mavenRepo(key: String): RepoSpec {
-        val repo = MavenRepoSpecImpl(projectProperty, key)
+        val repo = repoSpecBuilder.buildMavenRepo(key)
         if (!repos.contains(repo)) repos.add(repo)
         return repo
     }
 
     override fun mavenLocal(): RepoSpec {
-        return repos.find { it is MavenLocalRepoSpecImpl } ?: MavenLocalRepoSpecImpl().also {
+        return repos.find { it is MavenLocalRepoSpec } ?: repoSpecBuilder.buildMavenLocalRepo().also {
             repos.add(it)
         }
     }
 
     override fun gradlePortal(): RepoSpec {
-        return repos.find { it is GradlePortalSpecImpl } ?: GradlePortalSpecImpl().also {
+        return repos.find { it is GradlePortalSpec } ?: repoSpecBuilder.buildGradlePluginRepo().also {
             repos.add(it)
         }
     }
 
     override fun bintray(): RepoSpec {
-        return repos.find { it is BintrayRepoSpecImpl } ?: BintrayRepoSpecImpl(projectProperty).also {
+        val repo = repoSpecBuilder.buildBintrayRepo()
+        if (!repos.contains(repo)) {
             detailMessageWarning(
                 JarbirdLogger.logger,
                 "Bintray repo will be treated as child project level declaration.",
@@ -157,12 +155,15 @@ internal class JarbirdPubImpl(
             )
             parentRepos?.bintray()
         }
+        return repo
     }
 
     override fun artifactory(): RepoSpec {
-        return repos.find { it is ArtifactoryRepoSpecImpl } ?: ArtifactoryRepoSpecImpl(projectProperty).also {
-            repos.add(it)
+        val repo = repoSpecBuilder.buildArtifactoryRepo()
+        if (!repos.contains(repo)) {
+            repos.add(repo)
         }
+        return repo
     }
 
     override fun getRepos(): Set<RepoSpec> {
@@ -173,7 +174,7 @@ internal class JarbirdPubImpl(
         println("finalizing repospec ver ${pom.version} isSnapshot ${pom.isSnapshot()} needsBintray ${needsBintray()}")
         if (pom.isSnapshot() && needsBintray()) {
             val bintraySpec = getRepos().firstOrNull { it is BintrayRepoSpec }
-            bintraySpec?.let { repos.add(BintraySnapshotRepoSpecImpl(it as BintrayRepoSpec)) }
+            bintraySpec?.let { repos.add(repoSpecBuilder.buildBintraySnapshotRepoSpec(it as BintrayRepoSpec)) }
         }
         if (pom.isGradlePlugin()) {
             gradlePortal()
@@ -183,6 +184,6 @@ internal class JarbirdPubImpl(
     }
 
     fun needsBintray(): Boolean {
-        return getRepos().find { it is BintrayRepoSpecImpl } != null
+        return getRepos().find { it is BintrayRepoSpec } != null
     }
 }

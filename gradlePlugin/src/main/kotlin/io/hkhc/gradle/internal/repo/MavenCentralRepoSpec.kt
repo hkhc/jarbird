@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Herman Cheung
+ * Copyright (c) 2021. Herman Cheung
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,4 @@
 
 package io.hkhc.gradle.internal.repo
 
-open class NullRepoSpec : AbstractRepoSpec() {
-    override val releaseUrl: String
-        get() = ""
-    override val snapshotUrl: String
-        get() = ""
-    override val username: String
-        get() = ""
-    override val password: String
-        get() = ""
-    override val id: String
-        get() = ""
-    override val description: String
-        get() = ""
-}
+interface MavenCentralRepoSpec : MavenRepoSpec

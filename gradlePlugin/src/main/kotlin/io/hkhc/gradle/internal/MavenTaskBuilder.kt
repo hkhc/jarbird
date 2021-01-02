@@ -20,7 +20,7 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.MavenSpec
+import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.tasks.TaskContainer
@@ -109,14 +109,14 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
             println("check point 0")
             val jbPublishPubToCustomMavenRepoTaskInfo = pubs.map { pub ->
 
-                val customRepoTaskInfos = pub.getRepos().filterIsInstance<MavenSpec>().map { repoSpec ->
+                val customRepoTaskInfos = pub.getRepos().filterIsInstance<MavenRepoSpec>().map { repoSpec ->
                     // TODO shall repo.name be capitalized?
 
                     println("pub repos ${repoSpec.id}")
 
                     JbPublishPubToCustomMavenRepoTaskInfo(pub, repoSpec).also {
                         it.register(container) {
-                            println("registering JbPublishPubToCustomMavenRepoTaskInfo 0")
+                            println("registering JbPublishPubToCustomMavenRepoTaskInfo 0 $repoSpec")
                             dependsOn(pub.publishPubToCustomMavenRepoTask(repoSpec))
                             if (pub.pom.isGradlePlugin()) {
                                 dependsOn(pub.publishPluginMarkerPubToCustomMavenRepoTask(repoSpec))
@@ -169,12 +169,12 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                     println("onlyIf repoasitory ${repository.name} publication ${publication.name}")
 
                     pubs.any { pub ->
-                        pub.getRepos().filterIsInstance<MavenSpec>().any { repo ->
+                        pub.getRepos().filterIsInstance<MavenRepoSpec>().any { repo ->
                             println("repo.repoName ${repo.repoName}")
                             println("pub.pubNameWithVariant ${pub.pubNameWithVariant()}")
                             println("pub.pub.markerPubNameCap ${pub.markerPubName}")
                             if (repo.repoName == repository.name) {
-                                with (pub) {
+                                with(pub) {
                                     if (pom.isGradlePlugin()) {
                                         pubNameWithVariant() == publication.name || markerPubName == publication.name
                                     } else {

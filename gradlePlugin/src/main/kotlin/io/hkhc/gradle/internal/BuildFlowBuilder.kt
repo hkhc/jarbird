@@ -18,13 +18,12 @@
 
 package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryConfig
 import io.hkhc.gradle.internal.bintray.BintrayConfig
-import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
 import io.hkhc.gradle.internal.dokka.DokkaConfig
+import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import org.gradle.api.Project
 
 /**
@@ -76,8 +75,6 @@ internal class BuildFlowBuilder(
     @Suppress("unused")
     fun buildPhase1() {
         with(project) {
-
-            val bintrayPublishPlan = BintrayPublishPlan(pubs)
 
             logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 1 of 4")
 

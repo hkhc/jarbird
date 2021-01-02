@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Herman Cheung
+ * Copyright (c) 2021. Herman Cheung
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,10 @@
 
 package io.hkhc.gradle.internal.repo
 
-data class ArtifactoryRepoSpecImpl(
-    override val description: String,
-    override val id: String,
-    override val releaseUrl: String,
-    override val snapshotUrl: String,
-    override val username: String,
-    override val password: String,
-    override val repoKey: String
-) : ArtifactoryRepoSpec
+import io.hkhc.gradle.RepoSpec
+
+interface GradlePortalSpec : RepoSpec {
+
+    val secret: String
+    val key: String
+}

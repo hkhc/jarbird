@@ -18,11 +18,11 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.PropertyRepoEndpoint
-import io.hkhc.gradle.internal.ProjectProperty
-
-class MavenRepoSpecImpl(projectProperty: ProjectProperty, key: String) :
-    PropertyRepoSpec(projectProperty, "maven.$key"), MavenSpec {
-
-    private val endpoint = PropertyRepoEndpoint(projectProperty, "maven.$key")
-}
+data class MavenRepoSpecImpl(
+    override var releaseUrl: String = "",
+    override var snapshotUrl: String = "",
+    override var username: String = "",
+    override var password: String = "",
+    override var description: String = "",
+    override var id: String = ""
+) : MavenRepoSpec

@@ -18,11 +18,13 @@
 
 package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
-import io.hkhc.gradle.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.MavenSpec
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
+import io.hkhc.gradle.internal.repo.BintrayRepoSpec
+import io.hkhc.gradle.internal.repo.GradlePortalSpec
+import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
+import io.hkhc.gradle.internal.repo.MavenRepoSpec
 
 internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
     return "${pubName}${variant.capitalize()}"
@@ -65,9 +67,9 @@ internal fun JarbirdPub.needsArtifactory() =
             .isNotEmpty()
     }
 
+// TODO reorg class structure to check it in single filterIsInstance
 internal fun JarbirdPub.needsNonLocalMaven() =
     (this as JarbirdPubImpl).getRepos()
-        .filterIsInstance<MavenSpec>()
-        .isNotEmpty()
+        .any { it is MavenRepoSpec && it !is MavenLocalRepoSpec && it !is GradlePortalSpec }
 
 internal fun List<JarbirdPub>.needsNonLocalMaven() = any { it.needsNonLocalMaven() }

@@ -21,5 +21,10 @@ package io.hkhc.gradle.internal.repo
 import io.hkhc.gradle.RepoSpec
 
 interface ArtifactoryRepoSpec : RepoSpec {
+
+    val releaseUrl: String
+    val snapshotUrl: String
+    val username: String
+    val password: String
     val repoKey: String
 }

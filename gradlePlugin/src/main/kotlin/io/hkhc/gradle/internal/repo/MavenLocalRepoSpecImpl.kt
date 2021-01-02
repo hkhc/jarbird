@@ -18,4 +18,7 @@
 
 package io.hkhc.gradle.internal.repo
 
-class MavenLocalRepoSpecImpl : NullRepoSpec()
+data class MavenLocalRepoSpecImpl(
+    override val description: String = "Maven Local Repository",
+    override val id: String = "MavenLocal"
+) : MavenLocalRepoSpec

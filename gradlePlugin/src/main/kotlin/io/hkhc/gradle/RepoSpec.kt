@@ -20,10 +20,10 @@ package io.hkhc.gradle
 
 interface RepoSpec {
 
-    val releaseUrl: String
-    val snapshotUrl: String
-    val username: String
-    val password: String
     val description: String
     val id: String
+
+//    override fun equals(other: Any?) = commonEquals(other)
+//    override fun toString() = commonToString()
+//    override fun hashCode() = commonHashCode()
 }

@@ -23,12 +23,10 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPlugin
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpecImpl
-import io.hkhc.gradle.internal.repo.BintrayRepoSpecImpl
-import io.hkhc.gradle.internal.repo.GradlePortalSpecImpl
-import io.hkhc.gradle.internal.repo.MavenCentralRepoSpecImpl
-import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
-import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
+import io.hkhc.gradle.internal.repo.GradlePortalSpec
+import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
+import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
+import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 
@@ -42,6 +40,7 @@ open class JarbirdExtensionImpl(
     val pubList = mutableListOf<JarbirdPub>()
     internal val repos = mutableSetOf<RepoSpec>()
     private var isDefaultRepos = true
+    private var repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
 
     private var implicited: JarbirdPub? = null
 
@@ -150,7 +149,7 @@ open class JarbirdExtensionImpl(
             repos.clear()
             isDefaultRepos = false
         }
-        return repos.find { it is MavenCentralRepoSpecImpl } ?: MavenCentralRepoSpecImpl(projectProperty).also {
+        return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral().also {
             repos.add(it)
         }
     }
@@ -160,7 +159,7 @@ open class JarbirdExtensionImpl(
             repos.clear()
             isDefaultRepos = false
         }
-        val repo = MavenRepoSpecImpl(projectProperty, key)
+        val repo = repoSpecBuilder.buildMavenRepo(key)
         if (!repos.contains(repo)) repos.add(repo)
         return repo
     }
@@ -170,7 +169,7 @@ open class JarbirdExtensionImpl(
             repos.clear()
             isDefaultRepos = false
         }
-        return repos.find { it is MavenLocalRepoSpecImpl } ?: MavenLocalRepoSpecImpl().also {
+        return repos.find { it is MavenLocalRepoSpec } ?: repoSpecBuilder.buildMavenLocalRepo().also {
             repos.add(it)
         }
     }
@@ -180,7 +179,7 @@ open class JarbirdExtensionImpl(
             repos.clear()
             isDefaultRepos = false
         }
-        return repos.find { it is GradlePortalSpecImpl } ?: GradlePortalSpecImpl().also {
+        return repos.find { it is GradlePortalSpec } ?: repoSpecBuilder.buildGradlePluginRepo().also {
             repos.add(it)
         }
     }
@@ -193,9 +192,9 @@ open class JarbirdExtensionImpl(
             repos.clear()
             isDefaultRepos = false
         }
-        return repos.find { it is BintrayRepoSpecImpl } ?: BintrayRepoSpecImpl(projectProperty).also {
-            repos.add(it)
-        }
+        val repo = repoSpecBuilder.buildBintrayRepo()
+        if (!repos.contains(repo)) repos.add(repo)
+        return repo
     }
 
     override fun artifactory(): RepoSpec {
@@ -203,9 +202,9 @@ open class JarbirdExtensionImpl(
             repos.clear()
             isDefaultRepos = false
         }
-        return repos.find { it is ArtifactoryRepoSpecImpl } ?: ArtifactoryRepoSpecImpl(projectProperty).also {
-            repos.add(it)
-        }
+        val repo = repoSpecBuilder.buildArtifactoryRepo()
+        if (!repos.contains(repo)) repos.add(repo)
+        return repo
     }
 
     override fun getRepos(): Set<RepoSpec> {

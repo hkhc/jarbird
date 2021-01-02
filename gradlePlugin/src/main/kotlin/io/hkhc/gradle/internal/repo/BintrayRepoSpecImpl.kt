@@ -18,6 +18,11 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.internal.ProjectProperty
-
-class BintrayRepoSpecImpl(projectProperty: ProjectProperty) : PropertyBintrayRepoSpec(projectProperty, "bintray")
+data class BintrayRepoSpecImpl(
+    override val description: String,
+    override val id: String,
+    override val releaseUrl: String,
+    override val snapshotUrl: String,
+    override val username: String,
+    override val apikey: String
+) : BintrayRepoSpec

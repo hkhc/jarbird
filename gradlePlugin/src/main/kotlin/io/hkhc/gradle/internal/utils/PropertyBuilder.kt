@@ -16,16 +16,13 @@
  *
  */
 
-package io.hkhc.gradle.internal.repo
+package io.hkhc.gradle.internal.utils
 
 import io.hkhc.gradle.endpoint.resolveProperty
 import io.hkhc.gradle.internal.ProjectProperty
 
-open class PropertyArtifactoryRepoSpec(private val projectProperty: ProjectProperty, private val key: String) :
-    AbstractArtifactoryRepoSpec(projectProperty, key) {
-
-    private val keyPrefix = "repository"
-
-    override val repoKey: String
-        get() = resolveProperty(projectProperty, "$keyPrefix.$key.repoKey")
+class PropertyBuilder(private val projectProperty: ProjectProperty, private val keyPrefix: String) {
+    fun resolve(key: String) = resolveProperty(projectProperty, "repository.$keyPrefix.$key").apply {
+        println("resolved property repository.$keyPrefix.$key = " + this)
+    }
 }

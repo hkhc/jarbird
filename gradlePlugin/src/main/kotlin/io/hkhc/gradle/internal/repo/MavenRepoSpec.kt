@@ -18,14 +18,11 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.resolveProperty
-import io.hkhc.gradle.internal.ProjectProperty
+import io.hkhc.gradle.RepoSpec
 
-open class PropertyBintrayRepoSpec(private val projectProperty: ProjectProperty, private val key: String) :
-    AbstractBintrayRepoSpec(projectProperty, key) {
-
-    private val keyPrefix = "repository"
-
-    override val apikey: String
-        get() = resolveProperty(projectProperty, "$keyPrefix.$key.apikey")
+interface MavenRepoSpec : RepoSpec {
+    val releaseUrl: String
+    val snapshotUrl: String
+    val username: String
+    val password: String
 }

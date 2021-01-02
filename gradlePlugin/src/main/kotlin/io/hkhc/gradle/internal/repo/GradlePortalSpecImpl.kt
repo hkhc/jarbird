@@ -18,4 +18,9 @@
 
 package io.hkhc.gradle.internal.repo
 
-class GradlePortalSpecImpl : NullRepoSpec()
+data class GradlePortalSpecImpl(
+    override val description: String = "Gradle Portal PLugin Repository",
+    override val id: String = "GradlePluginPortal",
+    override val secret: String = "",
+    override val key: String = ""
+) : GradlePortalSpec
