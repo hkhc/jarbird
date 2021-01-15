@@ -90,7 +90,7 @@ class BuildArtifactoryRepoTest : FunSpec({
                         server.collectRequests(),
                         coordinate,
                         "username",
-                        "maven",
+                        "oss-snapshot-local",
                         "jar"
                     ) should publishedToArtifactoryRepositoryCompletely()
                 }

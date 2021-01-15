@@ -173,7 +173,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
                         server.collectRequests(),
                         coordinate,
                         "username",
-                        "maven",
+                        "oss-snapshot-local",
                         "aar"
                     ) should publishedToArtifactoryRepositoryCompletely()
                 }
