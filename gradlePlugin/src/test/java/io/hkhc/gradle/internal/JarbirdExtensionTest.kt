@@ -91,6 +91,7 @@ class JarbirdExtensionTest : FunSpec({
             )
         )
         projectInfo = MockProjectInfo()
+        File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom("0.1"))
         pomGroup = PomGroupFactory.resolvePomGroup(projectDir, File(projectDir, "module"))
     }
 
@@ -280,7 +281,8 @@ class JarbirdExtensionTest : FunSpec({
 
                 ext.repos.shouldContainExactlyInAnyOrder(
                     setOf(
-                        MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildBintrayRepo(),
+                        MavenLocalRepoSpecImpl(),
+                        PropertyRepoSpecBuilder(projectProperty).buildBintrayRepo(),
                         PropertyRepoSpecBuilder(projectProperty).buildMavenRepo("mock")
                     )
                 )
@@ -355,7 +357,8 @@ class JarbirdExtensionTest : FunSpec({
 
                 ext.repos.shouldContainExactlyInAnyOrder(
                     setOf(
-                        MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo(),
+                        MavenLocalRepoSpecImpl(),
+                        PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo(),
                         PropertyRepoSpecBuilder(projectProperty).buildMavenRepo("mock")
                     )
                 )

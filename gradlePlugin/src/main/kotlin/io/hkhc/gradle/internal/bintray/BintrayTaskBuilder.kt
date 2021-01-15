@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.internal.bintray
 
-import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JbPublishToArtifactoryTaskInfo
 import io.hkhc.gradle.internal.JbPublishToBintrayTaskInfo
@@ -28,6 +27,7 @@ import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.needsArtifactory
 import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.registerRootProjectTasks
+import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import org.gradle.api.Project
 
 internal const val BINTRAY_UPLOAD_TASK = "bintrayUpload"
@@ -61,9 +61,6 @@ class BintrayTaskBuilder(
                 "WARNING: $LOG_PREFIX Publish snapshot Gradle Plugin to Bintray/OSSArtifactory is not supported."
             )
         }
-
-        println("bintray is not empty ${publishPlan.bintray.isNotEmpty()}")
-        println("artifactory is not empty ${publishPlan.artifactory.isNotEmpty()}")
 
         if (pubs.needsBintray()) {
 

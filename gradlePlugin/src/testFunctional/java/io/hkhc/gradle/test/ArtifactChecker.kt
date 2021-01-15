@@ -18,11 +18,11 @@
 
 package io.hkhc.gradle.test
 
+import io.hkhc.gradle.pom.internal.isSnapshot
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.file.shouldExist
 import io.kotest.matchers.nulls.shouldNotBeNull
-import isSnapshot
 import java.io.File
 
 class ArtifactChecker {
