@@ -24,9 +24,11 @@ import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import io.hkhc.gradle.internal.CLASSIFIER_JAVADOC
 import io.hkhc.gradle.internal.DokkaJarPubTaskInfo
+import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.JbDokkaPubTaskInfo
 import io.hkhc.gradle.internal.JbDokkaTaskInfo
 import org.gradle.api.Project
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
@@ -39,6 +41,7 @@ internal class DokkaConfig(private val project: Project, private val extension: 
 
     private fun getSourceJarSource(source: Any): Array<out Any> {
         return when (source) {
+            is SourceSet -> source.allSource.srcDirs.toTypedArray()
             is String -> SourceSetNames(project, arrayOf(source)).getDirs()
             is SourceSetNames -> source.getDirs()
             is SourceDirs -> arrayOf(source.getDirs())
@@ -60,10 +63,11 @@ internal class DokkaConfig(private val project: Project, private val extension: 
     @Suppress("SpreadOperator")
     fun configDokka(pubs: List<JarbirdPub>) {
         pubs.forEach { pub ->
+            val impl = pub as JarbirdPubImpl
             JbDokkaPubTaskInfo(pub).register(project.tasks, DokkaTask::class.java) {
                 dokkaSourceSets.create("${pub.pom.group}:${pub.pom.artifactId}") {
                     sourceRoots.setFrom(
-                        *(getSourceJarSource(pub.sourceSets))
+                        *(getSourceJarSource(impl.sourceSet ?: impl.docSourceSets))
                     )
                 }
 //                extension.dokkaConfig.invoke(this)
@@ -77,6 +81,7 @@ internal class DokkaConfig(private val project: Project, private val extension: 
 
         // TODO add error message here if dokka is null
         return DokkaJarPubTaskInfo(pub).register(project.tasks, Jar::class.java) {
+
             archiveClassifier.set(CLASSIFIER_JAVADOC)
             archiveBaseName.set(pub.variantArtifactId())
             archiveVersion.set(pub.variantVersion())

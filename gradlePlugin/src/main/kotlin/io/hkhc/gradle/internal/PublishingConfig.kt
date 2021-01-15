@@ -28,7 +28,6 @@ import io.hkhc.gradle.internal.utils.detailMessageWarning
 import io.hkhc.gradle.internal.utils.findByType
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.ExtensionAware
@@ -37,7 +36,10 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.register
 
 internal class PublishingConfig(
     private val project: Project,
@@ -117,32 +119,74 @@ internal class PublishingConfig(
     private fun PublishArtifact.getString() =
         "PublishArtifact(name=$name,file=$file,classifier=$classifier,date=$date,extension=$extension,type=$type)"
 
-    private fun checkComponent(pub: JarbirdPub) {
-        try {
-            project.components[pub.pubComponent]
-        } catch (e: UnknownDomainObjectException) {
-            project.logger.error(
-                """
-                    The component '${pub.pubComponent}' is not found.
-                    Available component(s) are : ${project.components.joinToString(", ") { it.name }}
-                    set it with pub block, e.g.
-                        pub {
-                            pubComponent = "${project.components.firstOrNull()?.name ?: "your-component"}"
-                        }
-                """.trimIndent()
-            )
-            throw GradleException("Component '${pub.pubComponent}' is not found.")
-        }
-    }
+//    private fun checkComponent(pub: JarbirdPub) {
+//        try {
+//            project.components[pub.pubComponent]
+//        } catch (e: UnknownDomainObjectException) {
+//            project.logger.error(
+//                """
+//                    The component '${pub.pubComponent}' is not found.
+//                    Available component(s) are : ${project.components.joinToString(", ") { it.name }}
+//                    set it with pub block, e.g.
+//                        pub {
+//                            pubComponent = "${project.components.firstOrNull()?.name ?: "your-component"}"
+//                        }
+//                """.trimIndent()
+//            )
+//            throw GradleException("Component '${pub.pubComponent}' is not found.")
+//        }
+//    }
 
     private fun PublicationContainer.createPublication() {
 
-        pubs.forEach { pub ->
+        pubs.forEach { pub0 ->
+
+            val pub = pub0 as JarbirdPubImpl
             val pom = pub.pom
 
-            checkComponent(pub)
+//            checkComponent(pub)
 
-            println("register ${pub.pubNameWithVariant()} task")
+//            if (!project.isMultiProjectRoot()) {
+//
+//                if (project.configurations.findByName("helloConfiguration") == null) {
+//                    project.configurations.create("helloConfiguration") {
+//                        outgoing {
+//                            artifact(project.tasks.named("jar"))
+//                        }
+//                    }
+//                    val adhoc = project.components["java"] as AdhocComponentWithVariants
+//                    adhoc.addVariantsFromConfiguration(project.configurations["helloConfiguration"]) {
+//                        this.mapToOptional()
+//                    }
+//                }
+//
+//                project.components.forEach {
+//                    println("after new configuration components ${it.name}")
+//                }
+//            }
+
+            val publishJarTask = pub.sourceSet?.let { sourceSet ->
+
+                if (sourceSet.name != "main") {
+                    project.tasks.register<Jar>("${sourceSet.name}Jar") {
+                        archiveBaseName.set(pub.variantArtifactId())
+                        archiveVersion.set(pub.variantVersion())
+                        from(project.configurations["${sourceSet.name}Compile"])
+                        dependsOn(
+                            project.tasks.named("${sourceSet.name}Classes")
+                            //                        project.tasks.named("generateMetadataFileFor${pub.pubNameWithVariant().capitalize()}Publication")
+                        )
+                    }
+                } else {
+                    project.tasks.named<Jar>("jar").apply {
+                        configure {
+                            archiveBaseName.set(pub.variantArtifactId())
+                            archiveVersion.set(pub.variantVersion())
+                        }
+                    }
+                }
+            }
+
             register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
                 groupId = pom.group
@@ -153,8 +197,12 @@ internal class PublishingConfig(
                 //            version = project.versioning.info.display
                 version = pub.variantVersion()
 
-                // This is the main artifact
-                from(project.components[pub.pubComponent])
+                if (publishJarTask == null) {
+                    val effectiveComponent = pub.component ?: project.components["java"]
+                    from(effectiveComponent)
+                } else {
+                    artifactCompat(publishJarTask)
+                }
                 // We are adding documentation artifact
                 if (!project.isMultiProjectRoot()) {
 
@@ -165,10 +213,9 @@ internal class PublishingConfig(
 
                     project.afterEvaluate {
                         artifactCompat(DokkaConfig(project, extension).setupDokkaJar(pub))
-                        artifactCompat(SourceConfig(project).configSourceJarTask(pub))
+                        artifactCompat(SourceConfig(project).configSourceJarTask(pub, pub.sourceSet ?: pub.docSourceSets))
                     }
                 }
-
                 pom { MavenPomAdapter().fill(this, pom) }
             }
         }
@@ -201,8 +248,6 @@ internal class PublishingConfig(
 
         releaseEndpoints.forEach {
 
-            println("releaseEndpoint ${it::class.java.name} ${it.id} ${it.description}")
-
             maven {
                 with(it) {
                     val ep = this
@@ -217,7 +262,6 @@ internal class PublishingConfig(
         }
 
         snapshotEndpoint.forEach {
-            println("snapshotEndpoint ${it::class.java.name} ${it.id} ${it.description}")
 
             maven {
                 with(it) {

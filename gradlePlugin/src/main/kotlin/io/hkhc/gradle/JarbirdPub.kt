@@ -19,6 +19,8 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.Pom
+import org.gradle.api.component.SoftwareComponent
+import org.gradle.api.tasks.SourceSet
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
 abstract class JarbirdPub : RepoDeclaration {
@@ -42,12 +44,7 @@ abstract class JarbirdPub : RepoDeclaration {
      */
     var variant: String = ""
 
-    /**
-     * The name of component to to be published
-     */
-    var pubComponent: String = "java"
-
-    var sourceSets: Any = "main"
+    var docSourceSets: Any = "main"
 
     /**
      * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
@@ -56,6 +53,9 @@ abstract class JarbirdPub : RepoDeclaration {
     var useGpg = false
 
     var dokkaConfig: AbstractDokkaTask.(pub: JarbirdPub) -> Unit = {}
+
+    abstract fun from(component: SoftwareComponent)
+    abstract fun from(sourceSet: SourceSet)
 
     abstract fun variantWithVersion()
     abstract fun variantWithArtifactId()

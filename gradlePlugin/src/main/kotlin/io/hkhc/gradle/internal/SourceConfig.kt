@@ -23,6 +23,7 @@ import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
@@ -31,6 +32,7 @@ internal class SourceConfig(private val project: Project) {
 
     private fun getSourceJarSource(source: Any): Array<out Any> {
         return when (source) {
+            is SourceSet -> source.allSource.srcDirs.toTypedArray()
             is String -> SourceSetNames(project, arrayOf(source)).getDirs()
             is SourceSetNames -> source.getDirs()
             is SourceDirs -> arrayOf(source.getDirs())
@@ -40,7 +42,7 @@ internal class SourceConfig(private val project: Project) {
     }
 
     @Suppress("UnstableApiUsage", "SpreadOperator")
-    fun configSourceJarTask(pub: JarbirdPub): TaskProvider<Jar> {
+    fun configSourceJarTask(pub: JarbirdPub, sourceSet: Any): TaskProvider<Jar> {
 
         val taskInfo = SourceJarPubTaskInfo(pub)
 
@@ -48,7 +50,7 @@ internal class SourceConfig(private val project: Project) {
             archiveClassifier.set(CLASSIFIER_SOURCE)
             archiveBaseName.set(pub.variantArtifactId())
             archiveVersion.set(pub.variantVersion())
-            from(*getSourceJarSource(pub.sourceSets))
+            from(*getSourceJarSource(sourceSet))
         }
     }
 

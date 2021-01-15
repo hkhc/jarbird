@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.internal
 
-import appendBeforeSnapshot
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.RepoSpec
@@ -31,8 +30,12 @@ import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.internal.utils.detailMessageWarning
-import isSnapshot
+import io.hkhc.gradle.pom.internal.appendBeforeSnapshot
+import io.hkhc.gradle.pom.internal.isSnapshot
+import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.component.SoftwareComponent
+import org.gradle.api.tasks.SourceSet
 
 internal class JarbirdPubImpl(
     val project: Project,
@@ -42,6 +45,8 @@ internal class JarbirdPubImpl(
     private var variantMode: VariantMode = VariantMode.Invisible
     private val repos = mutableSetOf<RepoSpec>()
     private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
+    var component: SoftwareComponent? = null
+    var sourceSet: SourceSet? = null
     var parentRepos: RepoDeclaration? = null
 
     /**
@@ -105,17 +110,13 @@ internal class JarbirdPubImpl(
         return if (pom.isGradlePlugin()) "${pom.plugin?.id}:${variantVersion()}" else "NOT-A-PLUGIN"
     }
 
-//    override fun withMaven(endpoint: RepoEndpoint) {
-//        mavenRepo = endpoint
-//    }
-//
-//    override fun withMavenCentral() {
-//        mavenRepo = MavenCentralEndpoint(project)
-//    }
-//
-//    override fun withMavenByProperties(key: String) {
-//        mavenRepo = PropertyRepoEndpoint(project, "maven.$key")
-//    }
+    override fun from(component: SoftwareComponent) {
+        this.component = component
+    }
+
+    override fun from(sourceSet: SourceSet) {
+        this.sourceSet = sourceSet
+    }
 
     override fun sourceSetNames(vararg names: String): Any = SourceSetNames(project, names)
     override fun sourceSetNames(names: List<String>): Any = SourceSetNames(project, names.toTypedArray())
@@ -171,7 +172,14 @@ internal class JarbirdPubImpl(
     }
 
     fun finalizeRepos() {
-        println("finalizing repospec ver ${pom.version} isSnapshot ${pom.isSnapshot()} needsBintray ${needsBintray()}")
+
+        if ((pom.group ?: "").isEmpty())
+            throw GradleException("Group is missed in POM for pub($variant). May be the variant name or POM file is not correct.")
+        if ((pom.artifactId ?: "").isEmpty())
+            throw GradleException("ArtifactID is missed in POM for pub($variant). May be the variant name or POM file is not correct.")
+        if ((pom.version ?: "").isEmpty())
+            throw GradleException("Version is missed in POM for pub($variant). May be the variant name or POM file is not correct.")
+
         if (pom.isSnapshot() && needsBintray()) {
             val bintraySpec = getRepos().firstOrNull { it is BintrayRepoSpec }
             bintraySpec?.let { repos.add(repoSpecBuilder.buildBintraySnapshotRepoSpec(it as BintrayRepoSpec)) }
@@ -179,8 +187,6 @@ internal class JarbirdPubImpl(
         if (pom.isGradlePlugin()) {
             gradlePortal()
         }
-
-        println("Finalized RepoSpec: ${getRepos().joinToString(",") { it::class.java.name }}")
     }
 
     fun needsBintray(): Boolean {

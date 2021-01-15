@@ -182,7 +182,7 @@ fun buildGradle(maven: Boolean = true, bintray: Boolean = true): String {
     """.trimIndent()
 }
 
-fun buildTwoGlobalGradle(): String {
+fun buildTwoPubGradle(maven: Boolean = true, bintray: Boolean = true): String {
     return """
         plugins {
             kotlin("jvm") version "1.3.72"
@@ -193,12 +193,50 @@ fun buildTwoGlobalGradle(): String {
         repositories {
             jcenter()
         }
+        sourceSets {
+            create("main2") {
+                compileClasspath += sourceSets.main.get().output 
+                runtimeClasspath += sourceSets.main.get().output 
+            }
+        }
+        
+        jarbird {
+            ${if (maven) "mavenRepo(\"mock\")" else ""}
+            ${if (bintray) "bintray()" else ""}
+            pub("lib1") {
+//                from(components["java"])
+                 from(sourceSets["main"])
+            }
+            pub("lib2") {
+                from(sourceSets["main2"])
+            }
+        }
+    """.trimIndent()
+}
+
+fun buildTwoGlobalGradle(): String {
+    return """
+        plugins {
+            kotlin("jvm") version "1.3.72"
+            `kotlin-dsl`
+            id("$PLUGIN_ID")
+            id("com.dorongold.task-tree") version "1.5"
+        }
+        sourceSets {
+            create("sourceSet1") { }
+            create("sourceSet2") { }
+        }
+        repositories {
+            jcenter()
+        }
         jarbird {
             mavenRepo("mock1")
             mavenRepo("mock2")
             pub("lib1") {
+                from(sourceSets["sourceSet1"])
             }
             pub("lib2") {
+                from(sourceSets["sourceSet2"])
             }
         }
     """.trimIndent()
@@ -212,15 +250,21 @@ fun buildTwoLocalGradle(): String {
             id("$PLUGIN_ID")
             id("com.dorongold.task-tree") version "1.5"
         }
+        sourceSets {
+            create("sourceSet1") { }
+            create("sourceSet2") { }
+        }
         repositories {
             jcenter()
         }
         jarbird {
             pub("lib1") {
                 mavenRepo("mock1")
+                from(sourceSets["sourceSet1"])
             }
             pub("lib2") {
                 mavenRepo("mock2")
+                from(sourceSets["sourceSet2"])
             }
         }
     """.trimIndent()
@@ -383,8 +427,8 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
                      pub(variantName) { 
                         ${if (variantMode != "") variantMode else "" } 
                         useGpg = true
-                        pubComponent = variantName
-                        sourceSets = variant.sourceSets.inject([]) { sets, sourceProvider -> 
+                        from(components[variantName])
+                        docSourceSets = variant.sourceSets.inject([]) { sets, sourceProvider -> 
                             sets += sourceProvider.javaDirectories  
                             sets += sourceProvider.resourcesDirectories
                         }

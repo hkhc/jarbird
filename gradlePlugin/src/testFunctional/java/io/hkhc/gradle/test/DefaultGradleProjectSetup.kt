@@ -74,7 +74,7 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
         File(keystoreTemplateDir).copyRecursively(projectDir)
     }
 
-    fun setupSourceSets() {
+    open fun setupSourceSets() {
         if (subProjDirs.isEmpty()) {
             sourceSetTemplateDirs.forEach { source ->
                 File(source).copyRecursively(projectDir)
