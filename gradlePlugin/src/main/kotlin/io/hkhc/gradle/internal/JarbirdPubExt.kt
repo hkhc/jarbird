@@ -59,13 +59,9 @@ internal fun List<JarbirdPub>.needsBintray() = any { it.needsBintray() }
 internal fun List<JarbirdPub>.needsArtifactory() = any { it.needsArtifactory() }
 
 internal fun JarbirdPub.needsArtifactory() =
-    if ((pom.isSnapshot() && pom.isGradlePlugin())) {
-        false
-    } else {
-        (this as JarbirdPubImpl).getRepos()
-            .filterIsInstance<ArtifactoryRepoSpec>()
-            .isNotEmpty()
-    }
+    (this as JarbirdPubImpl).getRepos()
+        .filterIsInstance<ArtifactoryRepoSpec>()
+        .isNotEmpty()
 
 // TODO reorg class structure to check it in single filterIsInstance
 internal fun JarbirdPub.needsNonLocalMaven() =

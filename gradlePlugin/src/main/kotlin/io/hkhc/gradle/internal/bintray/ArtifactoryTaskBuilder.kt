@@ -23,6 +23,7 @@ import io.hkhc.gradle.internal.JbPublishToArtifactoryTaskInfo
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.TaskInfo
 import io.hkhc.gradle.internal.isMultiProjectRoot
+import io.hkhc.gradle.internal.needsArtifactory
 import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.registerRootProjectTasks
 import org.gradle.api.Project
@@ -59,10 +60,7 @@ class ArtifactoryTaskBuilder(
             )
         }
 
-        println("bintray is not empty ${publishPlan.bintray.isNotEmpty()}")
-        println("artifactory is not empty ${publishPlan.artifactory.isNotEmpty()}")
-
-        if (publishPlan.artifactory.isNotEmpty()) {
+        if (pubs.needsArtifactory()) {
 
             taskInfo.register(project.tasks) {
                 /*

@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle.test
 
-import isSnapshot
+import io.hkhc.gradle.pom.internal.isSnapshot
 
 class BintrayRepoPatterns(
     val coordinate: Coordinate,
@@ -30,25 +30,32 @@ class BintrayRepoPatterns(
     private val isSnapshot = coordinate.versionWithVariant.isSnapshot()
     private val metafileName = "maven-metadata.xml"
 
-    fun metafile(base: String): List<String> {
-        return mutableListOf<String>().apply {
-            add("$base/$metafileName")
-            if (isSnapshot) add("$base/${coordinate.versionWithVariant}/$metafileName")
-        }
-    }
+    private fun isSnapshot(coordinate: Coordinate) = coordinate.versionWithVariant.isSnapshot()
 
-    private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) = with(coordinate) {
-        pluginId?.let {
-            listOf(
-                "/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant/" +
-                    "${pluginId.replace('.', '/')}/$pluginId.gradle.plugin"
-            )
-                .flatMap {
+//    fun metafile(base: String): List<String> {
+//        return mutableListOf<String>().apply {
+//            add("$base/$metafileName")
+//            if (isSnapshot) add("$base/${coordinates.versionWithVariant}/$metafileName")
+//        }
+//    }
+
+    private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String): List<String> {
+        return coordinates.flatMap { coordinate ->
+            with(coordinate) {
+                pluginId?.let {
                     listOf(
-                        "$it/$versionWithVariant/$pluginId.gradle.plugin-${versionTransformer(versionWithVariant)}.pom"
+                        "/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant/" +
+                            "${pluginId.replace('.', '/')}/$pluginId.gradle.plugin"
                     )
-                }
-        } ?: listOf()
+                        .flatMap {
+                            listOf(
+                                "$it/$versionWithVariant/" +
+                                    "$pluginId.gradle.plugin-${versionTransformer(versionWithVariant)}.pom"
+                            )
+                        }
+                } ?: listOf()
+            }
+        }
     }
 
     private fun artifactTypes(path: String) =

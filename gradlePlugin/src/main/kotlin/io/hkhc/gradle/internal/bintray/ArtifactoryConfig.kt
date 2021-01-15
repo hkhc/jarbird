@@ -19,13 +19,12 @@
 package io.hkhc.gradle.internal.bintray
 
 import groovy.lang.GroovyObject
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isSingleProject
-import io.hkhc.gradle.internal.pubNameWithVariant
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName
@@ -42,30 +41,29 @@ class ArtifactoryConfig(
 ) {
 
     private var repoUrl = "https://oss.jfrog.org"
-//    private val pubConfig = BintrayPublishConfig(project)
     private val publishPlan = BintrayPublishPlan(pubs)
-    private val artifactoryLibNames = publishPlan.artifactoryLibs.map { it.pubNameWithVariant() }.toTypedArray()
 
     fun config() {
 
         // TODO show warning if there are more than one BintraySpec in list
-        val repoSpec = pubs.flatMap { it.getRepos() }.filterIsInstance<ArtifactoryRepoSpec>().first()
+        val repoSpecOrNull = pubs.flatMap { it.getRepos() }.filterIsInstance<ArtifactoryRepoSpec>().firstOrNull()
+        repoSpecOrNull?.let { repoSpec ->
+            val customRepoUrl = if (pubs[0].pom.isSnapshot()) repoSpec.snapshotUrl else repoSpec.releaseUrl
+            if (customRepoUrl != "") repoUrl = customRepoUrl
 
-        val customRepoUrl = if (pubs[0].pom.isSnapshot()) repoSpec.snapshotUrl else repoSpec.releaseUrl
-        if (customRepoUrl != "") repoUrl = customRepoUrl
-
-        val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
-        when {
-            project.isSingleProject() -> {
-                convention.configSingle(false, repoSpec)
-                configTask()
-            }
-            project.isMultiProjectRoot() -> {
-                // convention.configSingle(true)
-            }
-            else -> {
-                convention.configSingle(false, repoSpec)
-                configTask()
+            val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
+            when {
+                project.isSingleProject() -> {
+                    convention.configSingle(false, repoSpec)
+                    configTask()
+                }
+                project.isMultiProjectRoot() -> {
+                    // convention.configSingle(true)
+                }
+                else -> {
+                    convention.configSingle(false, repoSpec)
+                    configTask()
+                }
             }
         }
     }
@@ -88,7 +86,7 @@ class ArtifactoryConfig(
                 defaults(
                     delegateClosureOf<GroovyObject> {
                         if (!isRootProject) {
-                            invokeMethod("publications", artifactoryLibNames)
+                            invokeMethod("publications", publishPlan.artifactoryPublications().toTypedArray())
                         }
                         setProperty("publishArtifacts", true)
                         setProperty("publishPom", true)
@@ -120,7 +118,7 @@ class ArtifactoryConfig(
 
         project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
             @Suppress("SpreadOperator")
-            publications(*artifactoryLibNames)
+            publications(*publishPlan.artifactoryPublications().toTypedArray())
             if (project.isMultiProjectRoot()) {
                 skip = true
             }

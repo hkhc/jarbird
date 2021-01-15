@@ -26,21 +26,19 @@ import io.hkhc.gradle.internal.pubNameWithVariant
 class BintrayPublishPlan(private val pubs: List<JarbirdPub>) {
     val bintray: MutableList<JarbirdPub> = mutableListOf()
     val artifactory: MutableList<JarbirdPub> = mutableListOf()
+    val artifactoryPlugins: MutableList<JarbirdPub> = mutableListOf()
     val bintrayLibs: MutableList<JarbirdPub> = mutableListOf()
     val artifactoryLibs: MutableList<JarbirdPub> = mutableListOf()
     val bintrayPlugins: MutableList<JarbirdPub> = mutableListOf()
-    val invalid: MutableList<JarbirdPub> = mutableListOf()
     val invalidPlugins: MutableList<JarbirdPub> = mutableListOf()
 
     init {
         pubs.filter { it.needsBintray() }.forEach {
             if (it.pom.isSnapshot()) {
+                artifactory.add(it)
+                artifactoryLibs.add(it)
                 if (it.pom.isGradlePlugin()) {
-                    invalid.add(it)
-                    invalidPlugins.add(it)
-                } else {
-                    artifactory.add(it)
-                    artifactoryLibs.add(it)
+                    artifactoryPlugins.add(it)
                 }
             } else {
                 bintray.add(it)
@@ -56,6 +54,13 @@ class BintrayPublishPlan(private val pubs: List<JarbirdPub>) {
         return mutableListOf<String>().apply {
             addAll(bintrayLibs.map { it.pubNameWithVariant() })
             addAll(bintrayPlugins.map { "${it.pubNameWithVariant()}$PLUGIN_MARKER_PUB_SUFFIX" })
+        }
+    }
+
+    fun artifactoryPublications(): List<String> {
+        return mutableListOf<String>().apply {
+            addAll(artifactoryLibs.map { it.pubNameWithVariant() })
+            addAll(artifactoryPlugins.map { "${it.pubNameWithVariant()}$PLUGIN_MARKER_PUB_SUFFIX" })
         }
     }
 }

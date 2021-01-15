@@ -18,12 +18,12 @@
 
 package io.hkhc.gradle.test
 
-import isSnapshot
+import io.hkhc.gradle.pom.internal.isSnapshot
 
 class ArtifactoryRepoPatterns(
     val coordinate: Coordinate,
     val username: String,
-    val repo: String,
+    val repoKey: String,
     private val withBuildInfo: Boolean = true,
     private val packaging: String
 ) {
@@ -34,15 +34,31 @@ class ArtifactoryRepoPatterns(
         listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
             .map { suffix -> "$path$suffix" }
 
+    private fun listPluginRepo(pluginId: String?, versionTransformer: (String) -> String) = with(coordinate) {
+        pluginId?.let {
+            listOf(
+                "/base/$repoKey/" +
+                    "${pluginId.replace('.', '/')}/$pluginId.gradle.plugin"
+            )
+                .flatMap {
+                    listOf(
+                        "$it/$versionWithVariant/$pluginId.gradle.plugin-${versionTransformer(versionWithVariant)}.pom"
+                    )
+                }
+                .map { "$it.*" }
+        } ?: listOf()
+    }
+
     fun list(@Suppress("UNUSED_PARAMETER") versionTransformer: (String) -> String) = with(coordinate) {
         (if (withBuildInfo) listOf(Regex("/base/api/build")) else listOf()) +
             (
-                listOf(
-                    "/base/oss-snapshot-local/${getPath()}/$artifactIdWithVariant-$versionWithVariant"
-                )
-                    .flatMap(::artifactTypes)
-                    .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
-                    .map { "$it.*" }
+                listPluginRepo(pluginId, versionTransformer) +
+                    listOf(
+                        "/base/$repoKey/${getPath()}/$artifactIdWithVariant-$versionWithVariant"
+                    )
+                        .flatMap(::artifactTypes)
+                        .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
+                        .map { "$it.*" }
                 )
                 .map { Regex(it) }
     }
