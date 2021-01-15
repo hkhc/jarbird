@@ -40,7 +40,6 @@ fun Project.registerRootProjectTasks(taskInfo: TaskInfo) {
         val rootTask = this
         project.childProjects.forEach { (_, child) ->
             child.tasks.findByPath(taskInfo.name)?.let { childTask ->
-                println("which is depends on ${childTask.path}")
                 rootTask.dependsOn(childTask.path)
             }
         }

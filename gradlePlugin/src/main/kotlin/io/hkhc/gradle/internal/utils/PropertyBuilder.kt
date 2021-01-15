@@ -22,7 +22,5 @@ import io.hkhc.gradle.endpoint.resolveProperty
 import io.hkhc.gradle.internal.ProjectProperty
 
 class PropertyBuilder(private val projectProperty: ProjectProperty, private val keyPrefix: String) {
-    fun resolve(key: String) = resolveProperty(projectProperty, "repository.$keyPrefix.$key").apply {
-        println("resolved property repository.$keyPrefix.$key = " + this)
-    }
+    fun resolve(key: String) = resolveProperty(projectProperty, "repository.$keyPrefix.$key")
 }

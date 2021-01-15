@@ -52,7 +52,6 @@ interface TaskInfo {
 
     fun register(container: TaskContainer, block: Task.() -> Unit = {}): TaskProvider<Task> {
         return container.register(name) {
-            println("TaskInfo: register $name")
             val task = this
             task.group = this@TaskInfo.group
             task.description = this@TaskInfo.description

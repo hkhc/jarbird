@@ -45,7 +45,6 @@ open class JarbirdExtensionImpl(
     private var implicited: JarbirdPub? = null
 
     init {
-        println(pomGroup.dump())
         project.logger.debug("$LOG_PREFIX Aggregated POM configuration: $pomGroup")
     }
 
@@ -53,7 +52,6 @@ open class JarbirdExtensionImpl(
 
         pub.pom = pomGroup[pub.variant]
 
-        println("initPub pubName 0 ${pub.variant} ${pub.pubName} ${pub.pom.artifactId} ${pub.pom.version}")
         // TODO we ignore that pom overwrite some project properties in the mean time.
         // need to properly take care of it.
         pub.pom.syncWith(projectInfo)
@@ -61,8 +59,6 @@ open class JarbirdExtensionImpl(
         // TODO handle two publications of same artifactaId in the same module.
         // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
         pub.pubName = JarbirdPlugin.normalizePubName(pub.pom.artifactId ?: "Lib")
-
-        println("initPub pubName 1 ${pub.pubName} ${pub.pom.artifactId}")
 
         // pre-check of final data, for child project
         // TODO handle multiple level child project?

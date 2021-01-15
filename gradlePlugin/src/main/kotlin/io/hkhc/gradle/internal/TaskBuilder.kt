@@ -113,7 +113,6 @@ internal class TaskBuilder(
                 it.registerMavenLocalTask(this)
                 it.registerMavenRepositoryTask(this)
             }
-            println("taskbuilder build needs bintray ${pubs.needsBintray()}")
             if (pubs.needsBintray()) {
                 bintrayTaskBuilder.registerBintrayTask()
             }

@@ -18,9 +18,9 @@
 
 package io.hkhc.gradle.pom
 
-import LICENSE_MAP
 import io.hkhc.gradle.internal.ProjectInfo
-import isSnapshot
+import io.hkhc.gradle.pom.internal.LICENSE_MAP
+import io.hkhc.gradle.pom.internal.isSnapshot
 import java.util.Calendar
 import java.util.GregorianCalendar
 
