@@ -42,6 +42,7 @@ fun Any.commonToString() = this::class.memberProperties.joinToString(
     ")"
 ) { "${it.name}=${it.getter.call(this)}" }
 
+@Suppress("MagicNumber")
 fun Any.commonHashCode() = this::class.memberProperties.fold(0) { result, curr ->
     (31 * result + curr.getter.call(this).hashCode())
 }
