@@ -99,11 +99,12 @@ class BuildTwoMavenRepoTest : FunSpec({
 
             return DefaultGradleProjectSetup(projectDir).apply {
 
+                sourceSetTemplateDirs = arrayOf("functionalTestData/libTwin")
                 setup()
                 coordinates.forEach { coordinate ->
                     mockServers.add(
                         MockMavenRepositoryServer().apply {
-                            setUp(coordinate, "/base")
+                            setUp(listOf(coordinate), "/base")
                         }
                     )
                 }
@@ -148,7 +149,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                         server.collectRequests(),
                         coordinates,
                         "jar"
-                    ) should publishedToMavenRepositoryCompletely()
+                    ) should publishedToMavenRepositoryCompletely(withMetadata = false)
                 }
             }
         }
@@ -162,17 +163,14 @@ class BuildTwoMavenRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinates,
                 listOf(
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifact1Lib1Publication=SUCCESS",
                     ":generatePomFileForTestArtifact1Lib1Publication=SUCCESS",
                     ":jbDokkaHtmlTestArtifact1Lib1=SUCCESS",
                     ":jbDokkaJarTestArtifact1Lib1Lib1=SUCCESS",
+                    ":compileSourceSet1Kotlin=SUCCESS",
+                    ":compileSourceSet1Java=SUCCESS",
+                    ":processSourceSet1Resources=NO_SOURCE",
+                    ":sourceSet1Classes=SUCCESS",
+                    ":sourceSet1Jar=SUCCESS",
                     ":sourcesJarTestArtifact1Lib1Lib1=SUCCESS",
                     ":signTestArtifact1Lib1Publication=SUCCESS",
                     ":publishTestArtifact1Lib1PublicationToMavenMock1Repository=SUCCESS",
@@ -180,10 +178,14 @@ class BuildTwoMavenRepoTest : FunSpec({
                     ":publishTestArtifact1Lib1PublicationToMavenMock2Repository=SUCCESS",
                     ":jbPublishTestArtifact1Lib1ToMavenMock2=SUCCESS",
                     ":jbPublishTestArtifact1Lib1ToMavenRepository=SUCCESS",
-                    ":generateMetadataFileForTestArtifact2Lib2Publication=SUCCESS",
                     ":generatePomFileForTestArtifact2Lib2Publication=SUCCESS",
                     ":jbDokkaHtmlTestArtifact2Lib2=SUCCESS",
                     ":jbDokkaJarTestArtifact2Lib2Lib2=SUCCESS",
+                    ":compileSourceSet2Kotlin=SUCCESS",
+                    ":compileSourceSet2Java=SUCCESS",
+                    ":processSourceSet2Resources=NO_SOURCE",
+                    ":sourceSet2Classes=SUCCESS",
+                    ":sourceSet2Jar=SUCCESS",
                     ":sourcesJarTestArtifact2Lib2Lib2=SUCCESS",
                     ":signTestArtifact2Lib2Publication=SUCCESS",
                     ":publishTestArtifact2Lib2PublicationToMavenMock1Repository=SUCCESS",
@@ -217,7 +219,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                         server.collectRequests(),
                         coordinates,
                         "jar"
-                    ) should publishedToMavenRepositoryCompletely()
+                    ) should publishedToMavenRepositoryCompletely(withMetadata = false)
                 }
             }
         }
@@ -231,26 +233,27 @@ class BuildTwoMavenRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinates,
                 listOf(
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifact1Lib1Publication=SUCCESS",
                     ":generatePomFileForTestArtifact1Lib1Publication=SUCCESS",
                     ":jbDokkaHtmlTestArtifact1Lib1=SUCCESS",
                     ":jbDokkaJarTestArtifact1Lib1Lib1=SUCCESS",
+                    ":compileSourceSet1Kotlin=SUCCESS",
+                    ":compileSourceSet1Java=SUCCESS",
+                    ":processSourceSet1Resources=NO_SOURCE",
+                    ":sourceSet1Classes=SUCCESS",
+                    ":sourceSet1Jar=SUCCESS",
                     ":sourcesJarTestArtifact1Lib1Lib1=SUCCESS",
                     ":signTestArtifact1Lib1Publication=SUCCESS",
                     ":publishTestArtifact1Lib1PublicationToMavenMock1Repository=SUCCESS",
                     ":jbPublishTestArtifact1Lib1ToMavenMock1=SUCCESS",
                     ":jbPublishTestArtifact1Lib1ToMavenRepository=SUCCESS",
-                    ":generateMetadataFileForTestArtifact2Lib2Publication=SUCCESS",
                     ":generatePomFileForTestArtifact2Lib2Publication=SUCCESS",
                     ":jbDokkaHtmlTestArtifact2Lib2=SUCCESS",
                     ":jbDokkaJarTestArtifact2Lib2Lib2=SUCCESS",
+                    ":compileSourceSet2Kotlin=SUCCESS",
+                    ":compileSourceSet2Java=SUCCESS",
+                    ":processSourceSet2Resources=NO_SOURCE",
+                    ":sourceSet2Classes=SUCCESS",
+                    ":sourceSet2Jar=SUCCESS",
                     ":sourcesJarTestArtifact2Lib2Lib2=SUCCESS",
                     ":signTestArtifact2Lib2Publication=SUCCESS",
                     ":publishTestArtifact2Lib2PublicationToMavenMock2Repository=SUCCESS",
@@ -282,7 +285,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                         server.collectRequests(),
                         listOf(coordinate),
                         "jar"
-                    ) should publishedToMavenRepositoryCompletely()
+                    ) should publishedToMavenRepositoryCompletely(withMetadata = false)
                 }
             }
         }

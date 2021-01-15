@@ -18,12 +18,13 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.test.BintrayRepoResult
+import io.hkhc.gradle.test.ArtifactoryRepoResult
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
-import io.hkhc.gradle.test.MockBintrayRepositoryServer
+import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
 import io.hkhc.gradle.test.buildGradleCustomBintray
-import io.hkhc.gradle.test.publishedToBintrayRepositoryCompletely
+import io.hkhc.gradle.test.pluginPom
+import io.hkhc.gradle.test.publishedToArtifactoryRepositoryCompletely
 import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.utils.FileTree
@@ -34,11 +35,13 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
+import java.io.File
 
-@Tags("Bintray", "Library")
-class BuildBintrayRepoTest : FunSpec({
+@Tags("Plugin", "Bintray")
+class BuildArtifactoryPluginRepoTest : FunSpec({
 
-    context("Publish library") {
+    context("Publish Gradle plugin") {
 
         val targetTask = "jbPublishToBintray"
 
@@ -50,17 +53,24 @@ class BuildBintrayRepoTest : FunSpec({
 
                 setup()
                 mockServers.add(
-                    MockBintrayRepositoryServer().apply {
+                    MockArtifactoryRepositoryServer().apply {
                         setUp(listOf(coordinate), "/base")
                     }
                 )
 
                 writeFile("build.gradle.kts", buildGradleCustomBintray())
 
-                writeFile("pom.yaml", simplePom(coordinate))
+                writeFile(
+                    "pom.yaml",
+                    simplePom(coordinate) + '\n' +
+                        pluginPom(
+                            coordinate.pluginId ?: "non-exist-plugin-id",
+                            "TestPluginClass"
+                        )
+                )
 
                 setupGradleProperties {
-                    "repository.bintray.release" to mockServers[0].getServerUrl()
+                    "repository.bintray.snapshot" to mockServers[0].getServerUrl()
                     "repository.bintray.username" to "username"
                     "repository.bintray.apikey" to "password"
                 }
@@ -85,40 +95,47 @@ class BuildBintrayRepoTest : FunSpec({
                     result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
                 }
 
+                val pluginPom = File(
+                    setup.projectDir,
+                    "build/publications/testArtifactPluginMarkerMaven/pom-default.xml"
+                ).readText()
+                pluginPom shouldBe pluginPom(coordinate)
+
                 setup.mockServers[0].let { server ->
-                    BintrayRepoResult(
+                    ArtifactoryRepoResult(
                         server.collectRequests(),
-                        listOf(coordinate),
+                        coordinate,
                         "username",
-                        "maven",
+                        "oss-snapshot-local",
                         "jar"
-                    ) should publishedToBintrayRepositoryCompletely()
+                    ) should publishedToArtifactoryRepositoryCompletely()
                 }
             }
         }
 
-        context("to release Bintray Repository") {
+        context("to snapshot Bintray Repository") {
 
-            val coordinate = Coordinate("test.group", "test.artifact", "0.1")
+            val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT", "test.plugin")
             val setup = commonSetup(
                 coordinate,
                 listOf(
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
+                    ":processResources=SUCCESS",
                     ":classes=SUCCESS",
                     ":inspectClassesForKotlinIC=SUCCESS",
                     ":jar=SUCCESS",
                     ":generateMetadataFileForTestArtifactPublication=SUCCESS",
+                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
                     ":generatePomFileForTestArtifactPublication=SUCCESS",
                     ":jbDokkaHtmlTestArtifact=SUCCESS",
                     ":jbDokkaJarTestArtifact=SUCCESS",
                     ":sourcesJarTestArtifact=SUCCESS",
-                    ":signTestArtifactPublication=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
-                    ":bintrayUpload=SUCCESS",
-                    ":bintrayPublish=SUCCESS",
+                    ":artifactoryPublish=SUCCESS",
+                    ":extractModuleInfo=SUCCESS",
+                    ":artifactoryDeploy=SUCCESS",
+                    ":jbPublishToArtifactory=SUCCESS",
                     ":jbPublishToBintray=SUCCESS"
                 )
             )

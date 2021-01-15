@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.pom.internal.isSnapshot
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MavenRepoResult
@@ -36,7 +37,6 @@ import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
-import isSnapshot
 import java.io.File
 
 /**
@@ -84,7 +84,7 @@ class BuildMavenPluginRepoTest : FunSpec({
                 setup()
                 mockServers.add(
                     MockMavenRepositoryServer().apply {
-                        setUp(coordinate, "/base")
+                        setUp(listOf(coordinate), "/base")
                     }
                 )
 

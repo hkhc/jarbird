@@ -30,11 +30,12 @@ class GetMatcherAtEnd(
 
 class MockMavenRepositoryServer : BaseMockRepositoryServer() {
 
-    override fun setupMatcher(coordinate: Coordinate) =
+    // TODO fix multi coordinates matcher
+    override fun setupMatcher(coordinates: List<Coordinate>) =
         listOf(
             PutMatcher("", Success),
             GetMatcherAtEnd("maven-metadata.xml") { _, response ->
-                response.setBody(generateMetaDataXML(coordinate))
+                response.setBody(generateMetaDataXML(coordinates[0]))
             }
         )
 

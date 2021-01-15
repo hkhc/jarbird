@@ -103,7 +103,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
 
                 mockServers.add(
                     MockArtifactoryRepositoryServer().apply {
-                        setUp(coordinate, "/base")
+                        setUp(listOf(coordinate), "/base")
                     }
                 )
 

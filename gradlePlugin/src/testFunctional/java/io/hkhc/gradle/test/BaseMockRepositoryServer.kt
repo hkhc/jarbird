@@ -26,10 +26,10 @@ import okhttp3.mockwebserver.RecordedRequest
 abstract class BaseMockRepositoryServer {
     private lateinit var server: MockWebServer
     private var baseUrl = "/release"
-    private lateinit var coordinate: Coordinate
+    private lateinit var coordinates: List<Coordinate>
     private lateinit var matcher: List<RequestMatcher>
 
-    abstract fun setupMatcher(coordinate: Coordinate): List<RequestMatcher>
+    abstract fun setupMatcher(coordinates: List<Coordinate>): List<RequestMatcher>
 
     private fun pathMatcher(request: RecordedRequest): MockResponse {
         return matcher.find { it.matches(request) }?.let {
@@ -40,19 +40,20 @@ abstract class BaseMockRepositoryServer {
         )
     }
 
-    fun setUp(coordinate: Coordinate, baseUrl: String) {
+    fun setUp(coordinates: List<Coordinate>, baseUrl: String) {
 
-        this.coordinate = coordinate
+        this.coordinates = coordinates
 
-        matcher = setupMatcher(coordinate)
+        matcher = setupMatcher(coordinates)
 
         this.baseUrl = baseUrl
         server = MockWebServer()
 
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                println("mock server request : ${request.method} ${request.path}")
-                return pathMatcher(request)
+                return pathMatcher(request).apply {
+                    println("mock server request : ${request.method} ${request.path} result ${this.status}")
+                }
             }
         }
         server.start()

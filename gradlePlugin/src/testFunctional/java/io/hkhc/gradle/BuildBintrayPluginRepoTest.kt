@@ -54,7 +54,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
                 setup()
                 mockServers.add(
                     MockBintrayRepositoryServer().apply {
-                        setUp(coordinate, "/base")
+                        setUp(listOf(coordinate), "/base")
                     }
                 )
 
@@ -104,7 +104,7 @@ class BuildBintrayPluginRepoTest : FunSpec({
                 setup.mockServers[0].let { server ->
                     BintrayRepoResult(
                         server.collectRequests(),
-                        coordinate,
+                        listOf(coordinate),
                         "username",
                         "maven",
                         "jar"
@@ -119,6 +119,8 @@ class BuildBintrayPluginRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 listOf(
+                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
+                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenLocal=SUCCESS",
                     ":compileKotlin=SUCCESS",
                     ":compileJava=SUCCESS",
                     ":pluginDescriptors=SUCCESS",
@@ -132,9 +134,6 @@ class BuildBintrayPluginRepoTest : FunSpec({
                     ":jbDokkaJarTestArtifact=SUCCESS",
                     ":sourcesJarTestArtifact=SUCCESS",
                     ":signTestArtifactPublication=SUCCESS",
-                    ":_bintrayRecordingCopy=SUCCESS",
-                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
-                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenLocal=SUCCESS",
                     ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
                     ":bintrayUpload=SUCCESS",
                     ":bintrayPublish=SUCCESS",

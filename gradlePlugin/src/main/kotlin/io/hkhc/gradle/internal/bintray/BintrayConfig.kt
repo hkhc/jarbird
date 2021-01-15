@@ -18,20 +18,15 @@
 
 package io.hkhc.gradle.internal.bintray
 
-import avFileBase
 import com.jfrog.bintray.gradle.BintrayExtension
-import com.jfrog.bintray.gradle.tasks.RecordingCopyTask
-import gavPath
-import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.needsBintray
-import io.hkhc.gradle.internal.pubNameWithVariant
+import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.internal.utils.findByType
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.closureOf
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -52,53 +47,24 @@ class BintrayConfig(
         /*
             Why does bintrayUpload not depends on _bintrayRecordingCopy by default?
          */
-        project.tasks.named("bintrayUpload") {
-            /*
-                *** Important
-                Bintray Gradle Plugin expect RecordingCopyTask dependency in task directly rather than name in String
-             */
-            dependsOn(project.tasks.named("_bintrayRecordingCopy").get())
-        }
+//        project.tasks.named("bintrayUpload") {
+//            /*
+//                *** Important
+//                Bintray Gradle Plugin expect RecordingCopyTask dependency in task directly rather than name in String
+//             */
+//            dependsOn(project.tasks.named("_bintrayRecordingCopy").get())
+//        }
 
         /*
             Bintray does not do signing implicitly, we add our own dependency to make sure publication is signed.
          */
-        project.tasks.named("_bintrayRecordingCopy") {
-            publishPlan.bintrayLibs.map { it.pubNameWithVariant() }.forEach {
-                dependsOn("sign${it.capitalize()}Publication")
-            }
-        }
-    }
-
-    // Bintray can perform component signing on behalf of us. However it requires our private key in order to sign
-    // archives for us. I don't want to share the key and hence specify the signature files manually and upload
-    // them.
-    @Suppress("SpreadOperator")
-    private fun BintrayExtension.includeSignatureFiles() {
-
-        val includeFileList = publishPlan.bintray.map { "${it.avFileBase}*.asc" }
-            .toTypedArray()
-
-        filesSpec(
-            closureOf<RecordingCopyTask> {
-
-                publishPlan.bintray
-                    .forEach { pub ->
-                        from("${project.buildDir}/outputs/aar") {
-                            include("*.aar.asc")
-                            rename { _ -> "${pub.avFileBase}.aar.asc" }
-                        }
-                        from("${project.buildDir}/publications/${pub.pubNameWithVariant()}") {
-                            include("pom-default.xml.asc")
-                            rename("pom-default.xml.asc", "${pub.avFileBase}.pom.asc")
-                        }
-                        into(pub.gavPath)
-                    }
-                from("${project.buildDir}/libs") {
-                    include(*includeFileList)
-                }
-            }
-        )
+//        project.tasks.named("_bintrayRecordingCopy") {
+//            println("bintrayLibs count ${publishPlan.bintrayLibs.size}")
+//            publishPlan.bintrayLibs.map { it.pubNameWithVariant() }.forEach {
+//                println("bintrayLibs dependsOn $it sign${it.capitalize()}Publication")
+//                dependsOn("sign${it.capitalize()}Publication")
+//            }
+//        }
     }
 
     @Suppress("SpreadOperator")
@@ -112,7 +78,6 @@ class BintrayConfig(
             .filterIsInstance<BintrayRepoSpec>()
             .first()
             .let { endpoint ->
-                println("bintray endpoint.releaseUrl ${endpoint.releaseUrl}")
                 if (endpoint.releaseUrl != "") apiUrl = endpoint.releaseUrl
                 if (endpoint.username != "") user = endpoint.username
                 if (endpoint.apikey != "") key = endpoint.apikey
@@ -125,8 +90,6 @@ class BintrayConfig(
         setPublications(*(publishPlan.bintrayPublications().toTypedArray()))
 
         pkg.fill(firstBintrayPom)
-
-        includeSignatureFiles()
     }
 
     @Suppress("SpreadOperator")

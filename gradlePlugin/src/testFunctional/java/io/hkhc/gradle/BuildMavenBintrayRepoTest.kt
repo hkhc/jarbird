@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle
 
+import io.hkhc.gradle.pom.internal.isSnapshot
 import io.hkhc.gradle.test.ArtifactoryRepoResult
 import io.hkhc.gradle.test.BintrayRepoResult
 import io.hkhc.gradle.test.Coordinate
@@ -42,7 +43,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
-import isSnapshot
 
 @Tags("Library", "MavenRepository", "Bintray", "Artifactory")
 class BuildMavenBintrayRepoTest : FunSpec({
@@ -65,15 +65,15 @@ class BuildMavenBintrayRepoTest : FunSpec({
                 setup()
                 if (maven) {
                     mavenMockServer = MockMavenRepositoryServer().apply {
-                        setUp(coordinate, "/base")
+                        setUp(listOf(coordinate), "/base")
                     }
                 }
                 if (bintray) {
                     bintrayMockServer = MockBintrayRepositoryServer().apply {
-                        setUp(coordinate, "/base")
+                        setUp(listOf(coordinate), "/base")
                     }
                     artifactoryMockServer = MockArtifactoryRepositoryServer().apply {
-                        setUp(coordinate, "/base")
+                        setUp(listOf(coordinate), "/base")
                     }
                 }
 
@@ -153,7 +153,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     setup.bintrayMockServer?.let { server ->
                         BintrayRepoResult(
                             server.collectRequests(),
-                            coordinate,
+                            listOf(coordinate),
                             "username",
                             "maven",
                             "jar"
@@ -184,7 +184,6 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     ":jbDokkaJarTestArtifact=SUCCESS",
                     ":sourcesJarTestArtifact=SUCCESS",
                     ":signTestArtifactPublication=SUCCESS",
-                    ":_bintrayRecordingCopy=SUCCESS",
                     ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
                     ":bintrayUpload=SUCCESS",
                     ":bintrayPublish=SUCCESS",
@@ -298,7 +297,6 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     ":jbDokkaJarTestArtifact=SUCCESS",
                     ":sourcesJarTestArtifact=SUCCESS",
                     ":signTestArtifactPublication=SUCCESS",
-                    ":_bintrayRecordingCopy=SUCCESS",
                     ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
                     ":bintrayUpload=SUCCESS",
                     ":bintrayPublish=SUCCESS",

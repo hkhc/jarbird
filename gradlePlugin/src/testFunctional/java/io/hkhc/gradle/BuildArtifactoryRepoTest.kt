@@ -51,7 +51,7 @@ class BuildArtifactoryRepoTest : FunSpec({
                 setup()
                 mockServers.add(
                     MockArtifactoryRepositoryServer().apply {
-                        setUp(coordinate, "/base")
+                        setUp(listOf(coordinate), "/base")
                     }
                 )
 

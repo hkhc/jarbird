@@ -96,7 +96,7 @@ dependencies {
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion")
+    implementation("io.hkhc.com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion")
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:$buildInfoVersion")
     implementation("org.yaml:snakeyaml:$snakeYamlVersion")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")

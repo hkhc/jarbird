@@ -18,18 +18,23 @@
 
 package io.hkhc.gradle.test
 
-import isSnapshot
+import io.hkhc.gradle.pom.internal.isSnapshot
 
 class MavenRepoPatterns(
     private val baseUrl: String,
     val coordinates: List<Coordinate>,
     packaging: String,
     private val releaseVersionTransformer: (String) -> String,
-    private val snapshotVersionTransformer: (String) -> String
+    private val snapshotVersionTransformer: (String) -> String,
+    withMetadata: Boolean = true
 ) {
 
     private val hashExts = listOf("", ".md5", ".sha1", ".sha256", ".sha512")
-    private val artifactClassifier = listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
+    private val artifactClassifier = if (withMetadata) {
+        listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".module", ".pom")
+    } else {
+        listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".pom")
+    }
 
     private val metafileName = "maven-metadata.xml"
 
@@ -47,7 +52,8 @@ class MavenRepoPatterns(
             listOf("$baseUrl/${coordinate.pluginId.replace('.', '/')}/${coordinate.pluginId}.gradle.plugin")
                 .flatMap {
                     metafile(it, coordinate) +
-                        "$it/${coordinate.versionWithVariant}/${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.versionWithVariant)}.pom"
+                        "$it/${coordinate.versionWithVariant}/" +
+                        "${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.versionWithVariant)}.pom"
                 }
                 .flatMap(::hashedPaths)
         } ?: listOf()
@@ -57,10 +63,11 @@ class MavenRepoPatterns(
     private fun artifactTypes(path: String) = artifactClassifier.map { suffix -> "$path$suffix" }
 
     private fun versionTransformer(coordinate: Coordinate): (String) -> String {
-        return if (coordinate.version.isSnapshot())
+        return if (coordinate.version.isSnapshot()) {
             snapshotVersionTransformer
-        else
+        } else {
             releaseVersionTransformer
+        }
     }
 
     fun list() = coordinates.flatMap { coordinate ->
@@ -71,7 +78,8 @@ class MavenRepoPatterns(
                         metafile(path, coordinate) +
                             listOf(
                                 "$path/${coordinate.versionWithVariant}/" +
-                                    "${coordinate.artifactIdWithVariant}-${versionTransformer(coordinate)(coordinate.versionWithVariant)}"
+                                    "${coordinate.artifactIdWithVariant}-" +
+                                    versionTransformer(coordinate)(coordinate.versionWithVariant)
                             )
                                 .flatMap(::artifactTypes)
                                 .flatMap { if (isSnapshot(coordinate)) listOf(it) else listOf(it, "$it.asc") }

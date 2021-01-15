@@ -23,7 +23,7 @@ import io.kotest.matchers.MatcherResult
 
 fun publishedToBintrayRepositoryCompletely() = object : Matcher<BintrayRepoResult> {
     override fun test(value: BintrayRepoResult): MatcherResult {
-        BintrayPublishingChecker(value.coordinate, value.packaging)
+        BintrayPublishingChecker(value.coordinates, value.packaging, value.withMetadata)
             .assertReleaseArtifacts(value.recordedRequests, value.username, value.repo)
         return MatcherResult(
             true,

@@ -78,7 +78,6 @@ class BuildAndroidMavenLocalTest : FunSpec({
             ":lib:extractReleaseAnnotations=SUCCESS",
             ":lib:mergeReleaseGeneratedProguardFiles=SUCCESS",
             ":lib:mergeReleaseConsumerProguardFiles=SUCCESS",
-            ":lib:mergeReleaseJavaResource=SUCCESS",
             ":lib:syncReleaseLibJars=SUCCESS",
             ":lib:bundleReleaseAar=SUCCESS",
             ":lib:generateMetadataFileForTestArtifactReleasePublication=SUCCESS",
@@ -194,7 +193,8 @@ class BuildAndroidMavenLocalTest : FunSpec({
                         setup.expectedTaskList except listOf(
                             ":lib:stripReleaseDebugSymbols=NO_SOURCE",
                             ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
-                            ":lib:generateReleaseRFile=SUCCESS"
+                            ":lib:generateReleaseRFile=SUCCESS",
+                            ":lib:mergeReleaseJavaResource=SUCCESS"
                         )
                         )
                 }

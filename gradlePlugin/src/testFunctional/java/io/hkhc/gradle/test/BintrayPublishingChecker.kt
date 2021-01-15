@@ -24,7 +24,11 @@ import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
 import okhttp3.mockwebserver.RecordedRequest
 
-class BintrayPublishingChecker(val coordinate: Coordinate, private val packaging: String) {
+class BintrayPublishingChecker(
+    val coordinates: List<Coordinate>,
+    private val packaging: String,
+    private val withMetadata: Boolean = true
+) {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
         val matched = requests
@@ -58,12 +62,15 @@ class BintrayPublishingChecker(val coordinate: Coordinate, private val packaging
     ) {
 
         val expectedPaths = BintrayRepoPatterns(
-            coordinate,
+            coordinates,
             username,
             repo,
-            packaging
+            packaging,
+            withMetadata
         ).list(versionTransformer).apply {
-            forEach { assertFile(recordedRequests, it) }
+            forEach {
+                assertFile(recordedRequests, it)
+            }
         }
 
         val remainingPaths = recordedRequests

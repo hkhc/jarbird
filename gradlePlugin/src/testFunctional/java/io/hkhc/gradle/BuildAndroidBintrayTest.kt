@@ -83,7 +83,6 @@ class BuildAndroidBintrayTest : FunSpec({
             ":lib:bundleReleaseAar=SUCCESS",
             ":lib:generateMetadataFileForTestArtifactReleasePublication=SUCCESS",
             ":lib:signTestArtifactReleasePublication=SUCCESS",
-            ":lib:_bintrayRecordingCopy=SUCCESS",
             ":lib:publishTestArtifactReleasePublicationToMavenLocal=SUCCESS",
             ":lib:bintrayUpload=SUCCESS",
             ":bintrayPublish=SUCCESS",
@@ -101,7 +100,7 @@ class BuildAndroidBintrayTest : FunSpec({
                 setup()
                 mockServers.add(
                     MockBintrayRepositoryServer().apply {
-                        setUp(coordinate, "/base")
+                        setUp(listOf(coordinate), "/base")
                     }
                 )
 
@@ -169,7 +168,7 @@ class BuildAndroidBintrayTest : FunSpec({
                 setup.mockServers.forEach { server ->
                     BintrayRepoResult(
                         server.collectRequests(),
-                        coordinate,
+                        listOf(coordinate),
                         "username",
                         "maven",
                         "aar"

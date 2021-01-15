@@ -25,7 +25,8 @@ import okhttp3.mockwebserver.RecordedRequest
 
 class MavenPublishingChecker(
     val coordinates: List<Coordinate>,
-    private val packaging: String
+    private val packaging: String,
+    private val withMetadata: Boolean = true
 ) {
 
     private fun assertFile(requests: List<RecordedRequest>, pathRegex: Regex) {
@@ -52,7 +53,8 @@ class MavenPublishingChecker(
             coordinates,
             packaging,
             ::transformReleaseVersion,
-            ::transformSnapshotVersion
+            ::transformSnapshotVersion,
+            withMetadata
         ).let {
             it.list()
         }.apply {

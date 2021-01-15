@@ -21,13 +21,13 @@ package io.hkhc.gradle.test
 import io.hkhc.gradle.pom.internal.isSnapshot
 
 class BintrayRepoPatterns(
-    val coordinate: Coordinate,
+    val coordinates: List<Coordinate>,
     val username: String,
     val repo: String,
-    private val packaging: String
+    private val packaging: String,
+    val withMetaData: Boolean = true
 ) {
 
-    private val isSnapshot = coordinate.versionWithVariant.isSnapshot()
     private val metafileName = "maven-metadata.xml"
 
     private fun isSnapshot(coordinate: Coordinate) = coordinate.versionWithVariant.isSnapshot()
@@ -59,23 +59,27 @@ class BintrayRepoPatterns(
     }
 
     private fun artifactTypes(path: String) =
-        listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".pom")
+        (
+            listOf(".$packaging", "-javadoc.jar", "-sources.jar", ".pom") +
+                (if (withMetaData) listOf(".module") else listOf())
+            )
             .map { suffix -> "$path$suffix" }
 
-    fun list(versionTransformer: (String) -> String) = with(coordinate) {
-        (
-            listPluginRepo(pluginId, versionTransformer)
-                .map { "$it\\?override=1" } +
-                listOf(
-                    "/content/$username/$repo/" +
-                        "$artifactIdWithVariant/$versionWithVariant/${getPath()}/" +
-                        "$artifactIdWithVariant-${versionTransformer(versionWithVariant)}"
+    fun list(versionTransformer: (String) -> String): List<Regex> = coordinates.flatMap { coordinate ->
+        with(coordinate) {
+            (
+                listPluginRepo(pluginId, versionTransformer)
+                    .map { "$it\\?override=1" } +
+                    listOf(
+                        "/content/$username/$repo/" +
+                            "${coordinates[0].artifactIdWithVariant}/${coordinates[0].versionWithVariant}/" +
+                            "${getPath()}/$artifactIdWithVariant-${versionTransformer(versionWithVariant)}"
+                    )
+                        .flatMap(::artifactTypes)
+                        /* no signature for snapshot publishing */
+                        .flatMap { if (isSnapshot(this)) listOf(it) else listOf(it, "$it.asc") }
+                        .map { "$it\\?override=1" }
                 )
-                    .flatMap(::artifactTypes)
-                    /* no signature for snapshot publishing */
-                    .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }
-                    .map { "$it\\?override=1" }
-            )
-            .map { Regex(it) }
-    }
+        }
+    }.map { Regex(it) }
 }

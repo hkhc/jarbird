@@ -35,16 +35,17 @@ data class MavenRepoResult(
 
 data class BintrayRepoResult(
     val recordedRequests: List<RecordedRequest>,
-    val coordinate: Coordinate,
+    val coordinates: List<Coordinate>,
     var username: String,
     val repo: String,
-    val packaging: String
+    val packaging: String,
+    val withMetadata: Boolean = true
 )
 
 data class ArtifactoryRepoResult(
     val recordedRequests: List<RecordedRequest>,
     val coordinate: Coordinate,
     var username: String,
-    val repo: String,
+    val repoKey: String,
     val packaging: String
 )

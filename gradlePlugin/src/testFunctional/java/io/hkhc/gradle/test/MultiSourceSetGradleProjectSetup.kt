@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Herman Cheung
+ * Copyright (c) 2021. Herman Cheung
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,22 @@
 
 package io.hkhc.gradle.test
 
-import io.kotest.matchers.Matcher
-import io.kotest.matchers.MatcherResult
+import java.io.File
 
-fun publishedToMavenRepositoryCompletely(withMetadata: Boolean = true) = object : Matcher<MavenRepoResult> {
-    override fun test(value: MavenRepoResult): MatcherResult {
-        MavenPublishingChecker(value.coordinates, value.packaging, withMetadata).assertArtifacts(value.recordedRequests)
-        return MatcherResult(
-            true,
-            "All files should be published to Maven repository",
-            "Not all files should be published to Maven repository"
-        )
+class MultiSourceSetGradleProjectSetup(
+    projectDir: File,
+    sourceSets: List<String>
+) : DefaultGradleProjectSetup(projectDir) {
+
+    override fun setupSourceSets() {
+        if (subProjDirs.isEmpty()) {
+            sourceSetTemplateDirs.forEach { source ->
+                File(source).copyRecursively(projectDir)
+            }
+        } else {
+            sourceSetTemplateDirs.zip(subProjDirs).forEach { (source, proj) ->
+                File(source).copyRecursively(File(projectDir, proj))
+            }
+        }
     }
 }

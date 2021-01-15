@@ -24,23 +24,39 @@ class MockBintrayRepositoryServer : BaseMockRepositoryServer() {
     val username = "username"
     val repo = "maven"
 
-    override fun setupMatcher(coordinate: Coordinate) = with(coordinate) {
-        listOf(
-            HeadMatcher("/packages/$username/$repo/$artifactIdWithVariant", FileNotFound),
-            PostMatcher("/packages/$username/$repo", Success),
-            HeadMatcher("/packages/$username/$repo/$artifactIdWithVariant/versions/$versionWithVariant", FileNotFound),
-            PostMatcher("/packages/$username/$repo/$artifactIdWithVariant/versions", Success),
-            PutMatcher("/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant") { request, response ->
-                postFileCount++
-                Success.invoke(request, response)
-            },
-            PostMatcher("/content/$username/$repo/$artifactIdWithVariant/$versionWithVariant/publish") { _, response ->
-                response.setBody("{ \"files\": $postFileCount }").setResponseCode(HTTP_SUCCESS)
-            }
-        ).apply {
-            forEach {
-                println("matcher ${it.path}")
-            }
+    // TODO fix multi coordinates matcher
+    override fun setupMatcher(coordinates: List<Coordinate>) = coordinates.flatMap { coordinate ->
+        val first = coordinates[0]
+        with(coordinate) {
+            listOf(
+                HeadMatcher(
+                    "/packages/$username/$repo/${first.artifactIdWithVariant}",
+                    FileNotFound
+                ),
+                PostMatcher(
+                    "/packages/$username/$repo",
+                    Success
+                ),
+                HeadMatcher(
+                    "/packages/$username/$repo/${first.artifactIdWithVariant}/versions/$versionWithVariant",
+                    FileNotFound
+                ),
+                PostMatcher(
+                    "/packages/$username/$repo/${first.artifactIdWithVariant}/versions",
+                    Success
+                ),
+                PutMatcher(
+                    "/content/$username/$repo/${first.artifactIdWithVariant}/${first.versionWithVariant}"
+                ) { request, response ->
+                    postFileCount++
+                    Success.invoke(request, response)
+                },
+                PostMatcher(
+                    "/content/$username/$repo/${first.artifactIdWithVariant}/${first.versionWithVariant}/publish"
+                ) { _, response ->
+                    response.setBody("{ \"files\": $postFileCount }").setResponseCode(HTTP_SUCCESS)
+                }
+            )
         }
     }
 }
