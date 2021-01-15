@@ -24,7 +24,7 @@ import io.kotest.matchers.MatcherResult
 fun publishedToArtifactoryRepositoryCompletely() = object : Matcher<ArtifactoryRepoResult> {
     override fun test(value: ArtifactoryRepoResult): MatcherResult {
         ArtifactoryPublishingChecker(value.coordinate, value.packaging)
-            .assertReleaseArtifacts(value.recordedRequests, value.username, value.repo)
+            .assertReleaseArtifacts(value.recordedRequests, value.username, value.repoKey)
         return MatcherResult(
             true,
             "All files should be published to Artifactory repository",

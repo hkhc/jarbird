@@ -31,8 +31,8 @@ class ArtifactoryPublishingChecker(val coordinate: Coordinate, private val packa
             .filter { it.method == "PUT" }
             .any { it.path?.let { path -> pathRegex.matches(path) } ?: false }
         withClue(
-            "\"$pathRegex does not match any recorded request\\n\" +\n" +
-                "                requests.map { it.path }.joinToString(\"\\n\""
+            "$pathRegex does not match any recorded request\n" +
+                requests.map { it.path }.joinToString("\n")
         ) {
             matched.shouldBeTrue()
         }
@@ -46,12 +46,12 @@ class ArtifactoryPublishingChecker(val coordinate: Coordinate, private val packa
         return "$snapshotVersion-[0-9]+.[0-9]+-[0-9]+"
     }
 
-    fun assertReleaseArtifacts(recordedRequests: List<RecordedRequest>, username: String, repo: String) {
-        assertArtifacts(recordedRequests, ::transformReleaseVersion, username, repo)
+    fun assertReleaseArtifacts(recordedRequests: List<RecordedRequest>, username: String, repoKey: String) {
+        assertArtifacts(recordedRequests, ::transformReleaseVersion, username, repoKey)
     }
 
-    fun assertSnapshotArtifacts(recordedRequests: List<RecordedRequest>, username: String, repo: String) {
-        assertArtifacts(recordedRequests, ::transformSnapshotVersion, username, repo)
+    fun assertSnapshotArtifacts(recordedRequests: List<RecordedRequest>, username: String, repoKey: String) {
+        assertArtifacts(recordedRequests, ::transformSnapshotVersion, username, repoKey)
     }
 
     fun assertArtifacts(
