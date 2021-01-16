@@ -23,11 +23,13 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPlugin
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
+import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.pom.PomGroup
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 open class JarbirdExtensionImpl(
@@ -50,7 +52,7 @@ open class JarbirdExtensionImpl(
 
     private fun initPub(pub: JarbirdPub) {
 
-        pub.pom = pomGroup[pub.variant]
+        pomGroup[pub.variant]?.let { pub.pom = it } ?: throw GradleException("Variant '${pub.variant}' is not found")
 
         // TODO we ignore that pom overwrite some project properties in the mean time.
         // need to properly take care of it.
@@ -182,7 +184,9 @@ open class JarbirdExtensionImpl(
 
     override fun bintray(): RepoSpec {
 
-        // validation: only one bintray spec is allowed
+        if (repos.any { it is BintrayRepoSpec }) {
+            throw GradleException("Bintray repository has been declared more than once at global level.")
+        }
 
         if (isDefaultRepos) {
             repos.clear()

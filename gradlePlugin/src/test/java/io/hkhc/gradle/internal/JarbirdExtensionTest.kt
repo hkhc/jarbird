@@ -25,6 +25,7 @@ import io.hkhc.gradle.pom.internal.PomGroupFactory
 import io.hkhc.utils.test.MockProjectInfo
 import io.hkhc.utils.test.MockProjectProperty
 import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
@@ -33,6 +34,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import java.io.File
@@ -73,6 +75,8 @@ class JarbirdExtensionTest : FunSpec({
         every { project.projectDir } returns File(projectDir, "module")
         every { project.logger } returns mockk<Logger>().apply {
             every { debug(any()) } returns Unit
+            every { warn(any()) } returns Unit
+            every { info(any()) } returns Unit
         }
 
         every { project.group } returns "io.hkhc"
@@ -83,6 +87,8 @@ class JarbirdExtensionTest : FunSpec({
         every { project.property("repository.bintray.username") } returns "username"
         every { project.property("repository.bintray.password") } returns "password"
         every { project.property(any()) } returns ""
+
+        JarbirdLogger.logger = project.logger
 
         projectProperty = MockProjectProperty(
             mapOf(
@@ -407,6 +413,80 @@ class JarbirdExtensionTest : FunSpec({
                     ext.pubList.needsBintray() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe false
                 }
+            }
+        }
+    }
+
+    context("validation of JarbirdPubs") {
+
+        test("variant not found") {
+
+            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
+
+            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            ext.pubList.shouldBeEmpty()
+
+            ext.createImplicit()
+            ext.pubList.shouldHaveSize(1)
+
+            val exception = shouldThrow<GradleException> {
+                ext.pub("variant") { }
+            }
+            exception.message shouldBe "Variant 'variant' is not found"
+        }
+
+        test("single bintray repo only at global level") {
+
+            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
+
+            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            ext.pubList.shouldBeEmpty()
+
+            ext.createImplicit()
+            ext.pubList.shouldHaveSize(1)
+
+            ext.bintray()
+
+            val exception = shouldThrow<GradleException> {
+                ext.bintray()
+            }
+            exception.message shouldBe "Bintray repository has been declared at global level."
+        }
+
+        test("no bintray repo at pub level if it has presented in global level") {
+
+            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
+
+            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            ext.pubList.shouldBeEmpty()
+
+            ext.createImplicit()
+            ext.pubList.shouldHaveSize(1)
+
+            ext.bintray()
+
+            val exception = shouldThrow<GradleException> {
+                ext.pub { bintray() }
+            }
+            exception.message shouldBe "Bintray repository has been declared at global level."
+        }
+
+        test("single bintray repo only at pub level") {
+
+            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
+
+            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            ext.pubList.shouldBeEmpty()
+
+            ext.createImplicit()
+            ext.pubList.shouldHaveSize(1)
+
+            ext.pub {
+                bintray()
+                val exception = shouldThrow<GradleException> {
+                    bintray()
+                }
+                exception.message shouldBe "Bintray repository has been declared at 'pub' level."
             }
         }
     }

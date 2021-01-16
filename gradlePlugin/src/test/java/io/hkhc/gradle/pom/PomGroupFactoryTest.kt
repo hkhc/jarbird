@@ -20,6 +20,7 @@ package io.hkhc.gradle.pom
 
 import io.hkhc.gradle.pom.internal.PomGroupFactory
 import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.maps.shouldHaveSize
@@ -70,12 +71,12 @@ class PomGroupFactoryTest : StringSpec({
         val pomGroup = PomGroupFactory.resolvePomGroup(listOf(pomFile))
         pomGroup.getMap() shouldHaveSize 1
 
-        val pom = pomGroup["release"]
-
-        withClue("Given single POM file") {
-            pom.group shouldBe "mygroup"
-            pom.artifactId shouldBe "myArtifact"
-            pom.version shouldBe "1.0"
-        }
+        pomGroup["release"]?.let { pom ->
+            withClue("Given single POM file") {
+                pom.group shouldBe "mygroup"
+                pom.artifactId shouldBe "myArtifact"
+                pom.version shouldBe "1.0"
+            }
+        } ?: fail("Failed to get POM from POMGroup")
     }
 })

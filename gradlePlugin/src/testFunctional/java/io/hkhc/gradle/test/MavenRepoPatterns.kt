@@ -19,6 +19,7 @@
 package io.hkhc.gradle.test
 
 import io.hkhc.gradle.pom.internal.isSnapshot
+import io.hkhc.utils.Path.Companion.relativePath
 
 class MavenRepoPatterns(
     private val baseUrl: String,
@@ -47,13 +48,22 @@ class MavenRepoPatterns(
         }
     }
 
-    private fun listPluginRepo(coordinate: Coordinate, versionTransformer: (String) -> String) =
-        coordinate.pluginId?.let {
-            listOf("$baseUrl/${coordinate.pluginId.replace('.', '/')}/${coordinate.pluginId}.gradle.plugin")
+    private fun listPluginRepo(coor: Coordinate, versionTransformer: (String) -> String) =
+        coor.pluginId?.let {
+            listOf(
+                relativePath(
+                    baseUrl,
+                    coor.pluginId.replace('.', '/'),
+                    "${coor.pluginId}.gradle.plugin"
+                ).toString()
+            )
                 .flatMap {
-                    metafile(it, coordinate) +
-                        "$it/${coordinate.versionWithVariant}/" +
-                        "${coordinate.pluginId}.gradle.plugin-${versionTransformer(coordinate.versionWithVariant)}.pom"
+                    metafile(it, coor) +
+                        relativePath(
+                            it,
+                            coor.versionWithVariant,
+                            "${coor.pluginId}.gradle.plugin-${versionTransformer(coor.versionWithVariant)}.pom"
+                        ).toString()
                 }
                 .flatMap(::hashedPaths)
         } ?: listOf()
@@ -70,19 +80,27 @@ class MavenRepoPatterns(
         }
     }
 
-    fun list() = coordinates.flatMap { coordinate ->
+    fun list() = coordinates.flatMap { coor ->
         (
-            listPluginRepo(coordinate, versionTransformer(coordinate)) +
-                listOf("$baseUrl/${coordinate.group.replace('.', '/')}/${coordinate.artifactIdWithVariant}")
+            listPluginRepo(coor, versionTransformer(coor)) +
+                listOf(
+                    relativePath(
+                        baseUrl,
+                        coor.group.replace('.', '/'),
+                        coor.artifactIdWithVariant
+                    ).toString()
+                )
                     .flatMap { path ->
-                        metafile(path, coordinate) +
+                        metafile(path, coor) +
                             listOf(
-                                "$path/${coordinate.versionWithVariant}/" +
-                                    "${coordinate.artifactIdWithVariant}-" +
-                                    versionTransformer(coordinate)(coordinate.versionWithVariant)
+                                relativePath(
+                                    path,
+                                    coor.versionWithVariant,
+                                    "${coor.artifactIdWithVariant}-${versionTransformer(coor)(coor.versionWithVariant)}"
+                                ).toString()
                             )
                                 .flatMap(::artifactTypes)
-                                .flatMap { if (isSnapshot(coordinate)) listOf(it) else listOf(it, "$it.asc") }
+                                .flatMap { if (isSnapshot(coor)) listOf(it) else listOf(it, "$it.asc") }
                     }
                     .flatMap(::hashedPaths)
             )

@@ -54,7 +54,7 @@ class ArtifactoryRepoPatterns(
             (
                 listPluginRepo(pluginId, versionTransformer) +
                     listOf(
-                        "/base/$repoKey/${getPath()}/$artifactIdWithVariant-$versionWithVariant"
+                        "/base/$repoKey/${getPath()}/${getFilenameBase()}"
                     )
                         .flatMap(::artifactTypes)
                         .flatMap { if (isSnapshot) listOf(it) else listOf(it, "$it.asc") }

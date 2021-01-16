@@ -344,4 +344,5 @@ class JarbirdPlugin : Plugin<Project> {
             apply(ArtifactoryPlugin::class.java)
         }
     }
+
 }

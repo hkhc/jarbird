@@ -42,7 +42,7 @@ abstract class JarbirdPub : RepoDeclaration {
      * to suffix the dokka jar task and source set jar task.
      * It is usually used for building Android artifact
      */
-    var variant: String = ""
+    open val variant: String = ""
 
     var docSourceSets: Any = "main"
 

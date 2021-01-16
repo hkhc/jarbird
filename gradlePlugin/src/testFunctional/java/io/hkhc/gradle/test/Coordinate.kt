@@ -18,6 +18,8 @@
 
 package io.hkhc.gradle.test
 
+import io.hkhc.utils.Path.Companion.relativePath
+
 /**
  * This class is not expected for business logic of the program. It is solely for capturing the unit test parameter.
  */
@@ -29,7 +31,10 @@ data class Coordinate(
     val artifactIdWithVariant: String = artifactId,
     val versionWithVariant: String = version
 ) {
-    fun getPath() =
-        "${group.replace('.', '/')}/$artifactIdWithVariant/$versionWithVariant"
+    fun getPath() = relativePath(
+        group.replace('.', '/'),
+        artifactIdWithVariant,
+        versionWithVariant
+    ).toString()
     fun getFilenameBase() = "$artifactIdWithVariant-$versionWithVariant"
 }

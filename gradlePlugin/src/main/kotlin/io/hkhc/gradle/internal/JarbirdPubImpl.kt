@@ -49,6 +49,16 @@ internal class JarbirdPubImpl(
     var sourceSet: SourceSet? = null
     var parentRepos: RepoDeclaration? = null
 
+    private var variantImpl: String = ""
+
+    override var variant: String
+        get() {
+            return variantImpl
+        }
+        set(value) {
+            variantImpl = value
+        }
+
     /**
      * Specify maven repository for publishing.
      */
@@ -147,6 +157,17 @@ internal class JarbirdPubImpl(
     }
 
     override fun bintray(): RepoSpec {
+
+        if (repos.any { it is BintrayRepoSpec }) {
+            throw GradleException("Bintray repository has been declared at 'pub' level.")
+        }
+
+        parentRepos?.getRepos()?.let { repos ->
+            if (repos.any { it is BintrayRepoSpec }) {
+                throw GradleException("Bintray repository has been declared at global level.")
+            }
+        }
+
         val repo = repoSpecBuilder.buildBintrayRepo()
         if (!repos.contains(repo)) {
             detailMessageWarning(
@@ -154,6 +175,7 @@ internal class JarbirdPubImpl(
                 "Bintray repo will be treated as child project level declaration.",
                 "Because bintray plugin publish components at child project level."
             )
+            repos.add(repo)
             parentRepos?.bintray()
         }
         return repo

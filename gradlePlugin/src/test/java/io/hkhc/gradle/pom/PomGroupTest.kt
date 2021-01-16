@@ -20,6 +20,7 @@ package io.hkhc.gradle.pom
 
 import io.hkhc.gradle.pom.internal.PomGroupFactory
 import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.fail
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.maps.shouldContainExactly
@@ -91,12 +92,12 @@ class PomGroupTest : StringSpec({
         val pomGroup = PomGroupFactory.loadYaml(pomFile)
         pomGroup.getMap() shouldHaveSize 1
 
-        val pom = pomGroup["release"]
-
-        pom.variant shouldBe "release"
-        pom.group shouldBe "mygroup"
-        pom.artifactId shouldBe "myArtifact"
-        pom.version shouldBe "1.0"
+        pomGroup["release"]?.let { pom ->
+            pom.variant shouldBe "release"
+            pom.group shouldBe "mygroup"
+            pom.artifactId shouldBe "myArtifact"
+            pom.version shouldBe "1.0"
+        } ?: fail("Failed to get POM from POMGroup")
     }
 
     "Load POMGroup with variant and overlay to empty PomGroup" {
@@ -117,24 +118,24 @@ class PomGroupTest : StringSpec({
         val pomGroup = PomGroupFactory.loadYaml(pomFile)
         pomGroup.getMap() shouldHaveSize 1
 
-        val pom = pomGroup["release"]
-
-        pom.variant shouldBe "release"
-        pom.group shouldBe "mygroup"
-        pom.artifactId shouldBe "myArtifact"
-        pom.version shouldBe "1.0"
+        pomGroup["release"]?.let { pom ->
+            pom.variant shouldBe "release"
+            pom.group shouldBe "mygroup"
+            pom.artifactId shouldBe "myArtifact"
+            pom.version shouldBe "1.0"
+        } ?: fail("Failed to get POM from POMGroup")
 
         val newPomGroup = PomGroup()
         pomGroup.overlayTo(newPomGroup)
 
         newPomGroup.getMap() shouldHaveSize 1
 
-        val newPom = newPomGroup["release"]
-
-        newPom.variant shouldBe "release"
-        newPom.group shouldBe "mygroup"
-        newPom.artifactId shouldBe "myArtifact"
-        newPom.version shouldBe "1.0"
+        newPomGroup["release"]?.let { newPom ->
+            newPom.variant shouldBe "release"
+            newPom.group shouldBe "mygroup"
+            newPom.artifactId shouldBe "myArtifact"
+            newPom.version shouldBe "1.0"
+        } ?: fail("Failed to get POM from POMGroup")
     }
 
     "POM Group overlay another" {

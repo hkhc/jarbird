@@ -23,6 +23,7 @@ import io.hkhc.gradle.pom.internal.PomGroupFactory
 import io.hkhc.utils.test.mkdir
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.assertions.asClue
+import io.kotest.assertions.fail
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.engine.spec.tempfile
@@ -87,18 +88,18 @@ class PomFactoryTest : StringSpec({
             |packaging: jar
             """.trimMargin()
         )
-        val pomGroup = PomGroupFactory.readPom(file)["release"]
-
-        withClue("Parsed POM should reflect content in file") {
-            pomGroup.asClue {
-                it.group shouldBe "test-group"
-                it.artifactId shouldBe "test-id"
-                it.version shouldBe "1.2.3.4"
-                it.description shouldBe "test-description"
-                it.packaging shouldBe "jar"
-                it.variant shouldBe "release"
+        PomGroupFactory.readPom(file)["release"]?.let {
+            withClue("Parsed POM should reflect content in file") {
+                it.asClue {
+                    it.group shouldBe "test-group"
+                    it.artifactId shouldBe "test-id"
+                    it.version shouldBe "1.2.3.4"
+                    it.description shouldBe "test-description"
+                    it.packaging shouldBe "jar"
+                    it.variant shouldBe "release"
+                }
             }
-        }
+        } ?: fail("Failed to read ROM")
     }
 
     "Load a yaml file with path" {
