@@ -74,7 +74,6 @@ class BuildAndroidArtifactoryTest : FunSpec({
             ":lib:jbDokkaHtmlTestArtifactRelease=SUCCESS",
             ":lib:jbDokkaJarTestArtifactReleaseRelease=SUCCESS",
             ":lib:sourcesJarTestArtifactReleaseRelease=SUCCESS",
-            ":lib:compileReleaseKotlin=SUCCESS",
             ":lib:compileReleaseJavaWithJavac=SUCCESS",
             ":lib:extractReleaseAnnotations=SUCCESS",
             ":lib:mergeReleaseGeneratedProguardFiles=SUCCESS",
@@ -162,6 +161,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
                         setup.expectedTaskList except listOf(
                             ":lib:stripReleaseDebugSymbols=NO_SOURCE",
                             ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
+                            ":lib:compileReleaseKotlin=SUCCESS",
                             ":lib:generateReleaseRFile=SUCCESS",
                             ":lib:mergeReleaseJavaResource=SUCCESS"
                         )
