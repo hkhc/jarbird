@@ -489,5 +489,22 @@ class JarbirdExtensionTest : FunSpec({
                 exception.message shouldBe "Bintray repository has been declared at 'pub' level."
             }
         }
+
+        test("single artifactory is allowed only") {
+
+            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
+
+            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            ext.pubList.shouldBeEmpty()
+
+            ext.createImplicit()
+            ext.pubList.shouldHaveSize(1)
+
+            ext.artifactory()
+            val exception = shouldThrow<GradleException> {
+                ext.artifactory()
+            }
+            exception.message shouldBe "There can only be one configuration per sub-project for Artifactory server only."
+        }
     }
 })

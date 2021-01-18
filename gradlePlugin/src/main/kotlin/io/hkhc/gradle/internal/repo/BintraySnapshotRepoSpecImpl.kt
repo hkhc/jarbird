@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Herman Cheung
+ * Copyright (c) 2021. Herman Cheung
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@
  *
  */
 
-package io.hkhc.gradle.internal.utils
+package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.endpoint.resolveProperty
-import io.hkhc.gradle.internal.ProjectProperty
-
-class PropertyBuilder(
-    private val projectProperty: ProjectProperty,
-    private val keyPrefix: String,
-    private val defaultValue: String = ""
-) {
-    fun resolve(key: String, defaultValue: String = "") =
-        resolveProperty(projectProperty, "repository.$keyPrefix.$key", defaultValue)
-}
+data class BintraySnapshotRepoSpecImpl(
+    override val description: String,
+    override val id: String,
+    override val releaseUrl: String,
+    override val snapshotUrl: String,
+    override val username: String,
+    override val password: String,
+    override val repoKey: String
+) : ArtifactoryRepoSpec, BintraySnapshotRepoSpec

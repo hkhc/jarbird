@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Herman Cheung
+ * Copyright (c) 2021. Herman Cheung
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,19 @@
 
 package io.hkhc.gradle.internal.utils
 
-import io.hkhc.gradle.endpoint.resolveProperty
-import io.hkhc.gradle.internal.ProjectProperty
+public fun <T> Collection<T>.joinToStringAnd(transform: ((T) -> CharSequence)? = null): String {
 
-class PropertyBuilder(
-    private val projectProperty: ProjectProperty,
-    private val keyPrefix: String,
-    private val defaultValue: String = ""
-) {
-    fun resolve(key: String, defaultValue: String = "") =
-        resolveProperty(projectProperty, "repository.$keyPrefix.$key", defaultValue)
+    val list = toList()
+
+    return if (list.size == 0) {
+        ""
+    } else if (list.size == 1) {
+        (transform?.invoke(list[0]) ?: list[0]).toString()
+    } else if (list.size == 2) {
+        joinToString(separator = " and ", transform = transform)
+    } else {
+        list.subList(0, size - 1).joinToString(separator = ", ", transform = transform) +
+            " and " +
+            (transform?.invoke(list[size - 1]) ?: list[size - 1])
+    }
 }

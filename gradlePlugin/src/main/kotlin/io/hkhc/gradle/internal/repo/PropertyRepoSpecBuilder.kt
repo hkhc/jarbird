@@ -36,17 +36,17 @@ class PropertyRepoSpecBuilder(
             snapshotUrl = resolve("snapshot"),
             username = resolve("username"),
             password = resolve("password"),
-            description = resolve("description"),
+            description = resolve("description", "Maven Repository '$key'"),
             id = JarbirdPlugin.normalizePubName("maven.$key").capitalize()
         )
     }
 
     fun buildBintrayRepo(): BintrayRepoSpec = with(PropertyBuilder(projectProperty, "bintray")) {
         BintrayRepoSpecImpl(
-            releaseUrl = resolve("release"),
-            snapshotUrl = resolve("snapshot"),
+            releaseUrl = resolve("release", ""), // Bintray plugin will fill the URL if we don't provide one
+            snapshotUrl = resolve("snapshot", "https://oss.jfrog.org"),
             username = resolve("username"),
-            description = resolve("description"),
+            description = resolve("description", "Bintray"),
             apikey = resolve("apikey"),
             id = "Bintray"
         )
@@ -58,7 +58,7 @@ class PropertyRepoSpecBuilder(
             snapshotUrl = resolve("snapshot"),
             username = resolve("username"),
             password = resolve("password"),
-            description = resolve("description"),
+            description = resolve("description", "Artifactory"),
             repoKey = resolve("repoKey"),
             id = "Artifactory"
         )
@@ -75,13 +75,13 @@ class PropertyRepoSpecBuilder(
     }
 
     fun buildBintraySnapshotRepoSpec(bintrayRepoSpec: BintrayRepoSpec) =
-        ArtifactoryRepoSpecImpl(
+        BintraySnapshotRepoSpecImpl(
             repoKey = "oss-snapshot-local",
             releaseUrl = "",
             snapshotUrl = bintrayRepoSpec.snapshotUrl,
             username = bintrayRepoSpec.username,
             password = bintrayRepoSpec.apikey,
-            description = bintrayRepoSpec.description,
+            description = "Artifactory OSS Snapshot",
             id = bintrayRepoSpec.id
         )
 }

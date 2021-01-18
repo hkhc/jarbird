@@ -37,7 +37,7 @@ internal class TaskBuilder(
 
     private fun TaskContainer.registerGradlePortalTask() {
 
-        val taskInfo = JbPublishToGradlePortalTaskInfo()
+        val taskInfo = JbPublishToGradlePortalTaskInfo(pubs)
 
         if (project.isMultiProjectRoot()) {
             project.registerRootProjectTasks(taskInfo)
@@ -91,7 +91,7 @@ internal class TaskBuilder(
         return JbPubishTaskInfo().register(project.tasks) {
             dependsOn(mavenTaskBuilder.getLocalTaskInfo().name)
             if (pubs.needGradlePlugin()) {
-                dependsOn(JbPublishToGradlePortalTaskInfo().name)
+                dependsOn(JbPublishToGradlePortalTaskInfo(pubs).name)
             }
             if (pubs.needsNonLocalMaven()) {
                 dependsOn(JbPublishToMavenRepoTaskInfo().name)

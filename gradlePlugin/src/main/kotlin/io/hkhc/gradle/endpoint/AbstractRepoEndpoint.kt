@@ -63,11 +63,11 @@ abstract class AbstractRepoEndpoint : RepoEndpoint {
     }
 }
 
-fun resolveProperty(projectProperty: ProjectProperty, propertyName: String): String {
+fun resolveProperty(projectProperty: ProjectProperty, propertyName: String, defaultValue: String = ""): String {
     val value: String = try {
         projectProperty.property(propertyName) as String? ?: ""
     } catch (e: MissingPropertyException) {
-        ""
+        defaultValue
     }
 //    if (value == null) {
 //        detailMessageError(

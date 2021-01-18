@@ -23,6 +23,7 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPlugin
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
@@ -185,7 +186,7 @@ open class JarbirdExtensionImpl(
     override fun bintray(): RepoSpec {
 
         if (repos.any { it is BintrayRepoSpec }) {
-            throw GradleException("Bintray repository has been declared more than once at global level.")
+            throw GradleException("Bintray repository has been declared at global level.")
         }
 
         if (isDefaultRepos) {
@@ -198,6 +199,11 @@ open class JarbirdExtensionImpl(
     }
 
     override fun artifactory(): RepoSpec {
+
+        if (repos.filterIsInstance<ArtifactoryRepoSpec>().isNotEmpty()) {
+            throw GradleException("There can only be one configuration per sub-project for Artifactory server only.")
+        }
+
         if (isDefaultRepos) {
             repos.clear()
             isDefaultRepos = false
@@ -212,6 +218,7 @@ open class JarbirdExtensionImpl(
     }
 
     fun finalizeRepos() {
+
         mavenLocal()
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
     }

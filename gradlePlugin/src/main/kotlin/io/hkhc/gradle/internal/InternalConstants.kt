@@ -21,7 +21,8 @@ package io.hkhc.gradle.internal
 // Plugin constants
 
 internal const val SP_GROUP = "Jarbird publishing"
-internal const val PUBLISH_GROUP = "Publishing"
+internal const val PUBLISH_GROUP = "publishing"
+internal const val DOCUMENTATION_GROUP = "documentation"
 
 internal const val SP_EXT_NAME = "jarbird"
 const val PLUGIN_ID = "io.hkhc.jarbird"

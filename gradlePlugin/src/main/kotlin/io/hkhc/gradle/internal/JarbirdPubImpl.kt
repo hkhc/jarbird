@@ -117,7 +117,7 @@ internal class JarbirdPubImpl(
     }
 
     override fun pluginCoordinate(): String {
-        return if (pom.isGradlePlugin()) "${pom.plugin?.id}:${variantVersion()}" else "NOT-A-PLUGIN"
+        return if (pom.isGradlePlugin()) "${pom.plugin?.id}" else "NOT-A-PLUGIN"
     }
 
     override fun from(component: SoftwareComponent) {

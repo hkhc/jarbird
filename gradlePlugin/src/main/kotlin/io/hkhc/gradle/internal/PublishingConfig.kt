@@ -34,12 +34,10 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.register
 
 internal class PublishingConfig(
     private val project: Project,
@@ -137,6 +135,29 @@ internal class PublishingConfig(
 //        }
 //    }
 
+    private fun registerSourceSetCompileTask(pub: JarbirdPubImpl): TaskProvider<Jar>? {
+        return pub.sourceSet?.let { sourceSet ->
+
+            if (sourceSet.name != "main") {
+                ClassesJarTaskInfo(pub).register(project.tasks, Jar::class.java) {
+                    archiveBaseName.set(pub.variantArtifactId())
+                    archiveVersion.set(pub.variantVersion())
+                    from(project.configurations["${sourceSet.name}Compile"])
+                    dependsOn(
+                        project.tasks.named("${sourceSet.name}Classes")
+                    )
+                }
+            } else {
+                project.tasks.named<Jar>("jar").apply {
+                    configure {
+                        archiveBaseName.set(pub.variantArtifactId())
+                        archiveVersion.set(pub.variantVersion())
+                    }
+                }
+            }
+        }
+    }
+
     private fun PublicationContainer.createPublication() {
 
         pubs.forEach { pub0 ->
@@ -165,27 +186,7 @@ internal class PublishingConfig(
 //                }
 //            }
 
-            val publishJarTask = pub.sourceSet?.let { sourceSet ->
-
-                if (sourceSet.name != "main") {
-                    project.tasks.register<Jar>("${sourceSet.name}Jar") {
-                        archiveBaseName.set(pub.variantArtifactId())
-                        archiveVersion.set(pub.variantVersion())
-                        from(project.configurations["${sourceSet.name}Compile"])
-                        dependsOn(
-                            project.tasks.named("${sourceSet.name}Classes")
-                            //                        project.tasks.named("generateMetadataFileFor${pub.pubNameWithVariant().capitalize()}Publication")
-                        )
-                    }
-                } else {
-                    project.tasks.named<Jar>("jar").apply {
-                        configure {
-                            archiveBaseName.set(pub.variantArtifactId())
-                            archiveVersion.set(pub.variantVersion())
-                        }
-                    }
-                }
-            }
+            val publishJarTask = registerSourceSetCompileTask(pub)
 
             register(pub.pubNameWithVariant(), MavenPublication::class.java) {
 
@@ -276,8 +277,4 @@ internal class PublishingConfig(
             }
         }
     }
-
-    private val sourceSets: SourceSetContainer
-        get() =
-            extensions.getByName("sourceSets") as SourceSetContainer
 }
