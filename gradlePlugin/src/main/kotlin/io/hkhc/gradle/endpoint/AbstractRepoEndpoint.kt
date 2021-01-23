@@ -64,6 +64,18 @@ abstract class AbstractRepoEndpoint : RepoEndpoint {
 }
 
 fun resolveProperty(projectProperty: ProjectProperty, propertyName: String, defaultValue: String = ""): String {
+
+    /*
+    https://linchpiner.github.io/gradle-for-devops-2.html
+    order of precedence to resolve property
+    - Project.property()
+        - ext block
+        - -P, -D, environment variable (ORG_GRADLE_PROJECT_*)
+        - ~/.gradle/gradle.properties
+        - project gradle.properties
+    - System.getenv()
+     */
+
     val value: String = try {
         projectProperty.property(propertyName) as String? ?: ""
     } catch (e: MissingPropertyException) {
