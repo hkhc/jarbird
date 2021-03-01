@@ -2,6 +2,8 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.hkhc.gradle/jarbird.svg)](https://search.maven.org/artifact/io.hkhc.gradle/jarbird)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/io/hkhc/jarbird/io.hkhc.jarbird.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=gradlePluginPortal)](https://plugins.gradle.org/plugin/io.hkhc.jarbird)
 
+# [Document to be revamped]
+
 # Jarbird Gradle Plugin
 
 ## Introduction
