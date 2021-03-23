@@ -24,10 +24,6 @@ import io.hkhc.gradle.internal.ProjectProperty
 class PropertyRepoEndpoint(private val projectProperty: ProjectProperty, private val key: String) :
     AbstractRepoEndpoint() {
 
-    init {
-//        Exception("PropertyMavenEndpoint constructor").printStackTrace()
-    }
-
     private val keyPrefix = "repository"
 
     override val releaseUrl: String

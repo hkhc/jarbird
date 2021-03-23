@@ -338,7 +338,7 @@ fun commonSetting(): String {
     """.trimIndent()
 }
 
-fun commonAndroidRootGradle(): String {
+fun commonAndroidRootGradle(pluginId: String = "io.hkhc.jarbird"): String {
 
     return """
         buildscript {
@@ -349,7 +349,7 @@ fun commonAndroidRootGradle(): String {
                 jcenter()
             }
             dependencies {
-                classpath "com.android.tools.build:gradle:4.0.0"
+                classpath "com.android.tools.build:gradle:3.6.3"
                 classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}kotlin_version"
         
                 // NOTE: Do not place your application dependencies here; they belong
@@ -357,7 +357,7 @@ fun commonAndroidRootGradle(): String {
             }
         }
         plugins {
-            id '$PLUGIN_ID'
+            id '$pluginId'
             id 'com.dorongold.task-tree' version '1.5'
         }
         jarbird {
@@ -432,6 +432,77 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
                             sets += sourceProvider.javaDirectories  
                             sets += sourceProvider.resourcesDirectories
                         }
+                    }
+                }
+            }
+            else if (variantName == "debug") {
+            }
+            
+        }        
+    """.trimIndent()
+}
+
+fun commonAndroidExtGradle(pluginId: String = "io.hkhc.jarbird", variantMode: String = "variantInvisible()", mavenRepo: Boolean = false): String {
+
+    return """
+        plugins {
+            id 'com.android.library'
+            id 'kotlin-android'
+            id 'kotlin-android-extensions'
+            id '$pluginId'
+            id 'com.dorongold.task-tree' 
+        }
+
+
+        android {
+            compileSdkVersion 29
+            buildToolsVersion "29.0.3"
+        
+            defaultConfig {
+                minSdkVersion 21
+                targetSdkVersion 29
+                versionCode 1
+                versionName "1.0a"
+                testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+                consumerProguardFiles "consumer-rules.pro"
+            }
+        
+            buildTypes {
+                release {
+                    minifyEnabled false
+                    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                }
+            }
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_1_8
+                targetCompatibility = JavaVersion.VERSION_1_8
+            }
+            
+            sourceSets {
+                main.java.srcDirs += 'src/main/kotlin'
+                release.java.srcDirs += 'src/release/kotlin'
+            }
+            
+        }
+        
+        jarbird {
+            ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
+            bintray()
+        }
+
+        android.libraryVariants.configureEach { variant ->
+            def variantName = variant.name
+            if (variantName == "release") {
+                jarbird {
+                     pub(variantName) { 
+                        ${if (variantMode != "") variantMode else "" } 
+                        useGpg = true
+                        from(components[variantName])
+                        docSourceSets = variant
+//                        docSourceSets = variant.sourceSets.inject([]) { sets, sourceProvider -> 
+//                            sets += sourceProvider.javaDirectories  
+//                            sets += sourceProvider.resourcesDirectories
+//                        }
                     }
                 }
             }

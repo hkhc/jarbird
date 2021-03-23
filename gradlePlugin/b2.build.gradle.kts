@@ -32,6 +32,7 @@ repositories {
     mavenLocal()
     mavenCentral()
     jcenter()
+    google()
     gradlePluginPortal()
 }
 
@@ -39,6 +40,7 @@ plugins {
     kotlin("jvm")
     `kotlin-dsl`
     `maven-publish`
+    id("io.kotest") version kotestPluginVersion
     id("com.dorongold.task-tree") version taskTreeVersion
     id("com.gradle.plugin-publish")
 }
@@ -69,6 +71,13 @@ tasks {
         kotlinOptions.languageVersion = "1.4"
     }
 
+    withType<Test> {
+        useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+        }
+    }
+
     create("jbPublishToMavenLocal") {
         dependsOn(
             "publishPluginMavenPublicationToMavenLocal",
@@ -96,11 +105,16 @@ dependencies {
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
-    implementation("io.hkhc.com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion")
+    implementation("io.hkhc.com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion") {
+        // it is conflict with the slf4j provide from gradle API.
+        exclude(group = "org.slf4j", module = "slf4j-nop")
+    }
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:$buildInfoVersion")
     implementation("org.yaml:snakeyaml:$snakeYamlVersion")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
-    implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
     implementation("com.gradle.publish:plugin-publish-plugin:$gradlePortalPluginVersion")
+    implementation("com.android.tools.build:gradle:3.6.3")
+
+    kotest()
 }

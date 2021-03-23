@@ -338,7 +338,7 @@ data class Pom(
 
         artifactId = artifactId ?: projectInfo.artifactId
 
-        // but we are not going to change the project name, because that may distrub the
+        // but we are not going to change the project name, because that may disturb the
         // execution of gradle script.
 //        name = name ?: "$group:${project.name}"
         name = artifactId

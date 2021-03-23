@@ -31,6 +31,8 @@ import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.internal.PLUGIN_ID
 import io.hkhc.gradle.internal.SP_EXT_NAME
+import io.hkhc.gradle.internal.SourceResolver
+import io.hkhc.gradle.internal.android.AndroidSourceResolver
 import io.hkhc.gradle.internal.gradleAfterEvaluate
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isRoot
@@ -86,6 +88,10 @@ class JarbirdPlugin : Plugin<Project> {
             }
             return newName.toString()
         }
+    }
+
+    fun getSourceResolver(project: Project): SourceResolver {
+        return AndroidSourceResolver(project)
     }
 
     // TODO check if POM fulfill minimal requirements for publishing
@@ -256,7 +262,8 @@ class JarbirdPlugin : Plugin<Project> {
                 BuildFlowBuilder(
                     project,
                     extension,
-                    extension.pubList
+                    extension.pubList,
+                    getSourceResolver(project)
                 ).buildPhase2()
             }
 
@@ -266,7 +273,8 @@ class JarbirdPlugin : Plugin<Project> {
                 BuildFlowBuilder(
                     project,
                     extension,
-                    extension.pubList
+                    extension.pubList,
+                    getSourceResolver(project)
                 ).buildPhase3()
             }
         }
@@ -302,7 +310,8 @@ class JarbirdPlugin : Plugin<Project> {
             BuildFlowBuilder(
                 project,
                 extension,
-                extension.pubList as List<JarbirdPubImpl>
+                extension.pubList as List<JarbirdPubImpl>,
+                getSourceResolver(project)
             ).buildPhase1()
         }
 
@@ -311,7 +320,8 @@ class JarbirdPlugin : Plugin<Project> {
             BuildFlowBuilder(
                 project,
                 extension,
-                extension.pubList
+                extension.pubList,
+                getSourceResolver(project)
             ).buildPhase4()
         }
 

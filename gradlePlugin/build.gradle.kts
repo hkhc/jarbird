@@ -26,6 +26,7 @@ repositories {
      because our plugin code applys other plugins, so that make those dependent plugins
      part of the dependenciies */
     gradlePluginPortal()
+    google()
     // for bintray-gradle-plugin:1.8.5-hkhc
     mavenLocal()
 }
@@ -36,6 +37,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt")
     id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
     id("com.dorongold.task-tree") version taskTreeVersion
+    id("io.kotest") version kotestPluginVersion
     id("io.hkhc.jarbird.bootstrap")
 }
 
@@ -164,11 +166,15 @@ dependencies {
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
     implementation("com.gradle.publish:plugin-publish-plugin:$gradlePortalPluginVersion")
 
-    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
-    testImplementation("io.kotest:kotest-property:$kotestVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("io.github.java-diff-utils:java-diff-utils:$javaDiffUtilsVersion")
+    implementation("com.android.tools.build:gradle:3.6.3")
+
+    kotest()
+
+//    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+//    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+//    testImplementation("io.kotest:kotest-property:$kotestVersion")
+//    testImplementation("io.mockk:mockk:$mockkVersion")
+//    testImplementation("io.github.java-diff-utils:java-diff-utils:$javaDiffUtilsVersion")
 
     testFunctionalImplementation(gradleTestKit())
     testFunctionalImplementation("com.squareup.okhttp3:mockwebserver:$mockWebServerVersion")

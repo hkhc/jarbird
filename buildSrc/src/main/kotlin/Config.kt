@@ -17,7 +17,7 @@
  */
 
 const val jvmTargetVersion = "1.8"
-const val kotlinVersion = "1.4.20"
+const val kotlinVersion = "1.4.31"
 const val kotlinLanguageVersion = "1.4"
 
 // plugins
@@ -28,10 +28,12 @@ const val detektVersion = "1.14.2"
 const val bintrayVersion = "1.8.5-hkhc-202101"
 const val buildInfoVersion = "4.18.0"
 const val gradlePortalPluginVersion = "0.12.0"
+const val kotestPluginVersion = "0.2.6"
 
 // lib
+const val junitVersion = "5.7.0"
 const val snakeYamlVersion = "1.27"
 const val kotestVersion = "4.3.1"
 const val mockWebServerVersion = "4.9.0"
 const val mockkVersion = "1.10.2"
-const val javaDiffUtilsVersion = "4.5"
+const val javaDiffUtilsVersion = "4.9"

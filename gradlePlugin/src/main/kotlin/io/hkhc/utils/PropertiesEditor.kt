@@ -23,7 +23,7 @@ import java.io.FileReader
 import java.io.FileWriter
 import java.util.Properties
 
-class PropertiesEditor(val filename: String, spec: PropertiesEditor.() -> Unit) {
+class PropertiesEditor(filename: String, spec: PropertiesEditor.() -> Unit) {
 
     val props = Properties()
 

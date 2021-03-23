@@ -69,7 +69,8 @@ import org.gradle.api.Project
 internal class BuildFlowBuilder(
     private val project: Project,
     private val extension: JarbirdExtension,
-    private val pubs: List<JarbirdPub>
+    private val pubs: List<JarbirdPub>,
+    private val sourceResolver: SourceResolver
 ) {
 
     @Suppress("unused")
@@ -123,7 +124,7 @@ internal class BuildFlowBuilder(
     fun buildPhase3() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 3 of 4")
 
-        DokkaConfig(project, extension).apply {
+        DokkaConfig(project, extension, sourceResolver).apply {
             if (project.isMultiProjectRoot()) {
                 configRootDokka(pubs)
             } else {
@@ -136,7 +137,7 @@ internal class BuildFlowBuilder(
     fun buildPhase4() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 4 of 4")
         if (!project.isMultiProjectRoot()) {
-            PublishingConfig(project, extension, pubs).config()
+            PublishingConfig(project, extension, pubs, sourceResolver).config()
             if (pubs.any { it.signing }) {
                 SigningConfig(project, pubs).config()
             }

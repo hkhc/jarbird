@@ -24,8 +24,11 @@
       <w>kotest</w>
       <w>kotlinx</w>
       <w>ktlint</w>
+      <w>mavencentral</w>
+      <w>secring</w>
       <w>simplepublisher</w>
       <w>snakeyaml</w>
+      <w>spdx</w>
     </words>
   </dictionary>
 </component>

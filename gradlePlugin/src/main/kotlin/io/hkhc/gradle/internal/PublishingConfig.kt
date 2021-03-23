@@ -42,7 +42,8 @@ import org.gradle.kotlin.dsl.named
 internal class PublishingConfig(
     private val project: Project,
     private val extension: JarbirdExtension,
-    private val pubs: List<JarbirdPub>
+    private val pubs: List<JarbirdPub>,
+    private val sourceResolver: SourceResolver
 ) {
     private val extensions = (project as ExtensionAware).extensions
     // TODO we shall have one separate dokka task per pub
@@ -213,8 +214,8 @@ internal class PublishingConfig(
                      */
 
                     project.afterEvaluate {
-                        artifactCompat(DokkaConfig(project, extension).setupDokkaJar(pub))
-                        artifactCompat(SourceConfig(project).configSourceJarTask(pub, pub.sourceSet ?: pub.docSourceSets))
+                        artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
+                        artifactCompat(SourceConfig(project, sourceResolver).configSourceJarTask(pub, pub.sourceSet ?: pub.docSourceSets))
                     }
                 }
                 pom { MavenPomAdapter().fill(this, pom) }

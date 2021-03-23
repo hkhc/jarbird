@@ -22,7 +22,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.SourceSetContainer
 
-class SourceSetNames(private val project: Project, private val names: Array<out String>) {
+class SourceSetNames(project: Project, private val names: Array<out String>) {
 
     private val extensions = (project as ExtensionAware).extensions
 

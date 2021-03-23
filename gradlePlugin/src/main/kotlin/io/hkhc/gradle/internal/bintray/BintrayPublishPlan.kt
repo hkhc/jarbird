@@ -23,7 +23,7 @@ import io.hkhc.gradle.internal.PLUGIN_MARKER_PUB_SUFFIX
 import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.pubNameWithVariant
 
-class BintrayPublishPlan(private val pubs: List<JarbirdPub>) {
+class BintrayPublishPlan(val pubs: List<JarbirdPub>) {
     val bintray: MutableList<JarbirdPub> = mutableListOf()
     val artifactory: MutableList<JarbirdPub> = mutableListOf()
     val artifactoryPlugins: MutableList<JarbirdPub> = mutableListOf()
