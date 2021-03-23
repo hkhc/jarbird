@@ -105,7 +105,7 @@ dependencies {
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
-    implementation("io.hkhc.com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion") {
+    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion") {
         // it is conflict with the slf4j provide from gradle API.
         exclude(group = "org.slf4j", module = "slf4j-nop")
     }
