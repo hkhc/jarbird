@@ -29,6 +29,7 @@ import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
+import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -53,7 +54,16 @@ open class JarbirdExtensionImpl(
 
     private fun initPub(pub: JarbirdPub) {
 
-        pomGroup[pub.variant]?.let { pub.pom = it } ?: throw GradleException("Variant '${pub.variant}' is not found")
+        // find the pom of particular variant. Normally pom of a variant is a combination of pom spec of that
+        // particulat variant and the non-variant pom. However, if no variant pom spec is found, we use
+        // the non-variant pom spec directly
+        pomGroup[pub.variant].also { variantPom ->
+            if (variantPom == null) {
+                pomGroup[""]?.let { pub.pom = it } ?: throw GradleException("xsVariant '${pub.variant}' is not found")
+            } else {
+                pub.pom = variantPom
+            }
+        }
 
         // TODO we ignore that pom overwrite some project properties in the mean time.
         // need to properly take care of it.
