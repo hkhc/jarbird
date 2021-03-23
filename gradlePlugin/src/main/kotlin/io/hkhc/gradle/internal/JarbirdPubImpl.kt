@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.internal
 
+import com.android.build.gradle.api.LibraryVariant
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.RepoSpec
@@ -36,6 +37,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.tasks.SourceSet
+import org.gradle.kotlin.dsl.get
 
 internal class JarbirdPubImpl(
     val project: Project,
@@ -120,12 +122,18 @@ internal class JarbirdPubImpl(
         return if (pom.isGradlePlugin()) "${pom.plugin?.id}" else "NOT-A-PLUGIN"
     }
 
-    override fun from(component: SoftwareComponent) {
-        this.component = component
-    }
-
-    override fun from(sourceSet: SourceSet) {
-        this.sourceSet = sourceSet
+    override fun from(source: Any) {
+        when (source) {
+            is SoftwareComponent -> this.component = component
+            is SourceSet -> {
+                this.sourceSet = source
+                this.docSourceSets = source
+            }
+            is LibraryVariant -> {
+                this.component = project.components[source.name]
+                this.docSourceSets = source
+            }
+        }
     }
 
     override fun sourceSetNames(vararg names: String): Any = SourceSetNames(project, names)

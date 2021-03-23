@@ -19,8 +19,6 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.Pom
-import org.gradle.api.component.SoftwareComponent
-import org.gradle.api.tasks.SourceSet
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
 abstract class JarbirdPub : RepoDeclaration {
@@ -54,8 +52,9 @@ abstract class JarbirdPub : RepoDeclaration {
 
     var dokkaConfig: AbstractDokkaTask.(pub: JarbirdPub) -> Unit = {}
 
-    abstract fun from(component: SoftwareComponent)
-    abstract fun from(sourceSet: SourceSet)
+    abstract fun from(source: Any)
+//    abstract fun from(component: SoftwareComponent)
+//    abstract fun from(sourceSet: SourceSet)
 
     abstract fun variantWithVersion()
     abstract fun variantWithArtifactId()
