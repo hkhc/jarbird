@@ -419,21 +419,22 @@ class JarbirdExtensionTest : FunSpec({
 
     context("validation of JarbirdPubs") {
 
-        test("variant not found") {
-
-            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
-
-            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
-            ext.pubList.shouldBeEmpty()
-
-            ext.createImplicit()
-            ext.pubList.shouldHaveSize(1)
-
-            val exception = shouldThrow<GradleException> {
-                ext.pub("variant") { }
-            }
-            exception.message shouldBe "Variant 'variant' is not found"
-        }
+        // the test is no longer needed as we will return default POM if variant POM group is not found
+//        test("variant not found") {
+//
+//            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
+//
+//            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+//            ext.pubList.shouldBeEmpty()
+//
+//            ext.createImplicit()
+//            ext.pubList.shouldHaveSize(1)
+//
+//            val exception = shouldThrow<GradleException> {
+//                ext.pub("variant") { }
+//            }
+//            exception.message shouldBe "Variant 'variant' is not found"
+//        }
 
         test("single bintray repo only at global level") {
 
