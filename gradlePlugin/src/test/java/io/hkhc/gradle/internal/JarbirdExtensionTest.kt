@@ -87,6 +87,8 @@ class JarbirdExtensionTest : FunSpec({
         every { project.property("repository.bintray.username") } returns "username"
         every { project.property("repository.bintray.password") } returns "password"
         every { project.property(any()) } returns ""
+        // we need to rerun test for child project
+        every { project.getRootProject() } returns project
 
         JarbirdLogger.logger = project.logger
 

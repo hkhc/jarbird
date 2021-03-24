@@ -20,7 +20,6 @@ package io.hkhc.gradle.internal
 
 import com.android.build.gradle.api.LibraryVariant
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SourceDirs
 import io.hkhc.gradle.SourceSetNames
@@ -49,7 +48,7 @@ internal class JarbirdPubImpl(
     private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
     var component: SoftwareComponent? = null
     var sourceSet: SourceSet? = null
-    var parentRepos: RepoDeclaration? = null
+    var ext: JarbirdExtensionImpl? = null
 
     private var variantImpl: String = ""
 
@@ -170,7 +169,7 @@ internal class JarbirdPubImpl(
             throw GradleException("Bintray repository has been declared at 'pub' level.")
         }
 
-        parentRepos?.getRepos()?.let { repos ->
+        ext?.getRepos()?.let { repos ->
             if (repos.any { it is BintrayRepoSpec }) {
                 throw GradleException("Bintray repository has been declared at global level.")
             }
@@ -184,7 +183,7 @@ internal class JarbirdPubImpl(
                 "Because bintray plugin publish components at child project level."
             )
             repos.add(repo)
-            parentRepos?.bintray()
+            ext?.bintray()
         }
         return repo
     }
@@ -198,7 +197,11 @@ internal class JarbirdPubImpl(
     }
 
     override fun getRepos(): Set<RepoSpec> {
-        return (repos + (parentRepos?.getRepos() ?: setOf()))
+        return (
+            repos +
+                (ext?.getRepos() ?: setOf()) +
+                (ext?.getParentExt()?.getRepos() ?: setOf())
+            )
     }
 
     fun finalizeRepos() {

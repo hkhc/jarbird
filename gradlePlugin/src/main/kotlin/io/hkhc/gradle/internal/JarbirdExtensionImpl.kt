@@ -29,7 +29,6 @@ import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
-import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -104,14 +103,14 @@ open class JarbirdExtensionImpl(
     /* to be invoked by Groovy Gradle script */
     override fun pub(action: Closure<JarbirdPub>) {
         val newPub = newPub(project)
-        newPub.parentRepos = this
+        newPub.ext = this
         newPub.configure(action)
         initPub(newPub)
     }
 
     override fun pub(variant: String, action: Closure<JarbirdPub>) {
         val newPub = newPub(project)
-        newPub.parentRepos = this
+        newPub.ext = this
         newPub.variant = variant
         initPub(newPub)
         newPub.configure(action)
@@ -120,14 +119,14 @@ open class JarbirdExtensionImpl(
     /* to be invoked by Kotlin Gradle script */
     override fun pub(action: JarbirdPub.() -> Unit) {
         val newPub = newPub(project)
-        newPub.parentRepos = this
+        newPub.ext = this
         newPub.configure(action)
         initPub(newPub)
     }
 
     override fun pub(variant: String, action: JarbirdPub.() -> Unit) {
         val newPub = newPub(project)
-        newPub.parentRepos = this
+        newPub.ext = this
         newPub.variant = variant
         initPub(newPub)
         newPub.configure(action)
@@ -223,12 +222,20 @@ open class JarbirdExtensionImpl(
         return repo
     }
 
+    fun getParentExt(): JarbirdExtension? {
+        if (project.isRoot()) {
+            return null
+        } else {
+            val parentProject = project.parent
+            return parentProject?.extensions?.findByName(SP_EXT_NAME) as JarbirdExtensionImpl
+        }
+    }
+
     override fun getRepos(): Set<RepoSpec> {
         return repos
     }
 
     fun finalizeRepos() {
-
         mavenLocal()
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
     }
