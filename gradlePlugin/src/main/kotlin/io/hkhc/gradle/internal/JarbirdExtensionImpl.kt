@@ -41,7 +41,7 @@ open class JarbirdExtensionImpl(
 ) : JarbirdExtension {
 
     val pubList = mutableListOf<JarbirdPub>()
-    internal val repos = mutableSetOf<RepoSpec>()
+    private val repos = mutableSetOf<RepoSpec>()
     private var isDefaultRepos = true
     private var repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
 
@@ -80,7 +80,7 @@ open class JarbirdExtensionImpl(
     }
 
     private fun newPub(project: Project): JarbirdPubImpl {
-        return JarbirdPubImpl(project, projectProperty).apply {
+        return JarbirdPubImpl(project, this, projectProperty).apply {
             pubList.add(this)
         }
     }
@@ -103,14 +103,12 @@ open class JarbirdExtensionImpl(
     /* to be invoked by Groovy Gradle script */
     override fun pub(action: Closure<JarbirdPub>) {
         val newPub = newPub(project)
-        newPub.ext = this
         newPub.configure(action)
         initPub(newPub)
     }
 
     override fun pub(variant: String, action: Closure<JarbirdPub>) {
         val newPub = newPub(project)
-        newPub.ext = this
         newPub.variant = variant
         initPub(newPub)
         newPub.configure(action)
@@ -119,14 +117,12 @@ open class JarbirdExtensionImpl(
     /* to be invoked by Kotlin Gradle script */
     override fun pub(action: JarbirdPub.() -> Unit) {
         val newPub = newPub(project)
-        newPub.ext = this
         newPub.configure(action)
         initPub(newPub)
     }
 
     override fun pub(variant: String, action: JarbirdPub.() -> Unit) {
         val newPub = newPub(project)
-        newPub.ext = this
         newPub.variant = variant
         initPub(newPub)
         newPub.configure(action)
@@ -152,41 +148,39 @@ open class JarbirdExtensionImpl(
         implicited = null
     }
 
-    override fun mavenCentral(): RepoSpec {
+    /**
+     * If user declare a repo explicitly, we don't need the default repo any more.
+     */
+    private fun disableDefaultRepos() {
         if (isDefaultRepos) {
             repos.clear()
             isDefaultRepos = false
         }
+    }
+
+    override fun mavenCentral(): RepoSpec {
+        disableDefaultRepos()
         return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral().also {
             repos.add(it)
         }
     }
 
     override fun mavenRepo(key: String): RepoSpec {
-        if (isDefaultRepos) {
-            repos.clear()
-            isDefaultRepos = false
-        }
+        disableDefaultRepos()
         val repo = repoSpecBuilder.buildMavenRepo(key)
-        if (!repos.contains(repo)) repos.add(repo)
+        repos.add(repo)
         return repo
     }
 
     override fun mavenLocal(): RepoSpec {
-        if (isDefaultRepos) {
-            repos.clear()
-            isDefaultRepos = false
-        }
+        disableDefaultRepos()
         return repos.find { it is MavenLocalRepoSpec } ?: repoSpecBuilder.buildMavenLocalRepo().also {
             repos.add(it)
         }
     }
 
     override fun gradlePortal(): RepoSpec {
-        if (isDefaultRepos) {
-            repos.clear()
-            isDefaultRepos = false
-        }
+        disableDefaultRepos()
         return repos.find { it is GradlePortalSpec } ?: repoSpecBuilder.buildGradlePluginRepo().also {
             repos.add(it)
         }
@@ -198,12 +192,9 @@ open class JarbirdExtensionImpl(
             throw GradleException("Bintray repository has been declared at global level.")
         }
 
-        if (isDefaultRepos) {
-            repos.clear()
-            isDefaultRepos = false
-        }
+        disableDefaultRepos()
         val repo = repoSpecBuilder.buildBintrayRepo()
-        if (!repos.contains(repo)) repos.add(repo)
+        repos.add(repo)
         return repo
     }
 
@@ -213,21 +204,23 @@ open class JarbirdExtensionImpl(
             throw GradleException("There can only be one configuration per sub-project for Artifactory server only.")
         }
 
-        if (isDefaultRepos) {
-            repos.clear()
-            isDefaultRepos = false
-        }
+        disableDefaultRepos()
         val repo = repoSpecBuilder.buildArtifactoryRepo()
-        if (!repos.contains(repo)) repos.add(repo)
+        repos.add(repo)
         return repo
     }
 
+    /**
+     * Get the Jarbird extension of the parent project.
+     * @return null if current project is root project or no Jarbird extension is found in parent project
+     */
     fun getParentExt(): JarbirdExtension? {
-        if (project.isRoot()) {
-            return null
+        return if (project.isRoot()) {
+            null
         } else {
-            val parentProject = project.parent
-            return parentProject?.extensions?.findByName(SP_EXT_NAME) as JarbirdExtensionImpl
+            project.parent?.extensions?.findByName(SP_EXT_NAME)?.let {
+                return@getParentExt it as JarbirdExtension
+            }
         }
     }
 

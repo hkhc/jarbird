@@ -16,6 +16,8 @@
  *
  */
 
+import de.fayard.refreshVersions.bootstrapRefreshVersions
+
 pluginManagement {
     repositories {
         mavenLocal()
@@ -25,15 +27,23 @@ pluginManagement {
     }
 }
 
-include(":gradlePlugin")
-//include(":gradlePlugin", ":simplepublisherTestLib")
+buildscript {
+    repositories { gradlePluginPortal() }
+    dependencies {
+        classpath("de.fayard.refreshVersions:refreshVersions:0.9.7")
+    }
+}
 
-rootProject.buildFileName="b2.build.gradle.kts"
+bootstrapRefreshVersions()
+
+include(":gradlePlugin")
+
+rootProject.buildFileName = "b2.build.gradle.kts"
 
 //rootProject.name = "simplepublisher"
 project(":gradlePlugin").apply {
-    name="jarbird-bootstrap"
-    buildFileName="b2.build.gradle.kts"
+    name = "jarbird-bootstrap"
+    buildFileName = "b2.build.gradle.kts"
     /*
         There is not any error message when the file name of buildFileName is not valid.
         So we check it by ourself.

@@ -46,7 +46,7 @@ abstract class JarbirdPub : RepoDeclaration {
 
     /**
      * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
-     * We will need useGpg=true if we use new keybox (.kbx) format for pur signing key.
+     * We will need useGpg=true if we use new keybox (.kbx) format for signing key.
      */
     var useGpg = false
 

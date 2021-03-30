@@ -40,8 +40,8 @@ plugins {
     kotlin("jvm")
     `kotlin-dsl`
     `maven-publish`
-    id("io.kotest") version kotestPluginVersion
-    id("com.dorongold.task-tree") version taskTreeVersion
+    id("io.kotest")
+    id("com.dorongold.task-tree")
     id("com.gradle.plugin-publish")
 }
 
@@ -67,8 +67,8 @@ java {
 tasks {
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.languageVersion = "1.4"
+        kotlinOptions.jvmTarget = jvmTargetVersion
+        kotlinOptions.languageVersion = kotlinLanguageVersion
     }
 
     withType<Test> {
@@ -100,21 +100,21 @@ dependencies {
 
     // These are the dependencies needed to build the plugin code
 
-    implementation(kotlin("stdlib-jdk8", kotlinVersion))
+    implementation(Kotlin.stdlib.jdk8)
 
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion") {
+    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:_") {
         // it is conflict with the slf4j provide from gradle API.
         exclude(group = "org.slf4j", module = "slf4j-nop")
     }
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:$buildInfoVersion")
-    implementation("org.yaml:snakeyaml:$snakeYamlVersion")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
-    implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
-    implementation("com.gradle.publish:plugin-publish-plugin:$gradlePortalPluginVersion")
-    implementation("com.android.tools.build:gradle:3.6.3")
+    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:_")
+    implementation("org.yaml:snakeyaml:_")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:_")
+    implementation("org.jetbrains.dokka:dokka-core:_")
+    implementation("com.gradle.publish:plugin-publish-plugin:_")
+    implementation("com.android.tools.build:gradle:_")
 
     kotest()
 }

@@ -20,11 +20,13 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 fun DependencyHandlerScope.kotest(configuration: String = "testImplementation") {
 
-    add(configuration, "org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    add(configuration, "org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    add(configuration, "io.kotest:kotest-runner-junit5:$kotestVersion")
-    add(configuration, "io.kotest:kotest-assertions-core:$kotestVersion")
-    add(configuration, "io.kotest:kotest-property:$kotestVersion")
-    add(configuration, "io.mockk:mockk:$mockkVersion")
-    add(configuration, "io.github.java-diff-utils:java-diff-utils:$javaDiffUtilsVersion")
+    with(Testing) {
+        add(configuration, junit.api)
+        add(configuration, junit.engine)
+        add(configuration, kotest.runner.junit5)
+        add(configuration, kotest.assertions.core)
+        add(configuration, kotest.property)
+        add(configuration, mockK)
+        add(configuration, "io.github.java-diff-utils:java-diff-utils:_")
+    }
 }

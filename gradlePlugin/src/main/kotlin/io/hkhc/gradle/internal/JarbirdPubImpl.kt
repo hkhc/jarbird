@@ -40,6 +40,7 @@ import org.gradle.kotlin.dsl.get
 
 internal class JarbirdPubImpl(
     val project: Project,
+    val ext: JarbirdExtensionImpl,
     projectProperty: ProjectProperty
 ) : JarbirdPub() {
 
@@ -48,7 +49,6 @@ internal class JarbirdPubImpl(
     private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
     var component: SoftwareComponent? = null
     var sourceSet: SourceSet? = null
-    var ext: JarbirdExtensionImpl? = null
 
     private var variantImpl: String = ""
 
@@ -123,7 +123,7 @@ internal class JarbirdPubImpl(
 
     override fun from(source: Any) {
         when (source) {
-            is SoftwareComponent -> this.component = component
+            is SoftwareComponent -> this.component = source
             is SourceSet -> {
                 this.sourceSet = source
                 this.docSourceSets = source
@@ -147,7 +147,7 @@ internal class JarbirdPubImpl(
 
     override fun mavenRepo(key: String): RepoSpec {
         val repo = repoSpecBuilder.buildMavenRepo(key)
-        if (!repos.contains(repo)) repos.add(repo)
+        repos.add(repo)
         return repo
     }
 
@@ -169,7 +169,7 @@ internal class JarbirdPubImpl(
             throw GradleException("Bintray repository has been declared at 'pub' level.")
         }
 
-        ext?.getRepos()?.let { repos ->
+        ext.getRepos().let { repos ->
             if (repos.any { it is BintrayRepoSpec }) {
                 throw GradleException("Bintray repository has been declared at global level.")
             }
@@ -183,24 +183,22 @@ internal class JarbirdPubImpl(
                 "Because bintray plugin publish components at child project level."
             )
             repos.add(repo)
-            ext?.bintray()
+            ext.bintray()
         }
         return repo
     }
 
     override fun artifactory(): RepoSpec {
         val repo = repoSpecBuilder.buildArtifactoryRepo()
-        if (!repos.contains(repo)) {
-            repos.add(repo)
-        }
+        repos.add(repo)
         return repo
     }
 
     override fun getRepos(): Set<RepoSpec> {
         return (
             repos +
-                (ext?.getRepos() ?: setOf()) +
-                (ext?.getParentExt()?.getRepos() ?: setOf())
+                ext.getRepos() +
+                (ext.getParentExt()?.getRepos() ?: setOf())
             )
     }
 

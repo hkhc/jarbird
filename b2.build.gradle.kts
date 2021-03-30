@@ -16,26 +16,11 @@
  *
  */
 
-//import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 
 plugins {
-    kotlin("jvm") version kotlinVersion
-    id("io.gitlab.arturbosch.detekt") version detektVersion
-    id("com.gradle.plugin-publish") version gradlePortalPluginVersion
-}
-
-buildscript {
-    repositories {
-    }
+    kotlin("jvm")
 }
 
 repositories {
     mavenCentral()
 }
-
-dependencies {
-//    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-
-}
-

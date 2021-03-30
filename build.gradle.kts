@@ -16,12 +16,9 @@
  *
  */
 
-//import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-
 plugins {
-    kotlin("jvm") version kotlinVersion
-    id("io.gitlab.arturbosch.detekt") version detektVersion
+    kotlin("jvm")
+    id("io.gitlab.arturbosch.detekt")
     id("io.hkhc.jarbird.bootstrap") version "1.0.0"
 }
 
@@ -37,7 +34,4 @@ repositories {
 }
 
 dependencies {
-//    implementation(kotlin("stdlib-jdk8", kotlinVersion))
-
 }
-

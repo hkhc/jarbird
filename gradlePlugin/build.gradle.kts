@@ -27,7 +27,6 @@ repositories {
      part of the dependenciies */
     gradlePluginPortal()
     google()
-    // for bintray-gradle-plugin:1.8.5-hkhc
     mavenLocal()
 }
 
@@ -35,9 +34,9 @@ plugins {
     kotlin("jvm")
     `kotlin-dsl`
     id("io.gitlab.arturbosch.detekt")
-    id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
-    id("com.dorongold.task-tree") version taskTreeVersion
-    id("io.kotest") version kotestPluginVersion
+    id("org.jlleitschuh.gradle.ktlint")
+    id("com.dorongold.task-tree")
+    id("io.kotest")
     id("io.hkhc.jarbird.bootstrap")
 }
 
@@ -97,8 +96,8 @@ tasks {
      */
     withType<KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "1.8"
-            this.languageVersion = "1.4"
+            jvmTarget = jvmTargetVersion
+            languageVersion = kotlinLanguageVersion
         }
     }
 
@@ -151,6 +150,9 @@ jarbird {
     mavenLocal()
     mavenCentral()
     bintray()
+    pub {
+        useGpg = true
+    }
 }
 
 dependencies {
@@ -158,26 +160,21 @@ dependencies {
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintrayVersion")
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:$buildInfoVersion")
-    implementation("org.yaml:snakeyaml:$snakeYamlVersion")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
-    implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
-    implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
-    implementation("com.gradle.publish:plugin-publish-plugin:$gradlePortalPluginVersion")
+    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:_")
+    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:_")
+    implementation("org.yaml:snakeyaml:_")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:_")
+    implementation("org.jetbrains.dokka:dokka-core:_")
+    implementation("org.jetbrains.dokka:dokka-base:_")
+    implementation("com.gradle.publish:plugin-publish-plugin:_")
 
-    implementation("com.android.tools.build:gradle:3.6.3")
+    Testing.junit
+    implementation("com.android.tools.build:gradle:_")
 
     kotest()
 
-//    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-//    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
-//    testImplementation("io.kotest:kotest-property:$kotestVersion")
-//    testImplementation("io.mockk:mockk:$mockkVersion")
-//    testImplementation("io.github.java-diff-utils:java-diff-utils:$javaDiffUtilsVersion")
-
     testFunctionalImplementation(gradleTestKit())
-    testFunctionalImplementation("com.squareup.okhttp3:mockwebserver:$mockWebServerVersion")
+    testFunctionalImplementation(Square.OkHttp3.mockWebServer)
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:_")
 }

@@ -16,19 +16,28 @@
  *
  */
 
+import de.fayard.refreshVersions.bootstrapRefreshVersions
+
 pluginManagement {
     repositories {
         // we need mavenaLocal repo here so that we can get the bootstrap plugin
         mavenLocal()
         // the default place for gradle plugin (marker)
         gradlePluginPortal()
-//        // I wonder if we really need these two if we don't use old style plugin declaration at all
         mavenCentral()
-//        jcenter()
+        jcenter()
         google()
-//    }
     }
 }
+
+buildscript {
+    repositories { gradlePluginPortal() }
+    dependencies {
+        classpath("de.fayard.refreshVersions:refreshVersions:0.9.7")
+    }
+}
+
+bootstrapRefreshVersions()
 
 include(":gradlePlugin")
 

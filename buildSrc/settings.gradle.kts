@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Herman Cheung
+ * Copyright (c) 2021. Herman Cheung
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
  *
  */
 
-package io.hkhc.gradle.testlib
+import de.fayard.refreshVersions.bootstrapRefreshVersionsForBuildSrc
 
-class Hello {
-
-    fun sayHello(name: String) = "Hello $name"
-
+buildscript {
+    repositories { gradlePluginPortal() }
+    dependencies.classpath("de.fayard.refreshVersions:refreshVersions:0.9.7")
 }
+
+bootstrapRefreshVersionsForBuildSrc()
