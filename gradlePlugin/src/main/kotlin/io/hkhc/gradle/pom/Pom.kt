@@ -378,4 +378,26 @@ data class Pom(
 
         url = url ?: scm.url
     }
+
+    fun formattedDump(): String {
+        return """
+            Variant:     $variant
+            Coordinate:  $group/$artifactId/$version
+            Year:        $inceptionYear
+            Packaging:   $packaging
+            Name:        $name
+            URL:         $url
+            Description: $description
+            Licenses:
+            ${licenses.joinToString(separator="\n")}
+            Developers:
+            ${developers.joinToString(separator="\n")}
+            Contributors:
+            ${contributors.joinToString(separator="\n")}
+            Organization: $organization
+            Web:          $web
+            SCM:          $scm
+        """.trimIndent()
+    }
+
 }

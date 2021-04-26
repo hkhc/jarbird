@@ -113,10 +113,10 @@ class JarbirdExtensionTest : FunSpec({
             ext.pubList.shouldHaveSize(1)
 
             ext.removeImplicit()
-            ext.repos.shouldHaveSize(0)
+            ext.getRepos().shouldHaveSize(0)
 
             ext.finalizeRepos()
-            ext.repos.shouldContainExactly(setOf(MavenLocalRepoSpecImpl()))
+            ext.getRepos().shouldContainExactly(setOf(MavenLocalRepoSpecImpl()))
         }
 
         test("Implicit pub will be removed if there are explicitly declared pub") {
@@ -129,10 +129,10 @@ class JarbirdExtensionTest : FunSpec({
             ext.pub { }
 
             ext.removeImplicit()
-            ext.repos.shouldHaveSize(0)
+            ext.getRepos().shouldHaveSize(0)
 
             ext.finalizeRepos()
-            ext.repos.shouldContainExactly(setOf(MavenLocalRepoSpecImpl()))
+            ext.getRepos().shouldContainExactly(setOf(MavenLocalRepoSpecImpl()))
         }
 
         test("Explicitly declared repo") {
@@ -151,7 +151,7 @@ class JarbirdExtensionTest : FunSpec({
             ext.pubList.needsBintray() shouldBe true
 
             ext.finalizeRepos()
-            ext.repos.shouldContainExactlyInAnyOrder(
+            ext.getRepos().shouldContainExactlyInAnyOrder(
                 setOf(
                     MavenLocalRepoSpecImpl(),
                     PropertyRepoSpecBuilder(projectProperty).buildBintrayRepo()
@@ -180,7 +180,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 ext.finalizeRepos()
 
-                ext.repos.shouldContainExactlyInAnyOrder(
+                ext.getRepos().shouldContainExactlyInAnyOrder(
                     setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildMavenRepo("mock"))
                 )
 
@@ -200,7 +200,7 @@ class JarbirdExtensionTest : FunSpec({
 
             listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
 
-                System.out.println("version " + version)
+                println("version " + version)
 
                 File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
                 pomGroup = PomGroupFactory.resolvePomGroup(project.projectDir, File(project.projectDir, "module"))
@@ -222,7 +222,7 @@ class JarbirdExtensionTest : FunSpec({
                 if (ext.pubList[0].pom.isSnapshot()) {
 
                     with(PropertyRepoSpecBuilder(projectProperty)) {
-                        ext.repos.shouldContainExactlyInAnyOrder(
+                        ext.getRepos().shouldContainExactlyInAnyOrder(
                             setOf(
                                 MavenLocalRepoSpecImpl(),
                                 buildBintrayRepo(),
@@ -244,7 +244,7 @@ class JarbirdExtensionTest : FunSpec({
                     ext.pubList.needsNonLocalMaven() shouldBe false
                 } else {
                     with(PropertyRepoSpecBuilder(projectProperty)) {
-                        ext.repos.shouldContainExactlyInAnyOrder(
+                        ext.getRepos().shouldContainExactlyInAnyOrder(
                             setOf(
                                 MavenLocalRepoSpecImpl(),
                                 buildBintrayRepo()
@@ -287,7 +287,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 ext.finalizeRepos()
 
-                ext.repos.shouldContainExactlyInAnyOrder(
+                ext.getRepos().shouldContainExactlyInAnyOrder(
                     setOf(
                         MavenLocalRepoSpecImpl(),
                         PropertyRepoSpecBuilder(projectProperty).buildBintrayRepo(),
@@ -326,7 +326,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 ext.finalizeRepos()
 
-                ext.repos.shouldContainExactlyInAnyOrder(
+                ext.getRepos().shouldContainExactlyInAnyOrder(
                     setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo())
                 )
 
@@ -363,7 +363,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 ext.finalizeRepos()
 
-                ext.repos.shouldContainExactlyInAnyOrder(
+                ext.getRepos().shouldContainExactlyInAnyOrder(
                     setOf(
                         MavenLocalRepoSpecImpl(),
                         PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo(),
@@ -402,7 +402,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 ext.finalizeRepos()
 
-                ext.repos.shouldContainExactlyInAnyOrder(
+                ext.getRepos().shouldContainExactlyInAnyOrder(
                     setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildBintrayRepo())
                 )
 

@@ -137,6 +137,11 @@ ktlint {
     }
 }
 
+gradlePlugin {
+    pluginSourceSet(sourceSets["main"])
+    testSourceSets(sourceSets["testFunctional"])
+}
+
 configurations {
     detekt
 }
@@ -153,15 +158,7 @@ jarbird {
 dependencies {
 
     // TODO extract common dependencies to a separate file
-
-    implementation(gradleApi())
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:_")
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:_")
-    implementation("org.yaml:snakeyaml:_")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:_")
-    implementation("org.jetbrains.dokka:dokka-core:_")
-    implementation("org.jetbrains.dokka:dokka-base:_")
-    implementation("com.gradle.publish:plugin-publish-plugin:_")
+    implementation(project(":jarbird-base"))
 
     Testing.junit
 

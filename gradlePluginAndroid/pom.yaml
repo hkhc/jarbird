@@ -1,0 +1,17 @@
+artifactId: jarbird-android
+# see version at project base dir
+description: Wrapping boilerplate code of publishing artifact to maven repository (for Android project)
+packaging: jar
+
+plugin:
+  id: io.hkhc.jarbird-android
+  displayName: Jarbird for Android
+  implementationClass: io.hkhc.gradle.android.AndroidJarbirdPlugin
+  tags:
+  - publish
+
+#we don't need this
+#bintray:
+  # labels: my-tables
+  #  repo: my-maven
+  # userOrg: my-org

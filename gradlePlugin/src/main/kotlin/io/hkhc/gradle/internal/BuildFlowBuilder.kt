@@ -25,6 +25,7 @@ import io.hkhc.gradle.internal.bintray.BintrayConfig
 import io.hkhc.gradle.internal.dokka.DokkaConfig
 import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import org.gradle.api.Project
+import org.gradle.plugins.signing.SigningPlugin
 
 /**
  *
@@ -137,6 +138,23 @@ internal class BuildFlowBuilder(
     fun buildPhase4() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 4 of 4")
         if (!project.isMultiProjectRoot()) {
+
+            // SigningExtension is created when applying signing plugin
+            with(project.pluginManager) {
+
+                if (pubs.needSigning()) {
+                    /**
+                     * "org.gradle.signing"
+                     * no evaluation listener
+                     */
+                    /**
+                     * "org.gradle.signing"
+                     * no evaluation listener
+                     */
+                    apply(org.gradle.plugins.signing.SigningPlugin::class.java)
+                }
+            }
+
             PublishingConfig(project, extension, pubs, sourceResolver).config()
             if (pubs.any { it.signing }) {
                 SigningConfig(project, pubs).config()

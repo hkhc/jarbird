@@ -37,11 +37,13 @@ buildscript {
 bootstrapRefreshVersions()
 
 include(":gradlePlugin")
+include(":gradlePluginBasic")
+
 
 rootProject.buildFileName = "b2.build.gradle.kts"
 
 //rootProject.name = "simplepublisher"
-project(":gradlePlugin").apply {
+project(":gradlePluginBasic").apply {
     name = "jarbird-bootstrap"
     buildFileName = "b2.build.gradle.kts"
     /*
@@ -54,3 +56,19 @@ project(":gradlePlugin").apply {
         }
     }
 }
+
+//rootProject.name = "simplepublisher"
+project(":gradlePlugin").apply {
+    name = "jarbird-bootstrap-base"
+    buildFileName = "b2.build.gradle.kts"
+    /*
+        There is not any error message when the file name of buildFileName is not valid.
+        So we check it by ourself.
+     */
+    File("$projectDir${File.separatorChar}$buildFileName").also { file ->
+        if (!file.exists()) {
+            throw GradleException("Build file '${file.absolutePath}' does not exist")
+        }
+    }
+}
+

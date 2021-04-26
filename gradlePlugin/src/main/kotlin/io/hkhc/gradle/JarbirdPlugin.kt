@@ -24,15 +24,17 @@ import io.hkhc.gradle.internal.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.internal.BuildFlowBuilder
 import io.hkhc.gradle.internal.DefaultProjectInfo
 import io.hkhc.gradle.internal.DefaultProjectProperty
+import io.hkhc.gradle.internal.DefaultSourceResolver
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdLogger
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.internal.PLUGIN_ID
+import io.hkhc.gradle.internal.ProjectInfo
+import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.SP_EXT_NAME
 import io.hkhc.gradle.internal.SourceResolver
-import io.hkhc.gradle.internal.android.AndroidSourceResolver
 import io.hkhc.gradle.internal.gradleAfterEvaluate
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isRoot
@@ -41,20 +43,52 @@ import io.hkhc.gradle.internal.needSigning
 import io.hkhc.gradle.internal.utils.detailMessageError
 import io.hkhc.gradle.internal.utils.fatalMessage
 import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.pom.PomGroup
 import io.hkhc.gradle.pom.internal.PomGroupFactory
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.ProjectEvaluationListener
+import org.gradle.api.ProjectState
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
+import org.gradle.kotlin.dsl.extra
 import org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
 import org.gradle.plugins.signing.SigningPlugin
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
+import javax.inject.Inject
+
+const val EXT_PLUGIN_CONFIG = "JARBIRD_PLUGIN_CONFIG"
 
 @Suppress("unused")
-class JarbirdPlugin : Plugin<Project> {
+open class JarbirdPlugin: Plugin<Project> {
 
     private lateinit var extension: JarbirdExtensionImpl
     private var androidPluginAppliedBeforeUs = false
+    var pluginConfig: PluginConfig = object: PluginConfig {
+        override fun getSourceResolver(project: Project): SourceResolver {
+            return DefaultSourceResolver(project)
+        }
+
+        override fun newExtension(
+            project: Project,
+            projectProperty: ProjectProperty,
+            projectInfo: ProjectInfo,
+            pomGroup: PomGroup
+        ): JarbirdExtensionImpl {
+            return JarbirdExtensionImpl(
+                project, projectProperty, projectInfo, pomGroup
+            )
+        }
+
+        override fun shallCreateImplicit(): Boolean {
+            return true
+        }
+
+        override fun pluginId(): String {
+            return PLUGIN_ID
+        }
+    }
 
     /*
         We need to know which project this plugin instance refer to.
@@ -90,9 +124,21 @@ class JarbirdPlugin : Plugin<Project> {
         }
     }
 
-    fun getSourceResolver(project: Project): SourceResolver {
-        return AndroidSourceResolver(project)
-    }
+//    open fun getSourceResolver(project: Project): SourceResolver {
+//        return DefaultSourceResolver(project)
+//    }
+//
+//    open fun newExtension(
+//        project: Project,
+//        projectProperty: ProjectProperty,
+//        projectInfo: ProjectInfo,
+//        pomGroup: PomGroup
+//    ): JarbirdExtensionImpl =
+//        JarbirdExtensionImpl(
+//            project, projectProperty, projectInfo, pomGroup
+//        )
+//
+//    open fun shallCreateImplicit(): Boolean = true
 
     // TODO check if POM fulfill minimal requirements for publishing
     // TODO maven publishing dry-run
@@ -151,12 +197,16 @@ class JarbirdPlugin : Plugin<Project> {
      */
     override fun apply(p: Project) {
 
+        if (p.extra.has(EXT_PLUGIN_CONFIG)) {
+            pluginConfig = p.extra.get(EXT_PLUGIN_CONFIG) as PluginConfig
+        }
+
         if (p.isRoot()) JarbirdLogger.logger = p.logger
 
         project = p
-        project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME")
+        project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME (${pluginConfig.pluginId()})")
 
-        extension = JarbirdExtensionImpl(
+        extension = pluginConfig.newExtension(
             project,
             DefaultProjectProperty(project),
             DefaultProjectInfo(project),
@@ -232,7 +282,7 @@ class JarbirdPlugin : Plugin<Project> {
         // Build Phase 1
         project.gradleAfterEvaluate {
 
-            if (!project.isMultiProjectRoot()) {
+            if (!project.isMultiProjectRoot() && pluginConfig.shallCreateImplicit()) {
                 extension.createImplicit()
             }
 
@@ -263,8 +313,10 @@ class JarbirdPlugin : Plugin<Project> {
                     project,
                     extension,
                     extension.pubList,
-                    getSourceResolver(project)
+                    pluginConfig.getSourceResolver(project)
                 ).buildPhase2()
+            } else {
+                project.logger.debug("$LOG_PREFIX Not plugin project. Phase 2 skipped.")
             }
 
             // Give a change for JavaGradlePluginPlugin to setup marker publication before we can patch it.
@@ -274,8 +326,18 @@ class JarbirdPlugin : Plugin<Project> {
                     project,
                     extension,
                     extension.pubList,
-                    getSourceResolver(project)
+                    pluginConfig.getSourceResolver(project)
                 ).buildPhase3()
+            }
+
+            project.afterEvaluate {
+                @Suppress("UNCHECKED_CAST")
+                BuildFlowBuilder(
+                    project,
+                    extension,
+                    extension.pubList,
+                    pluginConfig.getSourceResolver(project)
+                ).buildPhase4()
             }
         }
 
@@ -288,47 +350,25 @@ class JarbirdPlugin : Plugin<Project> {
         project.afterEvaluate {
 
             // we created an implicit JarbirdPub and we have more in afterEvaluate
-            extension.removeImplicit()
+            //extension.removeImplicit()
 
             extension.finalizeRepos()
 
-            with(p.pluginManager) {
-
-                if (extension.pubList.needSigning()) {
-                    /**
-                     * "org.gradle.signing"
-                     * no evaluation listener
-                     */
-                    /**
-                     * "org.gradle.signing"
-                     * no evaluation listener
-                     */
-                    apply(SigningPlugin::class.java)
-                }
-            }
             @Suppress("UNCHECKED_CAST")
             BuildFlowBuilder(
                 project,
                 extension,
                 extension.pubList as List<JarbirdPubImpl>,
-                getSourceResolver(project)
+                pluginConfig.getSourceResolver(project)
             ).buildPhase1()
         }
 
-        project.afterEvaluate {
-            @Suppress("UNCHECKED_CAST")
-            BuildFlowBuilder(
-                project,
-                extension,
-                extension.pubList,
-                getSourceResolver(project)
-            ).buildPhase4()
-        }
 
         /*
         We don't apply bintray and artifactory plugin conditionally, because it make use of
-        projectEvaluationListener, but we cannot get the flag from extension until we run
-        afterEvaluate event. This is a conflict. So we just let go and apply these two
+        projectEvaluationListener. ProjectEvaluationListener shall be setup within apply().
+        On the other hand, we cannot get the information from extension until we run
+        project.afterEvaluate events. This is a dilemma. So we just let go and apply these two
         plugins anyway. We put the bintray extension configuration code at PublicationBuilder.buildPhase1, which is
         executed in another ProjectEvaluationListener setup before Bintray's. (@see PublicationBuilder)
          */

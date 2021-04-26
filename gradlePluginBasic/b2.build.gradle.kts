@@ -118,20 +118,13 @@ dependencies {
 
     // These are the dependencies needed to build the plugin code
 
+    implementation(project(":jarbird-bootstrap-base"))
+
     implementation(Kotlin.stdlib.jdk8)
 
     // TODO extract common dependencies to a separate file
 
     implementation(gradleApi())
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:_") {
-        // it is conflict with the slf4j provide from gradle API.
-        exclude(group = "org.slf4j", module = "slf4j-nop")
-    }
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:_")
-    implementation("org.yaml:snakeyaml:_")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:_")
-    implementation("org.jetbrains.dokka:dokka-core:_")
-    implementation("com.gradle.publish:plugin-publish-plugin:_")
 
     kotest()
 }

@@ -1,0 +1,12 @@
+artifactId: jarbird
+# see version at project base dir
+description: Wrapping boilerplate code of publishing artifact to maven repository
+packaging: jar
+
+plugin:
+  id: io.hkhc.jarbird
+  displayName: Jarbird
+  implementationClass: io.hkhc.gradle.BasicJarbirdPlugin
+  tags:
+    - publish
+

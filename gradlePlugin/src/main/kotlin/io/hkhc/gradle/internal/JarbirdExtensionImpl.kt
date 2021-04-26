@@ -35,7 +35,7 @@ import org.gradle.api.Project
 
 open class JarbirdExtensionImpl(
     private val project: Project,
-    private val projectProperty: ProjectProperty,
+    protected val projectProperty: ProjectProperty,
     private val projectInfo: ProjectInfo,
     private val pomGroup: PomGroup
 ) : JarbirdExtension {
@@ -47,10 +47,6 @@ open class JarbirdExtensionImpl(
 
     private var implicited: JarbirdPub? = null
 
-    init {
-        project.logger.debug("$LOG_PREFIX Aggregated POM configuration: $pomGroup")
-    }
-
     private fun initPub(pub: JarbirdPub) {
 
         // find the pom of particular variant. Normally pom of a variant is a combination of pom spec of that
@@ -58,7 +54,7 @@ open class JarbirdExtensionImpl(
         // the non-variant pom spec directly
         pomGroup[pub.variant].also { variantPom ->
             if (variantPom == null) {
-                pomGroup[""]?.let { pub.pom = it } ?: throw GradleException("xsVariant '${pub.variant}' is not found")
+                pomGroup[""]?.let { pub.pom = it } ?: throw GradleException("Variant '${pub.variant}' is not found")
             } else {
                 pub.pom = variantPom
             }
@@ -77,9 +73,10 @@ open class JarbirdExtensionImpl(
 //        if (!project.isMultiProjectRoot()) {
 //            precheck(pub.pom, project)
 //        }
+
     }
 
-    private fun newPub(project: Project): JarbirdPubImpl {
+    open fun newPub(project: Project): JarbirdPubImpl {
         return JarbirdPubImpl(project, this, projectProperty).apply {
             pubList.add(this)
         }
@@ -105,6 +102,7 @@ open class JarbirdExtensionImpl(
         val newPub = newPub(project)
         newPub.configure(action)
         initPub(newPub)
+        removeImplicit()
     }
 
     override fun pub(variant: String, action: Closure<JarbirdPub>) {
@@ -112,6 +110,7 @@ open class JarbirdExtensionImpl(
         newPub.variant = variant
         initPub(newPub)
         newPub.configure(action)
+        removeImplicit()
     }
 
     /* to be invoked by Kotlin Gradle script */
@@ -119,6 +118,7 @@ open class JarbirdExtensionImpl(
         val newPub = newPub(project)
         newPub.configure(action)
         initPub(newPub)
+        removeImplicit()
     }
 
     override fun pub(variant: String, action: JarbirdPub.() -> Unit) {
@@ -126,6 +126,7 @@ open class JarbirdExtensionImpl(
         newPub.variant = variant
         initPub(newPub)
         newPub.configure(action)
+        removeImplicit()
     }
 
     fun createImplicit() {
@@ -145,6 +146,7 @@ open class JarbirdExtensionImpl(
          */
         if (implicited == null || pubList.size == 1) return
         pubList.remove(implicited)
+        println("result pub size = ${pubList.size}")
         implicited = null
     }
 
@@ -231,5 +233,8 @@ open class JarbirdExtensionImpl(
     fun finalizeRepos() {
         mavenLocal()
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
+        "Aggregated POM configuration:\n${pomGroup.formattedDump()}".lines().filter { it.trim()!="" }.forEach {
+            project.logger.debug("$LOG_PREFIX $it")
+        }
     }
 }

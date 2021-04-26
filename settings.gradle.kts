@@ -39,7 +39,12 @@ buildscript {
 
 bootstrapRefreshVersions()
 
-include(":gradlePlugin")
-
 // If you want the root project name to be different from the directory name
 // rootProject.name = "your-project-name"
+include(":gradlePlugin")
+include(":gradlePluginAndroid")
+include(":gradlePluginBasic")
+
+project(":gradlePlugin").apply {
+    name = "jarbird-base"
+}

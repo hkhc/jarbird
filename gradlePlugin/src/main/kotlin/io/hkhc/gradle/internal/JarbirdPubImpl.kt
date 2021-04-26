@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.internal
 
-import com.android.build.gradle.api.LibraryVariant
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SourceDirs
@@ -36,9 +35,8 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.tasks.SourceSet
-import org.gradle.kotlin.dsl.get
 
-internal class JarbirdPubImpl(
+open class JarbirdPubImpl(
     val project: Project,
     val ext: JarbirdExtensionImpl,
     projectProperty: ProjectProperty
@@ -126,10 +124,6 @@ internal class JarbirdPubImpl(
             is SoftwareComponent -> this.component = source
             is SourceSet -> {
                 this.sourceSet = source
-                this.docSourceSets = source
-            }
-            is LibraryVariant -> {
-                this.component = project.components[source.name]
                 this.docSourceSets = source
             }
         }

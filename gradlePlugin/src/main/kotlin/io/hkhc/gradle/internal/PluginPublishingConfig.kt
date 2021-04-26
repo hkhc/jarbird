@@ -130,18 +130,4 @@ class PluginPublishingConfig(
             }
         }
     }
-
-//    private fun updatePluginPublication(project: Project, artifactId: String) {
-//
-//        println("updatePluginPublication ${artifactId}")
-//
-//        project.extensions.configure(PublishingExtension::class.java) {
-//            publications.find { it.name.startsWith("pluginMaven") }?.let {
-//                if (it is MavenPublication) {
-//                    println("updatePluginPublication ready to update ${artifactId} vs ${it.artifactId}")
-//                    it.artifactId = artifactId
-//                }
-//            }
-//        }
-//    }
 }

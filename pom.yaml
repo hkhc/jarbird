@@ -1,0 +1,15 @@
+group: io.hkhc.gradle
+version: 0.5.1
+
+licenses:
+  - name: Apache-2.0
+    dist: repo
+
+developers:
+  - id: hkhc
+    name: Herman Cheung
+    email: herman.kh.cheung@gmail.com
+
+scm:
+  repoType: github.com
+  repoName: hkhc/jarbird

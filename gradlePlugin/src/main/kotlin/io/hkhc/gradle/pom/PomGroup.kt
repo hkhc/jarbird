@@ -91,7 +91,7 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
 
     fun involveGradlePlugin() = group.any { it.value.isGradlePlugin() }
 
-    fun dump(): String {
+    override fun toString(): String {
         val builder = StringBuilder()
         builder.append("Default POM : $defaultPom\n")
         rawGroup.forEach {
@@ -102,4 +102,21 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
         }
         return builder.toString()
     }
+
+    fun formattedDump(): String{
+        val builder = StringBuilder()
+        builder.append("------ Default POM\n")
+        builder.append(defaultPom.formattedDump())
+        builder.append("\n")
+        rawGroup.map { "------ Raw Group [${it.key}] : \n${it.value.formattedDump()}" }.forEach {
+            builder.append(it)
+        }
+        builder.append("\n")
+        group.map { "------ Group [${it.key}] : \n${it.value.formattedDump()}" }.forEach {
+            builder.append(it)
+        }
+        builder.append("\n")
+        return builder.toString()
+    }
+
 }

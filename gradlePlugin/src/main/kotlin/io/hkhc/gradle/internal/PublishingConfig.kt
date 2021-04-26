@@ -74,15 +74,7 @@ internal class PublishingConfig(
 
     fun config() {
 
-        project.logger.debug("$LOG_PREFIX configure Publishing extension")
-
-//        if (dokka == null) {
-//            try {
-//                dokka = project.tasks.named("dokka")
-//            } catch (e: UnknownTaskException) {
-//                printHelpForMissingDokka(project)
-//            }
-//        }
+        project.logger.debug("$LOG_PREFIX Configure Publishing extension")
 
         (
             project.findByType(PublishingExtension::class.java)
@@ -164,28 +156,9 @@ internal class PublishingConfig(
         pubs.forEach { pub0 ->
 
             val pub = pub0 as JarbirdPubImpl
+            project.logger.debug("$LOG_PREFIX CreatePublication pub=$pub variant=${pub.variant} component=${pub.component}")
+
             val pom = pub.pom
-
-//            checkComponent(pub)
-
-//            if (!project.isMultiProjectRoot()) {
-//
-//                if (project.configurations.findByName("helloConfiguration") == null) {
-//                    project.configurations.create("helloConfiguration") {
-//                        outgoing {
-//                            artifact(project.tasks.named("jar"))
-//                        }
-//                    }
-//                    val adhoc = project.components["java"] as AdhocComponentWithVariants
-//                    adhoc.addVariantsFromConfiguration(project.configurations["helloConfiguration"]) {
-//                        this.mapToOptional()
-//                    }
-//                }
-//
-//                project.components.forEach {
-//                    println("after new configuration components ${it.name}")
-//                }
-//            }
 
             val publishJarTask = registerSourceSetCompileTask(pub)
 

@@ -25,6 +25,7 @@ import io.hkhc.gradle.internal.DokkaJarPubTaskInfo
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.JbDokkaPubTaskInfo
 import io.hkhc.gradle.internal.JbDokkaTaskInfo
+import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.SourceResolver
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
@@ -54,6 +55,8 @@ internal class DokkaConfig(
 
     fun configRootDokka(pubs: List<JarbirdPub>) {
 
+        project.logger.debug("$LOG_PREFIX Configure Dokka at root project")
+
         JbDokkaTaskInfo().register(project.tasks, DokkaMultiModuleTask::class.java) {
 //            extension.dokkaConfig.invoke(this)
             pubs.forEach { pub ->
@@ -64,6 +67,9 @@ internal class DokkaConfig(
 
     @Suppress("SpreadOperator")
     fun configDokka(pubs: List<JarbirdPub>) {
+
+        project.logger.debug("$LOG_PREFIX Configure Dokka for pubs")
+
         pubs.forEach { pub ->
             val impl = pub as JarbirdPubImpl
             JbDokkaPubTaskInfo(pub).register(project.tasks, DokkaTask::class.java) {
@@ -82,7 +88,9 @@ internal class DokkaConfig(
     fun setupDokkaJar(pub: JarbirdPub): TaskProvider<Jar> {
 
         // TODO add error message here if dokka is null
-        return DokkaJarPubTaskInfo(pub).register(project.tasks, Jar::class.java) {
+        return DokkaJarPubTaskInfo(pub)
+            .also { project.logger.debug("$LOG_PREFIX Configure Dokka Jar task ${it.name}")}
+            .register(project.tasks, Jar::class.java) {
 
             archiveClassifier.set(CLASSIFIER_JAVADOC)
             archiveBaseName.set(pub.variantArtifactId())
