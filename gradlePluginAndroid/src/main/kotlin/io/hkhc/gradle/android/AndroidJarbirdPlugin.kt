@@ -18,8 +18,8 @@
 
 package io.hkhc.gradle.android
 
-import io.hkhc.gradle.EXT_PLUGIN_CONFIG
 import io.hkhc.gradle.JarbirdPlugin
+import io.hkhc.gradle.JarbirdPlugin.Companion.EXT_PLUGIN_CONFIG
 import io.hkhc.gradle.PluginConfig
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.ProjectInfo

@@ -26,6 +26,7 @@ fun DependencyHandlerScope.kotest(configuration: String = "testImplementation") 
         add(configuration, kotest.runner.junit5)
         add(configuration, kotest.assertions.core)
         add(configuration, kotest.property)
+        add(configuration, "io.kotest:kotest-framework-engine-jvm:_")
         add(configuration, mockK)
         add(configuration, "io.github.java-diff-utils:java-diff-utils:_")
     }

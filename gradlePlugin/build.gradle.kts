@@ -20,15 +20,6 @@ import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
-repositories {
-    mavenCentral()
-    /* We need this to be in repositories block and not only the pluginManagement block,
-     because our plugin code applys other plugins, so that make those dependent plugins
-     part of the dependenciies */
-    gradlePluginPortal()
-    google()
-    mavenLocal()
-}
 
 plugins {
     kotlin("jvm")

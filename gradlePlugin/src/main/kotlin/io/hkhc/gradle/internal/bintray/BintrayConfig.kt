@@ -36,7 +36,7 @@ class BintrayConfig(
     private val pubs: List<JarbirdPub>
 ) {
 
-    val publishPlan = BintrayPublishPlan(pubs)
+//    val publishPlan = BintrayPublishPlan(pubs)
 
     fun config() {
         project.logger.debug("$LOG_PREFIX configure Bintray plugin")
@@ -77,10 +77,10 @@ class BintrayConfig(
         pubs.flatMap { it.getRepos() }
             .filterIsInstance<BintrayRepoSpec>()
             .first()
-            .let { endpoint ->
-                if (endpoint.releaseUrl != "") apiUrl = endpoint.releaseUrl
-                if (endpoint.username != "") user = endpoint.username
-                if (endpoint.apikey != "") key = endpoint.apikey
+            .apply {
+                if (releaseUrl != "") apiUrl = releaseUrl
+                if (username != "") user = username
+                if (apikey != "") key = apikey
 
                 override = true
                 dryRun = false

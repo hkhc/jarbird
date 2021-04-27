@@ -338,7 +338,7 @@ fun commonSetting(): String {
     """.trimIndent()
 }
 
-fun commonAndroidRootGradle(pluginId: String = "io.hkhc.jarbird"): String {
+fun commonAndroidRootGradle(pluginId: String = "io.hkhc.jarbird-android"): String {
 
     return """
         buildscript {
@@ -372,14 +372,18 @@ fun commonAndroidRootGradle(pluginId: String = "io.hkhc.jarbird"): String {
     """.trimIndent()
 }
 
-fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: Boolean = false): String {
+fun commonAndroidGradle(
+    pluginId: String = "io.hkhc.jarbird-android",
+    variantMode: String = "variantInvisible()",
+    mavenRepo: Boolean = false
+): String {
 
     return """
         plugins {
             id 'com.android.library'
             id 'kotlin-android'
             id 'kotlin-android-extensions'
-            id '$PLUGIN_ID'
+            id '$pluginId'
             id 'com.dorongold.task-tree' 
         }
 
@@ -442,7 +446,7 @@ fun commonAndroidGradle(variantMode: String = "variantInvisible()", mavenRepo: B
     """.trimIndent()
 }
 
-fun commonAndroidExtGradle(pluginId: String = "io.hkhc.jarbird", variantMode: String = "variantInvisible()", mavenRepo: Boolean = false): String {
+fun commonAndroidExtGradle(pluginId: String = "io.hkhc.jarbird-android", variantMode: String = "variantInvisible()", mavenRepo: Boolean = false): String {
 
     return """
         plugins {

@@ -20,16 +20,6 @@ import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
-repositories {
-    mavenCentral()
-    /* We need this to be in repositories block and not only the pluginManagement block,
-     because our plugin code applys other plugins, so that make those dependent plugins
-     part of the dependenciies */
-    gradlePluginPortal()
-    google()
-    mavenLocal()
-}
-
 plugins {
     kotlin("jvm")
     `kotlin-dsl`
@@ -158,7 +148,7 @@ jarbird {
 dependencies {
 
     // TODO extract common dependencies to a separate file
-    implementation(project(":jarbird-base"))
+    api(project(":jarbird-base"))
 
     Testing.junit
 

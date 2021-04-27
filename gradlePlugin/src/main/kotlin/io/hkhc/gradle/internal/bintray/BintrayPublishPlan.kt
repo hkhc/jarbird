@@ -24,8 +24,8 @@ import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.pubNameWithVariant
 
 class BintrayPublishPlan(val pubs: List<JarbirdPub>) {
-    val bintray: MutableList<JarbirdPub> = mutableListOf()
-    val artifactory: MutableList<JarbirdPub> = mutableListOf()
+//    val bintray: MutableList<JarbirdPub> = mutableListOf()
+//    val artifactory: MutableList<JarbirdPub> = mutableListOf()
     val artifactoryPlugins: MutableList<JarbirdPub> = mutableListOf()
     val bintrayLibs: MutableList<JarbirdPub> = mutableListOf()
     val artifactoryLibs: MutableList<JarbirdPub> = mutableListOf()
@@ -35,13 +35,13 @@ class BintrayPublishPlan(val pubs: List<JarbirdPub>) {
     init {
         pubs.filter { it.needsBintray() }.forEach {
             if (it.pom.isSnapshot()) {
-                artifactory.add(it)
+//                artifactory.add(it)
                 artifactoryLibs.add(it)
                 if (it.pom.isGradlePlugin()) {
                     artifactoryPlugins.add(it)
                 }
             } else {
-                bintray.add(it)
+//                bintray.add(it)
                 bintrayLibs.add(it)
                 if (it.pom.isGradlePlugin()) {
                     bintrayPlugins.add(it)

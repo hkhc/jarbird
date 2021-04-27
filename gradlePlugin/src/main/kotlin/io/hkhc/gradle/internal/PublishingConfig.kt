@@ -110,24 +110,6 @@ internal class PublishingConfig(
     private fun PublishArtifact.getString() =
         "PublishArtifact(name=$name,file=$file,classifier=$classifier,date=$date,extension=$extension,type=$type)"
 
-//    private fun checkComponent(pub: JarbirdPub) {
-//        try {
-//            project.components[pub.pubComponent]
-//        } catch (e: UnknownDomainObjectException) {
-//            project.logger.error(
-//                """
-//                    The component '${pub.pubComponent}' is not found.
-//                    Available component(s) are : ${project.components.joinToString(", ") { it.name }}
-//                    set it with pub block, e.g.
-//                        pub {
-//                            pubComponent = "${project.components.firstOrNull()?.name ?: "your-component"}"
-//                        }
-//                """.trimIndent()
-//            )
-//            throw GradleException("Component '${pub.pubComponent}' is not found.")
-//        }
-//    }
-
     private fun registerSourceSetCompileTask(pub: JarbirdPubImpl): TaskProvider<Jar>? {
         return pub.sourceSet?.let { sourceSet ->
 
@@ -196,6 +178,9 @@ internal class PublishingConfig(
         }
     }
 
+    /**
+     * A backward compatible version of artifact function for Gradle
+     */
     private fun MavenPublication.artifactCompat(source: Any) {
         if (Version(project.gradle.gradleVersion) >= Version("6.6")) {
             artifact(source)

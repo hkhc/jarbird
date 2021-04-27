@@ -44,6 +44,7 @@ bootstrapRefreshVersions()
 include(":gradlePlugin")
 include(":gradlePluginAndroid")
 include(":gradlePluginBasic")
+include(":testKit")
 
 project(":gradlePlugin").apply {
     name = "jarbird-base"

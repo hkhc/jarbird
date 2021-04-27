@@ -58,8 +58,6 @@ import org.gradle.plugins.signing.SigningPlugin
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
 import javax.inject.Inject
 
-const val EXT_PLUGIN_CONFIG = "JARBIRD_PLUGIN_CONFIG"
-
 @Suppress("unused")
 open class JarbirdPlugin: Plugin<Project> {
 
@@ -98,6 +96,9 @@ open class JarbirdPlugin: Plugin<Project> {
     private lateinit var project: Project
 
     companion object {
+
+        const val EXT_PLUGIN_CONFIG = "JARBIRD_PLUGIN_CONFIG"
+
         internal fun normalizePubName(name: String): String {
             val newName = StringBuffer()
             var newWord = true
@@ -123,22 +124,6 @@ open class JarbirdPlugin: Plugin<Project> {
             return newName.toString()
         }
     }
-
-//    open fun getSourceResolver(project: Project): SourceResolver {
-//        return DefaultSourceResolver(project)
-//    }
-//
-//    open fun newExtension(
-//        project: Project,
-//        projectProperty: ProjectProperty,
-//        projectInfo: ProjectInfo,
-//        pomGroup: PomGroup
-//    ): JarbirdExtensionImpl =
-//        JarbirdExtensionImpl(
-//            project, projectProperty, projectInfo, pomGroup
-//        )
-//
-//    open fun shallCreateImplicit(): Boolean = true
 
     // TODO check if POM fulfill minimal requirements for publishing
     // TODO maven publishing dry-run
