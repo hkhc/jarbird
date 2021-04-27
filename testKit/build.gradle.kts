@@ -8,7 +8,7 @@ plugins {
 }
 
 tasks {
-    withType<Test> {
+    withType<Test>().configureEach {
         useJUnitPlatform()
         testLogging {
             showStandardStreams = true

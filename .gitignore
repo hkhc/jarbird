@@ -3,6 +3,7 @@
 /build/
 /buildSrc/build/
 /buildSrc/.gradle/
+.DS_Store
 
 # autoenv https://github.com/zpm-zsh/autoenv
 .in

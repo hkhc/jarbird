@@ -154,8 +154,5 @@ dependencies {
 
     kotest()
 
-    testFunctionalImplementation(gradleTestKit())
-    testFunctionalImplementation(Square.OkHttp3.mockWebServer)
-
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:_")
 }
