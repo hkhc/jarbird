@@ -18,13 +18,11 @@
 
 package io.hkhc.gradle.internal.android
 
-import com.android.build.gradle.api.LibraryVariant
-import io.hkhc.gradle.android.LOG_PREFIX
+import io.hkhc.gradle.android.AndroidJarbirdPlugin.Companion.LOG_PREFIX
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.ProjectProperty
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.get
 
 class AndroidJarbirdPubImpl(
     project: Project,
@@ -33,16 +31,16 @@ class AndroidJarbirdPubImpl(
 ) : JarbirdPubImpl(project, ext, projectProperty) {
 
     override fun from(source: Any) {
-        when (source) {
-            is LibraryVariant -> {
-                project.logger.debug("$LOG_PREFIX publish library variant ${source.name}")
-                component = project.components[source.name]
+
+        LibraryVariant.implemented(source)?.let {
+            it.getName()?.let { name ->
+                project.logger.debug("$LOG_PREFIX publish library variant $name")
+                component = project.components.getAt(name)
                 docSourceSets = source
             }
-            else -> {
-                project.logger.debug("$LOG_PREFIX library variant not found, fallback")
-                super.from(source)
-            }
+        } ?: run {
+            project.logger.debug("$LOG_PREFIX library variant not found, fallback")
+            super.from(source)
         }
     }
 }

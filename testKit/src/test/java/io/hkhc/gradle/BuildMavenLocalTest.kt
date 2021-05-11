@@ -21,15 +21,24 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
+import io.hkhc.gradle.taskinfo.TaskInfoNode
+import io.hkhc.gradle.test.buildGradle
+import io.hkhc.gradle.taskinfo.load
+import io.hkhc.gradle.test.getTaskTree
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.publishToMavenLocalCompletely
-import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.TreeBuilder
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 
 // @Suppress("unused")
 // @Tags("Library", "MavenLocal")
@@ -42,6 +51,13 @@ class BuildMavenLocalTest : FunSpec({
         val projectDir = tempDirectory()
         lateinit var setup: DefaultGradleProjectSetup
 
+        /**
+         * Setup
+         * - source sets
+         * - build.gradle
+         * - pom.yaml
+         * - gradle.properties
+         */
         beforeTest {
 
             setup = DefaultGradleProjectSetup(projectDir).apply {
@@ -49,22 +65,7 @@ class BuildMavenLocalTest : FunSpec({
                 setup()
             }
 
-            setup.writeFile(
-                "build.gradle",
-                """
-                plugins {
-                    id 'java'
-                    id 'org.jetbrains.kotlin.jvm' version '1.3.72'
-                    id 'io.hkhc.jarbird'
-                }
-                repositories {
-                    jcenter()
-                }
-                dependencies {
-                    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-                }
-                """.trimIndent()
-            )
+            setup.writeFile("build.gradle", buildGradle())
 
             setup.writeFile("pom.yaml", simplePom(coordinate))
 
@@ -73,32 +74,52 @@ class BuildMavenLocalTest : FunSpec({
 
         afterTest {
             if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                FileTree().dump(projectDir, System.out::println)
+                printFileTree(setup.projectDir)
             }
         }
 
         test("execute task '$targetTask'") {
 
+            setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
             val result = setup.getGradleTaskTester().runTask(targetTask)
 
-            withClue("expected list of tasks executed with expected result") {
-                result.tasks.map { it.toString() } shouldBeNoDifference listOf(
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":signTestArtifactPublication=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
-                    ":jbPublishTestArtifactToMavenLocal=SUCCESS",
-                    ":jbPublishToMavenLocal=SUCCESS"
-                )
+            withClue("expected graph of task executed with expected result task graph") {
+
+                val actualTaskTree = getTaskTree(projectDir, targetTask, result)
+                    .chopChilds { it.value().path == ":jar" }
+                    .toStringTree()
+
+                actualTaskTree shouldBe
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublishToMavenLocal SUCCESS" {
+                        ":jbPublishTestArtifactToMavenLocal SUCCESS" {
+                            ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                                ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                    ":jar SUCCESS"()
+                                }
+                                ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                ":jar SUCCESS"()
+                                ":jbDokkaJarTestArtifact SUCCESS" {
+                                    ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                }
+                                ":signTestArtifactPublication SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS" {
+
+                                    }
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                                ":sourcesJarTestArtifact SUCCESS"()
+                            }
+                        }
+                    }
+                }
             }
 
             LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should publishToMavenLocalCompletely()

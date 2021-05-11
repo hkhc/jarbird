@@ -138,7 +138,7 @@ internal class PublishingConfig(
         pubs.forEach { pub0 ->
 
             val pub = pub0 as JarbirdPubImpl
-            project.logger.debug("$LOG_PREFIX CreatePublication pub=$pub variant=${pub.variant} component=${pub.component}")
+            project.logger.debug("$LOG_PREFIX CreatePublication variant=${pub.variant} component=${pub.component}")
 
             val pom = pub.pom
 
@@ -170,7 +170,8 @@ internal class PublishingConfig(
 
                     project.afterEvaluate {
                         artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
-                        artifactCompat(SourceConfig(project, sourceResolver).configSourceJarTask(pub, pub.sourceSet ?: pub.docSourceSets))
+                        artifactCompat(SourceConfig(project, sourceResolver)
+                            .configSourceJarTask(pub, pub.sourceSet ?: pub.docSourceSets))
                     }
                 }
                 pom { MavenPomAdapter().fill(this, pom) }
@@ -209,6 +210,7 @@ internal class PublishingConfig(
         releaseEndpoints.forEach {
 
             maven {
+                val repo = this
                 with(it) {
                     val ep = this
                     name = ep.id
@@ -217,6 +219,7 @@ internal class PublishingConfig(
                         username = ep.username
                         password = ep.password
                     }
+                    repo.isAllowInsecureProtocol = it.isAllowInsecureProtocol
                 }
             }
         }
@@ -224,6 +227,7 @@ internal class PublishingConfig(
         snapshotEndpoint.forEach {
 
             maven {
+                val repo = this
                 with(it) {
                     val ep = this
                     name = ep.id
@@ -232,6 +236,7 @@ internal class PublishingConfig(
                         username = ep.username
                         password = ep.password
                     }
+                    repo.isAllowInsecureProtocol = it.isAllowInsecureProtocol
                 }
             }
         }

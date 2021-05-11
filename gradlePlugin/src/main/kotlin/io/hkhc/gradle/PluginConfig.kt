@@ -36,5 +36,4 @@ interface PluginConfig {
     ): JarbirdExtensionImpl
     fun shallCreateImplicit(): Boolean
     fun pluginId(): String
-
 }

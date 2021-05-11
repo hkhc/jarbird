@@ -20,7 +20,7 @@ package io.hkhc.gradle.pom.internal
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.SNAPSHOT_SUFFIX
-import io.hkhc.gradle.internal.utils.multiLet
+import io.hkhc.utils.multiLet
 
 /*
  * Copyright (c) 2020. Herman Cheung

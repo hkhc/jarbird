@@ -25,24 +25,31 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.MavenRepoResult
-import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
-import io.hkhc.gradle.test.MockBintrayRepositoryServer
 import io.hkhc.gradle.test.MockMavenRepositoryServer
-import io.hkhc.gradle.test.buildGradle
+import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
+import io.hkhc.gradle.test.artifacory.publishedToArtifactoryRepositoryCompletely
+import io.hkhc.gradle.test.bintray.MockBintrayRepositoryServer
+import io.hkhc.gradle.test.bintray.publishedToBintrayRepositoryCompletely
+import io.hkhc.gradle.test.buildGradleKts
+import io.hkhc.gradle.test.getTaskTree
+import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.publishToMavenLocalCompletely
-import io.hkhc.gradle.test.publishedToArtifactoryRepositoryCompletely
-import io.hkhc.gradle.test.publishedToBintrayRepositoryCompletely
-import io.hkhc.gradle.test.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.Tree
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 
 @Tags("Library", "MavenRepository", "Bintray", "Artifactory")
 class BuildMavenBintrayRepoTest : FunSpec({
@@ -55,7 +62,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
             coordinate: Coordinate,
             maven: Boolean = true,
             bintray: Boolean = true,
-            expectedTaskList: List<String>
+            expectedTaskGraph: Tree<String>
         ): DefaultGradleProjectSetup {
 
             val projectDir = tempDirectory()
@@ -77,7 +84,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     }
                 }
 
-                writeFile("build.gradle.kts", buildGradle(maven, bintray))
+                writeFile("build.gradle.kts", buildGradleKts(maven, bintray))
 
                 writeFile("pom.yaml", simplePom(coordinate))
 
@@ -92,6 +99,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
                         }
                         "repository.maven.mock.username" to "username"
                         "repository.maven.mock.password" to "password"
+                        "repository.maven.mock.allowInsecureProtocol" to "true"
                     }
 
                     if (bintray) {
@@ -107,7 +115,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     }
                 }
 
-                this.expectedTaskList = expectedTaskList
+                this.expectedTaskGraph = expectedTaskGraph
             }
         }
 
@@ -115,17 +123,21 @@ class BuildMavenBintrayRepoTest : FunSpec({
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                    FileTree().dump(setup.projectDir, System.out::println)
+                    printFileTree(setup.projectDir)
                 }
             }
 
             test("execute task '$targetTask'") {
 
+                setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    println(result.tasks.joinToString(",\n") { "\"$it\"" })
-                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
+                    val actualTaskTree = getTaskTree(setup.projectDir, targetTask, result)
+                        .chopChilds { it.value().path == ":jar" }
+                        .toStringTree()
+
+                    actualTaskTree shouldBe setup.expectedTaskGraph
                 }
 
                 LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should
@@ -170,32 +182,93 @@ class BuildMavenBintrayRepoTest : FunSpec({
                 coordinate,
                 maven = true,
                 bintray = true,
-                expectedTaskList = listOf(
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":signTestArtifactPublication=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
-                    ":bintrayUpload=SUCCESS",
-                    ":bintrayPublish=SUCCESS",
-                    ":jbPublishToBintray=SUCCESS",
-                    ":jbPublishTestArtifactToMavenLocal=SUCCESS",
-                    ":jbPublishToMavenLocal=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
-                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
-                    ":jbPublishToMavenRepository=SUCCESS",
-                    ":jbPublish=SUCCESS"
-                )
+                expectedTaskGraph = stringTreeOf(NoBarTheme) {
+                    ":jbPublish SUCCESS" {
+                        ":jbPublishToBintray SUCCESS" {
+                            ":bintrayUpload SUCCESS" {
+                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":signTestArtifactPublication SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS" ()
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                                ":bintrayPublish SUCCESS"()
+                            }
+                        }
+                        ":jbPublishToMavenLocal SUCCESS" {
+                            ":jbPublishTestArtifactToMavenLocal SUCCESS" {
+                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":signTestArtifactPublication SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS" {
+
+                                        }
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                            }
+                        }
+                        ":jbPublishToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifactToMavenRepository SUCCESS" {
+                                ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                                    ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":signTestArtifactPublication SUCCESS" {
+                                            ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                                ":jar SUCCESS"()
+                                            }
+                                            ":generatePomFileForTestArtifactPublication SUCCESS" ()
+                                            ":jar SUCCESS"()
+                                            ":jbDokkaJarTestArtifact SUCCESS" {
+                                                ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                            }
+                                            ":sourcesJarTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             )
 
             testBody(coordinate, setup)
@@ -208,34 +281,61 @@ class BuildMavenBintrayRepoTest : FunSpec({
                 coordinate,
                 maven = true,
                 bintray = true,
-                expectedTaskList = listOf(
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":artifactoryPublish=SUCCESS",
-                    ":extractModuleInfo=SUCCESS",
-                    ":artifactoryDeploy=SUCCESS",
-                    ":jbPublishToArtifactory=SUCCESS",
-                    ":jbPublishToBintray=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
-                    ":jbPublishTestArtifactToMavenLocal=SUCCESS",
-                    ":jbPublishToMavenLocal=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
-                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
-                    ":jbPublishToMavenRepository=SUCCESS",
-                    ":jbPublish=SUCCESS"
-
-                )
+                expectedTaskGraph =
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublish SUCCESS" {
+                        ":jbPublishToBintray SUCCESS" {
+                            ":jbPublishToArtifactory SUCCESS" {
+                                ":artifactoryPublish SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                    ":artifactoryDeploy SUCCESS" {
+                                        ":extractModuleInfo SUCCESS"()
+                                    }
+                                }
+                            }
+                        }
+                        ":jbPublishToMavenLocal SUCCESS" {
+                            ":jbPublishTestArtifactToMavenLocal SUCCESS" {
+                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                            }
+                        }
+                        ":jbPublishToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifactToMavenRepository SUCCESS" {
+                                ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                                    ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             )
 
             testBody(coordinate, setup)
@@ -248,29 +348,67 @@ class BuildMavenBintrayRepoTest : FunSpec({
                 coordinate,
                 maven = true,
                 bintray = false,
-                expectedTaskList = listOf(
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":signTestArtifactPublication=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
-                    ":jbPublishTestArtifactToMavenLocal=SUCCESS",
-                    ":jbPublishToMavenLocal=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
-                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
-                    ":jbPublishToMavenRepository=SUCCESS",
-                    ":jbPublish=SUCCESS"
-                )
+                expectedTaskGraph =
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublish SUCCESS" {
+                        ":jbPublishToMavenLocal SUCCESS" {
+                            ":jbPublishTestArtifactToMavenLocal SUCCESS" {
+                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":signTestArtifactPublication SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS" {
+
+                                        }
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                            }
+                        }
+                        ":jbPublishToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifactToMavenRepository SUCCESS" {
+                                ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                                    ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":signTestArtifactPublication SUCCESS" {
+                                            ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                                ":jar SUCCESS"()
+                                            }
+                                            ":generatePomFileForTestArtifactPublication SUCCESS" ()
+                                            ":jar SUCCESS"()
+                                            ":jbDokkaJarTestArtifact SUCCESS" {
+                                                ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                            }
+                                            ":sourcesJarTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             )
 
             testBody(coordinate, setup)
@@ -283,28 +421,66 @@ class BuildMavenBintrayRepoTest : FunSpec({
                 coordinate,
                 maven = false,
                 bintray = true,
-                expectedTaskList = listOf(
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":signTestArtifactPublication=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
-                    ":bintrayUpload=SUCCESS",
-                    ":bintrayPublish=SUCCESS",
-                    ":jbPublishToBintray=SUCCESS",
-                    ":jbPublishTestArtifactToMavenLocal=SUCCESS",
-                    ":jbPublishToMavenLocal=SUCCESS",
-                    ":jbPublish=SUCCESS"
-                )
+                expectedTaskGraph =
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublish SUCCESS" {
+                        ":jbPublishToBintray SUCCESS" {
+                            ":bintrayUpload SUCCESS" {
+                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":signTestArtifactPublication SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS" ()
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                                ":bintrayPublish SUCCESS"()
+                            }
+                        }
+                        ":jbPublishToMavenLocal SUCCESS" {
+                            ":jbPublishTestArtifactToMavenLocal SUCCESS" {
+                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":signTestArtifactPublication SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS" {
+
+                                        }
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                            }
+                        }
+                    }
+                }
             )
 
             testBody(coordinate, setup)

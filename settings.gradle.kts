@@ -45,7 +45,12 @@ include(":gradlePlugin")
 include(":gradlePluginAndroid")
 include(":gradlePluginBasic")
 include(":testKit")
+include(":utils")
 
 project(":gradlePlugin").apply {
     name = "jarbird-base"
+}
+
+project(":utils").apply {
+    name = "jarbird-utils"
 }

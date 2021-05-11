@@ -25,42 +25,42 @@ plugins {
     `kotlin-dsl`
     id("io.gitlab.arturbosch.detekt")
     id("org.jlleitschuh.gradle.ktlint")
-    id("com.dorongold.task-tree")
+    id("org.barfuin.gradle.taskinfo")
     id("io.kotest")
     id("io.hkhc.jarbird.bootstrap")
 }
 
 // TODO Simplify functional test creation
 
-// e.g. 14 at https://docs.gradle.org/6.7.1/userguide/java_testing.html#sec:configuring_java_integration_tests
-sourceSets {
-    create("testFunctional") {
-        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-        runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-    }
-}
-
-val testFunctionalImplementation: Configuration by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-}
-
-configurations["testFunctionalRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
-
-tasks {
-
-    // e.g. 15 at https://docs.gradle.org/6.7.1/userguide/java_testing.html#sec:configuring_java_integration_tests
-    val functionalTestTask = register<Test>("testFunctional") {
-        description = "Runs the functional tests."
-        group = "verification"
-        testClassesDirs = sourceSets["testFunctional"].output.classesDirs
-        classpath = sourceSets["testFunctional"].runtimeClasspath
-        shouldRunAfter("test")
-    }
-
-    functionalTestTask.get().dependsOn(get("pluginUnderTestMetadata"))
-
-    check { dependsOn(get("testFunctional")) }
-}
+//// e.g. 14 at https://docs.gradle.org/6.7.1/userguide/java_testing.html#sec:configuring_java_integration_tests
+//sourceSets {
+//    create("testFunctional") {
+//        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+//        runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+//    }
+//}
+//
+//val testFunctionalImplementation: Configuration by configurations.getting {
+//    extendsFrom(configurations.testImplementation.get())
+//}
+//
+//configurations["testFunctionalRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
+//
+//tasks {
+//
+//    // e.g. 15 at https://docs.gradle.org/6.7.1/userguide/java_testing.html#sec:configuring_java_integration_tests
+//    val functionalTestTask = register<Test>("testFunctional") {
+//        description = "Runs the functional tests."
+//        group = "verification"
+//        testClassesDirs = sourceSets["testFunctional"].output.classesDirs
+//        classpath = sourceSets["testFunctional"].runtimeClasspath
+//        shouldRunAfter("test")
+//    }
+//
+//    functionalTestTask.get().dependsOn(get("pluginUnderTestMetadata"))
+//
+//    check { dependsOn(get("testFunctional")) }
+//}
 
 /*
  It is needed to make sure every version of java compiler to generate same kind of bytecode.
@@ -109,13 +109,11 @@ detekt {
         "src/main/java",
         "src/main/kotlin",
         "src/test/java",
-        "src/test/kotlin",
-        "src/testFunctional/java",
-        "src/testFunctional/kotlin"
+        "src/test/kotlin"
     )
     debug = true
     buildUponDefaultConfig = true
-    config = files("${project.projectDir}/config/detekt/detekt.yml")
+    config = files("${project.rootDir}/config/detekt/detekt.yml")
 }
 
 ktlint {
@@ -129,7 +127,7 @@ ktlint {
 
 gradlePlugin {
     pluginSourceSet(sourceSets["main"])
-    testSourceSets(sourceSets["testFunctional"])
+//    testSourceSets(sourceSets["testFunctional"])
 }
 
 configurations {
@@ -139,6 +137,7 @@ configurations {
 jarbird {
     mavenLocal()
     mavenCentral()
+    gradlePortal()
     bintray()
     pub {
         useGpg = true
@@ -154,8 +153,8 @@ dependencies {
 
     kotest()
 
-    testFunctionalImplementation(gradleTestKit())
-    testFunctionalImplementation(Square.OkHttp3.mockWebServer)
+//    testFunctionalImplementation(gradleTestKit())
+//    testFunctionalImplementation(Square.OkHttp3.mockWebServer)
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:_")
 }

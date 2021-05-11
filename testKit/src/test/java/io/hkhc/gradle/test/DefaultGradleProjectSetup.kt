@@ -18,9 +18,21 @@
 
 package io.hkhc.gradle.test
 
+import io.hkhc.gradle.taskinfo.TaskInfo
+import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
+import io.hkhc.gradle.test.bintray.MockBintrayRepositoryServer
 import io.hkhc.utils.PropertiesEditor
+import io.hkhc.utils.tree.Tree
 import java.io.File
 
+/**
+ * setup
+ * - keystore location
+ * - local repo location
+ * - base path to template projects
+ * - settings.gradle
+ * - gradle.properties
+ */
 open class DefaultGradleProjectSetup(val projectDir: File) {
 
     /* Sub-project directories */
@@ -66,7 +78,7 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
         }
 
     /* expect list of tasks executed in the Gradle run, should be prefixed by ':' or ':proj:' */
-    lateinit var expectedTaskList: List<String>
+    lateinit var expectedTaskGraph: Tree<String>
 
     val localRepoDirFile = File(projectDir, localRepoDir)
 
@@ -95,6 +107,7 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
 
         PropertiesEditor("$projectDir/gradle.properties") {
             "org.gradle.jvmargs" to "-Xmx2000m"
+            "org.gradle.parallel" to "false"
             setupKeyStore(projectDir)
             block.invoke(this)
         }

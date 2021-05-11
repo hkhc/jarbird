@@ -32,56 +32,43 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.extra
 
-val PLUGIN_ID = "io.hkhc.jarbird-android"
-val LOG_PREFIX = "[$PLUGIN_ID]"
-
 @Suppress("unused")
 class AndroidJarbirdPlugin : Plugin<Project> {
 
-    override fun apply(p: Project) {
-
-        p.extra.set(EXT_PLUGIN_CONFIG, object: PluginConfig {
-            override fun getSourceResolver(project: Project): SourceResolver {
-                return AndroidSourceResolver(project)
-            }
-
-            override fun newExtension(
-                project: Project,
-                projectProperty: ProjectProperty,
-                projectInfo: ProjectInfo,
-                pomGroup: PomGroup
-            ): JarbirdExtensionImpl {
-                return AndroidJarbirdExtensionImpl(
-                    project, projectProperty, projectInfo, pomGroup
-                )
-            }
-
-            override fun shallCreateImplicit(): Boolean {
-                return false
-            }
-
-            override fun pluginId(): String {
-                return PLUGIN_ID
-            }
-        })
-
-        p.pluginManager.apply(JarbirdPlugin::class.java)
-
+    companion object {
+        const val PLUGIN_ID = "io.hkhc.jarbird-android"
+        // TODO use IHLog to handle LOG_PREFIX
+        const val LOG_PREFIX = "[$PLUGIN_ID]"
     }
 
-//    override fun getSourceResolver(project: Project): SourceResolver {
-//        return AndroidSourceResolver(project)
-//    }
-//
-//    override fun newExtension(
-//        project: Project,
-//        projectProperty: ProjectProperty,
-//        projectInfo: ProjectInfo,
-//        pomGroup: PomGroup
-//    ): JarbirdExtensionImpl =
-//        AndroidJarbirdExtensionImpl(
-//            project, projectProperty, projectInfo, pomGroup
-//        )
-//
-//    override fun shallCreateImplicit(): Boolean = false
+    val pluginConfig = object : PluginConfig {
+        override fun getSourceResolver(project: Project): SourceResolver {
+            return AndroidSourceResolver(project)
+        }
+
+        override fun newExtension(
+            project: Project,
+            projectProperty: ProjectProperty,
+            projectInfo: ProjectInfo,
+            pomGroup: PomGroup
+        ): JarbirdExtensionImpl {
+            return AndroidJarbirdExtensionImpl(
+                project, projectProperty, projectInfo, pomGroup
+            )
+        }
+
+        override fun shallCreateImplicit(): Boolean {
+            return false
+        }
+
+        override fun pluginId(): String {
+            return PLUGIN_ID
+        }
+    }
+
+    override fun apply(p: Project) {
+
+        p.extra.set(EXT_PLUGIN_CONFIG, pluginConfig)
+        p.pluginManager.apply(JarbirdPlugin::class.java)
+    }
 }

@@ -39,7 +39,6 @@ import io.hkhc.gradle.internal.gradleAfterEvaluate
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isRoot
 import io.hkhc.gradle.internal.needGradlePlugin
-import io.hkhc.gradle.internal.needSigning
 import io.hkhc.gradle.internal.utils.detailMessageError
 import io.hkhc.gradle.internal.utils.fatalMessage
 import io.hkhc.gradle.pom.Pom
@@ -48,22 +47,17 @@ import io.hkhc.gradle.pom.internal.PomGroupFactory
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.ProjectEvaluationListener
-import org.gradle.api.ProjectState
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.extra
 import org.gradle.plugin.devel.plugins.JavaGradlePluginPlugin
-import org.gradle.plugins.signing.SigningPlugin
 import org.jfrog.gradle.plugin.artifactory.ArtifactoryPlugin
-import javax.inject.Inject
 
 @Suppress("unused")
-open class JarbirdPlugin: Plugin<Project> {
+open class JarbirdPlugin : Plugin<Project> {
 
     private lateinit var extension: JarbirdExtensionImpl
     private var androidPluginAppliedBeforeUs = false
-    var pluginConfig: PluginConfig = object: PluginConfig {
+    var pluginConfig: PluginConfig = object : PluginConfig {
         override fun getSourceResolver(project: Project): SourceResolver {
             return DefaultSourceResolver(project)
         }
@@ -179,6 +173,53 @@ open class JarbirdPlugin: Plugin<Project> {
     /**
      * The order of applying plugins and whether they are deferred by the two kind of afterEvaluate listener, are
      * important. So mess around them without know exactly the consequence.
+     *
+
+    gradle.afterEvaluate
+    - Sync POM
+    - Phase 1
+    - config bintray extension
+    - config artifactory extension
+    - plugin: bintray gradle.afterEvaluate
+    - Phase 2
+    - config plugin publishing
+
+    project.afterEvaluate
+    - Phase 3
+    - ...
+    - bintray
+    - gradle plugin
+    setup testkit dependency
+    validate plugin config
+    - Phase 4
+    configure publishing
+    configure signing
+    setup tasks
+
+    gradle.projectEvaluated
+    - bintray
+
+    ------------------------------------------------
+
+
+    ProjectEvaluationListener is invoked before any project.afterEvaluate.
+    So we use projectEvaluateListener to make sure our setup has done before the projectEvaluationListener
+    in other plugins.
+
+    Further, the ProjectEvaluationListener added by Gradle.addProjectEvaluationListener() within
+    project.afterEvaluate will not be executed, as the ProjectEvaluateListeners have been executed
+    before callback of project.afterEvaluate and will not go back to run again. So if a plugin needs to invoke
+    project.afterEvaluate, then it should not be applied within another project.afterEvaluate. However it is
+    OK to apply it in ProjectEvaluationListener.
+
+    Setup bintrayExtension before bintray's ProjectEvaluationListener.afterEvaluate
+    which expect bintray extension to be ready.
+    The bintray task has been given publication names and it is fine the the publication
+    is not ready yet. The actual publication is not accessed until execution of task.
+
+    Setup publication for android library shall be done at late afterEvaluate, so that android library plugin
+    has change to create the components and source sets.
+
      */
     override fun apply(p: Project) {
 
@@ -200,55 +241,6 @@ open class JarbirdPlugin: Plugin<Project> {
         project.extensions.add(JarbirdExtension::class.java, SP_EXT_NAME, extension)
 
         checkAndroidPlugin(p)
-
-        /*
-
-        gradle.afterEvaluate
-            - Sync POM
-            - Phase 1
-                - config bintray extension
-                - config artifactory extension
-            - plugin: bintray gradle.afterEvaluate
-            - Phase 2
-                - config plugin publishing
-
-        project.afterEvaluate
-            - Phase 3
-            - ...
-            - bintray
-            - gradle plugin
-                setup testkit dependency
-                validate plugin config
-            - Phase 4
-                configure publishing
-                configure signing
-                setup tasks
-
-        gradle.projectEvaluated
-            - bintray
-
-        ------------------------------------------------
-
-
-            ProjectEvaluationListener is invoked before any project.afterEvaluate.
-            So we use projectEvaluateListener to make sure our setup has done before the projectEvaluationListener
-            in other plugins.
-
-            Further, the ProjectEvaluationListener added by Gradle.addProjectEvaluationListener() within
-            project.afterEvaluate will not be executed, as the ProjectEvaluateListeners have been executed
-            before callback of project.afterEvaluate and will not go back to run again. So if a plugin needs to invoke
-            project.afterEvaluate, then it should not be applied within another project.afterEvaluate. However it is
-            OK to apply it in ProjectEvaluationListener.
-
-            Setup bintrayExtension before bintray's ProjectEvaluationListener.afterEvaluate
-            which expect bintray extension to be ready.
-            The bintray task has been given publication names and it is fine the the publication
-            is not ready yet. The actual publication is not accessed until execution of task.
-
-            Setup publication for android library shall be done at late afterEvaluate, so that android library plugin
-            has change to create the components and source sets.
-
-         */
 
         with(project.pluginManager) {
 
@@ -335,7 +327,7 @@ open class JarbirdPlugin: Plugin<Project> {
         project.afterEvaluate {
 
             // we created an implicit JarbirdPub and we have more in afterEvaluate
-            //extension.removeImplicit()
+            // extension.removeImplicit()
 
             extension.finalizeRepos()
 
@@ -347,7 +339,6 @@ open class JarbirdPlugin: Plugin<Project> {
                 pluginConfig.getSourceResolver(project)
             ).buildPhase1()
         }
-
 
         /*
         We don't apply bintray and artifactory plugin conditionally, because it make use of

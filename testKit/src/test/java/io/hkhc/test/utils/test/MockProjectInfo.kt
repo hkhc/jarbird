@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.utils.test
+package io.hkhc.test.utils.test
 
 import io.hkhc.gradle.internal.ProjectInfo
 

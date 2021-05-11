@@ -23,13 +23,19 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
-import io.hkhc.gradle.test.buildGradlePlugin
+import io.hkhc.gradle.test.buildGradlePluginKts
+import io.hkhc.gradle.test.getTaskTree
+import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.pluginPom
-import io.hkhc.gradle.test.publishedToMavenRepositoryCompletely
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.Tree
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
@@ -74,7 +80,7 @@ class BuildMavenPluginRepoTest : FunSpec({
 
         val targetTask = "jbPublishToMavenRepository"
 
-        fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+        fun commonSetup(coordinate: Coordinate, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
             val projectDir = tempDirectory()
 
@@ -88,7 +94,7 @@ class BuildMavenPluginRepoTest : FunSpec({
                     }
                 )
 
-                writeFile("build.gradle.kts", buildGradlePlugin())
+                writeFile("build.gradle.kts", buildGradlePluginKts())
 
                 writeFile(
                     "pom.yaml",
@@ -109,9 +115,10 @@ class BuildMavenPluginRepoTest : FunSpec({
                     }
                     "repository.maven.mock.username" to "username"
                     "repository.maven.mock.password" to "password"
+                    "repository.maven.mock.allowInsecureProtocol" to "true"
                 }
 
-                this.expectedTaskList = expectedTaskList
+                this.expectedTaskGraph = expectedTaskGraph
             }
         }
 
@@ -119,16 +126,21 @@ class BuildMavenPluginRepoTest : FunSpec({
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                    FileTree().dump(setup.projectDir, System.out::println)
+                    printFileTree(setup.projectDir)
                 }
             }
 
             test("execute task '$targetTask'") {
 
+                setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
+                    val actualTaskTree = getTaskTree(setup.projectDir, targetTask, result)
+                        .chopChilds { it.value().path == ":jar" }
+                        .toStringTree()
+
+                    actualTaskTree shouldBe setup.expectedTaskGraph
                 }
 
                 val pluginPom = File(
@@ -152,27 +164,39 @@ class BuildMavenPluginRepoTest : FunSpec({
             val coordinate = Coordinate("test.group", "test.artifact", "0.1", "test.plugin")
             val setup = commonSetup(
                 coordinate,
-                listOf(
-                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
-                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository=SUCCESS",
-                    ":compileKotlin=NO_SOURCE",
-                    ":compileJava=NO_SOURCE",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=SUCCESS",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":signTestArtifactPublication=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
-                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
-                    ":jbPublishToMavenRepository=SUCCESS"
-                )
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublishToMavenRepository SUCCESS" {
+                        ":jbPublishTestArtifactToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                                ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository SUCCESS" {
+                                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                                }
+                                ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":signTestArtifactPublication SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                            }
+                        }
+                    }
+                }
             )
 
             testBody(coordinate, setup)
@@ -183,26 +207,28 @@ class BuildMavenPluginRepoTest : FunSpec({
             val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT", "test.plugin")
             val setup = commonSetup(
                 coordinate,
-                listOf(
-                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
-                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository=SUCCESS",
-                    ":compileKotlin=NO_SOURCE",
-                    ":compileJava=NO_SOURCE",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=SUCCESS",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenMockRepository=SUCCESS",
-                    ":jbPublishTestArtifactToMavenMock=SUCCESS",
-                    ":jbPublishTestArtifactToMavenRepository=SUCCESS",
-                    ":jbPublishToMavenRepository=SUCCESS"
-                )
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublishToMavenRepository SUCCESS" {
+                        ":jbPublishTestArtifactToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                                ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository SUCCESS" {
+                                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                                }
+                                ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                            }
+                        }
+                    }
+                }
             )
 
             testBody(coordinate, setup)

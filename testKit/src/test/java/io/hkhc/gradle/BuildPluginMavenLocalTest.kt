@@ -21,12 +21,17 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
+import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.pluginPom
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.publishToMavenLocalCompletely
 import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
@@ -63,6 +68,7 @@ class BuildPluginMavenLocalTest : FunSpec({
                     """
                     plugins {
                         id 'java'
+                        id 'org.barfuin.gradle.taskinfo' version '1.0.5'
                         id 'io.hkhc.jarbird'
                     }
                     repositories {
@@ -75,34 +81,51 @@ class BuildPluginMavenLocalTest : FunSpec({
 
         afterTest {
             if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                FileTree().dump(projectDir, System.out::println)
+                printFileTree(setup.projectDir)
             }
         }
 
         test("execute task '$targetTask'") {
 
+            setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
             val result = setup.getGradleTaskTester().runTask(targetTask)
 
-            withClue("expected list of tasks executed with expected result") {
-                result.tasks.map { it.toString() } shouldBeNoDifference listOf(
-                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication=SUCCESS",
-                    ":publishTestArtifactPluginMarkerMavenPublicationToMavenLocal=SUCCESS",
-                    ":compileJava=NO_SOURCE",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=SUCCESS",
-                    ":classes=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":signTestArtifactPublication=SUCCESS",
-                    ":publishTestArtifactPublicationToMavenLocal=SUCCESS",
-                    ":jbPublishTestArtifactToMavenLocal=SUCCESS",
-                    ":jbPublishToMavenLocal=SUCCESS"
-                )
-            }
+            val actualTaskTree = getTaskTree(projectDir, targetTask, result)
+                .chopChilds { it.value().path == ":jar" }
+                .toStringTree()
+
+            actualTaskTree shouldBe
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublishToMavenLocal SUCCESS" {
+                        ":jbPublishTestArtifactToMavenLocal SUCCESS" {
+                            ":publishTestArtifactPluginMarkerMavenPublicationToMavenLocal SUCCESS" {
+                                ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                            }
+                            ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                                ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                    ":jar SUCCESS"()
+                                }
+                                ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                ":jar SUCCESS"()
+                                ":jbDokkaJarTestArtifact SUCCESS" {
+                                    ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                }
+                                ":signTestArtifactPublication SUCCESS" {
+                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                        ":jar SUCCESS"()
+                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS" ()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact SUCCESS"()
+                                }
+                                ":sourcesJarTestArtifact SUCCESS"()
+                            }
+                        }
+                    }
+                }
 
             val pluginPom = File(
                 setup.localRepoDirFile,

@@ -25,4 +25,5 @@ interface MavenRepoSpec : RepoSpec {
     val snapshotUrl: String
     val username: String
     val password: String
+    val isAllowInsecureProtocol: Boolean
 }

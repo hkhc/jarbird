@@ -38,7 +38,7 @@ bootstrapRefreshVersions()
 
 include(":gradlePlugin")
 include(":gradlePluginBasic")
-
+include(":utils")
 
 rootProject.buildFileName = "b2.build.gradle.kts"
 
@@ -72,3 +72,17 @@ project(":gradlePlugin").apply {
     }
 }
 
+//rootProject.name = "simplepublisher"
+project(":utils").apply {
+    name = "jarbird-utils-bootstrap"
+    buildFileName = "b2.build.gradle.kts"
+    /*
+        There is not any error message when the file name of buildFileName is not valid.
+        So we check it by ourself.
+     */
+    File("$projectDir${File.separatorChar}$buildFileName").also { file ->
+        if (!file.exists()) {
+            throw GradleException("Build file '${file.absolutePath}' does not exist")
+        }
+    }
+}

@@ -24,5 +24,6 @@ data class MavenRepoSpecImpl(
     override var username: String = "",
     override var password: String = "",
     override var description: String = "",
-    override var id: String = ""
+    override var id: String = "",
+    override val isAllowInsecureProtocol: Boolean = false
 ) : MavenRepoSpec

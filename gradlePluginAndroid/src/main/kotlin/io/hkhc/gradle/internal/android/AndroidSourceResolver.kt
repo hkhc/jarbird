@@ -18,8 +18,6 @@
 
 package io.hkhc.gradle.internal.android
 
-import com.android.build.gradle.api.LibraryVariant
-import com.android.builder.model.SourceProvider
 import io.hkhc.gradle.internal.DefaultSourceResolver
 import org.gradle.api.Project
 import java.io.File
@@ -27,38 +25,24 @@ import java.io.File
 class AndroidSourceResolver(project: Project) : DefaultSourceResolver(project) {
 
     private fun files(sourceProvider: SourceProvider): Collection<File> {
-        return sourceProvider.javaDirectories + sourceProvider.renderscriptDirectories
+        return sourceProvider.getJavaDirectories() + sourceProvider.getResourcesDirectories()
     }
 
     override fun getSourceJarSource(source: Any): Array<out Any> {
-        return when (source) {
-            is LibraryVariant -> {
-                source.sourceSets.fold(
-                    mutableListOf<File>(),
-                    { list, sourceProvider ->
-                        list += files(sourceProvider)
-                        list
-                    }
-                ).toTypedArray()
-            }
-            is SourceProvider -> {
-                arrayOf(source.javaDirectories, source.resourcesDirectories)
-            }
-            is List<*> -> {
-                source.fold(
-                    mutableListOf<Any>(),
-                    { list, files ->
-                        list += when (files) {
-                            is SourceProvider -> files(files)
-                            else -> files
-                        } as Any
-                        list
-                    }
-                ).toTypedArray()
-            }
-            else -> {
-                super.getSourceJarSource(source)
-            }
-        }
+
+        return LibraryVariant.implemented(source)?.getSourceSets()?.fold(mutableListOf<File>()) { list, sp ->
+            SourceProvider.implemented(sp)?.let { sourceProvider -> list += files(sourceProvider) }
+            list
+        }?.toTypedArray() ?: SourceProvider.implemented(source)?.let {
+            arrayOf(it.getJavaDirectories(), it.getResourcesDirectories())
+        } ?: (source as? List<*>)?.let {
+            source
+                .map { it?.let { SourceProvider.implemented(it) ?: it } }
+                .fold(mutableListOf<Any>()) { list, sp ->
+                    sp?.let { list += if (sp is SourceProvider) files(sp) else sp }
+                    list
+                }
+                .toTypedArray()
+        } ?: super.getSourceJarSource(source)
     }
 }

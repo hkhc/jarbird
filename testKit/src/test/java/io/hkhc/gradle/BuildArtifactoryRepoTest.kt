@@ -21,19 +21,26 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.ArtifactoryRepoResult
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
-import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
-import io.hkhc.gradle.test.buildGradleCustomArtifactrory
-import io.hkhc.gradle.test.publishedToArtifactoryRepositoryCompletely
+import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
+import io.hkhc.gradle.test.artifacory.publishedToArtifactoryRepositoryCompletely
+import io.hkhc.gradle.test.buildGradleCustomArtifactoryKts
+import io.hkhc.gradle.test.getTaskTree
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.Tree
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 
 @Tags("Artifactory", "Library")
 class BuildArtifactoryRepoTest : FunSpec({
@@ -42,7 +49,7 @@ class BuildArtifactoryRepoTest : FunSpec({
 
         val targetTask = "jbPublishToBintray"
 
-        fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+        fun commonSetup(coordinate: Coordinate, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
             val projectDir = tempDirectory()
 
@@ -55,7 +62,7 @@ class BuildArtifactoryRepoTest : FunSpec({
                     }
                 )
 
-                writeFile("build.gradle.kts", buildGradleCustomArtifactrory())
+                writeFile("build.gradle.kts", buildGradleCustomArtifactoryKts())
 
                 writeFile("pom.yaml", simplePom(coordinate))
 
@@ -65,7 +72,7 @@ class BuildArtifactoryRepoTest : FunSpec({
                     "repository.bintray.apikey" to "password"
                 }
 
-                this.expectedTaskList = expectedTaskList
+                this.expectedTaskGraph = expectedTaskGraph
             }
         }
 
@@ -73,16 +80,21 @@ class BuildArtifactoryRepoTest : FunSpec({
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                    FileTree().dump(setup.projectDir, System.out::println)
+                    printFileTree(setup.projectDir)
                 }
             }
 
             test("execute task '$targetTask'") {
 
+                setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
+                    val actualTaskTree = getTaskTree(setup.projectDir, targetTask, result)
+                        .chopChilds { it.value().path == ":jar" }
+                        .toStringTree()
+
+                    actualTaskTree shouldBe setup.expectedTaskGraph
                 }
 
                 setup.mockServers.forEach { server ->
@@ -102,25 +114,26 @@ class BuildArtifactoryRepoTest : FunSpec({
             val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
             val setup = commonSetup(
                 coordinate,
-                listOf(
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":generateMetadataFileForTestArtifactPublication=SUCCESS",
-                    ":generatePomFileForTestArtifactPublication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact=SUCCESS",
-                    ":jbDokkaJarTestArtifact=SUCCESS",
-                    ":sourcesJarTestArtifact=SUCCESS",
-                    ":artifactoryPublish=SUCCESS",
-                    ":extractModuleInfo=SUCCESS",
-                    ":artifactoryDeploy=SUCCESS",
-                    ":jbPublishToArtifactory=SUCCESS",
-                    ":jbPublishToBintray=SUCCESS"
-                )
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublishToBintray SUCCESS" {
+                        ":jbPublishToArtifactory SUCCESS" {
+                            ":artifactoryPublish SUCCESS" {
+                                ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                    ":jar SUCCESS"()
+                                }
+                                ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                ":jar SUCCESS"()
+                                ":jbDokkaJarTestArtifact SUCCESS" {
+                                    ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                }
+                                ":sourcesJarTestArtifact SUCCESS"()
+                                ":artifactoryDeploy SUCCESS" {
+                                    ":extractModuleInfo SUCCESS"()
+                                }
+                            }
+                        }
+                    }
+                }
             )
 
             testBody(coordinate, setup)

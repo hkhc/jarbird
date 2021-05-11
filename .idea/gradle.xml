@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/gradlePluginAndroid" />
             <option value="$PROJECT_DIR$/gradlePluginBasic" />
             <option value="$PROJECT_DIR$/testKit" />
+            <option value="$PROJECT_DIR$/utils" />
           </set>
         </option>
       </GradleProjectSettings>

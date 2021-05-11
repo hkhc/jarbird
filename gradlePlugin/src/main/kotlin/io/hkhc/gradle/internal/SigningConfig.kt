@@ -78,11 +78,9 @@ class SigningConfig(
 
     fun config() {
 
-        println("configure signing plugin")
         project.logger.debug("$LOG_PREFIX configure Signing plugin")
 
         pubs.forEach { pub ->
-            println("configure signing plugin for pub ${pub.pom}")
             val complete = validateConfig(project, pub)
 
             if (!complete) {
@@ -112,10 +110,7 @@ class SigningConfig(
 
     private fun SigningExtension.config() {
 
-        println("signingextension config")
-
         pubs.forEach { pub ->
-            println("signingextension config for pub $pub")
             if (pub.useGpg) {
                 useGpgCmd()
             }
@@ -125,9 +120,6 @@ class SigningConfig(
             if (!pub.pom.isSnapshot()) {
                 project.findByType(PublishingExtension::class.java)?.let {
                     sign(it.publications[pub.pubNameWithVariant()])
-//                    if (pub.pom.isGradlePlugin()) {
-//                        sign(it.publications["${pub.pubNameWithVariant()}PluginMarkerMaven"])
-//                    }
                 }
             }
         }

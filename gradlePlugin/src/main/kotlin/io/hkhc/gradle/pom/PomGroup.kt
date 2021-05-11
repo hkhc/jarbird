@@ -103,7 +103,7 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
         return builder.toString()
     }
 
-    fun formattedDump(): String{
+    fun formattedDump(): String {
         val builder = StringBuilder()
         builder.append("------ Default POM\n")
         builder.append(defaultPom.formattedDump())
@@ -118,5 +118,4 @@ class PomGroup(pomIterable: Iterable<Pom> = listOf()) : Overlayable {
         builder.append("\n")
         return builder.toString()
     }
-
 }

@@ -70,7 +70,8 @@ class RepoTest : FunSpec({
                 "repository.maven.mock.username" to "username",
                 "repository.maven.mock.password" to "password",
                 "repository.maven.mock.apikey" to "",
-                "repository.maven.mock.description" to "description"
+                "repository.maven.mock.description" to "description",
+                "repository.maven.mock.allowInsecureProtocol" to "true"
             )
         )
 

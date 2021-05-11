@@ -21,18 +21,24 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.BintrayRepoResult
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
-import io.hkhc.gradle.test.MockBintrayRepositoryServer
-import io.hkhc.gradle.test.buildTwoPubGradle
-import io.hkhc.gradle.test.publishedToBintrayRepositoryCompletely
-import io.hkhc.gradle.test.shouldBeNoDifference
+import io.hkhc.gradle.test.bintray.MockBintrayRepositoryServer
+import io.hkhc.gradle.test.bintray.publishedToBintrayRepositoryCompletely
+import io.hkhc.gradle.test.buildTwoPubGradleKts
+import io.hkhc.gradle.test.getTaskTree
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.simpleTwoPoms
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.Tree
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import java.io.FileReader
 import java.util.Properties
 
@@ -91,7 +97,7 @@ class BuildBintrayTwoPubRepoTest : FunSpec({
 
         val targetTask = "jbPublishToBintray"
 
-        fun commonSetup(coordinates: List<Coordinate>, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+        fun commonSetup(coordinates: List<Coordinate>, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
             val projectDir = tempDirectory()
 
@@ -119,7 +125,7 @@ class BuildBintrayTwoPubRepoTest : FunSpec({
                 prop.load(FileReader("$projectDir/gradle.properties"))
                 prop.list(System.out)
 
-                this.expectedTaskList = expectedTaskList
+                this.expectedTaskGraph = expectedTaskGraph
             }
         }
 
@@ -157,52 +163,67 @@ class BuildBintrayTwoPubRepoTest : FunSpec({
             )
             val setup = commonSetup(
                 coordinates,
-                listOf(
-                    ":generatePomFileForTestArtifact1Lib1Publication=SUCCESS",
-                    ":compileKotlin=SUCCESS",
-                    ":compileJava=SUCCESS",
-                    ":pluginDescriptors=SUCCESS",
-                    ":processResources=NO_SOURCE",
-                    ":classes=SUCCESS",
-                    ":inspectClassesForKotlinIC=SUCCESS",
-                    ":jar=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact1Lib1=SUCCESS",
-                    ":jbDokkaJarTestArtifact1Lib1Lib1=SUCCESS",
-                    ":sourcesJarTestArtifact1Lib1Lib1=SUCCESS",
-                    ":signTestArtifact1Lib1Publication=SUCCESS",
-                    ":publishTestArtifact1Lib1PublicationToMavenLocal=SUCCESS",
-                    ":generatePomFileForTestArtifact2Lib2Publication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact2Lib2=SUCCESS",
-                    ":jbDokkaJarTestArtifact2Lib2Lib2=SUCCESS",
-                    ":compileMain2Kotlin=NO_SOURCE",
-                    ":compileMain2Java=NO_SOURCE",
-                    ":processMain2Resources=NO_SOURCE",
-                    ":main2Classes=UP_TO_DATE",
-                    ":main2Jar=SUCCESS",
-                    ":sourcesJarTestArtifact2Lib2Lib2=SUCCESS",
-                    ":signTestArtifact2Lib2Publication=SUCCESS",
-                    ":publishTestArtifact2Lib2PublicationToMavenLocal=SUCCESS",
-                    ":bintrayUpload=SUCCESS",
-                    ":bintrayPublish=SUCCESS",
-                    ":jbPublishToBintray=SUCCESS"
-                )
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublishToBintray SUCCESS" {
+                        ":bintrayUpload SUCCESS" {
+                            ":publishTestArtifact1Lib1PublicationToMavenLocal SUCCESS" {
+                                ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                ":jar SUCCESS"()
+                                ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                    ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                }
+                                ":signTestArtifact1Lib1Publication SUCCESS" {
+                                    ":generatePomFileForTestArtifact1Lib1Publication SUCCESS" ()
+                                    ":jar SUCCESS"()
+                                    ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                                }
+                                ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                            }
+                            ":publishTestArtifact2Lib2PublicationToMavenLocal SUCCESS" {
+                                ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
+                                ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
+                                    ":jbDokkaHtmlTestArtifact2Lib2 SUCCESS"()
+                                }
+                                ":main2Jar SUCCESS"()
+                                ":signTestArtifact2Lib2Publication SUCCESS" {
+                                    ":generatePomFileForTestArtifact2Lib2Publication SUCCESS" ()
+                                    ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact2Lib2 SUCCESS"()
+                                    }
+                                    ":main2Jar SUCCESS"()
+                                    ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                                }
+                                ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                            }
+                            ":bintrayPublish SUCCESS"()
+                        }
+                    }
+                }
             )
 
-            setup.writeFile("build.gradle.kts", buildTwoPubGradle(maven = false, bintray = true))
+            setup.writeFile("build.gradle.kts", buildTwoPubGradleKts(maven = false, bintray = true))
 
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                    FileTree().dump(setup.projectDir, System.out::println)
+                    printFileTree(setup.projectDir)
                 }
             }
 
             test("execute task '$targetTask'") {
 
+                setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
+                    val actualTaskTree = getTaskTree(setup.projectDir, targetTask, result)
+                        .chopChilds { it.value().path in arrayOf(":jar", ":main2Jar") }
+                        .toStringTree()
+
+                    actualTaskTree shouldBe setup.expectedTaskGraph
                 }
 
                 setup.mockServers.forEach { server ->

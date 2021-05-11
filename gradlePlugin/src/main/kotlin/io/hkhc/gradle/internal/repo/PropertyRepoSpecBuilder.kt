@@ -36,7 +36,8 @@ class PropertyRepoSpecBuilder(
             snapshotUrl = resolve("snapshot"),
             username = resolve("username"),
             password = resolve("password"),
-            description = resolve("description", "Maven Repository '$key'"),
+            description = resolve("description", "Maven repository '$key'"),
+            isAllowInsecureProtocol = resolve("allowSecureProtocol", "false") == "true",
             id = JarbirdPlugin.normalizePubName("maven.$key").capitalize()
         )
     }

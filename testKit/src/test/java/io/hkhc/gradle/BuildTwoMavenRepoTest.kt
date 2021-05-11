@@ -22,19 +22,26 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
-import io.hkhc.gradle.test.buildTwoGlobalGradle
-import io.hkhc.gradle.test.buildTwoLocalGradle
-import io.hkhc.gradle.test.publishedToMavenRepositoryCompletely
+import io.hkhc.gradle.test.buildTwoGlobalGradleKts
+import io.hkhc.gradle.test.buildTwoLocalGradleKts
+import io.hkhc.gradle.test.getTaskTree
+import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simpleTwoPoms
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.Tree
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import java.io.FileReader
 import java.util.Properties
 
@@ -93,7 +100,7 @@ class BuildTwoMavenRepoTest : FunSpec({
 
         val targetTask = "jbPublishToMavenRepository"
 
-        fun commonSetup(coordinates: List<Coordinate>, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+        fun commonSetup(coordinates: List<Coordinate>, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
             val projectDir = tempDirectory()
 
@@ -117,6 +124,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                         "repository.maven.mock${index + 1}.snapshot" to "fake-url-that-is-not-going-to-work"
                         "repository.maven.mock${index + 1}.username" to "username"
                         "repository.maven.mock${index + 1}.password" to "password"
+                        "repository.maven.mock${index + 1}.allowInsecureProtocol" to "true"
                     }
                 }
 
@@ -124,7 +132,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                 prop.load(FileReader("$projectDir/gradle.properties"))
                 prop.list(System.out)
 
-                this.expectedTaskList = expectedTaskList
+                this.expectedTaskGraph = expectedTaskGraph
             }
         }
 
@@ -132,16 +140,22 @@ class BuildTwoMavenRepoTest : FunSpec({
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                    FileTree().dump(setup.projectDir, System.out::println)
+                    printFileTree(setup.projectDir)
                 }
             }
 
             test("execute task '$targetTask'") {
 
+                setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
-                withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
+                withClue("expected graph of task executed with expected result task graph") {
+
+                    val actualTaskTree = getTaskTree(setup.projectDir, targetTask, result)
+                        .chopChilds { it.value().path == ":jar" }
+                        .toStringTree()
+
+                    actualTaskTree shouldBe setup.expectedTaskGraph
                 }
 
                 setup.mockServers.forEach { server ->
@@ -162,56 +176,110 @@ class BuildTwoMavenRepoTest : FunSpec({
             )
             val setup = commonSetup(
                 coordinates,
-                listOf(
-                    ":generatePomFileForTestArtifact1Lib1Publication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact1Lib1=SUCCESS",
-                    ":jbDokkaJarTestArtifact1Lib1Lib1=SUCCESS",
-                    ":compileSourceSet1Kotlin=SUCCESS",
-                    ":compileSourceSet1Java=SUCCESS",
-                    ":processSourceSet1Resources=NO_SOURCE",
-                    ":sourceSet1Classes=SUCCESS",
-                    ":sourceSet1Jar=SUCCESS",
-                    ":sourcesJarTestArtifact1Lib1Lib1=SUCCESS",
-                    ":signTestArtifact1Lib1Publication=SUCCESS",
-                    ":publishTestArtifact1Lib1PublicationToMavenMock1Repository=SUCCESS",
-                    ":jbPublishTestArtifact1Lib1ToMavenMock1=SUCCESS",
-                    ":publishTestArtifact1Lib1PublicationToMavenMock2Repository=SUCCESS",
-                    ":jbPublishTestArtifact1Lib1ToMavenMock2=SUCCESS",
-                    ":jbPublishTestArtifact1Lib1ToMavenRepository=SUCCESS",
-                    ":generatePomFileForTestArtifact2Lib2Publication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact2Lib2=SUCCESS",
-                    ":jbDokkaJarTestArtifact2Lib2Lib2=SUCCESS",
-                    ":compileSourceSet2Kotlin=SUCCESS",
-                    ":compileSourceSet2Java=SUCCESS",
-                    ":processSourceSet2Resources=NO_SOURCE",
-                    ":sourceSet2Classes=SUCCESS",
-                    ":sourceSet2Jar=SUCCESS",
-                    ":sourcesJarTestArtifact2Lib2Lib2=SUCCESS",
-                    ":signTestArtifact2Lib2Publication=SUCCESS",
-                    ":publishTestArtifact2Lib2PublicationToMavenMock1Repository=SUCCESS",
-                    ":jbPublishTestArtifact2Lib2ToMavenMock1=SUCCESS",
-                    ":publishTestArtifact2Lib2PublicationToMavenMock2Repository=SUCCESS",
-                    ":jbPublishTestArtifact2Lib2ToMavenMock2=SUCCESS",
-                    ":jbPublishTestArtifact2Lib2ToMavenRepository=SUCCESS",
-                    ":jbPublishToMavenRepository=SUCCESS"
-                )
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublishToMavenRepository SUCCESS" {
+                        ":jbPublishTestArtifact1Lib1ToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifact1Lib1ToMavenMock1Repository SUCCESS" {
+                                ":publishTestArtifact1Lib1PublicationToMavenMock1Repository SUCCESS" {
+                                    ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                    ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":signTestArtifact1Lib1Publication SUCCESS" {
+                                        ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                        ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                        }
+                                        ":sourceSet1Jar SUCCESS"()
+                                        ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":sourceSet1Jar SUCCESS"()
+                                    ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                                }
+                            }
+                            ":jbPublishTestArtifact1Lib1ToMavenMock2Repository SUCCESS" {
+                                ":publishTestArtifact1Lib1PublicationToMavenMock2Repository SUCCESS" {
+                                    ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                    ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":signTestArtifact1Lib1Publication SUCCESS" {
+                                        ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                        ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                        }
+                                        ":sourceSet1Jar SUCCESS"()
+                                        ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":sourceSet1Jar SUCCESS"()
+                                    ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                                }
+                            }
+                        }
+                        ":jbPublishTestArtifact2Lib2ToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifact2Lib2ToMavenMock1Repository SUCCESS" {
+                                ":publishTestArtifact2Lib2PublicationToMavenMock1Repository SUCCESS" {
+                                    ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
+                                    ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact2Lib2 SUCCESS"()
+                                    }
+                                    ":signTestArtifact2Lib2Publication SUCCESS" {
+                                        ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
+                                        ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact2Lib2 SUCCESS"()
+                                        }
+                                        ":sourceSet2Jar SUCCESS"()
+                                        ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                                    }
+                                    ":sourceSet2Jar SUCCESS"()
+                                    ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                                }
+                            }
+                            ":jbPublishTestArtifact2Lib2ToMavenMock2Repository SUCCESS" {
+                                ":publishTestArtifact2Lib2PublicationToMavenMock2Repository SUCCESS" {
+                                    ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
+                                    ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact2Lib2 SUCCESS"()
+                                    }
+                                    ":signTestArtifact2Lib2Publication SUCCESS" {
+                                        ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
+                                        ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact2Lib2 SUCCESS"()
+                                        }
+                                        ":sourceSet2Jar SUCCESS"()
+                                        ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                                    }
+                                    ":sourceSet2Jar SUCCESS"()
+                                    ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                                }
+                            }
+                        }
+                    }
+                }
+
             )
 
-            setup.writeFile("build.gradle.kts", buildTwoGlobalGradle())
+            setup.writeFile("build.gradle.kts", buildTwoGlobalGradleKts())
 
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                    FileTree().dump(setup.projectDir, System.out::println)
+                    printFileTree(setup.projectDir)
                 }
             }
 
             test("execute task '$targetTask'") {
 
+                setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
-                withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
+                withClue("expected graph of task executed with expected result task graph") {
+
+                    val actualTaskTree = getTaskTree(setup.projectDir, targetTask, result)
+                        .chopChilds { it.value().path in arrayOf(":sourceSet1Jar", ":sourceSet2Jar") }
+                        .toStringTree()
+
+                    actualTaskTree shouldBe setup.expectedTaskGraph
                 }
 
                 setup.mockServers.forEach { server ->
@@ -232,52 +300,75 @@ class BuildTwoMavenRepoTest : FunSpec({
             )
             val setup = commonSetup(
                 coordinates,
-                listOf(
-                    ":generatePomFileForTestArtifact1Lib1Publication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact1Lib1=SUCCESS",
-                    ":jbDokkaJarTestArtifact1Lib1Lib1=SUCCESS",
-                    ":compileSourceSet1Kotlin=SUCCESS",
-                    ":compileSourceSet1Java=SUCCESS",
-                    ":processSourceSet1Resources=NO_SOURCE",
-                    ":sourceSet1Classes=SUCCESS",
-                    ":sourceSet1Jar=SUCCESS",
-                    ":sourcesJarTestArtifact1Lib1Lib1=SUCCESS",
-                    ":signTestArtifact1Lib1Publication=SUCCESS",
-                    ":publishTestArtifact1Lib1PublicationToMavenMock1Repository=SUCCESS",
-                    ":jbPublishTestArtifact1Lib1ToMavenMock1=SUCCESS",
-                    ":jbPublishTestArtifact1Lib1ToMavenRepository=SUCCESS",
-                    ":generatePomFileForTestArtifact2Lib2Publication=SUCCESS",
-                    ":jbDokkaHtmlTestArtifact2Lib2=SUCCESS",
-                    ":jbDokkaJarTestArtifact2Lib2Lib2=SUCCESS",
-                    ":compileSourceSet2Kotlin=SUCCESS",
-                    ":compileSourceSet2Java=SUCCESS",
-                    ":processSourceSet2Resources=NO_SOURCE",
-                    ":sourceSet2Classes=SUCCESS",
-                    ":sourceSet2Jar=SUCCESS",
-                    ":sourcesJarTestArtifact2Lib2Lib2=SUCCESS",
-                    ":signTestArtifact2Lib2Publication=SUCCESS",
-                    ":publishTestArtifact2Lib2PublicationToMavenMock2Repository=SUCCESS",
-                    ":jbPublishTestArtifact2Lib2ToMavenMock2=SUCCESS",
-                    ":jbPublishTestArtifact2Lib2ToMavenRepository=SUCCESS",
-                    ":jbPublishToMavenRepository=SUCCESS"
-                )
+                stringTreeOf(NoBarTheme) {
+                    ":jbPublishToMavenRepository SUCCESS" {
+                        ":jbPublishTestArtifact1Lib1ToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifact1Lib1ToMavenMock1Repository SUCCESS" {
+                                ":publishTestArtifact1Lib1PublicationToMavenMock1Repository SUCCESS" {
+                                    ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                    ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":signTestArtifact1Lib1Publication SUCCESS" {
+                                        ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                        ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                        }
+                                        ":sourceSet1Jar SUCCESS"()
+                                        ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":sourceSet1Jar SUCCESS"()
+                                    ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                                }
+                            }
+                        }
+                        ":jbPublishTestArtifact2Lib2ToMavenRepository SUCCESS" {
+                            ":jbPublishTestArtifact2Lib2ToMavenMock2Repository SUCCESS" {
+                                ":publishTestArtifact2Lib2PublicationToMavenMock2Repository SUCCESS" {
+                                    ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
+                                    ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact2Lib2 SUCCESS"()
+                                    }
+                                    ":signTestArtifact2Lib2Publication SUCCESS" {
+                                        ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
+                                        ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact2Lib2 SUCCESS"()
+                                        }
+                                        ":sourceSet2Jar SUCCESS"()
+                                        ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                                    }
+                                    ":sourceSet2Jar SUCCESS"()
+                                    ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                                }
+                            }
+                        }
+                    }
+
+                }
+
             )
 
-            setup.writeFile("build.gradle.kts", buildTwoLocalGradle())
+            setup.writeFile("build.gradle.kts", buildTwoLocalGradleKts())
 
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                    FileTree().dump(setup.projectDir, System.out::println)
+                    printFileTree(setup.projectDir)
                 }
             }
 
             test("execute task '$targetTask'") {
 
+                setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
-                withClue("expected list of tasks executed with expected result") {
-                    result.tasks.map { it.toString() } shouldBeNoDifference setup.expectedTaskList
+                withClue("expected graph of task executed with expected result task graph") {
+
+                    val actualTaskTree = getTaskTree(setup.projectDir, targetTask, result)
+                        .chopChilds { it.value().path in arrayOf(":sourceSet1Jar", ":sourceSet2Jar") }
+                        .toStringTree()
+
+                    actualTaskTree shouldBe setup.expectedTaskGraph
                 }
 
                 setup.mockServers.zip(coordinates).forEach { (server, coordinate) ->

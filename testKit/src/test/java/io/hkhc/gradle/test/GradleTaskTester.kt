@@ -41,8 +41,6 @@ class GradleTaskTester(
     @Suppress("SpreadOperator", "UnstableApiUsage")
     fun runTasks(tasks: Array<String>): BuildResult {
 
-        println("runTasks")
-
         withClue("Project directory '$projectDir' shall exist") {
             projectDir.exists() shouldBe true
         }

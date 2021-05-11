@@ -389,15 +389,14 @@ data class Pom(
             URL:         $url
             Description: $description
             Licenses:
-            ${licenses.joinToString(separator="\n")}
+            ${licenses.joinToString(separator = "\n")}
             Developers:
-            ${developers.joinToString(separator="\n")}
+            ${developers.joinToString(separator = "\n")}
             Contributors:
-            ${contributors.joinToString(separator="\n")}
+            ${contributors.joinToString(separator = "\n")}
             Organization: $organization
             Web:          $web
             SCM:          $scm
         """.trimIndent()
     }
-
 }

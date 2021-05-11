@@ -22,7 +22,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 @Suppress("unused")
-class BasicJarbirdPlugin: Plugin<Project> {
+class BasicJarbirdPlugin : Plugin<Project> {
     override fun apply(p: Project) {
         p.pluginManager.apply(JarbirdPlugin::class.java)
     }

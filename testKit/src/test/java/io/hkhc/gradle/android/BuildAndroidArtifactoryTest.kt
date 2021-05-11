@@ -21,23 +21,31 @@ package io.hkhc.gradle.android
 import io.hkhc.gradle.test.ArtifactoryRepoResult
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
-import io.hkhc.gradle.test.MockArtifactoryRepositoryServer
+import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
+import io.hkhc.gradle.test.artifacory.publishedToArtifactoryRepositoryCompletely
 import io.hkhc.gradle.test.commonAndroidGradle
 import io.hkhc.gradle.test.commonAndroidRootGradle
 import io.hkhc.gradle.test.except
+import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.getTestAndroidSdkHomePair
-import io.hkhc.gradle.test.publishedToArtifactoryRepositoryCompletely
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.setupAndroidProperties
 import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.Tree
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
+import java.io.File
 
 @Tags("Multi", "AAR", "Artifactory", "Variant")
 class BuildAndroidArtifactoryTest : FunSpec({
@@ -46,50 +54,29 @@ class BuildAndroidArtifactoryTest : FunSpec({
 
         val targetTask = "jbPublishToBintray"
 
-        val expectedTaskList = listOf(
-            ":lib:preBuild=UP_TO_DATE",
-            ":lib:preReleaseBuild=UP_TO_DATE",
-            ":lib:compileReleaseAidl=NO_SOURCE",
-            ":lib:mergeReleaseJniLibFolders=SUCCESS",
-            ":lib:mergeReleaseNativeLibs=SUCCESS",
-            ":lib:compileReleaseRenderscript=NO_SOURCE",
-            ":lib:generateReleaseBuildConfig=SUCCESS",
-            ":lib:generateReleaseResValues=SUCCESS",
-            ":lib:generateReleaseResources=SUCCESS",
-            ":lib:packageReleaseResources=SUCCESS",
-            ":lib:parseReleaseLocalResources=SUCCESS",
-            ":lib:processReleaseManifest=SUCCESS",
-            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
-            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
-            ":lib:javaPreCompileRelease=SUCCESS",
-            ":lib:mergeReleaseShaders=SUCCESS",
-            ":lib:compileReleaseShaders=NO_SOURCE",
-            ":lib:generateReleaseAssets=UP_TO_DATE",
-            ":lib:packageReleaseAssets=SUCCESS",
-            ":lib:packageReleaseRenderscript=NO_SOURCE",
-            ":lib:prepareLintJarForPublish=SUCCESS",
-            ":lib:generateReleaseRFile=SUCCESS",
-            ":lib:processReleaseJavaRes=NO_SOURCE",
-            ":lib:generatePomFileForTestArtifactReleasePublication=SUCCESS",
-            ":lib:jbDokkaHtmlTestArtifactRelease=SUCCESS",
-            ":lib:jbDokkaJarTestArtifactReleaseRelease=SUCCESS",
-            ":lib:sourcesJarTestArtifactReleaseRelease=SUCCESS",
-            ":lib:compileReleaseJavaWithJavac=SUCCESS",
-            ":lib:extractReleaseAnnotations=SUCCESS",
-            ":lib:mergeReleaseGeneratedProguardFiles=SUCCESS",
-            ":lib:mergeReleaseConsumerProguardFiles=SUCCESS",
-            ":lib:syncReleaseLibJars=SUCCESS",
-            ":lib:bundleReleaseAar=SUCCESS",
-            ":lib:generateMetadataFileForTestArtifactReleasePublication=SUCCESS",
-            ":lib:artifactoryPublish=SUCCESS",
-            ":extractModuleInfo=SUCCESS",
-            ":lib:extractModuleInfo=SUCCESS",
-            ":artifactoryDeploy=SUCCESS",
-            ":lib:jbPublishToArtifactory=SUCCESS",
-            ":lib:jbPublishToBintray=SUCCESS"
-        )
+        val expectedTaskGraph = stringTreeOf(NoBarTheme) {
+            ":lib:jbPublishToBintray SUCCESS" {
+                ":lib:jbPublishToArtifactory SUCCESS" {
+                    ":lib:artifactoryPublish SUCCESS" {
+                        ":artifactoryDeploy SUCCESS" {
+                            ":extractModuleInfo SUCCESS"()
+                            ":lib:extractModuleInfo SUCCESS"()
+                        }
+                        ":lib:bundleReleaseAar SUCCESS"()
+                        ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
+                            ":lib:bundleReleaseAar SUCCESS"()
+                        }
+                        ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS"()
+                        ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
+                            ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
+                        }
+                        ":lib:sourcesJarTestArtifactRelease SUCCESS"()
+                    }
+                }
+            }
+        }
 
-        fun commonSetup(coordinate: Coordinate, expectedTaskList: List<String>): DefaultGradleProjectSetup {
+        fun commonSetup(coordinate: Coordinate, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
             val projectDir = tempDirectory()
 
@@ -136,7 +123,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
                     "repository.bintray.apikey" to "password"
                 }
 
-                this.expectedTaskList = expectedTaskList
+                this.expectedTaskGraph = expectedTaskGraph
             }
         }
 
@@ -145,27 +132,23 @@ class BuildAndroidArtifactoryTest : FunSpec({
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                    FileTree().dump(setup.projectDir, System.out::println)
+                    printFileTree(setup.projectDir)
                 }
             }
 
             test("execute task '$targetTask'") {
 
+                setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
                 val result = setup.getGradleTaskTester().runTask(targetTask)
 
                 println(result.tasks.joinToString("\n") { "\"$it\"," })
 
                 withClue("expected list of tasks executed with expected result") {
-//                    result.tasks.map { it.toString() } shouldContainExactlyInAnyOrder setup.expectedTaskList
-                    result.tasks.map { it.toString() } shouldBeNoDifference (
-                        setup.expectedTaskList except listOf(
-                            ":lib:stripReleaseDebugSymbols=NO_SOURCE",
-                            ":lib:copyReleaseJniLibsProjectAndLocalJars=SUCCESS",
-                            ":lib:compileReleaseKotlin=SUCCESS",
-                            ":lib:generateReleaseRFile=SUCCESS",
-                            ":lib:mergeReleaseJavaResource=SUCCESS"
-                        )
-                        )
+                    val actualTaskTree = getTaskTree(File(setup.projectDir, "lib"), targetTask, result)
+                        .chopChilds { it.value().path in arrayOf(":lib:bundleReleaseAar") }
+                        .toStringTree()
+
+                    actualTaskTree shouldBe setup.expectedTaskGraph
                 }
 
                 setup.mockServers.forEach { server ->
@@ -187,7 +170,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
                 "0.1-SNAPSHOT",
                 versionWithVariant = "0.1-release-SNAPSHOT"
             )
-            val setup = commonSetup(coordinate, expectedTaskList)
+            val setup = commonSetup(coordinate, expectedTaskGraph)
             setup.writeFile(
                 "${setup.subProjDirs[0]}/build.gradle",
                 commonAndroidGradle(variantMode = "variantWithVersion()")
@@ -202,7 +185,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
                 "0.1-SNAPSHOT",
                 artifactIdWithVariant = "test.artifact-release"
             )
-            val setup = commonSetup(coordinate, expectedTaskList)
+            val setup = commonSetup(coordinate, expectedTaskGraph)
             setup.writeFile(
                 "${setup.subProjDirs[0]}/build.gradle",
                 commonAndroidGradle(variantMode = "variantWithArtifactId()")

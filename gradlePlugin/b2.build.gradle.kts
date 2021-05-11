@@ -59,8 +59,7 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     id("io.kotest")
-    id("com.dorongold.task-tree")
-    id("com.gradle.plugin-publish") version "0.14.0"
+    id("org.barfuin.gradle.taskinfo")
 }
 
 group = "io.hkhc.gradle"
@@ -95,28 +94,13 @@ tasks {
             showStandardStreams = true
         }
     }
-
-    create("jbPublishToMavenLocal") {
-        dependsOn(
-            "publishPluginMavenPublicationToMavenLocal",
-            "publishSpPluginMarkerMavenPublicationToMavenLocal"
-        )
-    }
-}
-
-gradlePlugin {
-    plugins {
-        create("jb") {
-            id = "io.hkhc.jarbird.bootstrap"
-            displayName = "Bootstrap plugin for io.hkhc.jarbird"
-            implementationClass = "io.hkhc.gradle.JarbirdPlugin"
-        }
-    }
 }
 
 dependencies {
 
     // These are the dependencies needed to build the plugin code
+
+    implementation(project(":jarbird-utils-bootstrap"))
 
     implementation(Kotlin.stdlib.jdk8)
 

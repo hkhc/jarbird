@@ -22,18 +22,24 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.GradleTaskTester
 import io.hkhc.gradle.test.LocalRepoResult
+import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.getTestGradleHomePair
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.publishToMavenLocalCompletely
 import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePomRoot
 import io.hkhc.gradle.test.simpleSubProj
-import io.hkhc.utils.FileTree
-import io.hkhc.utils.test.tempDirectory
+import io.hkhc.test.utils.test.tempDirectory
+import io.hkhc.utils.tree.NoBarTheme
+import io.hkhc.utils.tree.chopChilds
+import io.hkhc.utils.tree.stringTreeOf
+import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 
 @Tags("Library", "MavenLocal", "Multi")
 class BuildMultiProjectMavenLocalTest : FunSpec({
@@ -66,8 +72,8 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
                     "build.gradle",
                     """
                     plugins {
+                        id 'org.barfuin.gradle.taskinfo' version '1.0.5'
                         id 'io.hkhc.jarbird'
-                        id 'com.dorongold.task-tree' version '1.5'
                     }
                     """.trimIndent()
                 )
@@ -91,44 +97,77 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
 
         afterTest {
             if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
-                FileTree().dump(projectDir, System.out::println)
+                printFileTree(setup.projectDir)
             }
         }
 
         test("execute task '$targetTask'") {
 
+            setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
             val result = tester.runTask(targetTask)
 
             withClue("expected list of tasks executed with expected result") {
-                result.tasks.map { it.toString() } shouldBeNoDifference listOf(
-                    ":lib1:compileJava=SUCCESS",
-                    ":lib1:processResources=NO_SOURCE",
-                    ":lib1:classes=SUCCESS",
-                    ":lib1:jar=SUCCESS",
-                    ":lib1:generateMetadataFileForTestArtifactOnePublication=SUCCESS",
-                    ":lib1:generatePomFileForTestArtifactOnePublication=SUCCESS",
-                    ":lib1:jbDokkaHtmlTestArtifactOne=SUCCESS",
-                    ":lib1:jbDokkaJarTestArtifactOne=SUCCESS",
-                    ":lib1:sourcesJarTestArtifactOne=SUCCESS",
-                    ":lib1:signTestArtifactOnePublication=SUCCESS",
-                    ":lib1:publishTestArtifactOnePublicationToMavenLocal=SUCCESS",
-                    ":lib1:jbPublishTestArtifactOneToMavenLocal=SUCCESS",
-                    ":lib1:jbPublishToMavenLocal=SUCCESS",
-                    ":lib2:compileJava=SUCCESS",
-                    ":lib2:processResources=NO_SOURCE",
-                    ":lib2:classes=SUCCESS",
-                    ":lib2:jar=SUCCESS",
-                    ":lib2:generateMetadataFileForTestArtifactTwoPublication=SUCCESS",
-                    ":lib2:generatePomFileForTestArtifactTwoPublication=SUCCESS",
-                    ":lib2:jbDokkaHtmlTestArtifactTwo=SUCCESS",
-                    ":lib2:jbDokkaJarTestArtifactTwo=SUCCESS",
-                    ":lib2:sourcesJarTestArtifactTwo=SUCCESS",
-                    ":lib2:signTestArtifactTwoPublication=SUCCESS",
-                    ":lib2:publishTestArtifactTwoPublicationToMavenLocal=SUCCESS",
-                    ":lib2:jbPublishTestArtifactTwoToMavenLocal=SUCCESS",
-                    ":lib2:jbPublishToMavenLocal=SUCCESS",
-                    ":jbPublishToMavenLocal=SUCCESS"
-                )
+                val actualTaskTree = getTaskTree(projectDir, targetTask, result)
+                    .chopChilds { it.value().path in arrayOf(":lib1:jar", ":lib2:jar") }
+                    .toStringTree()
+
+                actualTaskTree shouldBe
+                    stringTreeOf(NoBarTheme) {
+                        ":jbPublishToMavenLocal SUCCESS" {
+                            ":lib1:jbPublishToMavenLocal SUCCESS" {
+                                ":lib1:jbPublishTestArtifactOneToMavenLocal SUCCESS" {
+                                    ":lib1:publishTestArtifactOnePublicationToMavenLocal SUCCESS" {
+                                        ":lib1:generateMetadataFileForTestArtifactOnePublication SUCCESS" {
+                                            ":lib1:jar SUCCESS"()
+                                        }
+                                        ":lib1:generatePomFileForTestArtifactOnePublication SUCCESS"()
+                                        ":lib1:jar SUCCESS"()
+                                        ":lib1:jbDokkaJarTestArtifactOne SUCCESS" {
+                                            ":lib1:jbDokkaHtmlTestArtifactOne SUCCESS"()
+                                        }
+                                        ":lib1:signTestArtifactOnePublication SUCCESS" {
+                                            ":lib1:generateMetadataFileForTestArtifactOnePublication SUCCESS" {
+                                                ":lib1:jar SUCCESS"()
+                                            }
+                                            ":lib1:generatePomFileForTestArtifactOnePublication SUCCESS" ()
+                                            ":lib1:jar SUCCESS"()
+                                            ":lib1:jbDokkaJarTestArtifactOne SUCCESS" {
+                                                ":lib1:jbDokkaHtmlTestArtifactOne SUCCESS"()
+                                            }
+                                            ":lib1:sourcesJarTestArtifactOne SUCCESS"()
+                                        }
+                                        ":lib1:sourcesJarTestArtifactOne SUCCESS"()
+                                    }
+                                }
+                            }
+                            ":lib2:jbPublishToMavenLocal SUCCESS" {
+                                ":lib2:jbPublishTestArtifactTwoToMavenLocal SUCCESS" {
+                                    ":lib2:publishTestArtifactTwoPublicationToMavenLocal SUCCESS" {
+                                        ":lib2:generateMetadataFileForTestArtifactTwoPublication SUCCESS" {
+                                            ":lib2:jar SUCCESS"()
+                                        }
+                                        ":lib2:generatePomFileForTestArtifactTwoPublication SUCCESS"()
+                                        ":lib2:jar SUCCESS"()
+                                        ":lib2:jbDokkaJarTestArtifactTwo SUCCESS" {
+                                            ":lib2:jbDokkaHtmlTestArtifactTwo SUCCESS"()
+                                        }
+                                        ":lib2:signTestArtifactTwoPublication SUCCESS" {
+                                            ":lib2:generateMetadataFileForTestArtifactTwoPublication SUCCESS" {
+                                                ":lib2:jar SUCCESS"()
+                                            }
+                                            ":lib2:generatePomFileForTestArtifactTwoPublication SUCCESS" ()
+                                            ":lib2:jar SUCCESS"()
+                                            ":lib2:jbDokkaJarTestArtifactTwo SUCCESS" {
+                                                ":lib2:jbDokkaHtmlTestArtifactTwo SUCCESS"()
+                                            }
+                                            ":lib2:sourcesJarTestArtifactTwo SUCCESS"()
+                                        }
+                                        ":lib2:sourcesJarTestArtifactTwo SUCCESS"()
+                                    }
+                                }
+                            }
+                        }
+                    }
             }
 
             coordinates.forEach { coor ->

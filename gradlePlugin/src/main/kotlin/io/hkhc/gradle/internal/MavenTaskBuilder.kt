@@ -22,13 +22,15 @@ import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import org.gradle.api.Project
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.kotlin.dsl.withType
 
 class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
-    private val localTaskInfo = JbPublishToMavenLocalTaskInfo()
+    private val localTaskInfo = JbPublish.to.mavenLocal.taskInfo
     private val repoTaskInfos = mutableListOf<TaskInfo>()
 
     class RepoTasks {
@@ -60,20 +62,20 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
             localTaskInfo.register(container) {
                 pubs.forEach { pub ->
-                    val pubTaskInfo = JbPublishPubToMavenLocalTaskInfo(pub)
+                    val pubTaskInfo = JbPublish.pub(pub).to.mavenLocal.taskInfo
                     dependsOn(pubTaskInfo.name)
                 }
             }
 
             pubs.forEach { pub ->
 
-                val pubTaskInfo = JbPublishPubToMavenLocalTaskInfo(pub)
+                val pubTaskInfo = JbPublish.pub(pub).to.mavenLocal.taskInfo
 
                 pubTaskInfo.register(container) {
-                    dependsOn(pub.publishPubToMavenLocalTask)
+                    dependsOn(Publish.pub(pub).to.mavenLocal.taskName)
 
                     if (pub.pom.isGradlePlugin()) {
-                        dependsOn(pub.publishPluginMarkerPubToMavenLocalTask)
+                        dependsOn(Publish.pluginMarker(pub).to.mavenLocal.taskName)
                     }
                 }
             }
@@ -104,43 +106,51 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
             val taskMap = RepoTasks()
 
-            val jbPublishPubToCustomMavenRepoTaskInfo = pubs.map { pub ->
+            /*
+                 ┌─────┐1      n┌──────────────────┐
+                 │ pub ├───────►│ CustomMavenRepos │
+                 └─────┘        └──────────────────┘
+             */
+            val jbPublishPubToCustomMavenRepoTasks = pubs.map { pub ->
 
                 val customRepoTaskInfos = pub.getRepos().filterIsInstance<MavenRepoSpec>().map { repoSpec ->
                     // TODO shall repo.name be capitalized?
 
-                    JbPublishPubToCustomMavenRepoTaskInfo(pub, repoSpec).also {
+                    JbPublish.pub(pub).to.mavenRepo(repoSpec).taskInfo.also {
+
+                        val taskName = Publish.pub(pub).to.mavenRepo(repoSpec).taskName
+                        val markerTaskName = Publish.pluginMarker(pub).to.mavenRepo(repoSpec).taskName
+
                         it.register(container) {
-                            dependsOn(pub.publishPubToCustomMavenRepoTask(repoSpec))
+                            dependsOn(taskName)
                             if (pub.pom.isGradlePlugin()) {
-                                dependsOn(pub.publishPluginMarkerPubToCustomMavenRepoTask(repoSpec))
+                                dependsOn(markerTaskName)
                             }
                         }
 
-                        taskMap.add(repoSpec, pub.publishPubToCustomMavenRepoTask(repoSpec))
+                        taskMap.add(repoSpec, taskName)
                         if (pub.pom.isGradlePlugin()) {
-                            taskMap.add(repoSpec, pub.publishPluginMarkerPubToCustomMavenRepoTask(repoSpec))
+                            taskMap.add(repoSpec, markerTaskName)
                         }
                     }
                 }
 
-                JbPublishPubToMavenRepoTaskInfo(pub).also {
-                    it.register(container) {
-                        customRepoTaskInfos.forEach {
-                            dependsOn(it.name)
-                        }
+                JbPublish.pub(pub).to.mavenRepo.taskInfo.register(container) {
+                    customRepoTaskInfos.forEach {
+                        dependsOn(it.name)
                     }
                 }
+
             }
 
-            JbPublishToMavenRepoTaskInfo().register(container) {
-                jbPublishPubToCustomMavenRepoTaskInfo.forEach {
+            JbPublish.to.mavenRepo.taskInfo.register(container) {
+                jbPublishPubToCustomMavenRepoTasks.forEach {
                     dependsOn(it.name)
                 }
             }
 
             taskMap.repoTaskInfoMap.forEach { (repo, taskList) ->
-                JbPublishToCustomMavenRepoTaskInfo(repo).also {
+                JbPublish.to.mavenRepo(repo).taskInfo.also {
                     repoTaskInfos.add(it)
                     it.register(container) {
                         taskList.forEach { taskName ->
@@ -150,27 +160,50 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                 }
             }
 
-            // Filter unwanted combinations of publications and repositories
-            project.tasks.withType<PublishToMavenRepository>().configureEach {
-                onlyIf {
+            filterUnwantedPublication()
 
-                    pubs.any { pub ->
-                        pub.getRepos().filterIsInstance<MavenRepoSpec>().any { repo ->
-                            if (repo.repoName == repository.name) {
-                                with(pub) {
-                                    if (pom.isGradlePlugin()) {
-                                        pubNameWithVariant() == publication.name || markerPubName == publication.name
-                                    } else {
-                                        pubNameWithVariant() == publication.name
-                                    }
-                                }
-                            } else {
-                                false
-                            }
-                        }
-                    }
+        }
+    }
+
+
+    /**
+     * Filter out the combination of repositories and publications that does not make sense.
+     */
+    private fun filterUnwantedPublication() {
+
+        // Filter unwanted combinations of publications and repositories
+        // Retain the repository only if there is some JarbirdPubs that need it
+        project.tasks.withType<PublishToMavenRepository>().configureEach {
+            onlyIf {
+                pubs.any { pub ->
+                    pub.getRepos()
+                        .filterIsInstance<MavenRepoSpec>()
+                        .any { repoSpec -> pub.needs(repoSpec, repository, publication) }
                 }
             }
         }
     }
+
+    /**
+     * return true if the combination of repository and publication is needed by the RepoSpec
+      */
+    private fun JarbirdPub.needs(
+        repoSpec: MavenRepoSpec,
+        repository: MavenArtifactRepository,
+        publication: MavenPublication
+    ): Boolean {
+
+        // return true if the repo name matches and the pubName matches
+        return if (repoSpec.repoName == repository.name) {
+            if (pom.isGradlePlugin()) {
+                pubNameWithVariant() == publication.name || markerPubName == publication.name
+            } else {
+                pubNameWithVariant() == publication.name
+            }
+        } else {
+            false
+        }
+
+    }
+
 }

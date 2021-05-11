@@ -18,11 +18,14 @@
 
 package io.hkhc.utils.test
 
+import groovy.lang.MissingPropertyException
 import io.hkhc.gradle.internal.ProjectProperty
 
 class MockProjectProperty(private val map: Map<String, String>) : ProjectProperty {
 
-    override fun property(name: String): Any? {
-        return map[name]
+    override fun property(name: String): Any {
+        return map[name]?:
+            throw MissingPropertyException("Cannot resolve property '$name'")
+
     }
 }

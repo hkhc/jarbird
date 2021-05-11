@@ -89,7 +89,7 @@ internal class DokkaConfig(
 
         // TODO add error message here if dokka is null
         return DokkaJarPubTaskInfo(pub)
-            .also { project.logger.debug("$LOG_PREFIX Configure Dokka Jar task ${it.name}")}
+            .also { project.logger.debug("$LOG_PREFIX Configure Dokka Jar task ${it.name}") }
             .register(project.tasks, Jar::class.java) {
 
             archiveClassifier.set(CLASSIFIER_JAVADOC)

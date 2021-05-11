@@ -73,7 +73,6 @@ open class JarbirdExtensionImpl(
 //        if (!project.isMultiProjectRoot()) {
 //            precheck(pub.pom, project)
 //        }
-
     }
 
     open fun newPub(project: Project): JarbirdPubImpl {
@@ -106,6 +105,9 @@ open class JarbirdExtensionImpl(
     }
 
     override fun pub(variant: String, action: Closure<JarbirdPub>) {
+        if (pubList.any { it.variant == variant }) {
+            throw GradleException("Duplicated pubs with variant '$variant' are found.")
+        }
         val newPub = newPub(project)
         newPub.variant = variant
         initPub(newPub)
@@ -122,6 +124,9 @@ open class JarbirdExtensionImpl(
     }
 
     override fun pub(variant: String, action: JarbirdPub.() -> Unit) {
+        if (pubList.any { it.variant == variant }) {
+            throw GradleException("Duplicated pubs with variant '$variant' are found.")
+        }
         val newPub = newPub(project)
         newPub.variant = variant
         initPub(newPub)
@@ -146,7 +151,6 @@ open class JarbirdExtensionImpl(
          */
         if (implicited == null || pubList.size == 1) return
         pubList.remove(implicited)
-        println("result pub size = ${pubList.size}")
         implicited = null
     }
 
@@ -233,7 +237,7 @@ open class JarbirdExtensionImpl(
     fun finalizeRepos() {
         mavenLocal()
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
-        "Aggregated POM configuration:\n${pomGroup.formattedDump()}".lines().filter { it.trim()!="" }.forEach {
+        "Aggregated POM configuration:\n${pomGroup.formattedDump()}".lines().filter { it.trim() != "" }.forEach {
             project.logger.debug("$LOG_PREFIX $it")
         }
     }

@@ -37,14 +37,14 @@ internal class TaskBuilder(
 
     private fun TaskContainer.registerGradlePortalTask() {
 
-        val taskInfo = JbPublishToGradlePortalTaskInfo(pubs)
+        val taskInfo = JbPublish.to.gradlePortal.taskInfo
 
         if (project.isMultiProjectRoot()) {
             project.registerRootProjectTasks(taskInfo)
         } else {
             val pub = pubs.firstOrNull { it.pom.isGradlePlugin() }
             pub?.let {
-                val pubTask = JbPublishPubToGradlePortalTaskInfo(pub)
+                val pubTask = JbPublish.pub(pub).to.gradlePortal.taskInfo
                 pubTask.register(this) {
                     dependsOn("publishPlugins")
                 }
@@ -59,7 +59,7 @@ internal class TaskBuilder(
 
         pubs.forEach { pub ->
 
-            val taskInfo = JbPublishPubTaskInfo(pub)
+            val taskInfo = JbPublish.pub(pub).taskInfo
 
             if (project.isMultiProjectRoot()) {
                 project.registerRootProjectTasks(taskInfo)
@@ -67,9 +67,9 @@ internal class TaskBuilder(
                 taskInfo.register(this) {
                     // TODO depends on jbPublish{pubName}To{mavenLocal}
                     // TODO depends on jbPublish{pubName}To{mavenRepository}
-                    dependsOn(JbPublishPubToMavenLocalTaskInfo(pub).name)
+                    dependsOn(JbPublish.pub(pub).to.mavenLocal.taskInfo.name)
                     if (pub.needsNonLocalMaven()) {
-                        dependsOn(JbPublishPubToMavenRepoTaskInfo(pub).name)
+                        dependsOn(JbPublish.pub(pub).to.mavenRepo.taskInfo.name)
                     }
                 }
             }
@@ -88,13 +88,13 @@ internal class TaskBuilder(
 //    }
 
     fun registerRootTask(): TaskProvider<Task> {
-        return JbPubishTaskInfo().register(project.tasks) {
+        return JbPublish.taskInfo.register(project) {
             dependsOn(mavenTaskBuilder.getLocalTaskInfo().name)
             if (pubs.needGradlePlugin()) {
-                dependsOn(JbPublishToGradlePortalTaskInfo(pubs).name)
+                dependsOn(JbPublish.to.gradlePortal.taskInfo.name)
             }
             if (pubs.needsNonLocalMaven()) {
-                dependsOn(JbPublishToMavenRepoTaskInfo().name)
+                dependsOn(JbPublish.to.mavenRepo.taskInfo.name)
 //                mavenTaskBuilder.getRepoTaskInfos().forEach {
 //                    dependsOn(it.name)
 //                }

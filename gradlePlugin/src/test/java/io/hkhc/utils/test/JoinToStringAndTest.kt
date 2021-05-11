@@ -18,7 +18,7 @@
 
 package io.hkhc.utils.test
 
-import io.hkhc.gradle.internal.utils.joinToStringAnd
+import io.hkhc.utils.joinToStringAnd
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 

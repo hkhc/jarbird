@@ -32,9 +32,8 @@ abstract class BaseMockRepositoryServer {
     abstract fun setupMatcher(coordinates: List<Coordinate>): List<RequestMatcher>
 
     private fun pathMatcher(request: RecordedRequest): MockResponse {
-        return matcher.find { it.matches(request) }?.let {
-            it.responseHandler.invoke(request, MockResponse())
-        } ?: FileNotFound.invoke(
+        return matcher.find { it.matches(request) }?.
+            responseHandler?.invoke(request, MockResponse()) ?: FileNotFound.invoke(
             request,
             MockResponse()
         )
@@ -48,6 +47,24 @@ abstract class BaseMockRepositoryServer {
 
         this.baseUrl = baseUrl
         server = MockWebServer()
+
+        // TODO enable HTTPS for mockwebserver
+
+//        val localhost = InetAddress.getByName("localhost").canonicalHostName
+//        val localhostCertificate: HeldCertificate = HeldCertificate.Builder()
+//            .addSubjectAlternativeName(localhost)
+//            .build()
+//        val rootCertificate: HeldCertificate = HeldCertificate.Builder()
+//            .certificateAuthority(1)
+//            .build()
+//        val serverCertificate: HeldCertificate = HeldCertificate.Builder()
+//            .addSubjectAlternativeName(localhost)
+//            .signedBy(rootCertificate)
+//            .build()
+//        val serverCertificates = HandshakeCertificates.Builder()
+//            .heldCertificate(serverCertificate, rootCertificate.certificate)
+//            .build();
+//        server.useHttps(serverCertificates.sslSocketFactory(), false);
 
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {

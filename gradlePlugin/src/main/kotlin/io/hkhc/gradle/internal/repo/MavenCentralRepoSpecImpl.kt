@@ -26,4 +26,5 @@ data class MavenCentralRepoSpecImpl(
 ) : MavenCentralRepoSpec {
     override val releaseUrl: String = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
     override val snapshotUrl: String = "https://oss.sonatype.org/content/repositories/snapshots"
+    override val isAllowInsecureProtocol: Boolean = false
 }

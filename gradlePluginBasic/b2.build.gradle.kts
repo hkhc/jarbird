@@ -59,7 +59,7 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     id("io.kotest")
-    id("com.dorongold.task-tree")
+    id("org.barfuin.gradle.taskinfo")
     id("com.gradle.plugin-publish") version "0.14.0"
 }
 
@@ -82,6 +82,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+val pluginPubName = "jb"
+
 tasks {
 
     withType<KotlinCompile> {
@@ -99,14 +101,14 @@ tasks {
     create("jbPublishToMavenLocal") {
         dependsOn(
             "publishPluginMavenPublicationToMavenLocal",
-            "publishSpPluginMarkerMavenPublicationToMavenLocal"
+            "publish${pluginPubName.capitalize()}PluginMarkerMavenPublicationToMavenLocal"
         )
     }
 }
 
 gradlePlugin {
     plugins {
-        create("jb") {
+        create(pluginPubName) {
             id = "io.hkhc.jarbird.bootstrap"
             displayName = "Bootstrap plugin for io.hkhc.jarbird"
             implementationClass = "io.hkhc.gradle.JarbirdPlugin"

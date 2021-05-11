@@ -198,12 +198,26 @@ open class JarbirdPubImpl(
 
     fun finalizeRepos() {
 
-        if ((pom.group ?: "").isEmpty())
-            throw GradleException("Group is missed in POM for pub($variant). May be the variant name or POM file is not correct.")
-        if ((pom.artifactId ?: "").isEmpty())
-            throw GradleException("ArtifactID is missed in POM for pub($variant). May be the variant name or POM file is not correct.")
-        if ((pom.version ?: "").isEmpty())
-            throw GradleException("Version is missed in POM for pub($variant). May be the variant name or POM file is not correct.")
+        val err = if ((pom.group ?: "").isEmpty()) {
+            """
+                Group is missed in POM for pub($variant). 
+                May be the variant name or POM file is not correct.
+            """.trimIndent()
+        } else if ((pom.artifactId ?: "").isEmpty()) {
+            """
+                ArtifactID is missed in POM for pub($variant).
+                May be the variant name or POM file is not correct.
+            """.trimIndent()
+        } else if ((pom.version ?: "").isEmpty()) {
+            """
+                Version is missed in POM for pub($variant).
+                May be the variant name or POM file is not correct.
+            """.trimIndent()
+        } else {
+            null
+        }
+
+        if (err != null) throw GradleException(err)
 
         if (pom.isSnapshot() && needsBintray()) {
             val bintraySpec = getRepos().firstOrNull { it is BintrayRepoSpec }
