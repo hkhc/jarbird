@@ -23,7 +23,6 @@ pluginManagement {
         mavenLocal()
         gradlePluginPortal()
         mavenCentral()
-        jcenter()
     }
 }
 

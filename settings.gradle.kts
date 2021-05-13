@@ -25,7 +25,6 @@ pluginManagement {
         // the default place for gradle plugin (marker)
         gradlePluginPortal()
         mavenCentral()
-        jcenter()
         google()
     }
 }

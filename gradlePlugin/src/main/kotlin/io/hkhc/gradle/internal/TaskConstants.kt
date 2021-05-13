@@ -124,7 +124,7 @@ object Publish {
     }
 
     class MavenRepoTask(prefix: String, repo: RepoSpec) {
-        val taskName = "$prefix${repo.repoName.capitalize()}Repository"
+        val taskName = "$prefix${repo.repoName.capitalize()}"
     }
 
     val taskName = PUBLISH_TASK_PREFIX
@@ -180,7 +180,7 @@ object JbPublish {
     }
 
     class MavenRepoTask(prefixInfo: SimpleTaskInfo, spec: RepoSpec) {
-        val taskInfo = prefixInfo.append(newInfo("${spec.repoName}Repository", spec.description))
+        val taskInfo = prefixInfo.append(newInfo(spec.repoName, spec.description))
     }
 
     class AllMavenRepoTask(prefixInfo: SimpleTaskInfo) {
