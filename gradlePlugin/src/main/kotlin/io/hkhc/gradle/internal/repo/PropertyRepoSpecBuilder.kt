@@ -19,8 +19,10 @@
 package io.hkhc.gradle.internal.repo
 
 import io.hkhc.gradle.JarbirdPlugin
+import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.utils.PropertyBuilder
+import org.gradle.api.Project
 
 class PropertyRepoSpecBuilder(
     private val projectProperty: ProjectProperty
@@ -65,11 +67,21 @@ class PropertyRepoSpecBuilder(
         )
     }
 
-    fun buildMavenCentral(): MavenRepoSpec = with(PropertyBuilder(projectProperty, "mavencentral")) {
+    fun buildMavenCentral(project: Project): MavenRepoSpec = with(PropertyBuilder(projectProperty, "mavencentral")) {
+
+        if (resolve("newUser", "XXX")=="XXX") {
+            project.logger.warn("WARNING: [$LOG_PREFIX] OSSRH user has not been specified to be new or old. " +
+                "If the account is created before February 2021, it is old account. " +
+                "Add 'repositoty.mavencentral.newUser=false' to gradle.properties. "+
+                "Otherwise, new account is assumed.")
+        }
+
+        val newUser = resolve("newUser", "true").toBoolean()
 
         MavenCentralRepoSpecImpl(
             username = resolve("username"),
-            password = resolve("password")
+            password = resolve("password"),
+            newUser = newUser
         )
     }
 

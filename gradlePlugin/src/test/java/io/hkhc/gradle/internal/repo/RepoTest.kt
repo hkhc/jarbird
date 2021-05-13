@@ -23,11 +23,15 @@ import io.hkhc.utils.test.MockProjectProperty
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
+import org.gradle.api.Project
 
 class RepoTest : FunSpec({
 
+    val project = mockk<Project>()
+
     beforeTest {
         JarbirdLogger.logger = mockk(relaxed = true)
+
     }
 
     test("MavenLocalSpec equality") {
@@ -42,7 +46,7 @@ class RepoTest : FunSpec({
             )
         )
         PropertyRepoSpecBuilder(projectProperty).apply {
-            buildMavenCentral() shouldBe buildMavenCentral()
+            buildMavenCentral(project) shouldBe buildMavenCentral(project)
         }
     }
 

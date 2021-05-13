@@ -18,4 +18,6 @@
 
 package io.hkhc.gradle.internal.repo
 
-interface MavenCentralRepoSpec : MavenRepoSpec
+interface MavenCentralRepoSpec : MavenRepoSpec {
+    val newUser: Boolean
+}

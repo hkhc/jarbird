@@ -134,7 +134,7 @@ open class JarbirdPubImpl(
     override fun sourceDirs(dirs: Any): Any = SourceDirs(dirs)
 
     override fun mavenCentral(): RepoSpec {
-        return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral().also {
+        return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral(project).also {
             repos.add(it)
         }
     }

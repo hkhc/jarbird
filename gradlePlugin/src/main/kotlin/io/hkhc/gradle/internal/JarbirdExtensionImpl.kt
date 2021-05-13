@@ -166,7 +166,7 @@ open class JarbirdExtensionImpl(
 
     override fun mavenCentral(): RepoSpec {
         disableDefaultRepos()
-        return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral().also {
+        return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral(project).also {
             repos.add(it)
         }
     }

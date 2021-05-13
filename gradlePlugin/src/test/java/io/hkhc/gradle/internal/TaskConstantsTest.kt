@@ -75,7 +75,7 @@ class TaskConstantsTest: FunSpec( {
         every { pubMavenCentral.pluginCoordinate() } returns "NOT-A-PLUGIN"
         every { pubMavenCentral.pom } returns pom
         every { pubMavenCentral.getRepos() } returns setOf(
-            MavenCentralRepoSpecImpl(username="username", password="password")
+            MavenCentralRepoSpecImpl(username="username", password="password", newUser = true)
         )
 
 
@@ -172,6 +172,18 @@ class TaskConstantsTest: FunSpec( {
 //            )
     }
 
+    test("newUser of mavenCentral spec") {
 
+        val specNewUser = MavenCentralRepoSpecImpl(username="username", password="password", newUser = true)
+
+        specNewUser.releaseUrl.startsWith("https://s01.oss.sonatype.org") shouldBe true
+        specNewUser.snapshotUrl.startsWith("https://s01.oss.sonatype.org") shouldBe true
+
+        val specOldUser = MavenCentralRepoSpecImpl(username="username", password="password", newUser = false)
+
+        specOldUser.releaseUrl.startsWith("https://oss.sonatype.org") shouldBe true
+        specOldUser.snapshotUrl.startsWith("https://oss.sonatype.org") shouldBe true
+
+    }
 
 })
