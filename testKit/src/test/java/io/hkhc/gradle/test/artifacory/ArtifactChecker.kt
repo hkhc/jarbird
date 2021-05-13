@@ -43,7 +43,7 @@ class ArtifactChecker {
 
         withClue("Local repository '$repoDir' shall contains deployed files, and not more") {
             with(coordinate) {
-                val files = artifactDir.listFiles()?.map { it.relativeTo(artifactDir.parentFile) } ?: arrayOf<File>()
+                val files = artifactDir.listFiles()?.map { it.relativeTo(artifactDir.parentFile) } ?: listOf()
 
                 var expectedFileList = (
                     listOf(".module", ".pom", ".$packaging", "-javadoc.jar", "-sources.jar")
