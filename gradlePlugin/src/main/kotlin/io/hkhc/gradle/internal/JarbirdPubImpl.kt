@@ -42,7 +42,7 @@ open class JarbirdPubImpl(
     projectProperty: ProjectProperty
 ) : JarbirdPub() {
 
-    private var variantMode: VariantMode = VariantMode.Invisible
+    private var variantMode: VariantMode = VariantMode.WithVersion
     private val repos = mutableSetOf<RepoSpec>()
     private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
     var component: SoftwareComponent? = null
@@ -57,12 +57,6 @@ open class JarbirdPubImpl(
         set(value) {
             variantImpl = value
         }
-
-    /**
-     * Specify maven repository for publishing.
-     */
-//    var mavenRepo: RepoEndpoint =
-//        MavenCentralEndpoint(project)
 
     override fun variantWithVersion() {
         variantMode = VariantMode.WithVersion
