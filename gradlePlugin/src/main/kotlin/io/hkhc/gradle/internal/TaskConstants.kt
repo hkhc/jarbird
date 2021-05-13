@@ -23,6 +23,7 @@ import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
 import io.hkhc.gradle.internal.repo.BintraySnapshotRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpecImpl
+import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
 import io.hkhc.utils.joinToStringAnd
 import org.gradle.api.Project
@@ -152,25 +153,29 @@ object JbPublish {
 
     fun pub(pub: JarbirdPub) = Pub(initialInfo, pub)
 
-    val to = To(initialInfo.append(newInfo("", "")))
+    val to = To(null, initialInfo.append(newInfo("", "")))
 
     class Pub(prefixTaskInfo: SimpleTaskInfo, pub: JarbirdPub) {
-        private var variant = if (pub.variant=="") "" else " (${pub.variant})"
+        private var variantWithBracket = if (pub.variant=="") "" else " (${pub.variant})"
         val taskInfo = prefixTaskInfo.append(newInfo(
             pub.pubNameCap,
-        "module '${pub.pubName}'${variant} to all targeted repositories"
+        "module '${pub.pubName}'$variantWithBracket to all targeted repositories"
         ))
-        val to = To(prefixTaskInfo.append(newInfo(
+        val to = To(pub, prefixTaskInfo.append(newInfo(
             pub.pubNameCap,
-            "module '${pub.pubName}'${variant}"
-        )))
+            "module '${pub.pubName}'$variantWithBracket"
+        ))
+        )
     }
 
-    class To(private val prefixInfo: SimpleTaskInfo) {
+    class To(private val pub: JarbirdPub? = null, private val prefixInfo: SimpleTaskInfo) {
         private val toInfo = newInfo("To", "to")
         val mavenLocal = MavenLocalTask(prefixInfo.append(toInfo))
         fun mavenRepo(spec: RepoSpec) = MavenRepoTask(prefixInfo.append(toInfo), spec)
         val mavenRepo = AllMavenRepoTask(prefixInfo.append(toInfo))
+        fun mavenCentral() = MavenRepoTask(prefixInfo.append(toInfo),
+            pub?.let { it.getRepos().filterIsInstance(MavenCentralRepoSpec::class.java)[0] }!!
+        )
         var gradlePortal = GradlePortalTask(prefixInfo.append(toInfo))
     }
 

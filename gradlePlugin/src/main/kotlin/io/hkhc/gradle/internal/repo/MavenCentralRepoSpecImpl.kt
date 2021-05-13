@@ -19,11 +19,11 @@
 package io.hkhc.gradle.internal.repo
 
 data class MavenCentralRepoSpecImpl(
-    override val description: String,
-    override val id: String,
     override val username: String,
     override val password: String
 ) : MavenCentralRepoSpec {
+    override val description = "Maven Central"
+    override val id = "MavenCentral"
     override val releaseUrl: String = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
     override val snapshotUrl: String = "https://oss.sonatype.org/content/repositories/snapshots"
     override val isAllowInsecureProtocol: Boolean = false

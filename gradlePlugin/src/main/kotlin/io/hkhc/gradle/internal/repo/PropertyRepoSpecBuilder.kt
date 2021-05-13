@@ -69,9 +69,7 @@ class PropertyRepoSpecBuilder(
 
         MavenCentralRepoSpecImpl(
             username = resolve("username"),
-            password = resolve("password"),
-            description = "Maven Central",
-            id = "MavenCentral"
+            password = resolve("password")
         )
     }
 

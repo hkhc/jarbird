@@ -20,6 +20,7 @@ package io.hkhc.gradle.internal
 
 import groovy.lang.MissingPropertyException
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.internal.repo.MavenCentralRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockProjectProperty
@@ -39,6 +40,7 @@ class TaskConstantsTest: FunSpec( {
     }
 
     val pub = mockk<JarbirdPub>()
+    val pubMavenCentral = mockk<JarbirdPub>()
     val pubPlugin = mockk<JarbirdPub>()
     val repoBuilder = PropertyRepoSpecBuilder(MockProjectProperty(mapOf(
         "repository.maven.mock.release" to "releaseUrl",
@@ -65,6 +67,17 @@ class TaskConstantsTest: FunSpec( {
         every { pubPlugin.getGAV() } returns "group:artifact:1.0"
         every { pubPlugin.pluginCoordinate() } returns "group.artifact.plugin"
         every { pubPlugin.pom } returns pomPlugin
+
+        val pomMavenCentral = mockk<Pom>()
+        every { pubMavenCentral.pubName } returns "abc"
+        every { pubMavenCentral.variant } returns "var"
+        every { pubMavenCentral.getGAV() } returns "group:artifact:1.0"
+        every { pubMavenCentral.pluginCoordinate() } returns "NOT-A-PLUGIN"
+        every { pubMavenCentral.pom } returns pom
+        every { pubMavenCentral.getRepos() } returns setOf(
+            MavenCentralRepoSpecImpl(username="username", password="password")
+        )
+
 
     }
 
@@ -116,6 +129,12 @@ class TaskConstantsTest: FunSpec( {
                 "jbPublishAbcVar",
                 "Publish module 'abc' (var) to all targeted repositories"
             )
+        JbPublish.pub(pubMavenCentral).to.mavenCentral().taskInfo shouldBe
+            JbPublish.SimpleTaskInfo(
+                "jbPublishAbcVarToMavenCentral",
+                "Publish module 'abc' (var) to Maven Central"
+            )
+
     }
 
     test("Jarbird publish all to one repo") {
