@@ -20,6 +20,7 @@ package io.hkhc.gradle.internal
 
 import groovy.lang.MissingPropertyException
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.pom.Pom
@@ -28,6 +29,8 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import org.gradle.api.Project
+import org.gradle.api.logging.Logging
 
 class TaskConstantsTest: FunSpec( {
 
@@ -47,9 +50,17 @@ class TaskConstantsTest: FunSpec( {
         "repository.maven.mock.snapshot" to "snapshotUrl"
     )))
 
-    val repo = repoBuilder.buildMavenRepo("mock")
+    val project = mockk<Project>()
+
+    val mavenRepo = repoBuilder.buildMavenRepo("mock")
+    lateinit var mavenCentralRepo: RepoSpec
 
     beforeSpec() {
+
+        every { project.logger } returns Logging.getLogger(Project::class.java)
+
+        mavenCentralRepo = repoBuilder.buildMavenCentral(project)
+
         val pom = mockk<Pom>()
         every { pom.isGradlePlugin() } returns false
 
@@ -92,7 +103,8 @@ class TaskConstantsTest: FunSpec( {
 
     test("publish all to one repo") {
         Publish.to.mavenLocal.taskName shouldBe "publishToMavenLocal"
-        Publish.to.mavenRepo(repo).taskName shouldBe "publishToMavenMockRepository"
+        Publish.to.mavenRepo(mavenRepo).taskName shouldBe "publishToMavenMockRepository"
+        Publish.to.mavenRepo(mavenCentralRepo).taskName shouldBe "publishToMavenCentralRepository"
     }
 
     test("publish plugin marker of one pub") {
@@ -103,9 +115,9 @@ class TaskConstantsTest: FunSpec( {
     }
 
     test("publish to custom maven repo") {
-        Publish.pub(pub).to.mavenRepo(repo).taskName shouldBe
+        Publish.pub(pub).to.mavenRepo(mavenRepo).taskName shouldBe
             "publishAbcVarPublicationToMavenMockRepository"
-        Publish.pluginMarker(pub).to.mavenRepo(repo).taskName shouldBe
+        Publish.pluginMarker(pub).to.mavenRepo(mavenRepo).taskName shouldBe
             "publishAbcVarPluginMarkerMavenPublicationToMavenMockRepository"
     }
 
@@ -140,8 +152,8 @@ class TaskConstantsTest: FunSpec( {
     test("Jarbird publish all to one repo") {
         JbPublish.to.mavenLocal.taskInfo shouldBe
             JbPublish.SimpleTaskInfo("jbPublishToMavenLocal", "Publish to Maven Local repository")
-        JbPublish.to.mavenRepo(repo).taskInfo shouldBe
-            JbPublish.SimpleTaskInfo("jbPublishToMavenMockRepository", "Publish to Maven repository 'mock'")
+        JbPublish.to.mavenRepo(mavenRepo).taskInfo shouldBe
+            JbPublish.SimpleTaskInfo("jbPublishToMavenMock", "Publish to Maven repository 'mock'")
         JbPublish.to.mavenRepo.taskInfo shouldBe
             JbPublish.SimpleTaskInfo("jbPublishToMavenRepository", "Publish to all Maven repositories")
     }
@@ -160,9 +172,9 @@ class TaskConstantsTest: FunSpec( {
 //    }
 
     test("JbPublish to custom maven repo") {
-        JbPublish.pub(pub).to.mavenRepo(repo).taskInfo shouldBe
+        JbPublish.pub(pub).to.mavenRepo(mavenRepo).taskInfo shouldBe
             JbPublish.SimpleTaskInfo(
-                "jbPublishAbcVarToMavenMockRepository",
+                "jbPublishAbcVarToMavenMock",
                 "Publish module 'abc' (var) to Maven repository 'mock'"
             )
 //        JbPublish.pluginMarker(pub).to.mavenRepo(repo).taskInfo shouldBe

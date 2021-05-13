@@ -22,14 +22,18 @@ import io.hkhc.gradle.internal.JarbirdLogger
 import io.hkhc.utils.test.MockProjectProperty
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.every
 import io.mockk.mockk
 import org.gradle.api.Project
+import org.gradle.api.logging.Logging
 
 class RepoTest : FunSpec({
 
     val project = mockk<Project>()
 
     beforeTest {
+
+        every { project.logger } returns Logging.getLogger(Project::class.java)
         JarbirdLogger.logger = mockk(relaxed = true)
 
     }
