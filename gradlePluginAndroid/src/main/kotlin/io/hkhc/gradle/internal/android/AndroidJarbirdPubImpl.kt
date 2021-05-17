@@ -31,7 +31,6 @@ class AndroidJarbirdPubImpl(
 ) : JarbirdPubImpl(project, ext, projectProperty) {
 
     override fun from(source: Any) {
-
         LibraryVariant.implemented(source)?.let {
             it.getName()?.let { name ->
                 project.logger.debug("$LOG_PREFIX publish library variant $name")

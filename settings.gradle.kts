@@ -16,7 +16,6 @@
  *
  */
 
-import de.fayard.refreshVersions.bootstrapRefreshVersions
 
 pluginManagement {
     repositories {
@@ -29,14 +28,9 @@ pluginManagement {
     }
 }
 
-buildscript {
-    repositories { gradlePluginPortal() }
-    dependencies {
-        classpath("de.fayard.refreshVersions:refreshVersions:0.9.7")
-    }
+plugins {
+    id("de.fayard.refreshVersions") version "0.10.0"
 }
-
-bootstrapRefreshVersions()
 
 // If you want the root project name to be different from the directory name
 // rootProject.name = "your-project-name"
