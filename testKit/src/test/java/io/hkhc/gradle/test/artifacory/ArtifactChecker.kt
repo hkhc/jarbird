@@ -28,6 +28,50 @@ import java.io.File
 
 class ArtifactChecker {
 
+    fun verifyPluginMarkerRepository(repoDir: File, pluginMarkerCoordinate: Coordinate) {
+
+        withClue("Repository directory '$repoDir' shall exists") {
+            repoDir.shouldExist()
+        }
+
+        val artifactPath = pluginMarkerCoordinate.getPluginPath()
+        val artifactDir = File(repoDir, artifactPath)
+
+        withClue("Artifactory directory '$artifactDir' in Local repository shall exists") {
+            artifactDir.shouldExist()
+        }
+
+        withClue("Local repository '$repoDir' + '$artifactDir' shall contains deployed files, and not more") {
+            with(pluginMarkerCoordinate) {
+                val files = artifactDir.listFiles()?.map { it.relativeTo(artifactDir.parentFile) } ?: listOf()
+
+                var expectedFileList = (
+                    listOf(".pom")
+                        .flatMap {
+                            if (pluginMarkerCoordinate.version.isSnapshot()) {
+                                listOf(
+                                    File("$versionWithVariant/${pluginId}.gradle.plugin-${versionWithVariant}$it")
+                                )
+                            } else {
+                                listOf(
+                                    File("$versionWithVariant/${pluginId}.gradle.plugin-${versionWithVariant}$it"),
+                                    File("$versionWithVariant/${pluginId}.gradle.plugin-${versionWithVariant}$it.asc")
+                                )
+                            }
+                        }
+                    )
+
+                if (version.isSnapshot()) {
+                    expectedFileList += listOf(File("$versionWithVariant/maven-metadata-local.xml"))
+                }
+
+                files.shouldNotBeNull()
+                files shouldContainExactlyInAnyOrder expectedFileList
+            }
+        }
+
+    }
+
     fun verifyRepository(repoDir: File, coordinate: Coordinate, packaging: String) {
 
         withClue("Repository directory '$repoDir' shall exists") {

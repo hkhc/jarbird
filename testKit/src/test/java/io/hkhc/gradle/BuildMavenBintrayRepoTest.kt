@@ -34,8 +34,7 @@ import io.hkhc.gradle.test.buildGradleKts
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.publishToMavenLocalCompletely
-import io.hkhc.gradle.test.shouldBeNoDifference
+import io.hkhc.gradle.test.mavenlocal.publishToMavenLocalCompletely
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme

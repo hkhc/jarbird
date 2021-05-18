@@ -25,8 +25,7 @@ import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.getTestGradleHomePair
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.publishToMavenLocalCompletely
-import io.hkhc.gradle.test.shouldBeNoDifference
+import io.hkhc.gradle.test.mavenlocal.publishToMavenLocalCompletely
 import io.hkhc.gradle.test.simplePomRoot
 import io.hkhc.gradle.test.simpleSubProj
 import io.hkhc.test.utils.test.tempDirectory

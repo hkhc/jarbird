@@ -25,6 +25,7 @@ import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.gradle.test.buildGradlePluginKts
 import io.hkhc.gradle.test.getTaskTree
+import io.hkhc.gradle.test.maven.publishedPluginToMavenRepositoryCompletely
 import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.pluginPom
 import io.hkhc.gradle.test.printFileTree
@@ -154,7 +155,7 @@ class BuildMavenPluginRepoTest : FunSpec({
                         server.collectRequests(),
                         listOf(coordinate),
                         "jar"
-                    ) should publishedToMavenRepositoryCompletely()
+                    ) should publishedPluginToMavenRepositoryCompletely()
                 }
             }
         }
@@ -167,9 +168,12 @@ class BuildMavenPluginRepoTest : FunSpec({
                 stringTreeOf(NoBarTheme) {
                     ":jbPublishToMavenRepository SUCCESS" {
                         ":jbPublishTestArtifactToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                            ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                 ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository SUCCESS" {
                                     ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                                    ":signTestArtifactPluginMarkerMavenPublication SUCCESS" {
+                                        ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                                    }
                                 }
                                 ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                     ":generateMetadataFileForTestArtifactPublication SUCCESS" {
@@ -210,7 +214,7 @@ class BuildMavenPluginRepoTest : FunSpec({
                 stringTreeOf(NoBarTheme) {
                     ":jbPublishToMavenRepository SUCCESS" {
                         ":jbPublishTestArtifactToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                            ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                 ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository SUCCESS" {
                                     ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
                                 }

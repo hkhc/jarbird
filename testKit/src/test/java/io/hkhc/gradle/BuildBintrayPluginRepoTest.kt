@@ -134,6 +134,9 @@ class BuildBintrayPluginRepoTest : FunSpec({
                         ":bintrayUpload SUCCESS" {
                             ":publishTestArtifactPluginMarkerMavenPublicationToMavenLocal SUCCESS" {
                                 ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                                ":signTestArtifactPluginMarkerMavenPublication SUCCESS" {
+                                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                                }
                             }
                             ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
                                 ":generateMetadataFileForTestArtifactPublication SUCCESS" {

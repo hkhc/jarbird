@@ -120,6 +120,9 @@ class SigningConfig(
             if (!pub.pom.isSnapshot()) {
                 project.findByType(PublishingExtension::class.java)?.let {
                     sign(it.publications[pub.pubNameWithVariant()])
+                    if (pub.pom.isGradlePlugin()) {
+                        sign(it.publications[pub.markerPubName])
+                    }
                 }
             }
         }

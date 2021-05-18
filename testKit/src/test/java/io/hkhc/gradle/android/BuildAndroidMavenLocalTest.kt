@@ -23,13 +23,11 @@ import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.commonAndroidExtGradle
 import io.hkhc.gradle.test.commonAndroidRootGradle
-import io.hkhc.gradle.test.except
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.getTestAndroidSdkHomePair
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.publishToMavenLocalCompletely
+import io.hkhc.gradle.test.mavenlocal.publishToMavenLocalCompletely
 import io.hkhc.gradle.test.setupAndroidProperties
-import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme

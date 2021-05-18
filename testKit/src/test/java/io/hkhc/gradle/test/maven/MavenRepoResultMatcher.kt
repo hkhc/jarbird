@@ -32,3 +32,14 @@ fun publishedToMavenRepositoryCompletely(withMetadata: Boolean = true) = object 
         )
     }
 }
+
+fun publishedPluginToMavenRepositoryCompletely(withMetadata: Boolean = true) = object : Matcher<MavenRepoResult> {
+    override fun test(value: MavenRepoResult): MatcherResult {
+        MavenPublishingChecker(value.coordinates, value.packaging, withMetadata).assertPluginArtifacts(value.recordedRequests)
+        return MatcherResult(
+            true,
+            "All files should be published to Maven repository",
+            "Not all files should be published to Maven repository"
+        )
+    }
+}

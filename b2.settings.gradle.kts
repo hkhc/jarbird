@@ -26,14 +26,9 @@ pluginManagement {
     }
 }
 
-buildscript {
-    repositories { gradlePluginPortal() }
-    dependencies {
-        classpath("de.fayard.refreshVersions:refreshVersions:0.9.7")
-    }
+plugins {
+    id("de.fayard.refreshVersions") version "0.10.0"
 }
-
-bootstrapRefreshVersions()
 
 include(":gradlePlugin")
 include(":gradlePluginBasic")

@@ -16,8 +16,9 @@
  *
  */
 
-package io.hkhc.gradle.test
+package io.hkhc.gradle.test.mavenlocal
 
+import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.artifacory.ArtifactChecker
 import io.kotest.matchers.Matcher
 import io.kotest.matchers.MatcherResult
@@ -25,6 +26,17 @@ import io.kotest.matchers.MatcherResult
 fun publishToMavenLocalCompletely() = object : Matcher<LocalRepoResult> {
     override fun test(value: LocalRepoResult): MatcherResult {
         ArtifactChecker().verifyRepository(value.repoDir, value.coordinate, value.packaging)
+        return MatcherResult(
+            true,
+            "All files should be published to Maven local repository",
+            "Not all files should be published to Maven local repository"
+        )
+    }
+}
+
+fun publishPluginToMavenLocalCompletely() = object : Matcher<LocalRepoResult> {
+    override fun test(value: LocalRepoResult): MatcherResult {
+        ArtifactChecker().verifyPluginMarkerRepository(value.repoDir, value.coordinate)
         return MatcherResult(
             true,
             "All files should be published to Maven local repository",

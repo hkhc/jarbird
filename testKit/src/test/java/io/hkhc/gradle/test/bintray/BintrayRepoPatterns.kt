@@ -54,6 +54,12 @@ class BintrayRepoPatterns(
                                     "$pluginId.gradle.plugin-${versionTransformer(versionWithVariant)}.pom"
                             )
                         }
+                        .flatMap {
+                            if (isSnapshot(coordinate))
+                                listOf(it)
+                            else
+                                listOf(it, "${it}.asc")
+                        }
                 } ?: listOf()
             }
         }

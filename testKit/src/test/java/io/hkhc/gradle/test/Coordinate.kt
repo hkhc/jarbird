@@ -36,5 +36,11 @@ data class Coordinate(
         artifactIdWithVariant,
         versionWithVariant
     ).toString()
+    fun getPluginPath() = pluginId?.let { pid -> relativePath(
+            pid.replace('.', '/'),
+            "${pid}.gradle.plugin",
+            versionWithVariant
+        ).toString()
+    }
     fun getFilenameBase() = "$artifactIdWithVariant-$versionWithVariant"
 }

@@ -60,11 +60,16 @@ class MavenRepoPatterns(
             )
                 .flatMap {
                     metafile(it, coor) +
-                        relativePath(
+                        listOf(relativePath(
                             it,
                             coor.versionWithVariant,
                             "${coor.pluginId}.gradle.plugin-${versionTransformer(coor.versionWithVariant)}.pom"
-                        ).toString()
+                        ).toString()).flatMap {
+                            if (isSnapshot(coor))
+                                listOf(it)
+                            else
+                                listOf(it, "${it}.asc")
+                        }
                 }
                 .flatMap(::hashedPaths)
         } ?: listOf()

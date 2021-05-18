@@ -22,17 +22,16 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.getTaskTree
+import io.hkhc.gradle.test.mavenlocal.publishPluginToMavenLocalCompletely
 import io.hkhc.gradle.test.pluginPom
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.publishToMavenLocalCompletely
-import io.hkhc.gradle.test.shouldBeNoDifference
+import io.hkhc.gradle.test.mavenlocal.publishToMavenLocalCompletely
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme
 import io.hkhc.utils.tree.chopChilds
 import io.hkhc.utils.tree.stringTreeOf
 import io.hkhc.utils.tree.toStringTree
-import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
@@ -137,6 +136,8 @@ class BuildPluginMavenLocalTest : FunSpec({
             pluginPom shouldBe pluginPom(coordinate)
 
             LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should publishToMavenLocalCompletely()
+            LocalRepoResult(setup.localRepoDirFile, coordinate, "dont-care") should publishPluginToMavenLocalCompletely()
+            printFileTree(setup.projectDir)
         }
     }
 })

@@ -21,16 +21,13 @@ package io.hkhc.gradle
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
-import io.hkhc.gradle.taskinfo.TaskInfoNode
 import io.hkhc.gradle.test.buildGradle
-import io.hkhc.gradle.taskinfo.load
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.publishToMavenLocalCompletely
+import io.hkhc.gradle.test.mavenlocal.publishToMavenLocalCompletely
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme
-import io.hkhc.utils.tree.TreeBuilder
 import io.hkhc.utils.tree.chopChilds
 import io.hkhc.utils.tree.stringTreeOf
 import io.hkhc.utils.tree.toStringTree

@@ -47,6 +47,29 @@ class MavenPublishingChecker(
         return "$snapshotVersion-[0-9]+.[0-9]+-[0-9]+"
     }
 
+    fun assertPluginArtifacts(recordedRequests: List<RecordedRequest>) {
+
+        val expectedPaths = MavenRepoPatterns(
+            "/base",
+            coordinates,
+            packaging,
+            ::transformReleaseVersion,
+            ::transformSnapshotVersion,
+            withMetadata
+        ).list().onEach { assertFile(recordedRequests, it) }
+
+        val remainingPaths = recordedRequests
+            .filter {
+                it.method == "PUT" &&
+                    expectedPaths.none { regex -> it.path?.let { path -> regex.matches(path) } ?: false }
+            }
+
+        GroovyTestCase.assertEquals(
+            "all request to repository server are expected",
+            "",
+            remainingPaths.map { it.path }.joinToString("\n")
+        )
+    }
     fun assertArtifacts(recordedRequests: List<RecordedRequest>) {
 
         val expectedPaths = MavenRepoPatterns(
