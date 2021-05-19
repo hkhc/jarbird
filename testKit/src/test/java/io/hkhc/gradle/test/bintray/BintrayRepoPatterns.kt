@@ -54,12 +54,15 @@ class BintrayRepoPatterns(
                                     "$pluginId.gradle.plugin-${versionTransformer(versionWithVariant)}.pom"
                             )
                         }
-                        .flatMap {
-                            if (isSnapshot(coordinate))
-                                listOf(it)
-                            else
-                                listOf(it, "${it}.asc")
-                        }
+                        // TODO Official released bintray Gradle plugin 1.8.5 has a bug that ignore the signature
+                        // created by Signing plugin. Tha latest code in GitHub fixed the issue.
+                        // So we do not check the .asc file here.
+//                        .flatMap {
+//                            if (isSnapshot(coordinate))
+//                                listOf(it)
+//                            else
+//                                listOf(it, "${it}.asc")
+//                        }
                 } ?: listOf()
             }
         }

@@ -147,7 +147,33 @@ fun pluginPom(coordinate: Coordinate): String {
       <artifactId>${coordinate.pluginId}.gradle.plugin</artifactId>
       <version>${coordinate.versionWithVariant}</version>
       <packaging>pom</packaging>
-      <name>Testing Plugin</name>
+      <name>test.artifact</name>
+      <description>Test artifact</description>
+      <url>https://github.com/test.user/test.repo</url>
+      <inceptionYear>2021</inceptionYear>
+      <organization/>
+      <licenses>
+        <license>
+          <name>Apache-2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+      </licenses>
+      <developers>
+        <developer>
+          <id>test.user</id>
+          <name>Test User</name>
+          <email>test.user@mail.com</email>
+        </developer>
+      </developers>
+      <scm>
+        <connection>scm:git@github.com:test.user/test.repo</connection>
+        <developerConnection>scm:git@github.com:test.user/test.repo.git</developerConnection>
+        <url>https://github.com/test.user/test.repo</url>
+      </scm>
+      <issueManagement>
+        <system>github.com</system>
+        <url>https://github.com/test.user/test.repo/issues</url>
+      </issueManagement>
       <dependencies>
         <dependency>
           <groupId>${coordinate.group}</groupId>

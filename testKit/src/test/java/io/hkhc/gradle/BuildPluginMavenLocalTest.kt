@@ -42,7 +42,7 @@ import java.io.File
 @Tags("Plugin", "MavenLocal")
 class BuildPluginMavenLocalTest : FunSpec({
 
-    context("Publish library to Maven Repository") {
+    context("Publish Gradle Plugin to Maven Local Repository") {
         val coordinate = Coordinate("test.group", "test.artifact", "0.1", "test.plugin")
         val targetTask = "jbPublishToMavenLocal"
         val projectDir = tempDirectory()
@@ -99,6 +99,9 @@ class BuildPluginMavenLocalTest : FunSpec({
                         ":jbPublishTestArtifactToMavenLocal SUCCESS" {
                             ":publishTestArtifactPluginMarkerMavenPublicationToMavenLocal SUCCESS" {
                                 ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                                ":signTestArtifactPluginMarkerMavenPublication SUCCESS" {
+                                    ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                                }
                             }
                             ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
                                 ":generateMetadataFileForTestArtifactPublication SUCCESS" {

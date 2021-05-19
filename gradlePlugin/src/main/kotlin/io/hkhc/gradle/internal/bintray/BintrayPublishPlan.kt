@@ -20,6 +20,7 @@ package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.PLUGIN_MARKER_PUB_SUFFIX
+import io.hkhc.gradle.internal.markerPubName
 import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.pubNameWithVariant
 
@@ -35,13 +36,11 @@ class BintrayPublishPlan(val pubs: List<JarbirdPub>) {
     init {
         pubs.filter { it.needsBintray() }.forEach {
             if (it.pom.isSnapshot()) {
-//                artifactory.add(it)
                 artifactoryLibs.add(it)
                 if (it.pom.isGradlePlugin()) {
                     artifactoryPlugins.add(it)
                 }
             } else {
-//                bintray.add(it)
                 bintrayLibs.add(it)
                 if (it.pom.isGradlePlugin()) {
                     bintrayPlugins.add(it)
@@ -53,14 +52,14 @@ class BintrayPublishPlan(val pubs: List<JarbirdPub>) {
     fun bintrayPublications(): List<String> {
         return mutableListOf<String>().apply {
             addAll(bintrayLibs.map { it.pubNameWithVariant() })
-            addAll(bintrayPlugins.map { "${it.pubNameWithVariant()}$PLUGIN_MARKER_PUB_SUFFIX" })
+            addAll(bintrayPlugins.map { it.markerPubName})
         }
     }
 
     fun artifactoryPublications(): List<String> {
         return mutableListOf<String>().apply {
             addAll(artifactoryLibs.map { it.pubNameWithVariant() })
-            addAll(artifactoryPlugins.map { "${it.pubNameWithVariant()}$PLUGIN_MARKER_PUB_SUFFIX" })
+            addAll(artifactoryPlugins.map { it.markerPubName })
         }
     }
 }

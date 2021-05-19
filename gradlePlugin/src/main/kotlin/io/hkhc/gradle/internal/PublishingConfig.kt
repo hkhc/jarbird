@@ -26,6 +26,7 @@ import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import io.hkhc.gradle.internal.utils.Version
 import io.hkhc.gradle.internal.utils.detailMessageWarning
 import io.hkhc.gradle.internal.utils.findByType
+import io.hkhc.gradle.pom.Pom
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.PublishArtifact
@@ -34,10 +35,12 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.named
+import org.w3c.dom.Document
 
 internal class PublishingConfig(
     private val project: Project,
@@ -176,7 +179,38 @@ internal class PublishingConfig(
                 }
                 pom { MavenPomAdapter().fill(this, pom) }
             }
+
+            if (pub.pom.isGradlePlugin()) {
+                register(pub.markerPubName, MavenPublication::class.java) {
+
+                    (this as MavenPublicationInternal).isAlias = true
+
+                    groupId = pub.pom.plugin!!.id
+
+                    artifactId = pub.pluginMarkerPubNameWithVariant()
+
+                    version = pub.variantVersion()
+
+                    pom {
+                        MavenPomAdapter().fill(this, pom)
+                        withXml { pomAddDependency(asElement().ownerDocument, pom) }
+                    }
+
+                }
+            }
         }
+    }
+
+    private fun pomAddDependency(doc: Document, pom: Pom) {
+        val root = doc.documentElement
+        val dependencies = root.appendChild(doc.createElement("dependencies"))
+        val dependency = dependencies.appendChild(doc.createElement("dependency"))
+        val groupId = dependency.appendChild(doc.createElement("groupId"))
+        groupId.textContent = pom.group
+        val artifactId = dependency.appendChild(doc.createElement("artifactId"))
+        artifactId.textContent = pom.artifactId
+        val version = dependency.appendChild(doc.createElement("version"))
+        version.textContent = pom.version
     }
 
     /**

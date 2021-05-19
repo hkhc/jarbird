@@ -30,6 +30,8 @@ internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): Stri
     return "${pubName}${variant.capitalize()}"
 }
 
+internal fun JarbirdPub.pluginMarkerPubNameWithVariant() = "${pom.plugin!!.id}.gradle.plugin"
+
 // If function is suffixed with "Cap" this means the callers do not need to worry about the first letter case.
 // It should always be capitalized. If it is not with "Cap", then there is no such guarantee.
 

@@ -20,6 +20,7 @@ package io.hkhc.gradle.internal
 
 import com.gradle.publish.PluginBundleExtension
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.internal.maven.MavenPomAdapter
 import io.hkhc.gradle.internal.utils.findByType
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -80,13 +81,18 @@ class PluginPublishingConfig(
             if (pub.pom.isGradlePlugin()) {
                 val publishing = project.findByType(PublishingExtension::class.java)
                 publishing?.publications {
-                    val markerPublication = maybeCreate(
+                    val pluginMainPublication = maybeCreate(
                         "pluginMaven",
                         MavenPublication::class.java
                     )
-                    markerPublication.groupId = pub.pom.group
-                    markerPublication.artifactId = pub.pom.artifactId
-                    markerPublication.version = pub.pom.version
+                    pluginMainPublication.groupId = pub.pom.group
+                    pluginMainPublication.artifactId = pub.pom.artifactId
+                    pluginMainPublication.version = pub.pom.version
+
+//                    pluginMainPublication.pom {
+//                        MavenPomAdapter().fill(this, pub.pom)
+//                    }
+
                 }
             }
         }
@@ -116,6 +122,8 @@ class PluginPublishingConfig(
     private fun GradlePluginDevelopmentExtension.config() {
 
         project.logger.debug("$LOG_PREFIX configure Gradle plugin development plugin")
+
+        isAutomatedPublishing = false
 
         plugins {
             pubs.filter { it.pom.isGradlePlugin() }.forEach {

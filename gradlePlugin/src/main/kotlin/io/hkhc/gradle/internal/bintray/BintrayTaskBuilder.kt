@@ -40,14 +40,14 @@ class BintrayTaskBuilder(
 
     val publishPlan = BintrayPublishPlan(pubs)
 
-    private val taskInfo: TaskInfo = JbPublishToBintrayTaskInfo(publishPlan)
+    private val bintrayTaskInfo: TaskInfo = JbPublishToBintrayTaskInfo(publishPlan)
 
-    fun getTaskInfo() = taskInfo
+    fun getTaskInfo() = bintrayTaskInfo
 
     fun registerBintrayTask() {
 
         if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(taskInfo)
+            project.registerRootProjectTasks(bintrayTaskInfo)
         } else {
             registerLeafBintrayTask()
         }
@@ -64,7 +64,7 @@ class BintrayTaskBuilder(
 
         if (pubs.needsBintray()) {
 
-            taskInfo.register(project.tasks) {
+            bintrayTaskInfo.register(project.tasks) {
                 /*
                     bintray repository does not allow publishing SNAPSHOT artifacts, it has to be published
                     to the OSS JFrog repository
