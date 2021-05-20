@@ -32,3 +32,8 @@ do it in the good old way.
 See more for [Sample app](https://github.com/hkhc/jarbird-samples) repository for basic usage. 
 And [full documentation](https://hkhc.github.io/jarbird/)
 
+# What's new
+
+## 0.5.2 
+- Generate Maven Central compliant POM for Gradle plugin publishing
+- Handle "new" Maven Central account created after Feb, 2021
