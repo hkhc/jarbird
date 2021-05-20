@@ -30,5 +30,5 @@ by this plugin. However, if things are really complicated, they deserve effort t
 do it in the good old way.
 
 See more for [Sample app](https://github.com/hkhc/jarbird-samples) repository for basic usage. 
-And [full documentation](https://hkhc.github.io/jarbird)
+And [full documentation](https://hkhc.github.io/jarbird/)
 
