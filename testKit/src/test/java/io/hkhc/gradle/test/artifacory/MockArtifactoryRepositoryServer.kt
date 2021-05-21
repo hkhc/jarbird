@@ -27,7 +27,7 @@ import io.hkhc.gradle.test.Success
 class MockArtifactoryRepositoryServer : BaseMockRepositoryServer() {
 
     // TODO fix multi coordinates matcher
-    override fun setupMatcher(coordinates: List<Coordinate>) = coordinates.flatMap { _ ->
+    override fun setupMatcher(coordinates: List<Coordinate>, baseUrl: String) = coordinates.flatMap { _ ->
         listOf(
             PutMatcher("/base/oss-snapshot-local", Success),
             GetMatcher("/base/api/system/version") { _, response ->

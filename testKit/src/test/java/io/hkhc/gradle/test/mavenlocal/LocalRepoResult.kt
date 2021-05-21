@@ -33,6 +33,12 @@ data class MavenRepoResult(
     val packaging: String
 )
 
+data class GradlePortalRepoResult(
+    val recordedRequests: List<RecordedRequest>,
+    val coordinates: List<Coordinate>,
+    val packaging: String
+)
+
 data class BintrayRepoResult(
     val recordedRequests: List<RecordedRequest>,
     val coordinates: List<Coordinate>,

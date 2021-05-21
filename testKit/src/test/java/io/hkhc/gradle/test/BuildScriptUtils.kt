@@ -241,6 +241,25 @@ fun buildGradlePluginKts(versions: Versions = Versions()): String {
     """.trimIndent()
 }
 
+// why does org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.72 cannot be load successfully with mavenCentral() ??
+fun buildGradlePortalPluginKts(versions: Versions = Versions()): String {
+    return """
+        ${commonBuildGradleKtsPlugins(versions)}
+        repositories {
+            jcenter()
+        }
+        jarbird {
+            pub {
+                gradlePortal()
+            }
+        }
+        dependencies {
+            implementation(gradleApi())
+        }
+    """.trimIndent()
+}
+
+
 fun commonAndroidRootGradle(versions: AndroidVersions = AndroidVersions()): String {
 
     return """

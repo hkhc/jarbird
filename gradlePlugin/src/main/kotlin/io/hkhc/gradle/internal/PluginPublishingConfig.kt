@@ -26,6 +26,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.kotlin.dsl.get
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 
 class PluginPublishingConfig(
@@ -45,20 +46,21 @@ class PluginPublishingConfig(
      */
 
     fun config() {
-        (
-            // TODO rename findByType to findExtension
-            project.findByType(PluginBundleExtension::class.java)
-                ?: throw GradleException(
-                    "\"pluginBundle\" extension is not found, may be " +
-                        "\"com.gradle.plugin-publish\" plugin is not applied?"
-                )
-            ).config()
 
         (
             project.findByType(GradlePluginDevelopmentExtension::class.java)
                 ?: throw GradleException(
                     "\"gradlePlugin\" extension is not found, may be " +
                         "\"plugin org.gradle.java-gradle-plugin\" is not applied?"
+                )
+            ).config()
+
+        (
+            // TODO rename findByType to findExtension
+            project.findByType(PluginBundleExtension::class.java)
+                ?: throw GradleException(
+                    "\"pluginBundle\" extension is not found, may be " +
+                        "\"com.gradle.plugin-publish\" plugin is not applied?"
                 )
             ).config()
 
@@ -85,38 +87,51 @@ class PluginPublishingConfig(
                         "pluginMaven",
                         MavenPublication::class.java
                     )
-                    pluginMainPublication.groupId = pub.pom.group
-                    pluginMainPublication.artifactId = pub.pom.artifactId
-                    pluginMainPublication.version = pub.pom.version
+                    with(pluginMainPublication) {
+                        val effectiveComponent = (pub as JarbirdPubImpl).component ?: project.components["java"]
+                        from(effectiveComponent)
+                        groupId = pub.pom.group
+                        artifactId = pub.pom.artifactId
+                        version = pub.pom.version
+                    }
 
-//                    pluginMainPublication.pom {
-//                        MavenPomAdapter().fill(this, pub.pom)
-//                    }
+                    pluginMainPublication.pom {
+                        MavenPomAdapter().fill(this, pub.pom)
+                    }
 
                 }
             }
         }
     }
 
-//        pubs.forEach {
-//            if (it.pom.isGradlePlugin()) {
-//                it.variantArtifactId()?.let { artifactId ->
-//                    updatePluginPublication(project, artifactId)
-//                }
-//            }
-//        }
-//    }
-
     private fun PluginBundleExtension.config() {
 
         // TODO we can have one set of metadata for gradle plugins in one project.
+        // TODO do a pre check
 
-        val pom = pubs.map { it.pom }.first { it.isGradlePlugin() }
+        val infoPom = pubs.map { it.pom }.first { it.isGradlePlugin() }
 
-        website = pom.web.url
-        vcsUrl = pom.scm.url ?: website
-        description = pom.plugin?.description ?: pom.description
-        tags = pom.plugin?.tags ?: listOf()
+        website = infoPom.web.url
+        vcsUrl = infoPom.scm.url ?: website
+        description = infoPom.plugin?.description ?: infoPom.description
+        tags = infoPom.plugin?.tags ?: listOf()
+
+        plugins {
+            pubs.filter { it.pom.isGradlePlugin() }.forEach { pub ->
+                maybeCreate(pub.pubNameWithVariant()).apply {
+                    // We have overrided a large part of the gradle plugin publish plugin.
+                    // so we need to set the coordinate by ourselves.
+                    mavenCoordinates {
+                        group = pub.pom.group
+                        artifactId = pub.pom.artifactId
+                        version = pub.pom.version
+                    }
+                    displayName = pub.pom.name
+                    description = pub.pom.description
+                }
+            }
+        }
+
     }
 
     private fun GradlePluginDevelopmentExtension.config() {
@@ -127,11 +142,9 @@ class PluginPublishingConfig(
 
         plugins {
             pubs.filter { it.pom.isGradlePlugin() }.forEach {
-                create(it.pubNameWithVariant()) {
+                maybeCreate(it.pubNameWithVariant()).apply {
                     it.pom.plugin?.let { plugin ->
                         id = plugin.id
-                        displayName = plugin.displayName
-                        description = plugin.description
                         implementationClass = plugin.implementationClass
                     }
                 }

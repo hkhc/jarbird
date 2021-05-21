@@ -22,6 +22,7 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
+import java.nio.charset.Charset
 
 abstract class BaseMockRepositoryServer {
     private lateinit var server: MockWebServer
@@ -29,7 +30,7 @@ abstract class BaseMockRepositoryServer {
     private lateinit var coordinates: List<Coordinate>
     private lateinit var matcher: List<RequestMatcher>
 
-    abstract fun setupMatcher(coordinates: List<Coordinate>): List<RequestMatcher>
+    abstract fun setupMatcher(coordinates: List<Coordinate>, baseUrl: String): List<RequestMatcher>
 
     private fun pathMatcher(request: RecordedRequest): MockResponse {
         return matcher.find { it.matches(request) }?.
@@ -43,7 +44,7 @@ abstract class BaseMockRepositoryServer {
 
         this.coordinates = coordinates
 
-        matcher = setupMatcher(coordinates)
+        matcher = setupMatcher(coordinates, baseUrl)
 
         this.baseUrl = baseUrl
         server = MockWebServer()
@@ -70,6 +71,11 @@ abstract class BaseMockRepositoryServer {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 return pathMatcher(request).apply {
                     println("mock server request : ${request.method} ${request.path} result ${this.status}")
+//                    if (request.method=="POST") {
+//                        val body = request.body
+//                        val bodyString = body.readString(Charset.defaultCharset())
+//                        println("Body String ${bodyString}")
+//                    }
                 }
             }
         }

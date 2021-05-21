@@ -34,7 +34,7 @@ class MockBintrayRepositoryServer : BaseMockRepositoryServer() {
     val repo = "maven"
 
     // TODO fix multi coordinates matcher
-    override fun setupMatcher(coordinates: List<Coordinate>) = coordinates.flatMap { coordinate ->
+    override fun setupMatcher(coordinates: List<Coordinate>, baseUrl: String) = coordinates.flatMap { coordinate ->
         val first = coordinates[0]
         with(coordinate) {
             listOf(

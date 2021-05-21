@@ -133,6 +133,9 @@ fun pluginPom(id: String, className: String): String {
             id: $id
             displayName: Testing Plugin
             implementationClass: $className
+            tags:
+            - publish
+            
     """.trimIndent()
 }
 
