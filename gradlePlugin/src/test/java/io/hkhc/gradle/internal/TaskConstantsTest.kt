@@ -155,7 +155,7 @@ class TaskConstantsTest: FunSpec( {
         JbPublish.to.mavenRepo(mavenRepo).taskInfo shouldBe
             JbPublish.SimpleTaskInfo("jbPublishToMavenMock", "Publish to Maven repository 'mock'")
         JbPublish.to.mavenRepo.taskInfo shouldBe
-            JbPublish.SimpleTaskInfo("jbPublishToMavenRepository", "Publish to all Maven repositories")
+            JbPublish.SimpleTaskInfo("jbPublishToMavenRepositories", "Publish to all Maven repositories")
     }
 
 //    test("Jarbird publish plugin marker of one pub") {

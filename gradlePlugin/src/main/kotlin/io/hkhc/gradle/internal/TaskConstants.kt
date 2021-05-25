@@ -189,7 +189,7 @@ object JbPublish {
     }
 
     class AllMavenRepoTask(prefixInfo: SimpleTaskInfo) {
-        val taskInfo = prefixInfo.append(newInfo("MavenRepository", "all Maven repositories"))
+        val taskInfo = prefixInfo.append(newInfo("MavenRepositories", "all Maven repositories"))
     }
 
     class GradlePortalTask(prefixInfo: SimpleTaskInfo) {
