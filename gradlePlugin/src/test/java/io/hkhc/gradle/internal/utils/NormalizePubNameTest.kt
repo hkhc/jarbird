@@ -16,46 +16,47 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal.utils
 
+import io.hkhc.gradle.internal.utils.normalizePubName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 class NormalizePubNameTest : FunSpec({
 
     test("empty string") {
-        JarbirdPlugin.normalizePubName("") shouldBe ""
+        normalizePubName("") shouldBe ""
     }
 
     test("single word with lowercase first char") {
-        JarbirdPlugin.normalizePubName("hello") shouldBe "hello"
+        normalizePubName("hello") shouldBe "hello"
     }
 
     test("single word with uppercase first char") {
-        JarbirdPlugin.normalizePubName("Hello") shouldBe "hello"
+        normalizePubName("Hello") shouldBe "hello"
     }
 
     test("two consecutive words with lowercase first char") {
-        JarbirdPlugin.normalizePubName("helloWorld") shouldBe "helloWorld"
+        normalizePubName("helloWorld") shouldBe "helloWorld"
     }
 
     test("two consecutive words with uppercase first char") {
-        JarbirdPlugin.normalizePubName("HelloWorld") shouldBe "helloWorld"
+        normalizePubName("HelloWorld") shouldBe "helloWorld"
     }
 
     test("single word with digit") {
-        JarbirdPlugin.normalizePubName("he11o") shouldBe "he11o"
+        normalizePubName("he11o") shouldBe "he11o"
     }
 
     test("two words with hyphen in between") {
-        JarbirdPlugin.normalizePubName("he11o-world") shouldBe "he11oWorld"
+        normalizePubName("he11o-world") shouldBe "he11oWorld"
     }
 
     test("two words with hyphen at the beginning") {
-        JarbirdPlugin.normalizePubName("-helloWorld") shouldBe "helloWorld"
+        normalizePubName("-helloWorld") shouldBe "helloWorld"
     }
 
     test("two words with hyphen at the end") {
-        JarbirdPlugin.normalizePubName("helloWorld-") shouldBe "helloWorld"
+        normalizePubName("helloWorld-") shouldBe "helloWorld"
     }
 })

@@ -78,8 +78,7 @@ internal class DokkaConfig(
                         *(sourceResolver.getSourceJarSource(impl.sourceSet ?: impl.docSourceSets))
                     )
                 }
-//                extension.dokkaConfig.invoke(this)
-                pub.dokkaConfig.invoke(this, pub)
+                impl.dokkaConfig.invoke(this, pub)
             }
         }
     }

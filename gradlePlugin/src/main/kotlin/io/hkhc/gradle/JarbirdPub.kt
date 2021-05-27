@@ -21,51 +21,99 @@ package io.hkhc.gradle
 import io.hkhc.gradle.pom.Pom
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
-abstract class JarbirdPub : RepoDeclaration {
+interface JarbirdPub : RepoDeclaration {
 
-    lateinit var pom: Pom
-
-    /**
-     * Configure for artifact signing or not
-     */
-    var signing = true
+    val pom: Pom
 
     /**
      * the publication name, that affect the task names for publishing
      */
-    var pubName: String = "lib"
+    val pubName: String
+
+    val variant: String
+
+    val docSourceSets: Any
 
     /**
-     * the variant is string that as suffix of pubName to form a final publication name. It is also used
-     * to suffix the dokka jar task and source set jar task.
-     * It is usually used for building Android artifact
+     * Not to do signing for this pub
      */
-    open val variant: String = ""
-
-    var docSourceSets: Any = "main"
+    fun doNotSign()
 
     /**
-     * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
-     * We will need useGpg=true if we use new keybox (.kbx) format for signing key.
+     * Do signing for this pub (default)
      */
-    var useGpg = false
+    fun shouldSign(): Boolean
 
-    var dokkaConfig: AbstractDokkaTask.(pub: JarbirdPub) -> Unit = {}
+    /**
+     * Use GnuPG v1 Keyring to perform artifact signing
+     */
+    fun signWithKeyring()
 
-    abstract fun from(source: Any)
-//    abstract fun from(component: SoftwareComponent)
-//    abstract fun from(sourceSet: SourceSet)
+    /**
+     * return true if the artifacts is going to be signed with keyring
+     */
+    fun isSignWithKeyring(): Boolean
 
-    abstract fun variantWithVersion()
-    abstract fun variantWithArtifactId()
-    abstract fun variantInvisible()
+    /**
+     * Use GnuPG v2 Keybox to perform artifact signing
+     */
+    fun signWithKeybox()
 
-    abstract fun variantArtifactId(): String?
-    abstract fun variantVersion(): String?
-    abstract fun getGAV(): String?
-    abstract fun pluginCoordinate(): String?
+    /**
+     * return true if the artifacts is going to be signed with keybox
+     */
+    fun isSignWithKeybox(): Boolean
 
-    abstract fun sourceSetNames(vararg names: String): Any
-    abstract fun sourceSetNames(names: List<String>): Any
-    abstract fun sourceDirs(dirs: Any): Any
+    fun configureDokka(block: AbstractDokkaTask.(pub: JarbirdPub) -> Unit)
+
+    /**
+     * provide information on how the project is build. The parameter could be instance of
+     * - SoftwareComponent
+     * - SourceSet
+     */
+    fun from(source: Any)
+
+    /**
+     * variant is combined with version
+     * e.g. mygroup:mylib:1.0.0-variant
+     */
+    fun variantWithVersion()
+
+    /**
+     * variant is combined with artifactId
+     * e.g. mygroup:mylib-variant:1.0.0
+     */
+    fun variantWithArtifactId()
+
+    /**
+     * variant is not shown in coordinate
+     * e.g. mygroup:mylib:1.0.0
+     */
+    fun variantInvisible()
+
+    /**
+     * get the artifactID augmented by variatn
+     * e.g. mylib-variant
+     */
+    fun variantArtifactId(): String?
+
+    /**
+     * get the version augmented by variatn
+     * e.g. 1.0.0-variant
+     */
+    fun variantVersion(): String?
+
+    /**
+     * get the effective coordinate
+     */
+    fun getGAV(): String?
+
+    /**
+     * get the plugin coordinate
+     */
+    fun pluginCoordinate(): String?
+
+    fun sourceSetNames(vararg names: String): Any
+    fun sourceSetNames(names: List<String>): Any
+    fun sourceDirs(dirs: Any): Any
 }

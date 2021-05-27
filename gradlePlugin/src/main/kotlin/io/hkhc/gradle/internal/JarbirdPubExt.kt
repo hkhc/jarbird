@@ -47,7 +47,7 @@ internal val JarbirdPub.markerPubNameCap: String
 internal val RepoSpec.repoName: String
     get() = id
 
-internal fun List<JarbirdPub>.needSigning() = any { it.signing }
+internal fun List<JarbirdPub>.needSigning() = any { it.shouldSign() }
 
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
 

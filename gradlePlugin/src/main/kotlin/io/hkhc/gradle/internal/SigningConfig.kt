@@ -37,7 +37,7 @@ class SigningConfig(
     // return true if checking passed, otherwise failed
     private fun validateConfig(project: Project, pub: JarbirdPub): Boolean {
 
-        var complete = if (pub.pom.isSnapshot() && pub.signing) {
+        var complete = if (pub.pom.isSnapshot() && pub.shouldSign()) {
             project.logger.warn(
                 "WARNING: $LOG_PREFIX Not performing signing " +
                     "for SNAPSHOT artifact ('${pub.pom.version}')"
@@ -54,23 +54,23 @@ class SigningConfig(
         }
 
         if (complete) {
-            if (pub.useGpg) {
+            if (pub.isSignWithKeybox()) {
                 if (isV1ConfigPresents() && !isV2ConfigPresents()) {
                     project.logger.warn(
                         "WARNING: $LOG_PREFIX Setting to use keybox file but signing gpg keyring " +
                             "configuration is found. Fall back to use gpg keyring"
                     )
-                    pub.useGpg = false
+                    pub.signWithKeyring()
                 }
             } else if (!isV1ConfigPresents() && isV2ConfigPresents()) {
                 project.logger.warn(
                     "WARNING: $LOG_PREFIX Setting to use gpg keyring file but signing gpg keybox " +
                         " configuration is found. Switch to use gpg keybox"
                 )
-                pub.useGpg = true
+                pub.signWithKeybox()
             }
-            complete = (!pub.useGpg || isV2ConfigPresents()) &&
-                (pub.useGpg || isV1ConfigPresents())
+            complete = (!pub.isSignWithKeybox() || isV2ConfigPresents()) &&
+                (pub.isSignWithKeybox() || isV1ConfigPresents())
         }
 
         return complete
@@ -111,7 +111,7 @@ class SigningConfig(
     private fun SigningExtension.config() {
 
         pubs.forEach { pub ->
-            if (pub.useGpg) {
+            if (pub.isSignWithKeybox()) {
                 useGpgCmd()
             }
 

@@ -29,34 +29,77 @@ import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.internal.utils.detailMessageWarning
+import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.internal.appendBeforeSnapshot
 import io.hkhc.gradle.pom.internal.isSnapshot
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.tasks.SourceSet
+import org.gradle.kotlin.dsl.get
+import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
 open class JarbirdPubImpl(
     val project: Project,
     val ext: JarbirdExtensionImpl,
-    projectProperty: ProjectProperty
-) : JarbirdPub() {
+    projectProperty: ProjectProperty,
+    override val variant: String = ""
+) : JarbirdPub {
 
     private var variantMode: VariantMode = VariantMode.WithVersion
     private val repos = mutableSetOf<RepoSpec>()
     private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
-    var component: SoftwareComponent? = null
+
+    /**
+     * Configure for artifact signing or not
+     */
+    private var signing = true
+
+    /**
+     * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
+     * We will need useGpg=true if we use new keybox (.kbx) format for signing key.
+     */
+    private var useKeybox = true
+
+    override lateinit var pom: Pom
+    override var pubName: String = "lib"
+    override var docSourceSets: Any = "main"
+
+    protected var component: SoftwareComponent? = null
     var sourceSet: SourceSet? = null
+    var dokkaConfig: AbstractDokkaTask.(pub: JarbirdPub) -> Unit = {}
 
-    private var variantImpl: String = ""
+    fun effectiveComponent(): SoftwareComponent = component ?: project.components["java"]
 
-    override var variant: String
-        get() {
-            return variantImpl
-        }
-        set(value) {
-            variantImpl = value
-        }
+    override fun configureDokka(block: AbstractDokkaTask.(pub: JarbirdPub) -> Unit) {
+        dokkaConfig = block
+    }
+
+    override fun doNotSign() {
+        signing = false
+    }
+
+    override fun shouldSign(): Boolean {
+        return signing
+    }
+
+    override fun signWithKeyring() {
+        signing = true
+        useKeybox = false
+    }
+
+    override fun signWithKeybox() {
+        signing = true
+        useKeybox = true
+    }
+
+    override fun isSignWithKeyring(): Boolean {
+        return useKeybox == false
+    }
+
+    override fun isSignWithKeybox(): Boolean {
+        return useKeybox == true
+    }
 
     override fun variantWithVersion() {
         variantMode = VariantMode.WithVersion

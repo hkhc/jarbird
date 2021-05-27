@@ -29,6 +29,7 @@ import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
+import io.hkhc.gradle.internal.utils.normalizePubName
 import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -47,7 +48,7 @@ open class JarbirdExtensionImpl(
 
     private var implicited: JarbirdPub? = null
 
-    private fun initPub(pub: JarbirdPub) {
+    private fun initPub(pub: JarbirdPubImpl) {
 
         // find the pom of particular variant. Normally pom of a variant is a combination of pom spec of that
         // particulat variant and the non-variant pom. However, if no variant pom spec is found, we use
@@ -66,7 +67,7 @@ open class JarbirdExtensionImpl(
 
         // TODO handle two publications of same artifactaId in the same module.
         // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
-        pub.pubName = JarbirdPlugin.normalizePubName(pub.pom.artifactId ?: "Lib")
+        pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
 
         // pre-check of final data, for child project
         // TODO handle multiple level child project?
@@ -75,8 +76,8 @@ open class JarbirdExtensionImpl(
 //        }
     }
 
-    open fun newPub(project: Project): JarbirdPubImpl {
-        return JarbirdPubImpl(project, this, projectProperty).apply {
+    open fun newPub(project: Project, variant: String = ""): JarbirdPubImpl {
+        return JarbirdPubImpl(project, this, projectProperty, variant).apply {
             pubList.add(this)
         }
     }
@@ -108,8 +109,7 @@ open class JarbirdExtensionImpl(
         if (pubList.any { it.variant == variant }) {
             throw GradleException("Duplicated pubs with variant '$variant' are found.")
         }
-        val newPub = newPub(project)
-        newPub.variant = variant
+        val newPub = newPub(project, variant)
         initPub(newPub)
         newPub.configure(action)
         removeImplicit()
@@ -127,8 +127,7 @@ open class JarbirdExtensionImpl(
         if (pubList.any { it.variant == variant }) {
             throw GradleException("Duplicated pubs with variant '$variant' are found.")
         }
-        val newPub = newPub(project)
-        newPub.variant = variant
+        val newPub = newPub(project, variant)
         initPub(newPub)
         newPub.configure(action)
         removeImplicit()

@@ -90,33 +90,7 @@ open class JarbirdPlugin : Plugin<Project> {
     private lateinit var project: Project
 
     companion object {
-
         const val EXT_PLUGIN_CONFIG = "JARBIRD_PLUGIN_CONFIG"
-
-        internal fun normalizePubName(name: String): String {
-            val newName = StringBuffer()
-            var newWord = true
-            var firstWord = true
-            name.forEach {
-                if (it.isLetterOrDigit()) {
-                    if (newWord) {
-                        if (firstWord) {
-                            newName.append(it.toLowerCase())
-                        } else {
-                            newName.append(it.toUpperCase())
-                        }
-                        newWord = false
-                    } else {
-                        newName.append(it)
-                        firstWord = false
-                    }
-                } else {
-                    // ignore non letter or digit char
-                    newWord = true
-                }
-            }
-            return newName.toString()
-        }
     }
 
     // TODO check if POM fulfill minimal requirements for publishing

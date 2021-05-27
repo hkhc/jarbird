@@ -37,8 +37,8 @@ class AndroidJarbirdExtensionImpl(
     pomGroup
 ) {
 
-    override fun newPub(project: Project): JarbirdPubImpl {
-        return AndroidJarbirdPubImpl(project, this, projectProperty).apply {
+    override fun newPub(project: Project, variant: String): JarbirdPubImpl {
+        return AndroidJarbirdPubImpl(project, this, projectProperty, variant).apply {
             pubList.add(this)
         }
     }

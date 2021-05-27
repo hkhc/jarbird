@@ -20,6 +20,7 @@ package io.hkhc.gradle.endpoint
 
 import io.hkhc.gradle.JarbirdPlugin
 import io.hkhc.gradle.internal.ProjectProperty
+import io.hkhc.gradle.internal.utils.normalizePubName
 
 class PropertyRepoEndpoint(private val projectProperty: ProjectProperty, private val key: String) :
     AbstractRepoEndpoint() {
@@ -55,6 +56,6 @@ class PropertyRepoEndpoint(private val projectProperty: ProjectProperty, private
         }
 
     override val id: String
-        get() = JarbirdPlugin.normalizePubName(key).capitalize()
+        get() = normalizePubName(key).capitalize()
 //        get() = "${key.replace(".", "").capitalize()}"
 }

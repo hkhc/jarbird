@@ -22,6 +22,7 @@ import io.hkhc.gradle.JarbirdPlugin
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.utils.PropertyBuilder
+import io.hkhc.gradle.internal.utils.normalizePubName
 import org.gradle.api.Project
 
 class PropertyRepoSpecBuilder(
@@ -40,7 +41,7 @@ class PropertyRepoSpecBuilder(
             password = resolve("password"),
             description = resolve("description", "Maven repository '$key'"),
             isAllowInsecureProtocol = resolve("allowSecureProtocol", "false") == "true",
-            id = JarbirdPlugin.normalizePubName("maven.$key").capitalize()
+            id = normalizePubName("maven.$key").capitalize()
         )
     }
 

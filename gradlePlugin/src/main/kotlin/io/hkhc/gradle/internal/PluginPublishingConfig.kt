@@ -88,8 +88,7 @@ class PluginPublishingConfig(
                         MavenPublication::class.java
                     )
                     with(pluginMainPublication) {
-                        val effectiveComponent = (pub as JarbirdPubImpl).component ?: project.components["java"]
-                        from(effectiveComponent)
+                        from((pub as JarbirdPubImpl).effectiveComponent())
                         groupId = pub.pom.group
                         artifactId = pub.pom.artifactId
                         version = pub.pom.version

@@ -141,7 +141,7 @@ internal class PublishingConfig(
         pubs.forEach { pub0 ->
 
             val pub = pub0 as JarbirdPubImpl
-            project.logger.debug("$LOG_PREFIX CreatePublication variant=${pub.variant} component=${pub.component}")
+            project.logger.debug("$LOG_PREFIX CreatePublication variant=${pub.variant} component=${pub.effectiveComponent()}")
 
             val pom = pub.pom
 
@@ -158,8 +158,7 @@ internal class PublishingConfig(
                 version = pub.variantVersion()
 
                 if (publishJarTask == null) {
-                    val effectiveComponent = pub.component ?: project.components["java"]
-                    from(effectiveComponent)
+                    from((pub as JarbirdPubImpl).effectiveComponent())
                 } else {
                     artifactCompat(publishJarTask)
                 }

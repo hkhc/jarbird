@@ -27,9 +27,16 @@ import org.gradle.api.Project
 class AndroidJarbirdPubImpl(
     project: Project,
     ext: JarbirdExtensionImpl,
-    projectProperty: ProjectProperty
-) : JarbirdPubImpl(project, ext, projectProperty) {
+    projectProperty: ProjectProperty,
+    variant: String = ""
+) : JarbirdPubImpl(project, ext, projectProperty, variant) {
 
+    /**
+     * provide information on how the project is build. The parameter could be instance of
+     * - SoftwareComponent
+     * - SourceSet
+     * - Android LibraryVariant
+     */
     override fun from(source: Any) {
         LibraryVariant.implemented(source)?.let {
             it.getName()?.let { name ->
