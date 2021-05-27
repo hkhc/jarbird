@@ -40,8 +40,8 @@ import org.gradle.kotlin.dsl.get
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
 open class JarbirdPubImpl(
-    val project: Project,
-    val ext: JarbirdExtensionImpl,
+    protected val project: Project,
+    private val ext: JarbirdExtensionImpl,
     projectProperty: ProjectProperty,
     override val variant: String = ""
 ) : JarbirdPub {
