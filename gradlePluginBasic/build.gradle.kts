@@ -138,7 +138,9 @@ jarbird {
     mavenLocal()
     mavenCentral()
     gradlePortal()
-    bintray()
+//    bintray()
+    mavenRepo("reposilite")
+    artifactory()
     pub {
         useGpg = true
     }

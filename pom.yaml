@@ -10,6 +10,12 @@ developers:
     name: Herman Cheung
     email: herman.kh.cheung@gmail.com
 
+web:
+  url: https://hkhc.github.io/jarbird/
+
 scm:
   repoType: github.com
   repoName: hkhc/jarbird
+
+bintray:
+  githubReleaseNoteFile: RELEASE.md

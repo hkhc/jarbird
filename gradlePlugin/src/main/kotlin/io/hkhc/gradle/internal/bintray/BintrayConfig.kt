@@ -109,7 +109,7 @@ class BintrayConfig(
         vcsUrl = pom.scm.url ?: ""
         if (pom.scm.repoType == "github.com") {
             githubRepo = pom.scm.repoName ?: ""
-            pom.scm.githubReleaseNoteFile?.let { githubReleaseNotesFile = it }
+            pom.bintray.githubReleaseNoteFile?.let { githubReleaseNotesFile = it }
         }
         issueTrackerUrl = pom.scm.issueUrl ?: ""
         version.apply {

@@ -98,7 +98,8 @@ class ArtifactoryConfig(
 
         resolve(
             delegateClosureOf<ResolverConfig> {
-                setProperty("repoKey", "jcenter")
+                setProperty("repoKey", repoSpec.repoKey)
+//                setProperty("repoKey", "jcenter")
             }
         )
     }

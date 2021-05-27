@@ -80,6 +80,10 @@ object PomGroupFactory {
                     currPomGroup.overlayTo(it)
                 }
             }
+            // add default value here
+            .overlayTo(PomGroup(listOf(Pom(
+                packaging = "jar"
+            )))) as PomGroup
     }
 
     /**

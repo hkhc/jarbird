@@ -139,6 +139,8 @@ jarbird {
     mavenCentral()
     gradlePortal()
     bintray()
+    mavenRepo("reposilite")
+    artifactory()
     pub {
         useGpg = true
     }

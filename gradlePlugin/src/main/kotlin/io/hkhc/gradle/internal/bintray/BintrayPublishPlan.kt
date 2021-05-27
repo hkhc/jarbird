@@ -19,10 +19,10 @@
 package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.PLUGIN_MARKER_PUB_SUFFIX
 import io.hkhc.gradle.internal.markerPubName
 import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.pubNameWithVariant
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 
 class BintrayPublishPlan(val pubs: List<JarbirdPub>) {
 //    val bintray: MutableList<JarbirdPub> = mutableListOf()
@@ -45,6 +45,12 @@ class BintrayPublishPlan(val pubs: List<JarbirdPub>) {
                 if (it.pom.isGradlePlugin()) {
                     bintrayPlugins.add(it)
                 }
+            }
+        }
+        pubs.filter { !it.needsBintray() && it.getRepos().any { it is ArtifactoryRepoSpec } }.forEach {
+            artifactoryLibs.add(it)
+            if (it.pom.isGradlePlugin()) {
+                artifactoryPlugins.add(it)
             }
         }
     }
