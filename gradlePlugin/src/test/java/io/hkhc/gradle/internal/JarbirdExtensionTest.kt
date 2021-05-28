@@ -143,18 +143,18 @@ class JarbirdExtensionTest : FunSpec({
             ext.createImplicit()
             ext.pubList.shouldHaveSize(1)
 
-            ext.bintray()
+            ext.artifactory()
 
             ext.pub { }
 
-            ext.pubList[0].needsBintray() shouldBe true
-            ext.pubList.needsBintray() shouldBe true
+            ext.pubList[0].needsArtifactory() shouldBe true
+            ext.pubList.needsArtifactory() shouldBe true
 
             ext.finalizeRepos()
             ext.getRepos().shouldContainExactlyInAnyOrder(
                 setOf(
                     MavenLocalRepoSpecImpl(),
-                    PropertyRepoSpecBuilder(projectProperty).buildBintrayRepo()
+                    PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo()
                 )
             )
         }
@@ -186,158 +186,10 @@ class JarbirdExtensionTest : FunSpec({
 
                 if (ext.pubList[0].pom.isSnapshot()) {
                     ext.pubList.needsArtifactory() shouldBe false
-                    ext.pubList.needsBintray() shouldBe false
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 } else {
                     ext.pubList.needsArtifactory() shouldBe false
-                    ext.pubList.needsBintray() shouldBe false
                     ext.pubList.needsNonLocalMaven() shouldBe true
-                }
-            }
-        }
-
-        test("Publish to bintray") {
-
-            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
-
-                println("version " + version)
-
-                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
-                pomGroup = PomGroupFactory.resolvePomGroup(project.projectDir, File(project.projectDir, "module"))
-
-                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
-                ext.pubList.shouldBeEmpty()
-
-                ext.createImplicit()
-                ext.pubList.shouldHaveSize(1)
-
-                ext.bintray()
-
-                ext.pub { }
-
-                ext.removeImplicit()
-
-                ext.finalizeRepos()
-
-                if (ext.pubList[0].pom.isSnapshot()) {
-
-                    with(PropertyRepoSpecBuilder(projectProperty)) {
-                        ext.getRepos().shouldContainExactlyInAnyOrder(
-                            setOf(
-                                MavenLocalRepoSpecImpl(),
-                                buildBintrayRepo(),
-                                buildBintrayRepo()
-                            )
-                        )
-
-                        (ext.pubList[0] as JarbirdPubImpl).getRepos().shouldContainExactlyInAnyOrder(
-                            setOf(
-                                MavenLocalRepoSpecImpl(),
-                                buildBintrayRepo(),
-                                buildBintraySnapshotRepoSpec(buildBintrayRepo())
-                            )
-                        )
-                    }
-
-                    ext.pubList.needsArtifactory() shouldBe true
-                    ext.pubList.needsBintray() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe false
-                } else {
-                    with(PropertyRepoSpecBuilder(projectProperty)) {
-                        ext.getRepos().shouldContainExactlyInAnyOrder(
-                            setOf(
-                                MavenLocalRepoSpecImpl(),
-                                buildBintrayRepo()
-                            )
-                        )
-
-                        (ext.pubList[0] as JarbirdPubImpl).getRepos().shouldContainExactlyInAnyOrder(
-                            setOf(
-                                MavenLocalRepoSpecImpl(),
-                                buildBintrayRepo()
-                            )
-                        )
-                    }
-
-                    ext.pubList.needsArtifactory() shouldBe false
-                    ext.pubList.needsBintray() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe false
-                }
-            }
-        }
-
-        test("Publish to maven repo and bintray") {
-
-            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
-
-                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
-
-                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
-                ext.pubList.shouldBeEmpty()
-
-                ext.createImplicit()
-                ext.pubList.shouldHaveSize(1)
-
-                ext.mavenRepo("mock")
-                ext.bintray()
-
-                ext.pub { }
-
-                ext.removeImplicit()
-
-                ext.finalizeRepos()
-
-                ext.getRepos().shouldContainExactlyInAnyOrder(
-                    setOf(
-                        MavenLocalRepoSpecImpl(),
-                        PropertyRepoSpecBuilder(projectProperty).buildBintrayRepo(),
-                        PropertyRepoSpecBuilder(projectProperty).buildMavenRepo("mock")
-                    )
-                )
-
-                if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needsArtifactory() shouldBe true
-                    ext.pubList.needsBintray() shouldBe false
-                    ext.pubList.needsNonLocalMaven() shouldBe true
-                } else {
-                    ext.pubList.needsArtifactory() shouldBe false
-                    ext.pubList.needsBintray() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe true
-                }
-            }
-        }
-        test("Publish to artifactory") {
-
-            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
-
-                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
-
-                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
-                ext.pubList.shouldBeEmpty()
-
-                ext.createImplicit()
-                ext.pubList.shouldHaveSize(1)
-
-                ext.artifactory()
-
-                ext.pub { }
-
-                ext.removeImplicit()
-
-                ext.finalizeRepos()
-
-                ext.getRepos().shouldContainExactlyInAnyOrder(
-                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo())
-                )
-
-                if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needsArtifactory() shouldBe true
-                    ext.pubList.needsBintray() shouldBe false
-                    ext.pubList.needsNonLocalMaven() shouldBe false
-                } else {
-                    ext.pubList.needsArtifactory() shouldBe true
-                    ext.pubList.needsBintray() shouldBe false
-                    ext.pubList.needsNonLocalMaven() shouldBe false
                 }
             }
         }
@@ -373,11 +225,81 @@ class JarbirdExtensionTest : FunSpec({
 
                 if (ext.pubList[0].pom.isSnapshot()) {
                     ext.pubList.needsArtifactory() shouldBe true
-                    ext.pubList.needsBintray() shouldBe false
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 } else {
                     ext.pubList.needsArtifactory() shouldBe true
-                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsNonLocalMaven() shouldBe true
+                }
+            }
+        }
+        test("Publish to artifactory") {
+
+            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
+
+                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
+
+                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                ext.pubList.shouldBeEmpty()
+
+                ext.createImplicit()
+                ext.pubList.shouldHaveSize(1)
+
+                ext.artifactory()
+
+                ext.pub { }
+
+                ext.removeImplicit()
+
+                ext.finalizeRepos()
+
+                ext.getRepos().shouldContainExactlyInAnyOrder(
+                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo())
+                )
+
+                if (ext.pubList[0].pom.isSnapshot()) {
+                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needsNonLocalMaven() shouldBe false
+                } else {
+                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needsNonLocalMaven() shouldBe false
+                }
+            }
+        }
+
+        test("Publish to maven repo and artifactory 2") {
+
+            listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
+
+                File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
+
+                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                ext.pubList.shouldBeEmpty()
+
+                ext.createImplicit()
+                ext.pubList.shouldHaveSize(1)
+
+                ext.mavenRepo("mock")
+                ext.artifactory()
+
+                ext.pub { }
+
+                ext.removeImplicit()
+
+                ext.finalizeRepos()
+
+                ext.getRepos().shouldContainExactlyInAnyOrder(
+                    setOf(
+                        MavenLocalRepoSpecImpl(),
+                        PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo(),
+                        PropertyRepoSpecBuilder(projectProperty).buildMavenRepo("mock")
+                    )
+                )
+
+                if (ext.pubList[0].pom.isSnapshot()) {
+                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needsNonLocalMaven() shouldBe true
+                } else {
+                    ext.pubList.needsArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 }
             }
@@ -394,7 +316,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.createImplicit()
                 ext.pubList.shouldHaveSize(1)
 
-                ext.bintray()
+                ext.artifactory()
 
                 ext.pub { }
 
@@ -403,16 +325,14 @@ class JarbirdExtensionTest : FunSpec({
                 ext.finalizeRepos()
 
                 ext.getRepos().shouldContainExactlyInAnyOrder(
-                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildBintrayRepo())
+                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo())
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needsArtifactory() shouldBe false
-                    ext.pubList.needsBintray() shouldBe false
+                    ext.pubList.needsArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe false
                 } else {
-                    ext.pubList.needsArtifactory() shouldBe false
-                    ext.pubList.needsBintray() shouldBe true
+                    ext.pubList.needsArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe false
                 }
             }
@@ -420,78 +340,6 @@ class JarbirdExtensionTest : FunSpec({
     }
 
     context("validation of JarbirdPubs") {
-
-        // the test is no longer needed as we will return default POM if variant POM group is not found
-//        test("variant not found") {
-//
-//            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
-//
-//            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
-//            ext.pubList.shouldBeEmpty()
-//
-//            ext.createImplicit()
-//            ext.pubList.shouldHaveSize(1)
-//
-//            val exception = shouldThrow<GradleException> {
-//                ext.pub("variant") { }
-//            }
-//            exception.message shouldBe "Variant 'variant' is not found"
-//        }
-
-        test("single bintray repo only at global level") {
-
-            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
-
-            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
-            ext.pubList.shouldBeEmpty()
-
-            ext.createImplicit()
-            ext.pubList.shouldHaveSize(1)
-
-            ext.bintray()
-
-            val exception = shouldThrow<GradleException> {
-                ext.bintray()
-            }
-            exception.message shouldBe "Bintray repository has been declared at global level."
-        }
-
-        test("no bintray repo at pub level if it has presented in global level") {
-
-            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
-
-            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
-            ext.pubList.shouldBeEmpty()
-
-            ext.createImplicit()
-            ext.pubList.shouldHaveSize(1)
-
-            ext.bintray()
-
-            val exception = shouldThrow<GradleException> {
-                ext.pub { bintray() }
-            }
-            exception.message shouldBe "Bintray repository has been declared at global level."
-        }
-
-        test("single bintray repo only at pub level") {
-
-            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
-
-            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
-            ext.pubList.shouldBeEmpty()
-
-            ext.createImplicit()
-            ext.pubList.shouldHaveSize(1)
-
-            ext.pub {
-                bintray()
-                val exception = shouldThrow<GradleException> {
-                    bintray()
-                }
-                exception.message shouldBe "Bintray repository has been declared at 'pub' level."
-            }
-        }
 
         test("single artifactory is allowed only") {
 

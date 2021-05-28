@@ -20,21 +20,17 @@ package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.internal.isSnapshot
 import io.hkhc.gradle.test.ArtifactoryRepoResult
-import io.hkhc.gradle.test.BintrayRepoResult
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
-import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
 import io.hkhc.gradle.test.artifacory.publishedToArtifactoryRepositoryCompletely
-import io.hkhc.gradle.test.bintray.MockBintrayRepositoryServer
-import io.hkhc.gradle.test.bintray.publishedToBintrayRepositoryCompletely
 import io.hkhc.gradle.test.buildGradleKts
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
-import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.mavenlocal.publishToMavenLocalCompletely
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme
@@ -51,7 +47,7 @@ import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 
 @Tags("Library", "MavenRepository", "Bintray", "Artifactory")
-class BuildMavenBintrayRepoTest : FunSpec({
+class BuildMavenArtifactoryRepoTest : FunSpec({
 
     context("Publish library") {
 
@@ -60,7 +56,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
         fun commonSetup(
             coordinate: Coordinate,
             maven: Boolean = true,
-            bintray: Boolean = true,
+            artifactory: Boolean = true,
             expectedTaskGraph: Tree<String>
         ): DefaultGradleProjectSetup {
 
@@ -74,16 +70,8 @@ class BuildMavenBintrayRepoTest : FunSpec({
                         setUp(listOf(coordinate), "/base")
                     }
                 }
-                if (bintray) {
-                    bintrayMockServer = MockBintrayRepositoryServer().apply {
-                        setUp(listOf(coordinate), "/base")
-                    }
-                    artifactoryMockServer = MockArtifactoryRepositoryServer().apply {
-                        setUp(listOf(coordinate), "/base")
-                    }
-                }
 
-                writeFile("build.gradle.kts", buildGradleKts(maven, bintray))
+                writeFile("build.gradle.kts", buildGradleKts(maven, artifactory))
 
                 writeFile("pom.yaml", simplePom(coordinate))
 
@@ -101,17 +89,6 @@ class BuildMavenBintrayRepoTest : FunSpec({
                         "repository.maven.mock.allowInsecureProtocol" to "true"
                     }
 
-                    if (bintray) {
-                        if (coordinate.version.isSnapshot()) {
-                            "repository.bintray.release" to "fake-url-that-is-not-going-to-work"
-                            "repository.bintray.snapshot" to artifactoryMockServer?.getServerUrl()
-                        } else {
-                            "repository.bintray.release" to bintrayMockServer?.getServerUrl()
-                            "repository.bintray.snapshot" to "fake-url-that-is-not-going-to-work"
-                        }
-                        "repository.bintray.username" to "username"
-                        "repository.bintray.apikey" to "password"
-                    }
                 }
 
                 this.expectedTaskGraph = expectedTaskGraph
@@ -150,26 +127,14 @@ class BuildMavenBintrayRepoTest : FunSpec({
                     ) should publishedToMavenRepositoryCompletely()
                 }
 
-                if (coordinate.version.isSnapshot()) {
-                    setup.artifactoryMockServer?.let { server ->
-                        ArtifactoryRepoResult(
-                            server.collectRequests(),
-                            coordinate,
-                            "username",
-                            "oss-snapshot-local",
-                            "jar"
-                        ) should publishedToArtifactoryRepositoryCompletely()
-                    }
-                } else {
-                    setup.bintrayMockServer?.let { server ->
-                        BintrayRepoResult(
-                            server.collectRequests(),
-                            listOf(coordinate),
-                            "username",
-                            "maven",
-                            "jar"
-                        ) should publishedToBintrayRepositoryCompletely()
-                    }
+                setup.artifactoryMockServer?.let { server ->
+                    ArtifactoryRepoResult(
+                        server.collectRequests(),
+                        coordinate,
+                        "username",
+                        "oss-snapshot-local",
+                        "jar"
+                    ) should publishedToArtifactoryRepositoryCompletely()
                 }
             }
         }
@@ -180,7 +145,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 maven = true,
-                bintray = true,
+                artifactory = true,
                 expectedTaskGraph = stringTreeOf(NoBarTheme) {
                     ":jbPublish SUCCESS" {
                         ":jbPublishToBintray SUCCESS" {
@@ -279,7 +244,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 maven = true,
-                bintray = true,
+                artifactory = true,
                 expectedTaskGraph =
                 stringTreeOf(NoBarTheme) {
                     ":jbPublish SUCCESS" {
@@ -346,7 +311,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 maven = true,
-                bintray = false,
+                artifactory = false,
                 expectedTaskGraph =
                 stringTreeOf(NoBarTheme) {
                     ":jbPublish SUCCESS" {
@@ -419,7 +384,7 @@ class BuildMavenBintrayRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 maven = false,
-                bintray = true,
+                artifactory = true,
                 expectedTaskGraph =
                 stringTreeOf(NoBarTheme) {
                     ":jbPublish SUCCESS" {

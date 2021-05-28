@@ -58,18 +58,6 @@ class RepoTest : FunSpec({
         GradlePortalSpecImpl() shouldBe GradlePortalSpecImpl()
     }
 
-    test("BintraySpec equality") {
-        val projectProperty = MockProjectProperty(
-            mapOf(
-                "repository.bintray.username" to "username",
-                "repository.bintray.password" to "password"
-            )
-        )
-        PropertyRepoSpecBuilder(projectProperty).apply {
-            buildBintrayRepo() shouldBe buildBintrayRepo()
-        }
-    }
-
     test("MavenRepoSpec equality") {
         val projectProperty = MockProjectProperty(
             mapOf(

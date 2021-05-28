@@ -20,45 +20,20 @@ package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.markerPubName
-import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 
 class BintrayPublishPlan(val pubs: List<JarbirdPub>) {
-//    val bintray: MutableList<JarbirdPub> = mutableListOf()
-//    val artifactory: MutableList<JarbirdPub> = mutableListOf()
     val artifactoryPlugins: MutableList<JarbirdPub> = mutableListOf()
-    val bintrayLibs: MutableList<JarbirdPub> = mutableListOf()
     val artifactoryLibs: MutableList<JarbirdPub> = mutableListOf()
-    val bintrayPlugins: MutableList<JarbirdPub> = mutableListOf()
     val invalidPlugins: MutableList<JarbirdPub> = mutableListOf()
 
     init {
-        pubs.filter { it.needsBintray() }.forEach {
-            if (it.pom.isSnapshot()) {
-                artifactoryLibs.add(it)
-                if (it.pom.isGradlePlugin()) {
-                    artifactoryPlugins.add(it)
-                }
-            } else {
-                bintrayLibs.add(it)
-                if (it.pom.isGradlePlugin()) {
-                    bintrayPlugins.add(it)
-                }
-            }
-        }
-        pubs.filter { !it.needsBintray() && it.getRepos().any { it is ArtifactoryRepoSpec } }.forEach {
+        pubs.filter { it.getRepos().any { it is ArtifactoryRepoSpec } }.forEach {
             artifactoryLibs.add(it)
             if (it.pom.isGradlePlugin()) {
                 artifactoryPlugins.add(it)
             }
-        }
-    }
-
-    fun bintrayPublications(): List<String> {
-        return mutableListOf<String>().apply {
-            addAll(bintrayLibs.map { it.pubNameWithVariant() })
-            addAll(bintrayPlugins.map { it.markerPubName})
         }
     }
 

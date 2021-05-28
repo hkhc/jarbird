@@ -19,7 +19,6 @@
 package io.hkhc.gradle
 
 import com.gradle.publish.PublishPlugin
-import com.jfrog.bintray.gradle.BintrayPlugin
 import io.hkhc.gradle.internal.ANDROID_LIBRARY_PLUGIN_ID
 import io.hkhc.gradle.internal.BuildFlowBuilder
 import io.hkhc.gradle.internal.DefaultProjectInfo
@@ -153,7 +152,6 @@ open class JarbirdPlugin : Plugin<Project> {
     gradle.afterEvaluate
     - Sync POM
     - Phase 1
-    - config bintray extension
     - config artifactory extension
     - plugin: bintray gradle.afterEvaluate
     - Phase 2
@@ -162,7 +160,6 @@ open class JarbirdPlugin : Plugin<Project> {
     project.afterEvaluate
     - Phase 3
     - ...
-    - bintray
     - gradle plugin
     setup testkit dependency
     validate plugin config
@@ -325,17 +322,7 @@ open class JarbirdPlugin : Plugin<Project> {
          */
 
         with(project.pluginManager) {
-            /**
-             * "com.jfrog.bintray"
-             * ProjectsEvaluationListener
-             *     afterEvaluate:
-             *         bintrayUpload task depends on subProject bintrayUpload
-             *     projectEvaluated:
-             *         bintrayUpload task depends on publishToMavenLocal
-             */
-            apply(BintrayPlugin::class.java)
-
-            /**
+             /**
              * "com.jfrog.artifactory"
              *     afterEvaluate:
              *         artifactoryTasks task depends on subProject

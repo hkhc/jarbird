@@ -21,7 +21,6 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
-import io.hkhc.gradle.internal.repo.BintraySnapshotRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpecImpl
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
@@ -291,35 +290,6 @@ object JbPublish {
 //        }
 //}
 
-class JbPublishToBintrayTaskInfo(private val publishPlan: BintrayPublishPlan) : TaskInfo() {
-
-    override val name: String
-        get() = JB_PUBLISH_TO_BINTRAY_TASK
-    override val description: String
-        get() {
-            val bintrayLibsAndPlugins =
-                (
-                    publishPlan.bintrayLibs.map { it.getGAV() } +
-                        publishPlan.bintrayPlugins.map { it.pluginCoordinate() }
-                    ).joinToStringAnd()
-            val artifactoryLibs =
-                (
-                    publishPlan.artifactoryLibs.map { it.getGAV() } +
-                        publishPlan.artifactoryPlugins.map { "plugin marker ${it.pluginCoordinate()}" }
-                    ).joinToStringAnd()
-
-            val desc = StringBuilder()
-            if (bintrayLibsAndPlugins != "") {
-                desc.append("Publish $bintrayLibsAndPlugins to Bintray. ")
-            }
-            if (artifactoryLibs != "") {
-                desc.append("Publish $artifactoryLibs to OSS Jfrog.")
-            }
-
-            return desc.toString().trim()
-        }
-}
-
 class JbPublishToArtifactoryTaskInfo(private val publishPlan: BintrayPublishPlan) : TaskInfo() {
 
     override val name: String
@@ -329,19 +299,8 @@ class JbPublishToArtifactoryTaskInfo(private val publishPlan: BintrayPublishPlan
             val artifactoryLibs =
                 (
                     publishPlan.artifactoryLibs
-                        .filter { it.getRepos().all { it !is BintraySnapshotRepoSpec } }
                         .map { it.getGAV() } +
                         publishPlan.artifactoryPlugins
-                            .filter { it.getRepos().all { it !is BintraySnapshotRepoSpec } }
-                            .map { "plugin marker ${it.pluginCoordinate()}" }
-                    ).joinToStringAnd()
-            val oSSLibs =
-                (
-                    publishPlan.artifactoryLibs
-                        .filter { it.getRepos().any { it is BintraySnapshotRepoSpec } }
-                        .map { it.getGAV() } +
-                        publishPlan.artifactoryPlugins
-                            .filter { it.getRepos().any { it is BintraySnapshotRepoSpec } }
                             .map { "plugin marker ${it.pluginCoordinate()}" }
                     ).joinToStringAnd()
 
@@ -349,30 +308,9 @@ class JbPublishToArtifactoryTaskInfo(private val publishPlan: BintrayPublishPlan
             if (artifactoryLibs != "") {
                 desc.append("Publish $artifactoryLibs to Artifactory. ")
             }
-            if (oSSLibs != "") {
-                desc.append("Publish $oSSLibs to OSS Jfrog.")
-            }
-
             return desc.toString().trim()
         }
 }
-
-//class JbPublishPubTaskInfo(private val pub: JarbirdPub) : TaskInfo() {
-//    override val name: String
-//        get() = "$JB_TASK_PREFIX${pub.pubNameCap}"
-//    override val description: String
-//        get() {
-//            val repoListStr = pub.getRepos().joinToStringAnd { it.description }
-//
-//            return if (pub.pom.isGradlePlugin()) {
-//                "Publish publication '${pub.pubNameWithVariant()}:${pub.variantVersion()}' " +
-//                    "and plugin '${pub.pom.plugin?.id}:${pub.pom.version}' " +
-//                    "to $repoListStr"
-//            } else {
-//                "Publish publication '${pub.pubNameWithVariant()}' to $repoListStr"
-//            }
-//        }
-//}
 
 class SourceJarPubTaskInfo(private val pub: JarbirdPub) : TaskInfo() {
     override val group: String

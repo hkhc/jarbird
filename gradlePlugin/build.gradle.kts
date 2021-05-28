@@ -143,9 +143,6 @@ dependencies {
     implementation(project(":jarbird-utils"))
 
     implementation(gradleApi())
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:_") {
-        exclude(group = "org.slf4j", module = "slf4j-nop")
-    }
     implementation("org.jfrog.buildinfo:build-info-extractor-gradle:_")
     implementation("org.yaml:snakeyaml:_")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:_")

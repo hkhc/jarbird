@@ -20,12 +20,10 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
-import io.hkhc.gradle.internal.utils.detailMessageWarning
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.internal.appendBeforeSnapshot
 import io.hkhc.gradle.pom.internal.isSnapshot
@@ -191,31 +189,6 @@ open class JarbirdPubImpl(
         }
     }
 
-    override fun bintray(): RepoSpec {
-
-        if (repos.any { it is BintrayRepoSpec }) {
-            throw GradleException("Bintray repository has been declared at 'pub' level.")
-        }
-
-        ext.getRepos().let { repos ->
-            if (repos.any { it is BintrayRepoSpec }) {
-                throw GradleException("Bintray repository has been declared at global level.")
-            }
-        }
-
-        val repo = repoSpecBuilder.buildBintrayRepo()
-        if (!repos.contains(repo)) {
-            detailMessageWarning(
-                JarbirdLogger.logger,
-                "Bintray repo will be treated as child project level declaration.",
-                "Because bintray plugin publish components at child project level."
-            )
-            repos.add(repo)
-            ext.bintray()
-        }
-        return repo
-    }
-
     override fun artifactory(): RepoSpec {
         val repo = repoSpecBuilder.buildArtifactoryRepo()
         repos.add(repo)
@@ -253,16 +226,9 @@ open class JarbirdPubImpl(
 
         if (err != null) throw GradleException(err)
 
-        if (pom.isSnapshot() && needsBintray()) {
-            val bintraySpec = getRepos().firstOrNull { it is BintrayRepoSpec }
-            bintraySpec?.let { repos.add(repoSpecBuilder.buildBintraySnapshotRepoSpec(it as BintrayRepoSpec)) }
-        }
         if (pom.isGradlePlugin()) {
             gradlePortal()
         }
     }
 
-    fun needsBintray(): Boolean {
-        return getRepos().find { it is BintrayRepoSpec } != null
-    }
 }

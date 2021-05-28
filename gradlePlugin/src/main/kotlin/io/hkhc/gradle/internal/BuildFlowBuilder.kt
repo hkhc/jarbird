@@ -21,11 +21,8 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryConfig
-import io.hkhc.gradle.internal.bintray.BintrayConfig
 import io.hkhc.gradle.internal.dokka.DokkaConfig
-import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import org.gradle.api.Project
-import org.gradle.plugins.signing.SigningPlugin
 
 /**
  *
@@ -86,9 +83,6 @@ internal class BuildFlowBuilder(
             if (isMultiProjectRoot()) {
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
 
-                if (!rootProject.pluginManager.hasPlugin(PLUGIN_ID) && pubs.needsBintray()) {
-                    ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()
-                }
             } else {
                 logger.info(
                     if (this == rootProject) {
@@ -99,12 +93,6 @@ internal class BuildFlowBuilder(
                 )
 
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
-                if (pubs.needsBintray() &&
-                    pubs.any { !it.pom.isSnapshot() && it.getRepos().any { repo -> repo is BintrayRepoSpec } }
-                ) {
-                    logger.info("config bintray")
-                    BintrayConfig(this, extension as JarbirdExtensionImpl, pubs).config()
-                }
                 if (pubs.needsArtifactory()) {
                     logger.info("config artifactory")
                     ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()

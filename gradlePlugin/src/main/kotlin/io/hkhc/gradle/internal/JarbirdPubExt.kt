@@ -21,7 +21,6 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
-import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
@@ -50,13 +49,6 @@ internal val RepoSpec.repoName: String
 internal fun List<JarbirdPub>.needSigning() = any { it.shouldSign() }
 
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
-
-internal fun JarbirdPub.needsBintray() =
-    (this as JarbirdPubImpl).getRepos()
-        .filterIsInstance<BintrayRepoSpec>()
-        .isNotEmpty()
-
-internal fun List<JarbirdPub>.needsBintray() = any { it.needsBintray() }
 
 internal fun List<JarbirdPub>.needsArtifactory() = any { it.needsArtifactory() }
 

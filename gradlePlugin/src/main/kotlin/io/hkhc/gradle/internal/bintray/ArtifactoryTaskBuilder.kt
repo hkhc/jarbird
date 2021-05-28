@@ -20,11 +20,9 @@ package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JbPublishToArtifactoryTaskInfo
-import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.TaskInfo
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.needsArtifactory
-import io.hkhc.gradle.internal.needsBintray
 import io.hkhc.gradle.internal.registerRootProjectTasks
 import org.gradle.api.Project
 
@@ -52,13 +50,6 @@ class ArtifactoryTaskBuilder(
     }
 
     private fun registerLeafArtifactoryTask() {
-
-        // no need to show message if we do not enable Bintray publishing
-        if (pubs.needsBintray() && publishPlan.invalidPlugins.isNotEmpty()) {
-            project.logger.warn(
-                "WARNING: $LOG_PREFIX Publish snapshot Gradle Plugin to Bintray/OSSArtifactory is not supported."
-            )
-        }
 
         if (pubs.needsArtifactory()) {
 

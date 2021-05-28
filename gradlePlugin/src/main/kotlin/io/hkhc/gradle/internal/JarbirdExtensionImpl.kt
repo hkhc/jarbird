@@ -20,11 +20,9 @@ package io.hkhc.gradle.internal
 
 import groovy.lang.Closure
 import io.hkhc.gradle.JarbirdExtension
-import io.hkhc.gradle.JarbirdPlugin
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
-import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
@@ -189,18 +187,6 @@ open class JarbirdExtensionImpl(
         return repos.find { it is GradlePortalSpec } ?: repoSpecBuilder.buildGradlePluginRepo().also {
             repos.add(it)
         }
-    }
-
-    override fun bintray(): RepoSpec {
-
-        if (repos.any { it is BintrayRepoSpec }) {
-            throw GradleException("Bintray repository has been declared at global level.")
-        }
-
-        disableDefaultRepos()
-        val repo = repoSpecBuilder.buildBintrayRepo()
-        repos.add(repo)
-        return repo
     }
 
     override fun artifactory(): RepoSpec {

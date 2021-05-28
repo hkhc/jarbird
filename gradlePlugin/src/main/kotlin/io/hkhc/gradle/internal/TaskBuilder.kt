@@ -20,7 +20,6 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryTaskBuilder
-import io.hkhc.gradle.internal.bintray.BintrayTaskBuilder
 import io.hkhc.gradle.internal.maven.MavenTaskBuilder
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -33,7 +32,6 @@ internal class TaskBuilder(
 ) {
 
     private val artifactoryTaskBuilder = ArtifactoryTaskBuilder(project, pubs)
-    private val bintrayTaskBuilder = BintrayTaskBuilder(project, pubs)
     private val mavenTaskBuilder = MavenTaskBuilder(project, pubs)
 
     private fun TaskContainer.registerGradlePortalTask() {
@@ -100,9 +98,6 @@ internal class TaskBuilder(
 //                    dependsOn(it.name)
 //                }
             }
-            if (pubs.needsBintray()) {
-                dependsOn(bintrayTaskBuilder.getTaskInfo().name)
-            }
         }
     }
 
@@ -113,9 +108,6 @@ internal class TaskBuilder(
             mavenTaskBuilder.also {
                 it.registerMavenLocalTask(this)
                 it.registerMavenRepositoryTask(this)
-            }
-            if (pubs.needsBintray()) {
-                bintrayTaskBuilder.registerBintrayTask()
             }
             if (pubs.needsArtifactory()) {
                 artifactoryTaskBuilder.registerArtifactoryTask()

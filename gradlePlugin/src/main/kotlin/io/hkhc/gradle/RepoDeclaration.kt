@@ -24,7 +24,6 @@ interface RepoDeclaration {
     fun mavenCentral(): RepoSpec
     fun mavenRepo(key: String): RepoSpec
     fun gradlePortal(): RepoSpec
-    fun bintray(): RepoSpec
     fun artifactory(): RepoSpec
     fun getRepos(): Set<RepoSpec>
 }

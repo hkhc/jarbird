@@ -45,17 +45,6 @@ class PropertyRepoSpecBuilder(
         )
     }
 
-    fun buildBintrayRepo(): BintrayRepoSpec = with(PropertyBuilder(projectProperty, "bintray")) {
-        BintrayRepoSpecImpl(
-            releaseUrl = resolve("release", ""), // Bintray plugin will fill the URL if we don't provide one
-            snapshotUrl = resolve("snapshot", "https://oss.jfrog.org"),
-            username = resolve("username"),
-            description = resolve("description", "Bintray"),
-            apikey = resolve("apikey"),
-            id = "Bintray"
-        )
-    }
-
     fun buildArtifactoryRepo(): ArtifactoryRepoSpec = with(PropertyBuilder(projectProperty, "artifactory")) {
         ArtifactoryRepoSpecImpl(
             releaseUrl = resolve("release"),
@@ -86,14 +75,4 @@ class PropertyRepoSpecBuilder(
         )
     }
 
-    fun buildBintraySnapshotRepoSpec(bintrayRepoSpec: BintrayRepoSpec) =
-        BintraySnapshotRepoSpecImpl(
-            repoKey = "oss-snapshot-local",
-            releaseUrl = "",
-            snapshotUrl = bintrayRepoSpec.snapshotUrl,
-            username = bintrayRepoSpec.username,
-            password = bintrayRepoSpec.apikey,
-            description = "Artifactory OSS Snapshot",
-            id = bintrayRepoSpec.id
-        )
 }

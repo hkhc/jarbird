@@ -116,7 +116,7 @@ fun buildGradle(maven: Boolean = true, bintray: Boolean = true, versions: Versio
 }
 
 
-fun buildGradleKts(maven: Boolean = true, bintray: Boolean = true, versions: Versions = Versions()): String {
+fun buildGradleKts(maven: Boolean = true, artifactory: Boolean = true, versions: Versions = Versions()): String {
     return """
         ${commonBuildGradleKtsPlugins(versions)}
         repositories {
@@ -124,12 +124,12 @@ fun buildGradleKts(maven: Boolean = true, bintray: Boolean = true, versions: Ver
         }
         jarbird {
             ${if (maven) "mavenRepo(\"mock\")" else ""}
-            ${if (bintray) "bintray()" else ""}
+            ${if (artifactory) "artifactory()" else ""}
         }
     """.trimIndent()
 }
 
-fun buildTwoPubGradleKts(maven: Boolean = true, bintray: Boolean = true, versions: Versions = Versions()): String {
+fun buildTwoPubGradleKts(maven: Boolean = true, artifactory: Boolean = true, versions: Versions = Versions()): String {
     return """
         ${commonBuildGradleKtsPlugins(versions)}
         repositories {
@@ -145,7 +145,7 @@ fun buildTwoPubGradleKts(maven: Boolean = true, bintray: Boolean = true, version
         
         jarbird {
             ${if (maven) "mavenRepo(\"mock\")" else ""}
-            ${if (bintray) "bintray()" else ""}
+            ${if (artifactory) "artifactory()" else ""}
             pub("lib1") {
                  from(sourceSets["main"])
             }

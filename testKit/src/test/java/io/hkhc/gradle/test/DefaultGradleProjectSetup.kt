@@ -18,9 +18,7 @@
 
 package io.hkhc.gradle.test
 
-import io.hkhc.gradle.taskinfo.TaskInfo
 import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
-import io.hkhc.gradle.test.bintray.MockBintrayRepositoryServer
 import io.hkhc.utils.PropertiesEditor
 import io.hkhc.utils.tree.Tree
 import java.io.File
@@ -54,14 +52,6 @@ open class DefaultGradleProjectSetup(val projectDir: File) {
     var mockServers = mutableListOf<BaseMockRepositoryServer>()
 
     var mavenMockServer: MockMavenRepositoryServer? = null
-        set(value) {
-            if (value != null) {
-                mockServers.add(value)
-            }
-            field = value
-        }
-
-    var bintrayMockServer: MockBintrayRepositoryServer? = null
         set(value) {
             if (value != null) {
                 mockServers.add(value)
