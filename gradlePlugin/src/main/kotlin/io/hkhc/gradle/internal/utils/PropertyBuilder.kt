@@ -18,7 +18,7 @@
 
 package io.hkhc.gradle.internal.utils
 
-import io.hkhc.gradle.endpoint.resolveProperty
+import groovy.lang.MissingPropertyException
 import io.hkhc.gradle.internal.ProjectProperty
 
 class PropertyBuilder(
@@ -28,4 +28,34 @@ class PropertyBuilder(
 ) {
     fun resolve(key: String, defaultValue: String = "") =
         resolveProperty(projectProperty, "repository.$keyPrefix.$key", defaultValue)
+
+    fun resolveProperty(projectProperty: ProjectProperty, propertyName: String, defaultValue: String = ""): String {
+
+        /*
+        https://linchpiner.github.io/gradle-for-devops-2.html
+        order of precedence to resolve property
+        - Project.property()
+            - ext block
+            - -P, -D, environment variable (ORG_GRADLE_PROJECT_*)
+            - ~/.gradle/gradle.properties
+            - project gradle.properties
+        - System.getenv()
+         */
+
+        val value: String = try {
+            projectProperty.property(propertyName) as String? ?: ""
+        } catch (e: MissingPropertyException) {
+            defaultValue
+        }
+//    if (value == null) {
+//        detailMessageError(
+//            JarbirdLogger.logger,
+//            "Failed to find property '$propertyName'.",
+//            "Add it to one of the gradle.properties, or specify -D$propertyName command line option."
+//        )
+//        throw GradleException("$LOG_PREFIX Failed to find property '$propertyName'")
+//    }
+        return value
+    }
+
 }
