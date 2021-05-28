@@ -21,6 +21,7 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryTaskBuilder
 import io.hkhc.gradle.internal.bintray.BintrayTaskBuilder
+import io.hkhc.gradle.internal.maven.MavenTaskBuilder
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
