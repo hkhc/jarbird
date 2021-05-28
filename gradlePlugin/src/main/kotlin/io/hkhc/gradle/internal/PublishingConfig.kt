@@ -158,7 +158,7 @@ internal class PublishingConfig(
                 version = pub.variantVersion()
 
                 if (publishJarTask == null) {
-                    from((pub as JarbirdPubImpl).effectiveComponent())
+                    from(pub.effectiveComponent())
                 } else {
                     artifactCompat(publishJarTask)
                 }

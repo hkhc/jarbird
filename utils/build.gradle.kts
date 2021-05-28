@@ -101,12 +101,7 @@ configurations {
 jarbird {
     mavenLocal()
     mavenCentral()
-//    bintray()
-    mavenRepo("reposilite")
-    artifactory()
-    pub {
-        useGpg = true
-    }
+    pub {}
 }
 
 dependencies {
