@@ -20,9 +20,6 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.SourceDirs
-import io.hkhc.gradle.SourceSetNames
-import io.hkhc.gradle.VariantMode
 import io.hkhc.gradle.internal.repo.BintrayRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec

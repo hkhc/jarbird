@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
 class SourceDirs(val d: Any) {
     fun getDirs() = d

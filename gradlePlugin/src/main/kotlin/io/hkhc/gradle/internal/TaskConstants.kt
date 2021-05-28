@@ -56,9 +56,9 @@ abstract class TaskInfo {
     abstract val description: String
 
     override fun equals(o: Any?): Boolean {
-        return o?.let { other ->
-            if (other is TaskInfo) {
-                group == other.group && name == other.name && description == other.description
+        return o?.let { other0 ->
+            if (other0 is TaskInfo) {
+                group == other0.group && name == other0.name && description == other0.description
             } else {
                 false
             }

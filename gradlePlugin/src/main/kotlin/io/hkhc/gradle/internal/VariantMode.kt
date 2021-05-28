@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
 enum class VariantMode {
     Invisible, WithArtifactId, WithVersion

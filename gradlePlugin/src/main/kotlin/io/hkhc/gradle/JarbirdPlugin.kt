@@ -31,6 +31,7 @@ import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.internal.PLUGIN_ID
+import io.hkhc.gradle.internal.PluginConfig
 import io.hkhc.gradle.internal.ProjectInfo
 import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.SP_EXT_NAME

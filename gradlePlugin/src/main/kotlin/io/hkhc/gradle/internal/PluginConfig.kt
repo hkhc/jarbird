@@ -16,24 +16,24 @@
  *
  */
 
-package io.hkhc.gradle
+package io.hkhc.gradle.internal
 
+import io.hkhc.gradle.internal.JarbirdExtensionImpl
+import io.hkhc.gradle.internal.ProjectInfo
+import io.hkhc.gradle.internal.ProjectProperty
+import io.hkhc.gradle.internal.SourceResolver
+import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.tasks.SourceSetContainer
 
-class SourceSetNames(project: Project, private val names: Array<out String>) {
+interface PluginConfig {
 
-    private val extensions = (project as ExtensionAware).extensions
-
-    private val sourceSets: SourceSetContainer
-        get() =
-            extensions.getByName("sourceSets") as SourceSetContainer
-
-    fun getDirs(): Array<out Any> {
-        return names.flatMap {
-            val sourceSet = sourceSets.getByName(it)
-            sourceSet.allSource.srcDirs
-        }.toTypedArray()
-    }
+    fun getSourceResolver(project: Project): SourceResolver
+    fun newExtension(
+        project: Project,
+        projectProperty: ProjectProperty,
+        projectInfo: ProjectInfo,
+        pomGroup: PomGroup
+    ): JarbirdExtensionImpl
+    fun shallCreateImplicit(): Boolean
+    fun pluginId(): String
 }

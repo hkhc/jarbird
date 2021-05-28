@@ -19,11 +19,6 @@
 package io.hkhc.gradle
 
 interface RepoSpec {
-
     val description: String
     val id: String
-
-//    override fun equals(other: Any?) = commonEquals(other)
-//    override fun toString() = commonToString()
-//    override fun hashCode() = commonHashCode()
 }

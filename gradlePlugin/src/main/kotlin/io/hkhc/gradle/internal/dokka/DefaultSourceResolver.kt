@@ -18,8 +18,8 @@
 
 package io.hkhc.gradle.internal.dokka
 
-import io.hkhc.gradle.SourceDirs
-import io.hkhc.gradle.SourceSetNames
+import io.hkhc.gradle.internal.SourceDirs
+import io.hkhc.gradle.internal.SourceSetNames
 import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSet
 
