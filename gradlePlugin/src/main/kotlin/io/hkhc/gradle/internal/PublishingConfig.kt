@@ -230,7 +230,7 @@ internal class PublishingConfig(
     private fun RepositoryHandler.createRepository() {
 
         val releaseEndpoints = pubs
-            .filter { !it.pom.isSnapshot() }
+            .filter { it.pom.isRelease() }
             .flatMap { it.getRepos() }
             .filterIsInstance<MavenRepoSpec>()
             .toSet()

@@ -115,9 +115,9 @@ class SigningConfig(
                 useGpgCmd()
             }
 
-            isRequired = !pub.pom.isSnapshot()
+            isRequired = pub.pom.isRelease()
 
-            if (!pub.pom.isSnapshot()) {
+            if (pub.pom.isRelease()) {
                 project.findByType(PublishingExtension::class.java)?.let {
                     sign(it.publications[pub.pubNameWithVariant()])
                     if (pub.pom.isGradlePlugin()) {

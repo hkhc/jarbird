@@ -317,6 +317,7 @@ data class Pom(
         }
     }
 
+    fun isRelease() = !version.isSnapshot()
     fun isSnapshot() = version.isSnapshot()
 
     fun isGradlePlugin() = plugin != null
