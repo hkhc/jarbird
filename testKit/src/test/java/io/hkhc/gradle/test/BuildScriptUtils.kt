@@ -202,23 +202,11 @@ fun buildTwoLocalGradleKts(versions: Versions = Versions()): String {
     """.trimIndent()
 }
 
-fun buildGradleCustomBintrayKts(versions: Versions = Versions()): String {
-    return """
-        ${commonBuildGradleKtsPlugins(versions)}
-        repositories {
-            jcenter()
-        }
-        jarbird {
-            bintray()
-        }
-    """.trimIndent()
-}
-
 fun buildGradleCustomArtifactoryKts(versions: Versions = Versions()): String {
     return """
         ${commonBuildGradleKtsPlugins(versions)}
         jarbird {
-            bintray()
+            artifactory()
         }
         repositories {
             jcenter()
@@ -304,7 +292,7 @@ fun commonAndroidGradle(
         ${commonAndroidBuildGradleKtsAndroid()}
         jarbird {
             ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
-            bintray()
+            artifactory()
         }
 
         android.libraryVariants.configureEach { variant ->
@@ -336,7 +324,7 @@ fun commonAndroidExtGradle(variantMode: String = "variantInvisible()", mavenRepo
         ${commonAndroidBuildGradleKtsAndroid()}
         jarbird {
             ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
-            bintray()
+            artifactory()
         }
 
         android.libraryVariants.configureEach { variant ->

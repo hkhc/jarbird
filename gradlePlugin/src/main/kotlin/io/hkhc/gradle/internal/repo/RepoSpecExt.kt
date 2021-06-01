@@ -18,11 +18,20 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.RepoSpec
+import io.hkhc.gradle.JarbirdPub
+import org.gradle.api.GradleException
 
-interface ArtifactoryRepoSpec : RemoteRepoSpec {
-
-    val username: String
-    val password: String
-    val repoKey: String
+fun RemoteRepoSpec.effectiveUrl(pub: JarbirdPub): String {
+    return if (pub.pom.isSnapshot()) {
+        if (snapshotUrl.isNullOrEmpty()) {
+            throw GradleException("Snapshot URL of the repo '${id}' is not provided")
+        } else
+            snapshotUrl
+    }
+    else {
+        if (releaseUrl.isNullOrEmpty()) {
+            throw GradleException("Release URL of the repo '${id}' is not provided")
+        } else
+            releaseUrl
+    }
 }

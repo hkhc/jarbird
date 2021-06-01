@@ -23,11 +23,10 @@ import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
 import io.hkhc.gradle.test.artifacory.publishedToArtifactoryRepositoryCompletely
-import io.hkhc.gradle.test.buildGradleCustomBintrayKts
+import io.hkhc.gradle.test.buildGradleCustomArtifactoryKts
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.pluginPom
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme
@@ -49,7 +48,7 @@ class BuildArtifactoryPluginRepoTest : FunSpec({
 
     context("Publish Gradle plugin") {
 
-        val targetTask = "jbPublishToBintray"
+        val targetTask = "jbPublishToArtifactory"
 
         fun commonSetup(coordinate: Coordinate, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
@@ -64,7 +63,7 @@ class BuildArtifactoryPluginRepoTest : FunSpec({
                     }
                 )
 
-                writeFile("build.gradle.kts", buildGradleCustomBintrayKts())
+                writeFile("build.gradle.kts", buildGradleCustomArtifactoryKts())
 
                 writeFile(
                     "pom.yaml",
@@ -76,9 +75,11 @@ class BuildArtifactoryPluginRepoTest : FunSpec({
                 )
 
                 setupGradleProperties {
-                    "repository.bintray.snapshot" to mockServers[0].getServerUrl()
-                    "repository.bintray.username" to "username"
-                    "repository.bintray.apikey" to "password"
+                    "repository.artifactory.release" to mockServers[0].getServerUrl()
+                    "repository.artifactory.snapshot" to mockServers[0].getServerUrl()
+                    "repository.artifactory.username" to "username"
+                    "repository.artifactory.apikey" to "password"
+                    "repository.artifactory.repoKey" to "oss-snapshot-local"
                 }
 
                 this.expectedTaskGraph = expectedTaskGraph
@@ -124,28 +125,40 @@ class BuildArtifactoryPluginRepoTest : FunSpec({
             }
         }
 
-        context("to snapshot Bintray Repository") {
+        context("to release Artifactory Repository") {
 
-            val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT", "test.plugin")
+            val coordinate = Coordinate("test.group", "test.artifact", "0.1", "test.plugin")
             val setup = commonSetup(
                 coordinate,
                 stringTreeOf(NoBarTheme) {
-                    ":jbPublishToBintray SUCCESS" {
-                        ":jbPublishToArtifactory SUCCESS" {
-                            ":artifactoryPublish SUCCESS" {
+                    ":jbPublishToArtifactory SUCCESS" {
+                        ":artifactoryPublish SUCCESS" {
+                            ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                ":jar SUCCESS"()
+                            }
+                            ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                            ":generatePomFileForTestArtifactPublication SUCCESS"()
+                            ":jar SUCCESS"()
+                            ":jbDokkaJarTestArtifact SUCCESS" {
+                                ":jbDokkaHtmlTestArtifact SUCCESS"()
+                            }
+                            ":signTestArtifactPluginMarkerMavenPublication SUCCESS" {
+                                ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
+                            }
+                            ":signTestArtifactPublication SUCCESS" {
                                 ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                     ":jar SUCCESS"()
                                 }
-                                ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
                                 ":generatePomFileForTestArtifactPublication SUCCESS"()
                                 ":jar SUCCESS"()
                                 ":jbDokkaJarTestArtifact SUCCESS" {
                                     ":jbDokkaHtmlTestArtifact SUCCESS"()
                                 }
                                 ":sourcesJarTestArtifact SUCCESS"()
-                                ":artifactoryDeploy SUCCESS" {
-                                    ":extractModuleInfo SUCCESS"()
-                                }
+                            }
+                            ":sourcesJarTestArtifact SUCCESS"()
+                            ":artifactoryDeploy SUCCESS" {
+                                ":extractModuleInfo SUCCESS"()
                             }
                         }
                     }

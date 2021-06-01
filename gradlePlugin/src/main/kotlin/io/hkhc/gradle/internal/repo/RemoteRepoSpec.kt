@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Herman Cheung
+ * Copyright (c) 2021. Herman Cheung
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,11 @@
  *
  */
 
-package io.hkhc.gradle.pom
+package io.hkhc.gradle.internal.repo
 
-import io.hkhc.utils.test.`Fields overlay properly`
-import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.booleans.shouldBeTrue
+import io.hkhc.gradle.RepoSpec
 
-class PomBintrayTest : StringSpec({
-
-    "Bintray shall be a data class so that we may assume 'equals' logic is provided" {
-        Bintray::class.isData.shouldBeTrue()
-    }
-
-    // Have one line per property in the class
-    "Bintray shall overlay properly" {
-        `Fields overlay properly`(Bintray::class, { Bintray() })
-    }
-})
+interface RemoteRepoSpec: RepoSpec {
+    val releaseUrl: String
+    val snapshotUrl: String
+}

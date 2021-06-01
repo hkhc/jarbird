@@ -67,7 +67,6 @@ internal class PomTest : StringSpec({
     "Pom shall overlay properly" {
 
         val nonStringFields = arrayOf(
-            `Field perform overlay properly`({ Pom() }, Pom::bintray, Bintray("names", "repo", "org")),
             `Field perform overlay properly`({ Pom() }, Pom::organization, Organization("name", "url_orgn")),
             `Field perform overlay properly`({ Pom() }, Pom::web, Web("url", "description")),
             `Field perform overlay properly`({ Pom() }, Pom::scm, Scm(url = "url", connection = "connection")),

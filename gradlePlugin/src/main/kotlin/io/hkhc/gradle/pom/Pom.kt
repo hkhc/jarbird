@@ -159,24 +159,6 @@ data class Scm(
     }
 }
 
-data class Bintray(
-    var labels: String? = null,
-    var repo: String? = null,
-    var userOrg: String? = null,
-    var githubReleaseNoteFile: String? = null
-) : Overlayable {
-
-    override fun overlayTo(other: Overlayable): Overlayable {
-        if (other is Bintray) {
-            labels?.let { other.labels = it }
-            repo?.let { other.repo = it }
-            userOrg?.let { other.userOrg = it }
-            githubReleaseNoteFile?.let { other.githubReleaseNoteFile = it }
-        }
-        return other
-    }
-}
-
 data class PluginInfo(
     var id: String? = null,
     var displayName: String? = null,
@@ -228,10 +210,6 @@ data class Pom(
     /* "variant" is not part of POM, but an ID to facilitates multiple POM coexist in the same pom.yaml file */
     /* variant is fixed and not going to be overlaid */
     var variant: String = DEFAULT_VARIANT,
-
-    /* "bintray" is not part of POM, but additional information needs to deploy to bintray repo */
-    /* TODO it may be better to specify repo details in gradle.properties? */
-    var bintray: Bintray = Bintray(),
 
     /* additional details for plugin deployment */
     var plugin: PluginInfo? = null
@@ -290,8 +268,6 @@ data class Pom(
             organization.overlayTo(other.organization)
             web.overlayTo(other.web)
             scm.overlayTo(other.scm)
-
-            bintray.overlayTo(other.bintray)
 
             plugin?.let { thisPlugin ->
                 other.plugin = other.plugin?.also { it -> thisPlugin.overlayTo(it) } ?: thisPlugin

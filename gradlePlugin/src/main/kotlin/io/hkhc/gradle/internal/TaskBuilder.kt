@@ -98,6 +98,9 @@ internal class TaskBuilder(
 //                    dependsOn(it.name)
 //                }
             }
+            if (pubs.needsArtifactory()) {
+                dependsOn(artifactoryTaskBuilder.getTaskInfo().name)
+            }
         }
     }
 

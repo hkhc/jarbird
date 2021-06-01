@@ -20,9 +20,7 @@ package io.hkhc.gradle.internal.repo
 
 import io.hkhc.gradle.RepoSpec
 
-interface MavenRepoSpec : RepoSpec {
-    val releaseUrl: String
-    val snapshotUrl: String
+interface MavenRepoSpec : RemoteRepoSpec {
     val username: String
     val password: String
     val isAllowInsecureProtocol: Boolean

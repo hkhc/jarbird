@@ -26,11 +26,13 @@ import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
+import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.internal.utils.normalizePubName
 import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.internal.impldep.org.apache.maven.Maven
 
 open class JarbirdExtensionImpl(
     private val project: Project,
@@ -161,6 +163,7 @@ open class JarbirdExtensionImpl(
         }
     }
 
+    // There is no effect to declare mavenCentral() more than once, just use the same RepoSpec
     override fun mavenCentral(): RepoSpec {
         disableDefaultRepos()
         return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral(project).also {
@@ -168,11 +171,17 @@ open class JarbirdExtensionImpl(
         }
     }
 
+    // There is no effect to declare mavenRepo() more than once in the same pub, just use the same RepoSpec
     override fun mavenRepo(key: String): RepoSpec {
         disableDefaultRepos()
         val repo = repoSpecBuilder.buildMavenRepo(key)
-        repos.add(repo)
-        return repo
+        val existingRepo = repos.filterIsInstance(MavenRepoSpecImpl::class.java).find { it.id == repo.id }
+        return if (existingRepo == null) {
+            repos.add(repo)
+            repo
+        } else {
+            existingRepo
+        }
     }
 
     override fun mavenLocal(): RepoSpec {

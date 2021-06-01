@@ -23,6 +23,7 @@ import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.utils.PropertyBuilder
 import io.hkhc.gradle.internal.utils.normalizePubName
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 class PropertyRepoSpecBuilder(
@@ -46,7 +47,7 @@ class PropertyRepoSpecBuilder(
     }
 
     fun buildArtifactoryRepo(): ArtifactoryRepoSpec = with(PropertyBuilder(projectProperty, "artifactory")) {
-        ArtifactoryRepoSpecImpl(
+        val result = ArtifactoryRepoSpecImpl(
             releaseUrl = resolve("release"),
             snapshotUrl = resolve("snapshot"),
             username = resolve("username"),
@@ -55,6 +56,13 @@ class PropertyRepoSpecBuilder(
             repoKey = resolve("repoKey"),
             id = "Artifactory"
         )
+        if (result.releaseUrl.isNullOrEmpty() && result.snapshotUrl.isNullOrEmpty()) {
+            throw GradleException("Artifactory repository ${result.id} must have either 'release' or 'snapshot' property")
+        }
+        if (result.repoKey.isNullOrEmpty()) {
+            throw GradleException("Artifactory repository ${result.id} must have 'repoKey' property.")
+        }
+        return result
     }
 
     fun buildMavenCentral(project: Project): MavenRepoSpec = with(PropertyBuilder(projectProperty, "mavencentral")) {

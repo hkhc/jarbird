@@ -47,7 +47,7 @@ class BuildArtifactoryRepoTest : FunSpec({
 
     context("Publish library") {
 
-        val targetTask = "jbPublishToBintray"
+        val targetTask = "jbPublishToArtifactory"
 
         fun commonSetup(coordinate: Coordinate, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
@@ -67,9 +67,11 @@ class BuildArtifactoryRepoTest : FunSpec({
                 writeFile("pom.yaml", simplePom(coordinate))
 
                 setupGradleProperties {
-                    "repository.bintray.snapshot" to mockServers[0].getServerUrl()
-                    "repository.bintray.username" to "username"
-                    "repository.bintray.apikey" to "password"
+                    "repository.artifactory.release" to mockServers[0].getServerUrl()
+                    "repository.artifactory.snapshot" to mockServers[0].getServerUrl()
+                    "repository.artifactory.username" to "username"
+                    "repository.artifactory.apikey" to "password"
+                    "repository.artifactory.repoKey" to "oss-snapshot-local"
                 }
 
                 this.expectedTaskGraph = expectedTaskGraph
@@ -111,13 +113,21 @@ class BuildArtifactoryRepoTest : FunSpec({
 
         context("to release Artifactory Repository") {
 
-            val coordinate = Coordinate("test.group", "test.artifact", "0.1-SNAPSHOT")
+            val coordinate = Coordinate("test.group", "test.artifact", "0.1")
             val setup = commonSetup(
                 coordinate,
                 stringTreeOf(NoBarTheme) {
-                    ":jbPublishToBintray SUCCESS" {
-                        ":jbPublishToArtifactory SUCCESS" {
-                            ":artifactoryPublish SUCCESS" {
+                    ":jbPublishToArtifactory SUCCESS" {
+                        ":artifactoryPublish SUCCESS" {
+                            ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                ":jar SUCCESS"()
+                            }
+                            ":generatePomFileForTestArtifactPublication SUCCESS"()
+                            ":jar SUCCESS"()
+                            ":jbDokkaJarTestArtifact SUCCESS" {
+                                ":jbDokkaHtmlTestArtifact SUCCESS"()
+                            }
+                            ":signTestArtifactPublication SUCCESS" {
                                 ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                     ":jar SUCCESS"()
                                 }
@@ -127,9 +137,10 @@ class BuildArtifactoryRepoTest : FunSpec({
                                     ":jbDokkaHtmlTestArtifact SUCCESS"()
                                 }
                                 ":sourcesJarTestArtifact SUCCESS"()
-                                ":artifactoryDeploy SUCCESS" {
-                                    ":extractModuleInfo SUCCESS"()
-                                }
+                            }
+                            ":sourcesJarTestArtifact SUCCESS"()
+                            ":artifactoryDeploy SUCCESS" {
+                                ":extractModuleInfo SUCCESS"()
                             }
                         }
                     }

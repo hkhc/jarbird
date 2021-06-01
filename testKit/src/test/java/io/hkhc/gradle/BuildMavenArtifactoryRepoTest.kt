@@ -25,6 +25,7 @@ import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
+import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
 import io.hkhc.gradle.test.artifacory.publishedToArtifactoryRepositoryCompletely
 import io.hkhc.gradle.test.buildGradleKts
 import io.hkhc.gradle.test.getTaskTree
@@ -71,6 +72,12 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                     }
                 }
 
+                if (artifactory) {
+                    artifactoryMockServer = MockArtifactoryRepositoryServer().apply {
+                        setUp(listOf(coordinate), "/base")
+                    }
+                }
+
                 writeFile("build.gradle.kts", buildGradleKts(maven, artifactory))
 
                 writeFile("pom.yaml", simplePom(coordinate))
@@ -88,7 +95,13 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                         "repository.maven.mock.password" to "password"
                         "repository.maven.mock.allowInsecureProtocol" to "true"
                     }
-
+                    if (artifactory) {
+                        "repository.artifactory.release" to artifactoryMockServer?.getServerUrl()
+                        "repository.artifactory.snapshot" to artifactoryMockServer?.getServerUrl()
+                        "repository.artifactory.username" to "username"
+                        "repository.artifactory.apikey" to "password"
+                        "repository.artifactory.repoKey" to "oss-snapshot-local"
+                    }
                 }
 
                 this.expectedTaskGraph = expectedTaskGraph
@@ -139,7 +152,7 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
             }
         }
 
-        context("to release Maven Repository and Bintray Repository") {
+        context("to release Maven Repository and Artifactory Repository") {
 
             val coordinate = Coordinate("test.group", "test.artifact", "0.1")
             val setup = commonSetup(
@@ -148,9 +161,17 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                 artifactory = true,
                 expectedTaskGraph = stringTreeOf(NoBarTheme) {
                     ":jbPublish SUCCESS" {
-                        ":jbPublishToBintray SUCCESS" {
-                            ":bintrayUpload SUCCESS" {
-                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                        ":jbPublishToArtifactory SUCCESS" {
+                            ":artifactoryPublish SUCCESS" {
+                                ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                    ":jar SUCCESS"()
+                                }
+                                ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                ":jar SUCCESS"()
+                                ":jbDokkaJarTestArtifact SUCCESS" {
+                                    ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                }
+                                ":signTestArtifactPublication SUCCESS" {
                                     ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                         ":jar SUCCESS"()
                                     }
@@ -159,20 +180,12 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                                     ":jbDokkaJarTestArtifact SUCCESS" {
                                         ":jbDokkaHtmlTestArtifact SUCCESS"()
                                     }
-                                    ":signTestArtifactPublication SUCCESS" {
-                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
-                                            ":jar SUCCESS"()
-                                        }
-                                        ":generatePomFileForTestArtifactPublication SUCCESS" ()
-                                        ":jar SUCCESS"()
-                                        ":jbDokkaJarTestArtifact SUCCESS" {
-                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
-                                        }
-                                        ":sourcesJarTestArtifact SUCCESS"()
-                                    }
                                     ":sourcesJarTestArtifact SUCCESS"()
                                 }
-                                ":bintrayPublish SUCCESS"()
+                                ":sourcesJarTestArtifact SUCCESS"()
+                                ":artifactoryDeploy SUCCESS" {
+                                    ":extractModuleInfo SUCCESS"()
+                                }
                             }
                         }
                         ":jbPublishToMavenLocal SUCCESS" {
@@ -203,9 +216,9 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                                 }
                             }
                         }
-                        ":jbPublishToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifactToMavenRepository SUCCESS" {
-                                ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                        ":jbPublishToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
+                                ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                     ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                         ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                             ":jar SUCCESS"()
@@ -248,21 +261,19 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                 expectedTaskGraph =
                 stringTreeOf(NoBarTheme) {
                     ":jbPublish SUCCESS" {
-                        ":jbPublishToBintray SUCCESS" {
-                            ":jbPublishToArtifactory SUCCESS" {
-                                ":artifactoryPublish SUCCESS" {
-                                    ":generateMetadataFileForTestArtifactPublication SUCCESS" {
-                                        ":jar SUCCESS"()
-                                    }
-                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
+                        ":jbPublishToArtifactory SUCCESS" {
+                            ":artifactoryPublish SUCCESS" {
+                                ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                     ":jar SUCCESS"()
-                                    ":jbDokkaJarTestArtifact SUCCESS" {
-                                        ":jbDokkaHtmlTestArtifact SUCCESS"()
-                                    }
-                                    ":sourcesJarTestArtifact SUCCESS"()
-                                    ":artifactoryDeploy SUCCESS" {
-                                        ":extractModuleInfo SUCCESS"()
-                                    }
+                                }
+                                ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                ":jar SUCCESS"()
+                                ":jbDokkaJarTestArtifact SUCCESS" {
+                                    ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                }
+                                ":sourcesJarTestArtifact SUCCESS"()
+                                ":artifactoryDeploy SUCCESS" {
+                                    ":extractModuleInfo SUCCESS"()
                                 }
                             }
                         }
@@ -281,9 +292,9 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                                 }
                             }
                         }
-                        ":jbPublishToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifactToMavenRepository SUCCESS" {
-                                ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                        ":jbPublishToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
+                                ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                     ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                         ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                             ":jar SUCCESS"()
@@ -343,9 +354,9 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                                 }
                             }
                         }
-                        ":jbPublishToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifactToMavenRepository SUCCESS" {
-                                ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                        ":jbPublishToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
+                                ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                     ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                         ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                             ":jar SUCCESS"()
@@ -378,7 +389,7 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
             testBody(coordinate, setup)
         }
 
-        context("to snapshot Bintray Repository only") {
+        context("to snapshot Artifactory Repository only") {
 
             val coordinate = Coordinate("test.group", "test.artifact", "0.1")
             val setup = commonSetup(
@@ -388,9 +399,17 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                 expectedTaskGraph =
                 stringTreeOf(NoBarTheme) {
                     ":jbPublish SUCCESS" {
-                        ":jbPublishToBintray SUCCESS" {
-                            ":bintrayUpload SUCCESS" {
-                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
+                        ":jbPublishToArtifactory SUCCESS" {
+                            ":artifactoryPublish SUCCESS" {
+                                ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                    ":jar SUCCESS"()
+                                }
+                                ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                ":jar SUCCESS"()
+                                ":jbDokkaJarTestArtifact SUCCESS" {
+                                    ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                }
+                                ":signTestArtifactPublication SUCCESS" {
                                     ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                         ":jar SUCCESS"()
                                     }
@@ -399,20 +418,12 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                                     ":jbDokkaJarTestArtifact SUCCESS" {
                                         ":jbDokkaHtmlTestArtifact SUCCESS"()
                                     }
-                                    ":signTestArtifactPublication SUCCESS" {
-                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
-                                            ":jar SUCCESS"()
-                                        }
-                                        ":generatePomFileForTestArtifactPublication SUCCESS" ()
-                                        ":jar SUCCESS"()
-                                        ":jbDokkaJarTestArtifact SUCCESS" {
-                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
-                                        }
-                                        ":sourcesJarTestArtifact SUCCESS"()
-                                    }
                                     ":sourcesJarTestArtifact SUCCESS"()
                                 }
-                                ":bintrayPublish SUCCESS"()
+                                ":sourcesJarTestArtifact SUCCESS"()
+                                ":artifactoryDeploy SUCCESS" {
+                                    ":extractModuleInfo SUCCESS"()
+                                }
                             }
                         }
                         ":jbPublishToMavenLocal SUCCESS" {
