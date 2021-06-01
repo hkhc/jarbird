@@ -20,13 +20,12 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
+import io.hkhc.gradle.SigningStrategy
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
+import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
-import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.pom.internal.appendBeforeSnapshot
-import io.hkhc.gradle.pom.internal.isSnapshot
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
@@ -38,25 +37,16 @@ open class JarbirdPubImpl(
     protected val project: Project,
     private val ext: JarbirdExtensionImpl,
     projectProperty: ProjectProperty,
-    override val variant: String = ""
-) : JarbirdPub {
+    variant: String = "",
+    signingStrategy: SigningStrategy = SigningStrategyImpl(),
+    variantStrategy: VariantStrategy = VariantStrategyImpl(variant)
+) : JarbirdPub,
+    SigningStrategy by signingStrategy,
+    VariantStrategy by variantStrategy {
 
-    private var variantMode: VariantMode = VariantMode.WithVersion
     private val repos = mutableSetOf<RepoSpec>()
     private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
 
-    /**
-     * Configure for artifact signing or not
-     */
-    private var signing = true
-
-    /**
-     * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
-     * We will need useGpg=true if we use new keybox (.kbx) format for signing key.
-     */
-    private var useKeybox = true
-
-    override lateinit var pom: Pom
     override var pubName: String = "lib"
     override var docSourceSets: Any = "main"
 
@@ -68,79 +58,6 @@ open class JarbirdPubImpl(
 
     override fun configureDokka(block: AbstractDokkaTask.(pub: JarbirdPub) -> Unit) {
         dokkaConfig = block
-    }
-
-    override fun doNotSign() {
-        signing = false
-    }
-
-    override fun shouldSign(): Boolean {
-        return signing
-    }
-
-    override fun signWithKeyring() {
-        signing = true
-        useKeybox = false
-    }
-
-    override fun signWithKeybox() {
-        signing = true
-        useKeybox = true
-    }
-
-    override fun isSignWithKeyring(): Boolean {
-        return useKeybox == false
-    }
-
-    override fun isSignWithKeybox(): Boolean {
-        return useKeybox == true
-    }
-
-    override fun variantWithVersion() {
-        variantMode = VariantMode.WithVersion
-    }
-    override fun variantWithArtifactId() {
-        variantMode = VariantMode.WithArtifactId
-    }
-    override fun variantInvisible() {
-        variantMode = VariantMode.Invisible
-    }
-
-    /**
-     * if set, the deployed version will be suffixed with the variant name, delimited by '-'.
-     * if version is a SNAPSHOT, the variant is added before SNAPSHOT.
-     * if variant is empty, the version is not altered
-     *
-     * e.g.
-     * version = "1.0", variant = "" -> "1.0"
-     * version = "1.0", variant = "debug" -> "1.0-debug"
-     * version = "1.0-SNAPSHOT", variant = "debug" -> "1.0-debug-SNAPSHOT"
-     */
-    override fun variantArtifactId(): String? {
-        return pom.artifactId?.let { id ->
-            when {
-                variantMode != VariantMode.WithArtifactId -> {
-                    id
-                }
-                variant == "" -> {
-                    id
-                }
-                else -> {
-                    "$id-$variant"
-                }
-            }
-        }
-    }
-
-    override fun variantVersion(): String? {
-        return pom.version?.let { ver ->
-            when {
-                variantMode != VariantMode.WithVersion -> ver
-                variant == "" -> ver
-                ver.isSnapshot() -> ver.appendBeforeSnapshot(variant)
-                else -> "$ver-$variant"
-            }
-        }
     }
 
     override fun getGAV(): String {
@@ -173,8 +90,13 @@ open class JarbirdPubImpl(
 
     override fun mavenRepo(key: String): RepoSpec {
         val repo = repoSpecBuilder.buildMavenRepo(key)
-        repos.add(repo)
-        return repo
+        val existingRepo = repos.filterIsInstance(MavenRepoSpecImpl::class.java).find { it.id == repo.id }
+        return if (existingRepo == null) {
+            repos.add(repo)
+            repo
+        } else {
+            existingRepo
+        }
     }
 
     override fun mavenLocal(): RepoSpec {
@@ -230,5 +152,4 @@ open class JarbirdPubImpl(
             gradlePortal()
         }
     }
-
 }

@@ -64,6 +64,10 @@ abstract class TaskInfo {
         } ?: false
     }
 
+    override fun hashCode(): Int {
+        return "$group$name$description".hashCode()
+    }
+
     override fun toString(): String {
         return "TaskInfo(${super.toString()},group=$group,name=$name,description=$description)"
     }
@@ -127,21 +131,21 @@ object Publish {
         val taskName = "$prefix${repo.repoName.capitalize()}Repository"
     }
 
-    val taskName = PUBLISH_TASK_PREFIX
+    const val taskName = PUBLISH_TASK_PREFIX
 
     val to = To(taskName)
-
 }
 
 object JbPublish {
 
-    class SimpleTaskInfo(nameSource: () -> String, descriptionSource: () -> String): TaskInfo() {
-        constructor(n: String, d: String): this({n},{d})
+    class SimpleTaskInfo(nameSource: () -> String, descriptionSource: () -> String) : TaskInfo() {
+        constructor(n: String, d: String) : this({ n }, { d })
+
         override val name = nameSource()
         override val description = descriptionSource()
-        fun append(another: TaskInfo) = newInfo (
+        fun append(another: TaskInfo) = newInfo(
             "$name${another.name}",
-            "$description${if (another.description!="") " " else ""}${another.description}"
+            "$description${if (another.description != "") " " else ""}${another.description}"
         )
     }
 
@@ -155,15 +159,21 @@ object JbPublish {
     val to = To(null, initialInfo.append(newInfo("", "")))
 
     class Pub(prefixTaskInfo: SimpleTaskInfo, pub: JarbirdPub) {
-        private var variantWithBracket = if (pub.variant=="") "" else " (${pub.variant})"
-        val taskInfo = prefixTaskInfo.append(newInfo(
-            pub.pubNameCap,
-        "module '${pub.pubName}'$variantWithBracket to all targeted repositories"
-        ))
-        val to = To(pub, prefixTaskInfo.append(newInfo(
-            pub.pubNameCap,
-            "module '${pub.pubName}'$variantWithBracket"
-        ))
+        private var variantWithBracket = if (pub.variant == "") "" else " (${pub.variant})"
+        val taskInfo = prefixTaskInfo.append(
+            newInfo(
+                pub.pubNameCap,
+                "module '${pub.pubName}'$variantWithBracket to all targeted repositories"
+            )
+        )
+        val to = To(
+            pub,
+            prefixTaskInfo.append(
+                newInfo(
+                    pub.pubNameCap,
+                    "module '${pub.pubName}'$variantWithBracket"
+                )
+            )
         )
     }
 
@@ -172,9 +182,11 @@ object JbPublish {
         val mavenLocal = MavenLocalTask(prefixInfo.append(toInfo))
         fun mavenRepo(spec: RepoSpec) = MavenRepoTask(prefixInfo.append(toInfo), spec)
         val mavenRepo = AllMavenRepoTask(prefixInfo.append(toInfo))
-        fun mavenCentral() = MavenRepoTask(prefixInfo.append(toInfo),
+        fun mavenCentral() = MavenRepoTask(
+            prefixInfo.append(toInfo),
             pub?.let { it.getRepos().filterIsInstance(MavenCentralRepoSpec::class.java)[0] }!!
         )
+
         var gradlePortal = GradlePortalTask(prefixInfo.append(toInfo))
     }
 
@@ -197,98 +209,7 @@ object JbPublish {
     }
 
     val taskInfo = initialInfo
-
 }
-
-//class JbPubishTaskInfo : TaskInfo {
-//    override val name: String
-//        get() = "$JbPublish"
-//    override val description: String
-//        get() = "Publish everything"
-//}
-
-//class JbPublishToMavenLocalTaskInfo : TaskInfo {
-//    override val name: String
-//        get() = JB_PUBLISH_TO_MAVEN_LOCAL_TASK
-//    override val description: String
-//        get() = "Publish all publications to the local Maven Repository"
-//}
-
-//class JbPublishPubToMavenLocalTaskInfo(val pub: JarbirdPub) : TaskInfo() {
-//    override val name: String
-//        get() = "$JB_TASK_PREFIX${pub.pubNameCap}$TO_MAVEN_LOCAL"
-//    override val description: String
-//        get() = if (pub.pom.isGradlePlugin()) {
-//            val pubDesc = listOf(pub.getGAV(), "plugin marker ${pub.pluginCoordinate()}").joinToStringAnd()
-//            "Publish $pubDesc to the local Maven Repository"
-//        } else {
-//            "Publish ${pub.getGAV()} to the local Maven Repository"
-//        }
-//}
-
-//class JbPublishToMavenRepoTaskInfo : TaskInfo() {
-//    override val name: String
-//        get() = JB_PUBLISH_TO_MAVEN_REPO_TASK
-//    override val description: String
-//        get() = "Publish all publications to the respective Maven Repositories"
-//}
-
-//class JbPublishToCustomMavenRepoTaskInfo(val repo: RepoSpec) : TaskInfo() {
-//    override val name: String
-//        get() = "${JB_TASK_PREFIX}To${repo.id}"
-//    override val description: String
-//        get() = "Publish Maven publications to '${repo.description}'"
-//}
-
-//class JbPublishPubToMavenRepoTaskInfo(val pub: JarbirdPub) : TaskInfo() {
-//
-//    private val mavenRepos = pub.getRepos().filterIsInstance<MavenRepoSpec>().joinToStringAnd { it.description }
-//
-//    override val name: String
-//        get() = "$JB_TASK_PREFIX${pub.pubNameCap}$TO_MAVEN_REPO"
-//    override val description: String
-//        get() = if (pub.pom.isGradlePlugin()) {
-//            val pubDesc = listOf(pub.getGAV(), "plugin marker ${pub.pluginCoordinate()}").joinToStringAnd()
-//            "Publish $pubDesc to $mavenRepos"
-//        } else {
-//            "Publish '${pub.getGAV()}' to all of the respective Maven Repo $mavenRepos"
-//        }
-//}
-
-//class JbPublishPubToCustomMavenRepoTaskInfo(val pub: JarbirdPub, val repo: RepoSpec) : TaskInfo() {
-//    override val name: String
-//        get() = "$JB_TASK_PREFIX${pub.pubNameCap}To${repo.id }"
-//    override val description: String
-//        get() = if (pub.pom.isGradlePlugin()) {
-//            val pubDesc = listOf(pub.getGAV(), "plugin marker ${pub.pluginCoordinate()}").joinToStringAnd()
-//            "Publish $pubDesc to ${repo.description} "
-//        } else {
-//            "Publish '${pub.getGAV()}' to ${repo.description}"
-//        }
-//}
-
-//class JbPublishToGradlePortalTaskInfo(private val pubs: List<JarbirdPub>) : TaskInfo() {
-//    override val name: String
-//        get() = JB_PUBLISH_TO_GRADLE_PORTAL_TASK
-//    override val description: String
-//        get() {
-//            val pluginPubs = pubs.filter { pub -> pub.getRepos().any { repo -> repo is GradlePortalSpec } }
-//            val pluginPubsDesc = pluginPubs.flatMap { pub ->
-//                listOf(pub.getGAV(), "plugin marker ${pub.pluginCoordinate()}")
-//            }.joinToStringAnd()
-//            return "Publish $pluginPubsDesc to Gradle plugin portal"
-//        }
-//}
-
-//class JbPublishPubToGradlePortalTaskInfo(val pub: JarbirdPub) : TaskInfo() {
-//    override val name: String
-//        get() = "$JB_TASK_PREFIX${pub.pubNameCap}$TO_GRADLE_PORTAL"
-//    override val description: String
-//        get() {
-//            val pubDesc = listOf(pub.getGAV(), "plugin marker ${pub.pluginCoordinate()}").joinToStringAnd()
-//            return "Publish $pubDesc to Gradle plugin portal"
-//        }
-//}
 
 class JbPublishToArtifactoryTaskInfo(private val publishPlan: BintrayPublishPlan) : TaskInfo() {
 

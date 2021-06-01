@@ -84,8 +84,8 @@ class JarbirdExtensionTest : FunSpec({
         every { project.version } returns "0.1"
         every { project.description } returns "This is description"
 
-        every { project.property("repository.bintray.username") } returns "username"
-        every { project.property("repository.bintray.password") } returns "password"
+        every { project.property("repository.artifactory.username") } returns "username"
+        every { project.property("repository.artifactory.password") } returns "password"
         every { project.property(any()) } returns ""
         // we need to rerun test for child project
         every { project.getRootProject() } returns project
@@ -94,19 +94,22 @@ class JarbirdExtensionTest : FunSpec({
 
         projectProperty = MockProjectProperty(
             mapOf(
-                "repository.bintray.username" to "username",
-                "repository.bintray.password" to "password"
+                "repository.artifactory.release" to "https://release",
+                "repository.artifactory.snapshot" to "https://snapshot",
+                "repository.artifactory.repoKey" to "oss-snapshot-local",
+                "repository.artifactory.username" to "username",
+                "repository.artifactory.password" to "password"
             )
         )
-        projectInfo = MockProjectInfo()
+        projectInfo = MockProjectInfo(rootDir = projectDir, projectDir = File(projectDir, "module"))
         File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom("0.1"))
-        pomGroup = PomGroupFactory.resolvePomGroup(projectDir, File(projectDir, "module"))
+//        pomGroup = PomGroupFactory.resolvePomGroup(projectDir, File(projectDir, "module"))
     }
 
     context("initialization with no explicit pub declaration") {
 
         test("Plain extension should have some default repo") {
-            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
             ext.pubList.shouldBeEmpty()
 
             ext.createImplicit()
@@ -120,7 +123,7 @@ class JarbirdExtensionTest : FunSpec({
         }
 
         test("Implicit pub will be removed if there are explicitly declared pub") {
-            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
             ext.pubList.shouldBeEmpty()
 
             ext.createImplicit()
@@ -137,7 +140,7 @@ class JarbirdExtensionTest : FunSpec({
 
         test("Explicitly declared repo") {
 
-            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
             ext.pubList.shouldBeEmpty()
 
             ext.createImplicit()
@@ -166,7 +169,7 @@ class JarbirdExtensionTest : FunSpec({
                 File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
                 pomGroup = PomGroupFactory.resolvePomGroup(project.projectDir, File(project.projectDir, "module"))
 
-                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
                 ext.createImplicit()
@@ -200,7 +203,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
 
-                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
                 ext.createImplicit()
@@ -238,7 +241,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
 
-                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
                 ext.createImplicit()
@@ -272,7 +275,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
 
-                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
                 ext.createImplicit()
@@ -310,7 +313,7 @@ class JarbirdExtensionTest : FunSpec({
 
                 File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom(version))
 
-                val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+                val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
                 ext.createImplicit()
@@ -345,7 +348,7 @@ class JarbirdExtensionTest : FunSpec({
 
             File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
 
-            val ext = JarbirdExtensionImpl(project, projectProperty, projectInfo, pomGroup)
+            val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
             ext.pubList.shouldBeEmpty()
 
             ext.createImplicit()
@@ -355,7 +358,8 @@ class JarbirdExtensionTest : FunSpec({
             val exception = shouldThrow<GradleException> {
                 ext.artifactory()
             }
-            exception.message shouldBe "There can only be one configuration per sub-project for Artifactory server only."
+            exception.message shouldBe
+                "There can only be one configuration per sub-project for Artifactory server only."
         }
     }
 })

@@ -19,11 +19,14 @@
 package io.hkhc.utils.test
 
 import io.hkhc.gradle.internal.ProjectInfo
+import java.io.File
 
 data class MockProjectInfo(
     override var group: String = "",
     override var artifactId: String = "",
     override var version: String = "",
     override var description: String = "",
-    override var archiveBaseName: String = ""
+    override var archiveBaseName: String = "",
+    override var rootDir: File = File("/proj"),
+    override var projectDir: File = File("/proj/app")
 ) : ProjectInfo

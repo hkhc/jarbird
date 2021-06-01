@@ -18,51 +18,17 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.pom.Pom
+import io.hkhc.gradle.internal.VariantStrategy
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
 
-interface JarbirdPub : RepoDeclaration {
-
-    val pom: Pom
+interface JarbirdPub : RepoDeclaration, SigningStrategy, VariantStrategy {
 
     /**
      * the publication name, that affect the task names for publishing
      */
     val pubName: String
 
-    val variant: String
-
     val docSourceSets: Any
-
-    /**
-     * Not to do signing for this pub
-     */
-    fun doNotSign()
-
-    /**
-     * Do signing for this pub (default)
-     */
-    fun shouldSign(): Boolean
-
-    /**
-     * Use GnuPG v1 Keyring to perform artifact signing
-     */
-    fun signWithKeyring()
-
-    /**
-     * return true if the artifacts is going to be signed with keyring
-     */
-    fun isSignWithKeyring(): Boolean
-
-    /**
-     * Use GnuPG v2 Keybox to perform artifact signing
-     */
-    fun signWithKeybox()
-
-    /**
-     * return true if the artifacts is going to be signed with keybox
-     */
-    fun isSignWithKeybox(): Boolean
 
     fun configureDokka(block: AbstractDokkaTask.(pub: JarbirdPub) -> Unit)
 
@@ -72,36 +38,6 @@ interface JarbirdPub : RepoDeclaration {
      * - SourceSet
      */
     fun from(source: Any)
-
-    /**
-     * variant is combined with version
-     * e.g. mygroup:mylib:1.0.0-variant
-     */
-    fun variantWithVersion()
-
-    /**
-     * variant is combined with artifactId
-     * e.g. mygroup:mylib-variant:1.0.0
-     */
-    fun variantWithArtifactId()
-
-    /**
-     * variant is not shown in coordinate
-     * e.g. mygroup:mylib:1.0.0
-     */
-    fun variantInvisible()
-
-    /**
-     * get the artifactID augmented by variatn
-     * e.g. mylib-variant
-     */
-    fun variantArtifactId(): String?
-
-    /**
-     * get the version augmented by variatn
-     * e.g. 1.0.0-variant
-     */
-    fun variantVersion(): String?
 
     /**
      * get the effective coordinate

@@ -90,12 +90,11 @@ internal class DokkaConfig(
         return DokkaJarPubTaskInfo(pub)
             .also { project.logger.debug("$LOG_PREFIX Configure Dokka Jar task ${it.name}") }
             .register(project.tasks, Jar::class.java) {
-
-            archiveClassifier.set(CLASSIFIER_JAVADOC)
-            archiveBaseName.set(pub.variantArtifactId())
-            archiveVersion.set(pub.variantVersion())
-            from(project.tasks.named(JbDokkaPubTaskInfo(pub).name))
-            dependsOn(project.tasks.named(JbDokkaPubTaskInfo(pub).name))
-        }
+                archiveClassifier.set(CLASSIFIER_JAVADOC)
+                archiveBaseName.set(pub.variantArtifactId())
+                archiveVersion.set(pub.variantVersion())
+                from(project.tasks.named(JbDokkaPubTaskInfo(pub).name))
+                dependsOn(project.tasks.named(JbDokkaPubTaskInfo(pub).name))
+            }
     }
 }

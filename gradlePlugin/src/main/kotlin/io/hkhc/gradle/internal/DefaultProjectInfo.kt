@@ -20,6 +20,7 @@ package io.hkhc.gradle.internal
 
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePluginConvention
+import java.io.File
 
 class DefaultProjectInfo(private val project: Project) : ProjectInfo {
 
@@ -54,4 +55,10 @@ class DefaultProjectInfo(private val project: Project) : ProjectInfo {
                 c.archivesBaseName = value
             }
         }
+
+    override val rootDir: File
+        get() = project.rootDir
+
+    override val projectDir: File
+        get() = project.projectDir
 }

@@ -36,7 +36,7 @@ import io.kotest.assertions.show.show
 import io.kotest.matchers.Matcher
 import io.kotest.matchers.should
 
-class NodeEq<T>: Eq<Node<T>> {
+class NodeEq<T> : Eq<Node<T>> {
 
     override fun equals(actual: Node<T>, expected: Node<T>): Throwable? {
         return when {
@@ -46,9 +46,7 @@ class NodeEq<T>: Eq<Node<T>> {
                 failure(Expected(expected.show()), Actual(actual.show()))
         }
     }
-
 }
-
 
 fun <T : Any?> eq(actual: Node<T>?, expected: Node<T>?): Throwable? {
     // if we have null and non null, usually that's a failure, but people can override equals to allow it
@@ -76,20 +74,7 @@ infix fun <T> Node<T>.shouldBe(expected: Node<T>) {
     }
 }
 
-//@Suppress("UNCHECKED_CAST")
-//infix fun <T> Node<T>.shouldBe(expected: StringNode) {
-//    println("Node shouldBe")
-//    when (expected) {
-//        is Matcher<*> -> should(expected as Matcher<Node<T>>)
-//        else -> {
-//            val actual = this
-//            assertionCounter.inc()
-//            eq(actual, expected)?.let(errorCollector::collectOrThrow)
-//        }
-//    }
-//}
-
-class StringTreeShow<T>: Show<T> {
+class StringTreeShow<T> : Show<T> {
     init {
         println("Create new StringTreeShow()")
     }

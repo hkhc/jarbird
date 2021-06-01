@@ -20,21 +20,18 @@ package io.hkhc.gradle.internal.android
 
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdPubImpl
-import io.hkhc.gradle.internal.ProjectInfo
+import io.hkhc.gradle.internal.PomResolver
 import io.hkhc.gradle.internal.ProjectProperty
-import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 
 class AndroidJarbirdExtensionImpl(
     project: Project,
     projectProperty: ProjectProperty,
-    projectInfo: ProjectInfo,
-    pomGroup: PomGroup
+    pomResolver: PomResolver
 ) : JarbirdExtensionImpl(
     project,
     projectProperty,
-    projectInfo,
-    pomGroup
+    pomResolver
 ) {
 
     override fun newPub(project: Project, variant: String): JarbirdPubImpl {

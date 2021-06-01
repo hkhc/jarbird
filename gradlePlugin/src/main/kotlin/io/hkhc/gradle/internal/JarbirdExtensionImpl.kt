@@ -29,16 +29,13 @@ import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.internal.utils.normalizePubName
-import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.internal.impldep.org.apache.maven.Maven
 
 open class JarbirdExtensionImpl(
     private val project: Project,
     protected val projectProperty: ProjectProperty,
-    private val projectInfo: ProjectInfo,
-    private val pomGroup: PomGroup
+    private val pomResolver: PomResolver
 ) : JarbirdExtension {
 
     val pubList = mutableListOf<JarbirdPub>()
@@ -50,20 +47,7 @@ open class JarbirdExtensionImpl(
 
     private fun initPub(pub: JarbirdPubImpl) {
 
-        // find the pom of particular variant. Normally pom of a variant is a combination of pom spec of that
-        // particulat variant and the non-variant pom. However, if no variant pom spec is found, we use
-        // the non-variant pom spec directly
-        pomGroup[pub.variant].also { variantPom ->
-            if (variantPom == null) {
-                pomGroup[""]?.let { pub.pom = it } ?: throw GradleException("Variant '${pub.variant}' is not found")
-            } else {
-                pub.pom = variantPom
-            }
-        }
-
-        // TODO we ignore that pom overwrite some project properties in the mean time.
-        // need to properly take care of it.
-        pub.pom.syncWith(projectInfo)
+        pub.pom = pomResolver.resolve(pub.variant)
 
         // TODO handle two publications of same artifactaId in the same module.
         // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
@@ -231,8 +215,5 @@ open class JarbirdExtensionImpl(
     fun finalizeRepos() {
         mavenLocal()
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
-        "Aggregated POM configuration:\n${pomGroup.formattedDump()}".lines().filter { it.trim() != "" }.forEach {
-            project.logger.debug("$LOG_PREFIX $it")
-        }
     }
 }

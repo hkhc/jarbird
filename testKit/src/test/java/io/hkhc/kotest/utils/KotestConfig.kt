@@ -18,17 +18,11 @@
 
 package io.hkhc.kotest.utils
 
-import io.hkhc.gradle.test.StringTreeShow
-import io.hkhc.utils.tree.NoBarTheme
-import io.hkhc.utils.tree.Node
-import io.hkhc.utils.tree.defaulTreeTHeme
-import io.kotest.assertions.show.Shows
 import io.kotest.core.config.AbstractProjectConfig
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.test.TestCaseOrder
-import kotlin.time.seconds
 
-object KotestConfig: AbstractProjectConfig() {
+object KotestConfig : AbstractProjectConfig() {
     override val isolationMode = IsolationMode.InstancePerLeaf
     override val testCaseOrder = TestCaseOrder.Random
     override val parallelism = 2 // use lower parallelism if the tests get mysterious error.

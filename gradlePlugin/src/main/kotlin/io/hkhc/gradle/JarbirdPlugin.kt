@@ -31,7 +31,8 @@ import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.PLUGIN_FRIENDLY_NAME
 import io.hkhc.gradle.internal.PLUGIN_ID
 import io.hkhc.gradle.internal.PluginConfig
-import io.hkhc.gradle.internal.ProjectInfo
+import io.hkhc.gradle.internal.PomResolver
+import io.hkhc.gradle.internal.PomResolverImpl
 import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.SP_EXT_NAME
 import io.hkhc.gradle.internal.SourceResolver
@@ -42,8 +43,6 @@ import io.hkhc.gradle.internal.needGradlePlugin
 import io.hkhc.gradle.internal.utils.detailMessageError
 import io.hkhc.gradle.internal.utils.fatalMessage
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.pom.PomGroup
-import io.hkhc.gradle.pom.internal.PomGroupFactory
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -65,11 +64,10 @@ open class JarbirdPlugin : Plugin<Project> {
         override fun newExtension(
             project: Project,
             projectProperty: ProjectProperty,
-            projectInfo: ProjectInfo,
-            pomGroup: PomGroup
+            pomResolver: PomResolver
         ): JarbirdExtensionImpl {
             return JarbirdExtensionImpl(
-                project, projectProperty, projectInfo, pomGroup
+                project, projectProperty, pomResolver
             )
         }
 
@@ -173,7 +171,6 @@ open class JarbirdPlugin : Plugin<Project> {
 
     ------------------------------------------------
 
-
     ProjectEvaluationListener is invoked before any project.afterEvaluate.
     So we use projectEvaluateListener to make sure our setup has done before the projectEvaluationListener
     in other plugins.
@@ -207,8 +204,7 @@ open class JarbirdPlugin : Plugin<Project> {
         extension = pluginConfig.newExtension(
             project,
             DefaultProjectProperty(project),
-            DefaultProjectInfo(project),
-            PomGroupFactory.resolvePomGroup(project.rootDir, project.projectDir)
+            PomResolverImpl(DefaultProjectInfo(project))
         )
         project.extensions.add(JarbirdExtension::class.java, SP_EXT_NAME, extension)
 

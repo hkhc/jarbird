@@ -81,9 +81,7 @@ object PomGroupFactory {
                 }
             }
             // add default value here
-            .overlayTo(PomGroup(listOf(Pom(
-                packaging = "jar"
-            )))) as PomGroup
+            .overlayTo(PomGroup(listOf(Pom(packaging = "jar")))) as PomGroup
     }
 
     /**

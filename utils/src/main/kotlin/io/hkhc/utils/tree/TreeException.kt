@@ -18,8 +18,7 @@
 
 package io.hkhc.utils.tree
 
-class TreeException(msg: String, throwable: Throwable): Exception(msg, throwable) {
+class TreeException(msg: String, throwable: Throwable) : Exception(msg, throwable) {
 
-    constructor(msg: String): this(msg, Exception())
-
+    constructor(msg: String) : this(msg, Exception())
 }

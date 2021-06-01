@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.JarbirdPlugin
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.utils.PropertyBuilder
@@ -57,20 +56,24 @@ class PropertyRepoSpecBuilder(
             id = "Artifactory"
         )
         if (result.releaseUrl.isNullOrEmpty() && result.snapshotUrl.isNullOrEmpty()) {
-            throw GradleException("Artifactory repository ${result.id} must have either 'release' or 'snapshot' property")
+            throw GradleException(
+                "Artifactory repository ${result.id} must have either 'release' or 'snapshot' property"
+            )
         }
         if (result.repoKey.isNullOrEmpty()) {
-            throw GradleException("Artifactory repository ${result.id} must have 'repoKey' property.")
+            throw GradleException(
+                "Artifactory repository ${result.id} must have 'repoKey' property."
+            )
         }
         return result
     }
 
     fun buildMavenCentral(project: Project): MavenRepoSpec = with(PropertyBuilder(projectProperty, "mavencentral")) {
 
-        if (resolve("newUser", "XXX")=="XXX") {
+        if (resolve("newUser", "XXX") == "XXX") {
             project.logger.warn("WARNING: [$LOG_PREFIX] OSSRH user has not been specified to be new or old. " +
                 "If the account is created before February 2021, it is old account. " +
-                "Add 'repositoty.mavencentral.newUser=false' to gradle.properties. "+
+                "Add 'repositoty.mavencentral.newUser=false' to gradle.properties. " +
                 "Otherwise, new account is assumed.")
         }
 
@@ -82,5 +85,4 @@ class PropertyRepoSpecBuilder(
             newUser = newUser
         )
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Herman Cheung
+ * Copyright (c) 2021. Herman Cheung
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,10 @@
  *
  */
 
-package io.hkhc.utils.test
+package io.hkhc.gradle.internal
 
-import groovy.lang.MissingPropertyException
-import io.hkhc.gradle.internal.ProjectProperty
+import io.hkhc.gradle.pom.Pom
 
-class MockProjectProperty(private val map: Map<String, String>) : ProjectProperty {
-    override fun property(name: String): Any {
-        return map[name] ?: throw MissingPropertyException("Cannot resolve property '$name'")
-    }
+interface PomResolver {
+    fun resolve(variant: String): Pom
 }

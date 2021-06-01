@@ -82,7 +82,6 @@ internal class BuildFlowBuilder(
 
             if (isMultiProjectRoot()) {
                 logger.info("$LOG_PREFIX Configure root project '$name' for multi-project publishing")
-
             } else {
                 logger.info(
                     if (this == rootProject) {

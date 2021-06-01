@@ -23,15 +23,12 @@ import org.gradle.api.GradleException
 
 fun RemoteRepoSpec.effectiveUrl(pub: JarbirdPub): String {
     return if (pub.pom.isSnapshot()) {
-        if (snapshotUrl.isNullOrEmpty()) {
-            throw GradleException("Snapshot URL of the repo '${id}' is not provided")
-        } else
-            snapshotUrl
-    }
-    else {
-        if (releaseUrl.isNullOrEmpty()) {
-            throw GradleException("Release URL of the repo '${id}' is not provided")
-        } else
-            releaseUrl
+        snapshotUrl.ifEmpty {
+            throw GradleException("Snapshot URL of the repo '$id' is not provided")
+        }
+    } else {
+        releaseUrl.ifEmpty {
+            throw GradleException("Release URL of the repo '$id' is not provided")
+        }
     }
 }

@@ -20,7 +20,7 @@ package io.hkhc.gradle.internal.repo
 
 import io.hkhc.gradle.RepoSpec
 
-interface RemoteRepoSpec: RepoSpec {
+interface RemoteRepoSpec : RepoSpec {
     val releaseUrl: String
     val snapshotUrl: String
 }

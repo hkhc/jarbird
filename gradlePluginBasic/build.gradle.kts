@@ -30,38 +30,6 @@ plugins {
     id("io.hkhc.jarbird.bootstrap")
 }
 
-// TODO Simplify functional test creation
-
-//// e.g. 14 at https://docs.gradle.org/6.7.1/userguide/java_testing.html#sec:configuring_java_integration_tests
-//sourceSets {
-//    create("testFunctional") {
-//        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-//        runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-//    }
-//}
-//
-//val testFunctionalImplementation: Configuration by configurations.getting {
-//    extendsFrom(configurations.testImplementation.get())
-//}
-//
-//configurations["testFunctionalRuntimeOnly"].extendsFrom(configurations.testRuntimeOnly.get())
-//
-//tasks {
-//
-//    // e.g. 15 at https://docs.gradle.org/6.7.1/userguide/java_testing.html#sec:configuring_java_integration_tests
-//    val functionalTestTask = register<Test>("testFunctional") {
-//        description = "Runs the functional tests."
-//        group = "verification"
-//        testClassesDirs = sourceSets["testFunctional"].output.classesDirs
-//        classpath = sourceSets["testFunctional"].runtimeClasspath
-//        shouldRunAfter("test")
-//    }
-//
-//    functionalTestTask.get().dependsOn(get("pluginUnderTestMetadata"))
-//
-//    check { dependsOn(get("testFunctional")) }
-//}
-
 /*
  It is needed to make sure every version of java compiler to generate same kind of bytecode.
  Without it and build this with java 8+ compiler, then the project build with java 8

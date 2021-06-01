@@ -22,20 +22,18 @@ import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class NodeTest: FunSpec( {
+class NodeTest : FunSpec( {
 
     test("one node equality") {
 
         (stringTreeOf { "Hello"() } == stringTreeOf { "Hello"() }) shouldBe true
         (stringTreeOf { "Hello"() } == stringTreeOf { "World"() }) shouldBe false
-
     }
 
     test("two node equality") {
 
         (stringTreeOf { "Hello" { "World"() } } == stringTreeOf { "Hello" { "World"() } }) shouldBe true
         (stringTreeOf { "Hello" { "World"() } } == stringTreeOf { "Hello" { "Banana"() } }) shouldBe false
-
     }
 
     test("three node equality") {
@@ -66,8 +64,5 @@ class NodeTest: FunSpec( {
 
         (n1==n2) shouldBe true
         (n1==n3) shouldBe false
-
     }
-
-
 })

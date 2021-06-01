@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.internal.utils
 
-import io.hkhc.gradle.internal.utils.normalizePubName
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 

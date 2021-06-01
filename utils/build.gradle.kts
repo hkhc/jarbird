@@ -70,7 +70,6 @@ tasks {
             showStandardStreams = true
         }
     }
-
 }
 
 detekt {
@@ -110,6 +109,4 @@ dependencies {
     implementation("io.github.java-diff-utils:java-diff-utils:_")
 
     kotest()
-
 }
-

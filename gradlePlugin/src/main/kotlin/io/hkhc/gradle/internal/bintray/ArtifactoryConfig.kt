@@ -67,7 +67,11 @@ class ArtifactoryConfig(
         }
     }
 
-    private fun ArtifactoryPluginConvention.configSingle(pub: JarbirdPub, isRootProject: Boolean, repoSpec: ArtifactoryRepoSpec) {
+    private fun ArtifactoryPluginConvention.configSingle(
+        pub: JarbirdPub,
+        isRootProject: Boolean,
+        repoSpec: ArtifactoryRepoSpec
+    ) {
 
         project.logger.debug("$LOG_PREFIX configure Artifactory plugin for single project")
 

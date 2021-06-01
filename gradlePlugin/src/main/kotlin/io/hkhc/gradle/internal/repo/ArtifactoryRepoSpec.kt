@@ -18,8 +18,6 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.RepoSpec
-
 interface ArtifactoryRepoSpec : RemoteRepoSpec {
 
     val username: String

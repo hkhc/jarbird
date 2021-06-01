@@ -18,6 +18,8 @@
 
 package io.hkhc.gradle.internal
 
+import java.io.File
+
 interface ProjectInfo {
 
     var group: String
@@ -25,4 +27,7 @@ interface ProjectInfo {
     var version: String
     var description: String
     var archiveBaseName: String
+
+    val rootDir: File
+    val projectDir: File
 }

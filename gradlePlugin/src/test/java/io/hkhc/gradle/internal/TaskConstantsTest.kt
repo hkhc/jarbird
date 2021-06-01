@@ -32,23 +32,26 @@ import io.mockk.mockk
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
 
-class TaskConstantsTest: FunSpec( {
+class TaskConstantsTest : FunSpec({
 
-    class MapProjectProperty(private val map: Map<String,Any>) : ProjectProperty {
+    class MapProjectProperty(private val map: Map<String, Any>) : ProjectProperty {
         override fun property(name: String): Any {
             println("map property '$name")
-            return map[name] ?:
-            throw MissingPropertyException("Cannot resolve property '$name'")
+            return map[name] ?: throw MissingPropertyException("Cannot resolve property '$name'")
         }
     }
 
     val pub = mockk<JarbirdPub>()
     val pubMavenCentral = mockk<JarbirdPub>()
     val pubPlugin = mockk<JarbirdPub>()
-    val repoBuilder = PropertyRepoSpecBuilder(MockProjectProperty(mapOf(
-        "repository.maven.mock.release" to "releaseUrl",
-        "repository.maven.mock.snapshot" to "snapshotUrl"
-    )))
+    val repoBuilder = PropertyRepoSpecBuilder(
+        MockProjectProperty(
+            mapOf(
+                "repository.maven.mock.release" to "releaseUrl",
+                "repository.maven.mock.snapshot" to "snapshotUrl"
+            )
+        )
+    )
 
     val project = mockk<Project>()
 
@@ -86,10 +89,8 @@ class TaskConstantsTest: FunSpec( {
         every { pubMavenCentral.pluginCoordinate() } returns "NOT-A-PLUGIN"
         every { pubMavenCentral.pom } returns pom
         every { pubMavenCentral.getRepos() } returns setOf(
-            MavenCentralRepoSpecImpl(username="username", password="password", newUser = true)
+            MavenCentralRepoSpecImpl(username = "username", password = "password", newUser = true)
         )
-
-
     }
 
     test("publish all") {
@@ -146,7 +147,6 @@ class TaskConstantsTest: FunSpec( {
                 "jbPublishAbcVarToMavenCentral",
                 "Publish module 'abc' (var) to Maven Central"
             )
-
     }
 
     test("Jarbird publish all to one repo") {
@@ -186,16 +186,14 @@ class TaskConstantsTest: FunSpec( {
 
     test("newUser of mavenCentral spec") {
 
-        val specNewUser = MavenCentralRepoSpecImpl(username="username", password="password", newUser = true)
+        val specNewUser = MavenCentralRepoSpecImpl(username = "username", password = "password", newUser = true)
 
         specNewUser.releaseUrl.startsWith("https://s01.oss.sonatype.org") shouldBe true
         specNewUser.snapshotUrl.startsWith("https://s01.oss.sonatype.org") shouldBe true
 
-        val specOldUser = MavenCentralRepoSpecImpl(username="username", password="password", newUser = false)
+        val specOldUser = MavenCentralRepoSpecImpl(username = "username", password = "password", newUser = false)
 
         specOldUser.releaseUrl.startsWith("https://oss.sonatype.org") shouldBe true
         specOldUser.snapshotUrl.startsWith("https://oss.sonatype.org") shouldBe true
-
     }
-
 })

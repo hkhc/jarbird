@@ -23,7 +23,7 @@ import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class IsSubtreeOfTest: FunSpec( {
+class IsSubtreeOfTest : FunSpec({
 
     test("single node") {
         stringTreeOf { +"Hello" }.isSubtreeOf(stringTreeOf { +"Hello" }) shouldBe true
@@ -31,16 +31,20 @@ class IsSubtreeOfTest: FunSpec( {
     }
 
     test("single node is subtree of two level") {
-        stringTreeOf { +"Hello" }.isSubtreeOf(stringTreeOf {
-            "Hello" {
-                +"World"
+        stringTreeOf { +"Hello" }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    +"World"
+                }
             }
-        }) shouldBe true
-        stringTreeOf { +"Hello" }.isSubtreeOf(stringTreeOf {
-            "Hello" {
-                +"WorldX"
+        ) shouldBe true
+        stringTreeOf { +"Hello" }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    +"WorldX"
+                }
             }
-        }) shouldBe true
+        ) shouldBe true
     }
 
     test("two-level tree is subtree of two-level subtree") {
@@ -49,67 +53,78 @@ class IsSubtreeOfTest: FunSpec( {
             "Hello" {
                 +"World"
             }
-        }.isSubtreeOf(stringTreeOf {
-            "Hello" {
-                +"World"
+        }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    +"World"
+                }
             }
-        }) shouldBe true
+        ) shouldBe true
 
         stringTreeOf {
             "Hello" {
                 +"Worldx"
             }
-        }.isSubtreeOf(stringTreeOf {
-            "Hello" {
-                +"World"
+        }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    +"World"
+                }
             }
-        }) shouldBe false
-
-
-        stringTreeOf {
-            "Hello" {
-                +"World"
-            }
-        }.isSubtreeOf(stringTreeOf {
-            "Hello" {
-                +"World"
-                +"Zero"
-            }
-        }) shouldBe true
+        ) shouldBe false
 
         stringTreeOf {
             "Hello" {
                 +"World"
-                +"Zero"
             }
-        }.isSubtreeOf(stringTreeOf {
+        }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    +"World"
+                    +"Zero"
+                }
+            }
+        ) shouldBe true
+
+        stringTreeOf {
             "Hello" {
-                +"Zero"
                 +"World"
+                +"Zero"
             }
-        }) shouldBe true
+        }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    +"Zero"
+                    +"World"
+                }
+            }
+        ) shouldBe true
 
         stringTreeOf {
             "Hello" {
                 +"WorldX"
                 +"Zero"
             }
-        }.isSubtreeOf(stringTreeOf {
-            "Hello" {
-                +"Zero"
-                +"World"
+        }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    +"Zero"
+                    +"World"
+                }
             }
-        }) shouldBe false
+        ) shouldBe false
 
         stringTreeOf {
             "Hello" {
                 +"World"
             }
-        }.isSubtreeOf(stringTreeOf {
-            "Hello" {
-                +"WorldX"
+        }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    +"WorldX"
+                }
             }
-        }) shouldBe false
+        ) shouldBe false
     }
 
     test("two-level tree is subtree of three-level subtree") {
@@ -118,15 +133,16 @@ class IsSubtreeOfTest: FunSpec( {
             "Hello" {
                 +"World"
             }
-        }.isSubtreeOf(stringTreeOf {
-            "Hello" {
-                "World" {
-                    "Apple"()
+        }.isSubtreeOf(
+            stringTreeOf {
+                "Hello" {
+                    "World" {
+                        "Apple"()
+                    }
+                    +"Zero"
                 }
-                +"Zero"
             }
-        }) shouldBe true
-
+        ) shouldBe true
     }
 
     test("task tree") {
@@ -147,9 +163,7 @@ class IsSubtreeOfTest: FunSpec( {
                             ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                 ":jar SUCCESS"()
                             }
-                            ":generatePomFileForTestArtifactPublication SUCCESS" {
-
-                            }
+                            ":generatePomFileForTestArtifactPublication SUCCESS"()
                             ":jar SUCCESS"()
                             ":jbDokkaJarTestArtifact SUCCESS"()
                             ":sourcesJarTestArtifact SUCCESS"()
@@ -175,9 +189,7 @@ class IsSubtreeOfTest: FunSpec( {
                                 ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                     ":jar SUCCESS"()
                                 }
-                                ":generatePomFileForTestArtifactPublication SUCCESS" {
-
-                                }
+                                ":generatePomFileForTestArtifactPublication SUCCESS"()
                                 ":jar SUCCESS"()
                                 ":jbDokkaJarTestArtifact SUCCESS"()
                                 ":sourcesJarTestArtifact SUCCESS"()
@@ -189,6 +201,4 @@ class IsSubtreeOfTest: FunSpec( {
             }
         ) shouldBe false
     }
-
-
 })

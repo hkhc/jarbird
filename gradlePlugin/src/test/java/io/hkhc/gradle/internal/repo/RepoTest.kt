@@ -35,7 +35,6 @@ class RepoTest : FunSpec({
 
         every { project.logger } returns Logging.getLogger(Project::class.java)
         JarbirdLogger.logger = mockk(relaxed = true)
-
     }
 
     test("MavenLocalSpec equality") {

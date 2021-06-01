@@ -97,7 +97,6 @@ class PluginPublishingConfig(
                     pluginMainPublication.pom {
                         MavenPomAdapter().fill(this, pub.pom)
                     }
-
                 }
             }
         }
@@ -130,7 +129,6 @@ class PluginPublishingConfig(
                 }
             }
         }
-
     }
 
     private fun GradlePluginDevelopmentExtension.config() {

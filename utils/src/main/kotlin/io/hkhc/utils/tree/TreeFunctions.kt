@@ -35,9 +35,9 @@ fun Node<String>.isSubtreeOf(otherNode: Node<String>): Boolean {
         or matching node is found which is not subtree, than we know 'this' is not subtree of otherNode
          */
         children().find { child ->
-                otherNode.children().find { it.text() == child.text() }
-                    ?.let { n -> child.isSubtreeOf(n) } != true
-            } != null -> false
+            otherNode.children().find { it.text() == child.text() }
+                ?.let { n -> child.isSubtreeOf(n) } != true
+        } != null -> false
 
         else -> true
     }
@@ -54,7 +54,7 @@ fun <T> Tree<T>.clone(): Tree<T> {
 
 fun <T> Node<T>.clone(): Node<T> {
     return newInstance(value()).apply {
-        children().forEach{ addChild(it.clone()) }
+        children().forEach { addChild(it.clone()) }
     }
 }
 
@@ -89,7 +89,6 @@ fun <T> Node<T>.chopChilds(block: (Node<T>) -> Boolean): Node<T> {
             }
         }
     }
-
 }
 
 fun <T> Tree<T>.toStringTree() =
@@ -105,4 +104,3 @@ private fun <T> toStringTreeItrn(node: Node<T>): Node<String> {
         }
     }
 }
-

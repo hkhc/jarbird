@@ -149,7 +149,6 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                         dependsOn(it.name)
                     }
                 }
-
             }
 
             JbPublish.to.mavenRepo.taskInfo.register(container) {
@@ -170,10 +169,8 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
             }
 
             filterUnwantedPublication()
-
         }
     }
-
 
     /**
      * Filter out the combination of repositories and publications that does not make sense.
@@ -195,7 +192,7 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
 
     /**
      * return true if the combination of repository and publication is needed by the RepoSpec
-      */
+     */
     private fun JarbirdPub.needs(
         repoSpec: MavenRepoSpec,
         repository: MavenArtifactRepository,
@@ -212,7 +209,5 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
         } else {
             false
         }
-
     }
-
 }

@@ -18,11 +18,6 @@
 
 package io.hkhc.gradle.internal
 
-import io.hkhc.gradle.internal.JarbirdExtensionImpl
-import io.hkhc.gradle.internal.ProjectInfo
-import io.hkhc.gradle.internal.ProjectProperty
-import io.hkhc.gradle.internal.SourceResolver
-import io.hkhc.gradle.pom.PomGroup
 import org.gradle.api.Project
 
 interface PluginConfig {
@@ -31,8 +26,7 @@ interface PluginConfig {
     fun newExtension(
         project: Project,
         projectProperty: ProjectProperty,
-        projectInfo: ProjectInfo,
-        pomGroup: PomGroup
+        pomResolver: PomResolver
     ): JarbirdExtensionImpl
     fun shallCreateImplicit(): Boolean
     fun pluginId(): String

@@ -18,8 +18,6 @@
 
 package io.hkhc.gradle.internal.repo
 
-import io.hkhc.gradle.RepoSpec
-
 interface MavenRepoSpec : RemoteRepoSpec {
     val username: String
     val password: String

@@ -141,7 +141,9 @@ internal class PublishingConfig(
         pubs.forEach { pub0 ->
 
             val pub = pub0 as JarbirdPubImpl
-            project.logger.debug("$LOG_PREFIX CreatePublication variant=${pub.variant} component=${pub.effectiveComponent()}")
+            project.logger.debug(
+                "$LOG_PREFIX CreatePublication variant=${pub.variant} component=${pub.effectiveComponent()}"
+            )
 
             val pom = pub.pom
 
@@ -172,8 +174,10 @@ internal class PublishingConfig(
 
                     project.afterEvaluate {
                         artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
-                        artifactCompat(SourceConfig(project, sourceResolver)
-                            .configSourceJarTask(pub, pub.sourceSet ?: pub.docSourceSets))
+                        artifactCompat(
+                            SourceConfig(project, sourceResolver)
+                                .configSourceJarTask(pub, pub.sourceSet ?: pub.docSourceSets)
+                        )
                     }
                 }
                 pom { MavenPomAdapter().fill(this, pom) }
@@ -194,7 +198,6 @@ internal class PublishingConfig(
                         MavenPomAdapter().fill(this, pom)
                         withXml { pomAddDependency(asElement().ownerDocument, pom) }
                     }
-
                 }
             }
         }
