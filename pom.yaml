@@ -16,6 +16,3 @@ web:
 scm:
   repoType: github.com
   repoName: hkhc/jarbird
-
-bintray:
-  githubReleaseNoteFile: RELEASE.md
