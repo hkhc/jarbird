@@ -70,7 +70,7 @@ class JarbirdExtensionTest : FunSpec({
 
     beforeTest {
         val projectDir = tempDirectory()
-        project = mockk()
+        project = mockk(relaxed = true)
         every { project.rootDir } returns projectDir
         every { project.projectDir } returns File(projectDir, "module")
         every { project.logger } returns mockk<Logger>().apply {
@@ -84,8 +84,13 @@ class JarbirdExtensionTest : FunSpec({
         every { project.version } returns "0.1"
         every { project.description } returns "This is description"
 
-        every { project.property("repository.artifactory.username") } returns "username"
-        every { project.property("repository.artifactory.password") } returns "password"
+        every { project.property("repository.artifactory.mock.release") } returns "https://release"
+        every { project.property("repository.artifactory.mock.snapshot") } returns "https://release"
+        every { project.property("repository.artifactory.mock.repoKe") } returns "oss-snapshot-local"
+        every { project.property("repository.artifactory.mock.username") } returns "username"
+        every { project.property("repository.artifactory.mock.password") } returns "password"
+        every { project.getRootDir() } returns projectDir
+        every { project.getProjectDir() } returns File(projectDir, "module")
         every { project.property(any()) } returns ""
         // we need to rerun test for child project
         every { project.getRootProject() } returns project
@@ -94,14 +99,18 @@ class JarbirdExtensionTest : FunSpec({
 
         projectProperty = MockProjectProperty(
             mapOf(
-                "repository.artifactory.release" to "https://release",
-                "repository.artifactory.snapshot" to "https://snapshot",
-                "repository.artifactory.repoKey" to "oss-snapshot-local",
-                "repository.artifactory.username" to "username",
-                "repository.artifactory.password" to "password"
+                "repository.artifactory.mock.release" to "https://release",
+                "repository.artifactory.mock.snapshot" to "https://snapshot",
+                "repository.artifactory.mock.repoKey" to "oss-snapshot-local",
+                "repository.artifactory.mock.username" to "username",
+                "repository.artifactory.mock.password" to "password"
             )
         )
-        projectInfo = MockProjectInfo(rootDir = projectDir, projectDir = File(projectDir, "module"))
+//        projectInfo = MockProjectInfo(
+//            rootDir = projectDir,
+//            projectDir = File(projectDir, "module")
+//        )
+        projectInfo = DefaultProjectInfo(project)
         File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom("0.1"))
 //        pomGroup = PomGroupFactory.resolvePomGroup(projectDir, File(projectDir, "module"))
     }
@@ -146,7 +155,7 @@ class JarbirdExtensionTest : FunSpec({
             ext.createImplicit()
             ext.pubList.shouldHaveSize(1)
 
-            ext.artifactory()
+            ext.artifactory("mock")
 
             ext.pub { }
 
@@ -157,7 +166,7 @@ class JarbirdExtensionTest : FunSpec({
             ext.getRepos().shouldContainExactlyInAnyOrder(
                 setOf(
                     MavenLocalRepoSpecImpl(),
-                    PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo()
+                    PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock")
                 )
             )
         }
@@ -210,7 +219,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.pubList.shouldHaveSize(1)
 
                 ext.mavenRepo("mock")
-                ext.artifactory()
+                ext.artifactory("mock")
 
                 ext.pub { }
 
@@ -221,7 +230,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.getRepos().shouldContainExactlyInAnyOrder(
                     setOf(
                         MavenLocalRepoSpecImpl(),
-                        PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo(),
+                        PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock"),
                         PropertyRepoSpecBuilder(projectProperty).buildMavenRepo("mock")
                     )
                 )
@@ -247,7 +256,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.createImplicit()
                 ext.pubList.shouldHaveSize(1)
 
-                ext.artifactory()
+                ext.artifactory("mock")
 
                 ext.pub { }
 
@@ -256,7 +265,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.finalizeRepos()
 
                 ext.getRepos().shouldContainExactlyInAnyOrder(
-                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo())
+                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock"))
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
@@ -282,7 +291,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.pubList.shouldHaveSize(1)
 
                 ext.mavenRepo("mock")
-                ext.artifactory()
+                ext.artifactory("mock")
 
                 ext.pub { }
 
@@ -293,7 +302,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.getRepos().shouldContainExactlyInAnyOrder(
                     setOf(
                         MavenLocalRepoSpecImpl(),
-                        PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo(),
+                        PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock"),
                         PropertyRepoSpecBuilder(projectProperty).buildMavenRepo("mock")
                     )
                 )
@@ -319,7 +328,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.createImplicit()
                 ext.pubList.shouldHaveSize(1)
 
-                ext.artifactory()
+                ext.artifactory("mock")
 
                 ext.pub { }
 
@@ -328,7 +337,7 @@ class JarbirdExtensionTest : FunSpec({
                 ext.finalizeRepos()
 
                 ext.getRepos().shouldContainExactlyInAnyOrder(
-                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo())
+                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock"))
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
@@ -354,12 +363,10 @@ class JarbirdExtensionTest : FunSpec({
             ext.createImplicit()
             ext.pubList.shouldHaveSize(1)
 
-            ext.artifactory()
-            val exception = shouldThrow<GradleException> {
-                ext.artifactory()
-            }
-            exception.message shouldBe
-                "There can only be one configuration per sub-project for Artifactory server only."
+            ext.artifactory("mock")
+            ext.pubList.shouldHaveSize(1)
+            ext.artifactory("mock")
+            ext.pubList.shouldHaveSize(1)
         }
     }
 })

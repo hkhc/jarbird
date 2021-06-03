@@ -75,11 +75,11 @@ class BuildArtifactoryPluginRepoTest : FunSpec({
                 )
 
                 setupGradleProperties {
-                    "repository.artifactory.release" to mockServers[0].getServerUrl()
-                    "repository.artifactory.snapshot" to mockServers[0].getServerUrl()
-                    "repository.artifactory.username" to "username"
-                    "repository.artifactory.apikey" to "password"
-                    "repository.artifactory.repoKey" to "oss-snapshot-local"
+                    "repository.artifactory.mock.release" to mockServers[0].getServerUrl()
+                    "repository.artifactory.mock.snapshot" to mockServers[0].getServerUrl()
+                    "repository.artifactory.mock.username" to "username"
+                    "repository.artifactory.mock.apikey" to "password"
+                    "repository.artifactory.mock.repoKey" to "oss-snapshot-local"
                 }
 
                 this.expectedTaskGraph = expectedTaskGraph

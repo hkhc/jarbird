@@ -50,28 +50,26 @@ import java.io.File
 @Tags("Multi", "AAR", "Artifactory", "Variant")
 class BuildAndroidArtifactoryTest : FunSpec({
 
-    context("Publish Android AAR in to Bintray Repository") {
+    context("Publish Android AAR in to Artifactory Repository") {
 
-        val targetTask = "jbPublishToBintray"
+        val targetTask = "jbPublishToArtifactory"
 
         val expectedTaskGraph = stringTreeOf(NoBarTheme) {
-            ":lib:jbPublishToBintray SUCCESS" {
-                ":lib:jbPublishToArtifactory SUCCESS" {
-                    ":lib:artifactoryPublish SUCCESS" {
-                        ":artifactoryDeploy SUCCESS" {
-                            ":extractModuleInfo SUCCESS"()
-                            ":lib:extractModuleInfo SUCCESS"()
-                        }
-                        ":lib:bundleReleaseAar SUCCESS"()
-                        ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
-                            ":lib:bundleReleaseAar SUCCESS"()
-                        }
-                        ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS"()
-                        ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
-                            ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
-                        }
-                        ":lib:sourcesJarTestArtifactRelease SUCCESS"()
+            ":lib:jbPublishToArtifactory SUCCESS" {
+                ":lib:artifactoryPublish SUCCESS" {
+                    ":artifactoryDeploy SUCCESS" {
+                        ":extractModuleInfo SUCCESS"()
+                        ":lib:extractModuleInfo SUCCESS"()
                     }
+                    ":lib:bundleReleaseAar SUCCESS"()
+                    ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
+                        ":lib:bundleReleaseAar SUCCESS"()
+                    }
+                    ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS"()
+                    ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
+                        ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
+                    }
+                    ":lib:sourcesJarTestArtifactRelease SUCCESS"()
                 }
             }
         }
@@ -118,9 +116,10 @@ class BuildAndroidArtifactoryTest : FunSpec({
 
                 setupGradleProperties {
                     setupAndroidProperties()
-                    "repository.bintray.snapshot" to mockServers[0].getServerUrl()
-                    "repository.bintray.username" to "username"
-                    "repository.bintray.apikey" to "password"
+                    "repository.artifactory.mock.snapshot" to mockServers[0].getServerUrl()
+                    "repository.artifactory.mock.username" to "username"
+                    "repository.artifactory.mock.repoKey" to "oss-snapshot-local"
+                    "repository.artifactory.mock.apikey" to "password"
                 }
 
                 this.expectedTaskGraph = expectedTaskGraph

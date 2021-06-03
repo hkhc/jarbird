@@ -24,15 +24,13 @@ import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isSingleProject
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
-import io.hkhc.gradle.internal.repo.effectiveUrl
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
 import org.gradle.kotlin.dsl.getPluginByName
 import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
 import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
 import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
-import org.jfrog.gradle.plugin.artifactory.task.ArtifactoryTask
 
 @Suppress("SpreadOperator")
 class ArtifactoryConfig(
@@ -41,94 +39,72 @@ class ArtifactoryConfig(
     private val pubs: List<JarbirdPub>
 ) {
 
-    private val publishPlan = BintrayPublishPlan(pubs)
+//    private val publishPlan = BintrayPublishPlan(pubs)
+
 
     fun config() {
 
-        pubs.forEach { pub ->
-            // TODO multiple artifactory repo in one pub
-            val repoSpecOrNull = pub.getRepos().filterIsInstance<ArtifactoryRepoSpec>().firstOrNull()
-            repoSpecOrNull?.let { repoSpec ->
-                val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
-                when {
-                    project.isSingleProject() -> {
-                        convention.configSingle(pub, false, repoSpec)
-                        configTask(pub, repoSpec)
-                    }
-                    project.isMultiProjectRoot() -> {
-                        // convention.configSingle(true)
-                    }
-                    else -> {
-                        convention.configSingle(pub, false, repoSpec)
-                        configTask(pub, repoSpec)
-                    }
+        val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
+
+        // at this point we can assume that
+        // - all ArtifactoryRepoSpec in all pubs are the same.
+        // - all coordinate are either all release or all snapshot
+
+        if (pubs.isEmpty())
+            throw GradleException("No pubs to config")
+
+        val model = ArtifactoryConfigModel(pubs)
+
+        if (model.needsArtifactory()) {
+            when {
+                project.isSingleProject() -> {
+                    convention.configSingle(model)
+                }
+                project.isMultiProjectRoot() -> {
+                }
+                else -> {
+                    convention.configSingle(model)
                 }
             }
         }
     }
 
     private fun ArtifactoryPluginConvention.configSingle(
-        pub: JarbirdPub,
-        isRootProject: Boolean,
-        repoSpec: ArtifactoryRepoSpec
+        model: ArtifactoryConfigModel
     ) {
 
         project.logger.debug("$LOG_PREFIX configure Artifactory plugin for single project")
 
-        setContextUrl(repoSpec.effectiveUrl(pub))
-        publish(
-            delegateClosureOf<PublisherConfig> {
-                repository(
-                    delegateClosureOf<GroovyObject> {
-                        setProperty("repoKey", repoSpec.repoKey)
-                        setProperty("username", repoSpec.username)
-                        setProperty("password", repoSpec.password)
-                        setProperty("maven", true)
-                    }
-                )
-                defaults(
-                    delegateClosureOf<GroovyObject> {
+        setContextUrl(model.contextUrl)
 
-                        // TODO use ArtifactoryPublish task even for single project case?
-                        if (!isRootProject) {
-                            invokeMethod("publications", publishPlan.artifactoryPublications().toTypedArray())
+        model.repoSpec?.let { repoSpec ->
+            publish(
+                delegateClosureOf<PublisherConfig> {
+                    repository(
+                        delegateClosureOf<GroovyObject> {
+                            setProperty("repoKey", repoSpec.repoKey)
+                            setProperty("username", repoSpec.username)
+                            setProperty("password", repoSpec.password)
+                            setProperty("maven", true)
                         }
-                        setProperty("publishArtifacts", true)
-                        setProperty("publishPom", true)
-                        setProperty("publishIvy", false)
-                    }
-                )
-            }
-        )
+                    )
+                    defaults(
+                        delegateClosureOf<GroovyObject> {
+                            invokeMethod("publications", model.publications.toTypedArray())
+                            setProperty("publishArtifacts", true)
+                            setProperty("publishPom", true)
+                            setProperty("publishIvy", false)
+                        }
+                    )
+                }
+            )
 
-        resolve(
-            delegateClosureOf<ResolverConfig> {
-                setProperty("repoKey", repoSpec.repoKey)
-//                setProperty("repoKey", "jcenter")
-            }
-        )
-    }
-
-    private fun ArtifactoryPluginConvention.configSub() {
-//        publish(
-//            delegateClosureOf<PublisherConfig> {
-//                defaults(
-//                    delegateClosureOf<GroovyObject> {
-//                        invokeMethod("publications", pubName)
-//                    }
-//                )
-//            }
-    }
-
-    private fun configTask(pub: JarbirdPub, repoSpec: ArtifactoryRepoSpec) {
-
-        project.tasks.named("artifactoryPublish", ArtifactoryTask::class.java) {
-
-            @Suppress("SpreadOperator")
-            publications(*publishPlan.artifactoryPublications().toTypedArray())
-            if (project.isMultiProjectRoot()) {
-                skip = true
-            }
+            resolve(
+                delegateClosureOf<ResolverConfig> {
+                    setProperty("repoKey", repoSpec.repoKey)
+                }
+            )
         }
     }
+
 }

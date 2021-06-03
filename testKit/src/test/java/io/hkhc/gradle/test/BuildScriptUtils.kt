@@ -124,7 +124,7 @@ fun buildGradleKts(maven: Boolean = true, artifactory: Boolean = true, versions:
         }
         jarbird {
             ${if (maven) "mavenRepo(\"mock\")" else ""}
-            ${if (artifactory) "artifactory()" else ""}
+            ${if (artifactory) "artifactory(\"mock\")" else ""}
         }
     """.trimIndent()
 }
@@ -206,7 +206,7 @@ fun buildGradleCustomArtifactoryKts(versions: Versions = Versions()): String {
     return """
         ${commonBuildGradleKtsPlugins(versions)}
         jarbird {
-            artifactory()
+            artifactory("mock")
         }
         repositories {
             jcenter()
@@ -292,7 +292,7 @@ fun commonAndroidGradle(
         ${commonAndroidBuildGradleKtsAndroid()}
         jarbird {
             ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
-            artifactory()
+            artifactory("mock")
         }
 
         android.libraryVariants.configureEach { variant ->
@@ -301,7 +301,7 @@ fun commonAndroidGradle(
                 jarbird {
                      pub(variantName) { 
                         ${if (variantMode != "") variantMode else "" } 
-                        useGpg = true
+                        signWithKeybox()
                         from(variant)
                         docSourceSets = variant
                     }
@@ -324,7 +324,7 @@ fun commonAndroidExtGradle(variantMode: String = "variantInvisible()", mavenRepo
         ${commonAndroidBuildGradleKtsAndroid()}
         jarbird {
             ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
-            artifactory()
+            artifactory("mock")
         }
 
         android.libraryVariants.configureEach { variant ->
@@ -333,7 +333,7 @@ fun commonAndroidExtGradle(variantMode: String = "variantInvisible()", mavenRepo
                 jarbird {
                      pub(variantName) { 
                         ${if (variantMode != "") variantMode else "" } 
-                        useGpg = true
+                        signWithKeybox()
                         from(variant)
                         docSourceSets = variant
                     }

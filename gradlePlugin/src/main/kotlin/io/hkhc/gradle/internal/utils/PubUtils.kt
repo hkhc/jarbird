@@ -18,6 +18,9 @@
 
 package io.hkhc.gradle.internal.utils
 
+import io.hkhc.gradle.internal.JarbirdPubImpl
+import io.hkhc.gradle.internal.PomResolver
+
 fun normalizePubName(name: String): String {
     val newName = StringBuffer()
     var newWord = true
@@ -41,4 +44,14 @@ fun normalizePubName(name: String): String {
         }
     }
     return newName.toString()
+}
+
+fun initPub(pomResolver: PomResolver, pub: JarbirdPubImpl) {
+
+    pub.pom = pomResolver.resolve(pub.variant)
+
+    // TODO handle two publications of same artifactaId in the same module.
+    // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
+    pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
+
 }

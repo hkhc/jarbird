@@ -24,9 +24,9 @@ import groovy.lang.Closure
 interface JarbirdExtension : RepoDeclaration {
 
     /* to be invoked by Groovy Gradle script */
-    fun pub(action: Closure<JarbirdPub>)
-    fun pub(variant: String, action: Closure<JarbirdPub>)
+    fun pub(action: Closure<JarbirdPub>): JarbirdPub
+    fun pub(variant: String, action: Closure<JarbirdPub>): JarbirdPub
     /* to be invoked by Kotlin Gradle script */
-    fun pub(action: JarbirdPub.() -> Unit)
-    fun pub(variant: String, action: JarbirdPub.() -> Unit)
+    fun pub(action: JarbirdPub.() -> Unit): JarbirdPub
+    fun pub(variant: String, action: JarbirdPub.() -> Unit): JarbirdPub
 }

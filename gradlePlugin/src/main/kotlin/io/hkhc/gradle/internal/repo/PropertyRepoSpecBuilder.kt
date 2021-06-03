@@ -45,15 +45,15 @@ class PropertyRepoSpecBuilder(
         )
     }
 
-    fun buildArtifactoryRepo(): ArtifactoryRepoSpec = with(PropertyBuilder(projectProperty, "artifactory")) {
+    fun buildArtifactoryRepo(key: String): ArtifactoryRepoSpec = with(PropertyBuilder(projectProperty, "artifactory.$key")) {
         val result = ArtifactoryRepoSpecImpl(
             releaseUrl = resolve("release"),
             snapshotUrl = resolve("snapshot"),
             username = resolve("username"),
             password = resolve("password"),
-            description = resolve("description", "Artifactory"),
+            description = resolve("description", "Artifactory repository '$key'"),
             repoKey = resolve("repoKey"),
-            id = "Artifactory"
+            id = normalizePubName("artifactory.$key").capitalize()
         )
         if (result.releaseUrl.isNullOrEmpty() && result.snapshotUrl.isNullOrEmpty()) {
             throw GradleException(

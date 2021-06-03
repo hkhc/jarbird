@@ -22,13 +22,13 @@ import groovy.lang.Closure
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpecImpl
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
-import io.hkhc.gradle.internal.utils.normalizePubName
+import io.hkhc.gradle.internal.utils.initPub
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -44,21 +44,6 @@ open class JarbirdExtensionImpl(
     private var repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
 
     private var implicited: JarbirdPub? = null
-
-    private fun initPub(pub: JarbirdPubImpl) {
-
-        pub.pom = pomResolver.resolve(pub.variant)
-
-        // TODO handle two publications of same artifactaId in the same module.
-        // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
-        pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
-
-        // pre-check of final data, for child project
-        // TODO handle multiple level child project?
-//        if (!project.isMultiProjectRoot()) {
-//            precheck(pub.pom, project)
-//        }
-    }
 
     open fun newPub(project: Project, variant: String = ""): JarbirdPubImpl {
         return JarbirdPubImpl(project, this, projectProperty, variant).apply {
@@ -82,39 +67,43 @@ open class JarbirdExtensionImpl(
      */
 
     /* to be invoked by Groovy Gradle script */
-    override fun pub(action: Closure<JarbirdPub>) {
+    override fun pub(action: Closure<JarbirdPub>): JarbirdPub {
         val newPub = newPub(project)
         newPub.configure(action)
-        initPub(newPub)
+        initPub(pomResolver, newPub)
         removeImplicit()
+        return newPub
     }
 
-    override fun pub(variant: String, action: Closure<JarbirdPub>) {
+    override fun pub(variant: String, action: Closure<JarbirdPub>): JarbirdPub {
         if (pubList.any { it.variant == variant }) {
             throw GradleException("Duplicated pubs with variant '$variant' are found.")
         }
         val newPub = newPub(project, variant)
-        initPub(newPub)
+        initPub(pomResolver, newPub)
         newPub.configure(action)
         removeImplicit()
+        return newPub
     }
 
     /* to be invoked by Kotlin Gradle script */
-    override fun pub(action: JarbirdPub.() -> Unit) {
+    override fun pub(action: JarbirdPub.() -> Unit): JarbirdPub {
         val newPub = newPub(project)
         newPub.configure(action)
-        initPub(newPub)
+        initPub(pomResolver, newPub)
         removeImplicit()
+        return newPub
     }
 
-    override fun pub(variant: String, action: JarbirdPub.() -> Unit) {
+    override fun pub(variant: String, action: JarbirdPub.() -> Unit): JarbirdPub {
         if (pubList.any { it.variant == variant }) {
             throw GradleException("Duplicated pubs with variant '$variant' are found.")
         }
         val newPub = newPub(project, variant)
-        initPub(newPub)
+        initPub(pomResolver, newPub)
         newPub.configure(action)
         removeImplicit()
+        return newPub
     }
 
     fun createImplicit() {
@@ -159,7 +148,7 @@ open class JarbirdExtensionImpl(
     override fun mavenRepo(key: String): RepoSpec {
         disableDefaultRepos()
         val repo = repoSpecBuilder.buildMavenRepo(key)
-        val existingRepo = repos.filterIsInstance(MavenRepoSpecImpl::class.java).find { it.id == repo.id }
+        val existingRepo = getRepos().filterIsInstance(MavenRepoSpecImpl::class.java).find { it.id == repo.id }
         return if (existingRepo == null) {
             repos.add(repo)
             repo
@@ -182,16 +171,16 @@ open class JarbirdExtensionImpl(
         }
     }
 
-    override fun artifactory(): RepoSpec {
-
-        if (repos.filterIsInstance<ArtifactoryRepoSpec>().isNotEmpty()) {
-            throw GradleException("There can only be one configuration per sub-project for Artifactory server only.")
-        }
-
+    override fun artifactory(key: String): RepoSpec {
         disableDefaultRepos()
-        val repo = repoSpecBuilder.buildArtifactoryRepo()
-        repos.add(repo)
-        return repo
+        val repo = repoSpecBuilder.buildArtifactoryRepo(key)
+        val existingRepo = getRepos().filterIsInstance(ArtifactoryRepoSpecImpl::class.java).find { it.id == repo.id }
+        return if (existingRepo == null) {
+            repos.add(repo)
+            repo
+        } else {
+            existingRepo
+        }
     }
 
     /**

@@ -96,11 +96,11 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                         "repository.maven.mock.allowInsecureProtocol" to "true"
                     }
                     if (artifactory) {
-                        "repository.artifactory.release" to artifactoryMockServer?.getServerUrl()
-                        "repository.artifactory.snapshot" to artifactoryMockServer?.getServerUrl()
-                        "repository.artifactory.username" to "username"
-                        "repository.artifactory.apikey" to "password"
-                        "repository.artifactory.repoKey" to "oss-snapshot-local"
+                        "repository.artifactory.mock.release" to artifactoryMockServer?.getServerUrl()
+                        "repository.artifactory.mock.snapshot" to artifactoryMockServer?.getServerUrl()
+                        "repository.artifactory.mock.username" to "username"
+                        "repository.artifactory.mock.apikey" to "password"
+                        "repository.artifactory.mock.repoKey" to "oss-snapshot-local"
                     }
                 }
 

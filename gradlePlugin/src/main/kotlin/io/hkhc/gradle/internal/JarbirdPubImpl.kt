@@ -21,11 +21,14 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SigningStrategy
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpecImpl
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
+import io.hkhc.gradle.internal.repo.effectiveUrl
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
@@ -90,7 +93,7 @@ open class JarbirdPubImpl(
 
     override fun mavenRepo(key: String): RepoSpec {
         val repo = repoSpecBuilder.buildMavenRepo(key)
-        val existingRepo = repos.filterIsInstance(MavenRepoSpecImpl::class.java).find { it.id == repo.id }
+        val existingRepo = getRepos().filterIsInstance(MavenRepoSpecImpl::class.java).find { it.id == repo.id }
         return if (existingRepo == null) {
             repos.add(repo)
             repo
@@ -111,10 +114,23 @@ open class JarbirdPubImpl(
         }
     }
 
-    override fun artifactory(): RepoSpec {
-        val repo = repoSpecBuilder.buildArtifactoryRepo()
-        repos.add(repo)
-        return repo
+    /*
+    existingRepo    existingParentRepo      action
+    null            null                    repos.add(repo)
+    not null        null                    existingRepo
+    null            not null
+    not null        not null
+     */
+
+    override fun artifactory(key: String): RepoSpec {
+        val repo = repoSpecBuilder.buildArtifactoryRepo(key)
+        val existingRepo = getRepos().filterIsInstance(ArtifactoryRepoSpecImpl::class.java).find { it.id == repo.id }
+        return if (existingRepo == null) {
+            repos.add(repo)
+            repo
+        } else {
+            existingRepo
+        }
     }
 
     override fun getRepos(): Set<RepoSpec> {
@@ -125,7 +141,13 @@ open class JarbirdPubImpl(
             )
     }
 
+    private fun artifactoryRepos(): List<ArtifactoryRepoSpec> {
+        return getRepos().filterIsInstance<ArtifactoryRepoSpec>()
+    }
+
     fun finalizeRepos() {
+
+        val artifactoryRepos = artifactoryRepos()
 
         val err = if ((pom.group ?: "").isEmpty()) {
             """
@@ -142,9 +164,16 @@ open class JarbirdPubImpl(
                 Version is missed in POM for pub($variant).
                 May be the variant name or POM file is not correct.
             """.trimIndent()
+        } else if (artifactoryRepos.size>1) {
+            """
+                One artifactory repository per sub-project only is supported.
+                ${artifactoryRepos.size} is detected. 
+                ${artifactoryRepos.joinToString { it.id }}
+            """.trimIndent()
         } else {
             null
         }
+
 
         if (err != null) throw GradleException(err)
 
