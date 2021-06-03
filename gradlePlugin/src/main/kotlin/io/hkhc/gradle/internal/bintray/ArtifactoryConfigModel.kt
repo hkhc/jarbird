@@ -31,11 +31,13 @@ class ArtifactoryConfigModel(pubs: List<JarbirdPub>) {
     private val artifactoryRepoSpecs = pubs.flatMap { it.getRepos() }.filterIsInstance<ArtifactoryRepoSpec>()
 
     init {
-        if (mixedSnapshotRelease(pubs))
+        if (mixedSnapshotRelease(pubs)) {
             throw GradleException("Component published to Artifactory must be all release or all snapshot.")
+        }
 
-        if (artifactoryRepoSpecs.toSet().size>1)
+        if (artifactoryRepoSpecs.toSet().size > 1) {
             throw GradleException("Only one artifactory repo is supported in one project or sub-project.")
+        }
     }
 
     fun needsArtifactory() = pubsWithArtifactory.isNotEmpty()
@@ -58,5 +60,4 @@ class ArtifactoryConfigModel(pubs: List<JarbirdPub>) {
         val releaseCount = pubs.count { it.pom.isRelease() }
         return (releaseCount != pubs.size) && (releaseCount != 0)
     }
-
 }

@@ -53,5 +53,4 @@ fun initPub(pomResolver: PomResolver, pub: JarbirdPubImpl) {
     // TODO handle two publications of same artifactaId in the same module.
     // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
     pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
-
 }

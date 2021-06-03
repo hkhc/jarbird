@@ -22,10 +22,8 @@ import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.pom.PomGroup
 import io.hkhc.gradle.pom.internal.PomGroupFactory
-import io.hkhc.utils.test.MockProjectInfo
 import io.hkhc.utils.test.MockProjectProperty
 import io.hkhc.utils.test.tempDirectory
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
@@ -34,7 +32,6 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import java.io.File

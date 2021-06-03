@@ -28,7 +28,6 @@ import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
-import io.hkhc.gradle.internal.repo.effectiveUrl
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
@@ -164,7 +163,7 @@ open class JarbirdPubImpl(
                 Version is missed in POM for pub($variant).
                 May be the variant name or POM file is not correct.
             """.trimIndent()
-        } else if (artifactoryRepos.size>1) {
+        } else if (artifactoryRepos.size > 1) {
             """
                 One artifactory repository per sub-project only is supported.
                 ${artifactoryRepos.size} is detected. 
@@ -173,7 +172,6 @@ open class JarbirdPubImpl(
         } else {
             null
         }
-
 
         if (err != null) throw GradleException(err)
 

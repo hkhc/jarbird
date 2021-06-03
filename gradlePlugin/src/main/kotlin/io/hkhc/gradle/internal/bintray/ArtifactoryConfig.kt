@@ -41,7 +41,6 @@ class ArtifactoryConfig(
 
 //    private val publishPlan = BintrayPublishPlan(pubs)
 
-
     fun config() {
 
         val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")

@@ -204,7 +204,6 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                                             ":jar SUCCESS"()
                                         }
                                         ":generatePomFileForTestArtifactPublication SUCCESS" {
-
                                         }
                                         ":jar SUCCESS"()
                                         ":jbDokkaJarTestArtifact SUCCESS" {
@@ -342,7 +341,6 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                                             ":jar SUCCESS"()
                                         }
                                         ":generatePomFileForTestArtifactPublication SUCCESS" {
-
                                         }
                                         ":jar SUCCESS"()
                                         ":jbDokkaJarTestArtifact SUCCESS" {
@@ -442,7 +440,6 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                                             ":jar SUCCESS"()
                                         }
                                         ":generatePomFileForTestArtifactPublication SUCCESS" {
-
                                         }
                                         ":jar SUCCESS"()
                                         ":jbDokkaJarTestArtifact SUCCESS" {

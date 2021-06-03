@@ -25,12 +25,10 @@ import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
 import io.hkhc.gradle.test.artifacory.publishedToArtifactoryRepositoryCompletely
 import io.hkhc.gradle.test.commonAndroidGradle
 import io.hkhc.gradle.test.commonAndroidRootGradle
-import io.hkhc.gradle.test.except
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.getTestAndroidSdkHomePair
 import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.setupAndroidProperties
-import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme

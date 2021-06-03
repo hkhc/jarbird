@@ -26,7 +26,7 @@ open class Versions {
     open val pluginId = PLUGIN_ID
 }
 
-open class AndroidVersions: Versions() {
+open class AndroidVersions : Versions() {
     override val pluginId = "io.hkhc.jarbird-android"
     open val androidTool = "4.1.3"
 }
@@ -114,7 +114,6 @@ fun buildGradle(maven: Boolean = true, bintray: Boolean = true, versions: Versio
         }
     """.trimIndent()
 }
-
 
 fun buildGradleKts(maven: Boolean = true, artifactory: Boolean = true, versions: Versions = Versions()): String {
     return """
@@ -246,7 +245,6 @@ fun buildGradlePortalPluginKts(versions: Versions = Versions()): String {
         }
     """.trimIndent()
 }
-
 
 fun commonAndroidRootGradle(versions: AndroidVersions = AndroidVersions()): String {
 

@@ -40,7 +40,7 @@ import java.io.File
 
 class ArtifactoryConfigModelTest : FunSpec({
 
-    val project = mockk<Project>(relaxed=true).also {
+    val project = mockk<Project>(relaxed = true).also {
         every { it.rootDir } returns File("project")
         every { it.projectDir } returns File("project/app")
         every { it.parent } returns null
@@ -60,7 +60,6 @@ class ArtifactoryConfigModelTest : FunSpec({
         model.needsArtifactory() shouldBe false
         model.contextUrl shouldBe null
         model.publications.shouldBeEmpty()
-
     }
 
     test("one repo with no artifactory repos") {
@@ -78,7 +77,6 @@ class ArtifactoryConfigModelTest : FunSpec({
         model.needsArtifactory() shouldBe false
         model.contextUrl shouldBe null
         model.publications.shouldBeEmpty()
-
     }
 
     test("one artifactory repos") {
@@ -242,7 +240,6 @@ class ArtifactoryConfigModelTest : FunSpec({
         shouldThrow<GradleException> {
             ArtifactoryConfigModel(listOf(pub))
         }
-
     }
 
     test("one artifactory repos with all release GAV") {
@@ -292,12 +289,9 @@ class ArtifactoryConfigModelTest : FunSpec({
             username shouldBe projectProperty.property("repository.artifactory.mock.username")
             password shouldBe projectProperty.property("repository.artifactory.mock.password")
         }
-
-
     }
 
     test("one artifactory repos with mixed release and snapshot GAV") {
-
         // GIVEN
         val projectProperty = MockProjectProperty(
             mapOf(
@@ -334,7 +328,6 @@ class ArtifactoryConfigModelTest : FunSpec({
         shouldThrow<GradleException> {
             ArtifactoryConfigModel(listOf(pub1, pub2))
         }
-
     }
 
     test("one artifactory repo for gradle plugin publishing") {
@@ -382,5 +375,4 @@ class ArtifactoryConfigModelTest : FunSpec({
             password shouldBe projectProperty.property("repository.artifactory.mock.password")
         }
     }
-
 })
