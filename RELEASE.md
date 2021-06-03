@@ -1,3 +1,7 @@
+## 0.6
+- Retire bintray support
+- Supports for multiple artifactory repository
+
 ## 0.5.3
 - Fix incorrect plugin JAR coordinate for Gradle Plugin Portal
 
