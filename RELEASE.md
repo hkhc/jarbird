@@ -1,4 +1,4 @@
-## 0.6
+## 0.6.0
 - Retire bintray support
 - Supports for multiple artifactory repository
 
