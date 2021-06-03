@@ -21,10 +21,9 @@ package io.hkhc.gradle.internal.bintray
 import io.hkhc.gradle.internal.DefaultProjectInfo
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdLogger
-import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.PomResolver
 import io.hkhc.gradle.internal.PomResolverImpl
-import io.hkhc.gradle.internal.utils.initPub
+import io.hkhc.gradle.pom.PluginInfo
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockProjectProperty
 import io.kotest.assertions.throwables.shouldThrow
@@ -338,5 +337,50 @@ class ArtifactoryConfigModelTest : FunSpec({
 
     }
 
+    test("one artifactory repo for gradle plugin publishing") {
+
+        // GIVEN
+        val projectProperty = MockProjectProperty(
+            mapOf(
+                "repository.artifactory.mock.release" to "https://release",
+                "repository.artifactory.mock.snapshot" to "https://snapshot",
+                "repository.artifactory.mock.repoKey" to "oss-snapshot-local",
+                "repository.artifactory.mock.username" to "username",
+                "repository.artifactory.mock.password" to "password"
+            )
+        )
+
+        val pomResolver = mockk<PomResolver>()
+        every { pomResolver.resolve(any()) } returns Pom(
+            group = "mygroup",
+            artifactId = "mylib",
+            version = "1.0",
+            plugin = PluginInfo(
+                id = "myPlugin",
+                displayName = "my plugin",
+                implementationClass = "myClass"
+            )
+        )
+
+        val ext = JarbirdExtensionImpl(project, projectProperty, pomResolver)
+
+        // WHEN
+        val pub = ext.pub {
+            mavenLocal()
+            artifactory("mock")
+        }
+        val model = ArtifactoryConfigModel(listOf(pub))
+
+        // THEN
+        model.needsArtifactory() shouldBe true
+        model.contextUrl shouldBe projectProperty.property("repository.artifactory.mock.release")
+        model.publications shouldBe listOf("mylib", "mylibPluginMarkerMaven")
+        model.repoSpec shouldNotBe null
+        with(model.repoSpec!!) {
+            repoKey shouldBe projectProperty.property("repository.artifactory.mock.repoKey")
+            username shouldBe projectProperty.property("repository.artifactory.mock.username")
+            password shouldBe projectProperty.property("repository.artifactory.mock.password")
+        }
+    }
 
 })

@@ -19,7 +19,7 @@
 package io.hkhc.gradle.internal.bintray
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.pluginMarkerPubNameWithVariant
+import io.hkhc.gradle.internal.markerPubName
 import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.effectiveUrl
@@ -36,7 +36,6 @@ class ArtifactoryConfigModel(pubs: List<JarbirdPub>) {
 
         if (artifactoryRepoSpecs.toSet().size>1)
             throw GradleException("Only one artifactory repo is supported in one project or sub-project.")
-
     }
 
     fun needsArtifactory() = pubsWithArtifactory.isNotEmpty()
@@ -51,7 +50,7 @@ class ArtifactoryConfigModel(pubs: List<JarbirdPub>) {
         val result = mutableListOf<String>()
         result.add(pub.pubNameWithVariant())
         if (pub.pom.isGradlePlugin())
-            result.add(pub.pluginMarkerPubNameWithVariant())
+            result.add(pub.markerPubName)
         return result
     }
 

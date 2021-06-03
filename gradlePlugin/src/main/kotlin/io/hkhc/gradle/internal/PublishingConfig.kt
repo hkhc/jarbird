@@ -190,7 +190,7 @@ internal class PublishingConfig(
 
                     groupId = pub.pom.plugin!!.id
 
-                    artifactId = pub.pluginMarkerPubNameWithVariant()
+                    artifactId = pub.pluginMarkerArtifactIdWithVariant()
 
                     version = pub.variantVersion()
 
