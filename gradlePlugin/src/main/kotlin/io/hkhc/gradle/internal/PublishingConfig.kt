@@ -88,15 +88,6 @@ internal class PublishingConfig(
             ).config()
     }
 
-//    fun createDokkaSourceRoots(pub: JarbirdPubImpl): Iterable<File> {
-//
-//        return if (pub.sourceSets == null) {
-//            sourceSets.getByName(pub.sourceSetName).allSource.srcDirs
-//        } else {
-//            pub.sourceSets ?: listOf()
-//        }
-//    }
-
     private fun PublishingExtension.config() {
 
         publications {
@@ -114,7 +105,7 @@ internal class PublishingConfig(
         "PublishArtifact(name=$name,file=$file,classifier=$classifier,date=$date,extension=$extension,type=$type)"
 
     private fun registerSourceSetCompileTask(pub: JarbirdPubImpl): TaskProvider<Jar>? {
-        return pub.sourceSet?.let { sourceSet ->
+        return pub.mSourceSet?.let { sourceSet ->
 
             if (sourceSet.name != "main") {
                 ClassesJarTaskInfo(pub).register(project.tasks, Jar::class.java) {
@@ -142,7 +133,7 @@ internal class PublishingConfig(
 
             val pub = pub0 as JarbirdPubImpl
             project.logger.debug(
-                "$LOG_PREFIX CreatePublication variant=${pub.variant} component=${pub.effectiveComponent()}"
+                "$LOG_PREFIX CreatePublication variant=${pub.variant} component=${pub.component}"
             )
 
             val pom = pub.pom
@@ -160,7 +151,8 @@ internal class PublishingConfig(
                 version = pub.variantVersion()
 
                 if (publishJarTask == null) {
-                    from(pub.effectiveComponent())
+                    pub.component?.let { from(it) } ?: throw GradleException("Software component is not set.")
+
                 } else {
                     artifactCompat(publishJarTask)
                 }
@@ -176,7 +168,7 @@ internal class PublishingConfig(
                         artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
                         artifactCompat(
                             SourceConfig(project, sourceResolver)
-                                .configSourceJarTask(pub, pub.sourceSet ?: pub.docSourceSets)
+                                .configSourceJarTask(pub, pub.sourceSetModel()!!)
                         )
                     }
                 }

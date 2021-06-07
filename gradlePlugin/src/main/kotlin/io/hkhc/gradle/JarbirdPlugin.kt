@@ -196,7 +196,7 @@ open class JarbirdPlugin : Plugin<Project> {
             pluginConfig = p.extra.get(EXT_PLUGIN_CONFIG) as PluginConfig
         }
 
-        if (p.isRoot()) JarbirdLogger.logger = p.logger
+        JarbirdLogger.logger = p.rootProject.logger
 
         project = p
         project.logger.debug("$LOG_PREFIX Start applying $PLUGIN_FRIENDLY_NAME (${pluginConfig.pluginId()})")

@@ -42,7 +42,7 @@ internal class SourceConfig(
 //    }
 
     @Suppress("UnstableApiUsage", "SpreadOperator")
-    fun configSourceJarTask(pub: JarbirdPub, sourceSet: Any): TaskProvider<Jar> {
+    fun configSourceJarTask(pub: JarbirdPub, sourceSetModel: SourceSetModel): TaskProvider<Jar> {
 
         val taskInfo = SourceJarPubTaskInfo(pub)
 
@@ -50,7 +50,7 @@ internal class SourceConfig(
             archiveClassifier.set(CLASSIFIER_SOURCE)
             archiveBaseName.set(pub.variantArtifactId())
             archiveVersion.set(pub.variantVersion())
-            from(*sourceResolver.getSourceJarSource(sourceSet))
+            from(*sourceSetModel.sourceFolders.toTypedArray())
         }
     }
 

@@ -284,7 +284,7 @@ class DokkaJarPubTaskInfo(private val pub: JarbirdPub) : TaskInfo() {
 
 class ClassesJarTaskInfo(pub: JarbirdPub) : TaskInfo() {
 
-    private val sourceSetName = (pub as JarbirdPubImpl).sourceSet?.name
+    private val sourceSetName = (pub as JarbirdPubImpl).mSourceSet?.name
 
     override val name: String
         get() = "${sourceSetName}Jar"

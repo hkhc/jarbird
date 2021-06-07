@@ -19,6 +19,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     kotlin("jvm")
@@ -100,7 +101,13 @@ configurations {
 jarbird {
     mavenLocal()
     mavenCentral()
-    pub {}
+    pub {
+        dokkaConfig {
+            dokkaSourceSets.forEach {
+                it.externalDocumentationLink("https://docs.gradle.org/current/javadoc/")
+            }
+        }
+    }
 }
 
 dependencies {

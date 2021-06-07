@@ -27,6 +27,7 @@ import io.hkhc.gradle.internal.JbDokkaPubTaskInfo
 import io.hkhc.gradle.internal.JbDokkaTaskInfo
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.SourceResolver
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
@@ -72,14 +73,18 @@ internal class DokkaConfig(
 
         pubs.forEach { pub ->
             val impl = pub as JarbirdPubImpl
-            JbDokkaPubTaskInfo(pub).register(project.tasks, DokkaTask::class.java) {
-                dokkaSourceSets.create("${pub.pom.group}:${pub.pom.artifactId}") {
-                    sourceRoots.setFrom(
-                        *(sourceResolver.getSourceJarSource(impl.sourceSet ?: impl.docSourceSets))
-                    )
+            impl.sourceSetModel()?.let { sourceSetModel ->
+                val pubClasspath = sourceSetModel.classpath.toTypedArray()
+                JbDokkaPubTaskInfo(pub).register(project.tasks, DokkaTask::class.java) {
+                    dokkaSourceSets.create("${pub.pom.group}:${pub.pom.artifactId}") {
+                        classpath.from(*pubClasspath)
+                        sourceRoots.setFrom(
+                            *(sourceSetModel.sourceFolders.toTypedArray())
+                        )
+                    }
+                    impl.dokkaConfig.invoke(this, pub)
                 }
-                impl.dokkaConfig.invoke(this, pub)
-            }
+            } ?: throw GradleException("sourceSetModel is not set")
         }
     }
 

@@ -21,7 +21,9 @@ package io.hkhc.gradle.internal.android
 import io.hkhc.gradle.android.AndroidJarbirdPlugin.Companion.LOG_PREFIX
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdPubImpl
+import io.hkhc.gradle.internal.JavaConventionSourceSetModel
 import io.hkhc.gradle.internal.ProjectProperty
+import io.hkhc.gradle.internal.SourceSetModel
 import org.gradle.api.Project
 
 class AndroidJarbirdPubImpl(
@@ -31,6 +33,8 @@ class AndroidJarbirdPubImpl(
     variant: String = ""
 ) : JarbirdPubImpl(project, ext, projectProperty, variant) {
 
+    private var libraryVariant: LibraryVariant? = null
+
     /**
      * provide information on how the project is build. The parameter could be instance of
      * - SoftwareComponent
@@ -38,15 +42,22 @@ class AndroidJarbirdPubImpl(
      * - Android LibraryVariant
      */
     override fun from(source: Any) {
-        LibraryVariant.implemented(source)?.let {
-            it.getName()?.let { name ->
+        LibraryVariant.implemented(source)?.let { variant ->
+            variant.getName()?.let { name ->
                 project.logger.debug("$LOG_PREFIX publish library variant $name")
-                component = project.components.getAt(name)
-                docSourceSets = source
+                libraryVariant = variant
+                mComponent = project.components.getAt(name)
             }
         } ?: run {
             project.logger.debug("$LOG_PREFIX library variant not found, fallback")
             super.from(source)
         }
     }
+
+    // As initial value, we don't use getter wrapper to access component and sourceSet.
+    override fun sourceSetModel(): SourceSetModel? = if (libraryVariant != null)
+        AndroidLibraryVariantSourceSetModel(project, libraryVariant!!)
+    else
+        super.sourceSetModel()
+
 }

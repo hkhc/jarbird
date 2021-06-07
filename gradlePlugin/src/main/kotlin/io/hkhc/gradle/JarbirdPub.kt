@@ -18,8 +18,10 @@
 
 package io.hkhc.gradle
 
+import groovy.lang.Closure
 import io.hkhc.gradle.internal.VariantStrategy
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
+import org.jetbrains.dokka.gradle.DokkaTask
 
 interface JarbirdPub : RepoDeclaration, SigningStrategy, VariantStrategy {
 
@@ -28,9 +30,8 @@ interface JarbirdPub : RepoDeclaration, SigningStrategy, VariantStrategy {
      */
     val pubName: String
 
-    val docSourceSets: Any
-
-    fun configureDokka(block: AbstractDokkaTask.(pub: JarbirdPub) -> Unit)
+    fun dokkaConfig(action: Closure<DokkaTask>)
+    fun dokkaConfig(block: DokkaTask.(pub: JarbirdPub) -> Unit)
 
     /**
      * provide information on how the project is build. The parameter could be instance of

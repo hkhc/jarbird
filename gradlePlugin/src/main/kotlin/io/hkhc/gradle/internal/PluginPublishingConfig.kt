@@ -26,7 +26,6 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.kotlin.dsl.get
 import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
 
 class PluginPublishingConfig(
@@ -88,7 +87,7 @@ class PluginPublishingConfig(
                         MavenPublication::class.java
                     )
                     with(pluginMainPublication) {
-                        from((pub as JarbirdPubImpl).effectiveComponent())
+                        from((pub as JarbirdPubImpl).component)
                         groupId = pub.pom.group
                         artifactId = pub.pom.artifactId
                         version = pub.pom.version

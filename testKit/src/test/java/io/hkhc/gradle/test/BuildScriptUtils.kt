@@ -301,7 +301,6 @@ fun commonAndroidGradle(
                         ${if (variantMode != "") variantMode else "" } 
                         signWithKeybox()
                         from(variant)
-                        docSourceSets = variant
                     }
                 }
             }
@@ -333,7 +332,6 @@ fun commonAndroidExtGradle(variantMode: String = "variantInvisible()", mavenRepo
                         ${if (variantMode != "") variantMode else "" } 
                         signWithKeybox()
                         from(variant)
-                        docSourceSets = variant
                     }
                 }
             }

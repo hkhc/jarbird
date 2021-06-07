@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.internal
 
+import groovy.lang.Closure
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SigningStrategy
@@ -28,12 +29,14 @@ import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
+import io.hkhc.gradle.internal.utils.initPub
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.tasks.SourceSet
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.dokka.gradle.AbstractDokkaTask
+import org.jetbrains.dokka.gradle.DokkaTask
 
 open class JarbirdPubImpl(
     protected val project: Project,
@@ -50,15 +53,38 @@ open class JarbirdPubImpl(
     private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
 
     override var pubName: String = "lib"
-    override var docSourceSets: Any = "main"
 
-    protected var component: SoftwareComponent? = null
+    var mComponent: SoftwareComponent? = null
+    var mSourceSet: SourceSet? = null
+
+    var dokkaConfig: DokkaTask.(pub: JarbirdPub) -> Unit = {}
+
+    var component: SoftwareComponent? = null
+        get() {
+            return mComponent ?: project.components["java"]
+        }
+        private set
+
     var sourceSet: SourceSet? = null
-    var dokkaConfig: AbstractDokkaTask.(pub: JarbirdPub) -> Unit = {}
+        get() = mSourceSet
+        private set
 
-    fun effectiveComponent(): SoftwareComponent = component ?: project.components["java"]
+    open fun sourceSetModel(): SourceSetModel? = if (component != null)
+        JavaConventionSourceSetModel(project)
+    else if (sourceSet != null)
+        JavaConventionSourceSetModel(project, sourceSet!!.name)
+    else
+        null
 
-    override fun configureDokka(block: AbstractDokkaTask.(pub: JarbirdPub) -> Unit) {
+    override fun dokkaConfig(action: Closure<DokkaTask>) {
+        dokkaConfig = {
+            action.delegate = this
+            action.resolveStrategy = Closure.DELEGATE_FIRST
+            action.call(this@JarbirdPubImpl)
+        }
+    }
+
+    override fun dokkaConfig(block: DokkaTask.(pub: JarbirdPub) -> Unit) {
         dokkaConfig = block
     }
 
@@ -72,10 +98,15 @@ open class JarbirdPubImpl(
 
     override fun from(source: Any) {
         when (source) {
-            is SoftwareComponent -> this.component = source
+            is SoftwareComponent -> {
+                component = source
+            }
             is SourceSet -> {
-                this.sourceSet = source
-                this.docSourceSets = source
+                component = null
+                sourceSet = source
+            }
+            else -> {
+                throw GradleException("from() accepts SoftwareComponent or SourceSet only")
             }
         }
     }
