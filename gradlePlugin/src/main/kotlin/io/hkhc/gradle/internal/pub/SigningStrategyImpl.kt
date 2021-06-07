@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.internal
+package io.hkhc.gradle.internal.pub
 
 import io.hkhc.gradle.SigningStrategy
 
@@ -37,7 +37,11 @@ class SigningStrategyImpl : SigningStrategy {
         signing = false
     }
 
-    override fun shouldSign(): Boolean {
+    override fun needSign() {
+        signing = true
+    }
+
+    override fun shouldSignOrNot(): Boolean {
         return signing
     }
 
@@ -52,10 +56,10 @@ class SigningStrategyImpl : SigningStrategy {
     }
 
     override fun isSignWithKeyring(): Boolean {
-        return useKeybox == false
+        return signing && !useKeybox
     }
 
     override fun isSignWithKeybox(): Boolean {
-        return useKeybox == true
+        return signing && useKeybox
     }
 }

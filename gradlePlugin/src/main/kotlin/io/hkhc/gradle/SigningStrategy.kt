@@ -27,7 +27,12 @@ interface SigningStrategy {
     /**
      * Do signing for this pub (default)
      */
-    fun shouldSign(): Boolean
+    fun needSign()
+
+    /**
+     * Do signing for this pub (default)
+     */
+    fun shouldSignOrNot(): Boolean
 
     /**
      * Use GnuPG v1 Keyring to perform artifact signing

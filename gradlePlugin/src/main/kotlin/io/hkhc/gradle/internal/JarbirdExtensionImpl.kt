@@ -21,13 +21,8 @@ package io.hkhc.gradle.internal
 import groovy.lang.Closure
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpecImpl
-import io.hkhc.gradle.internal.repo.GradlePortalSpec
-import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
-import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
-import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
-import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
+import io.hkhc.gradle.RepoDeclaration
+import io.hkhc.gradle.internal.pub.ExtRepoDeclarationsImpl
 import io.hkhc.gradle.internal.utils.initPub
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -36,14 +31,28 @@ open class JarbirdExtensionImpl(
     private val project: Project,
     protected val projectProperty: ProjectProperty,
     private val pomResolver: PomResolver
-) : JarbirdExtension {
+) : JarbirdExtension,
+    RepoDeclaration by ExtRepoDeclarationsImpl(project, projectProperty, getParentExt(project)) {
 
     val pubList = mutableListOf<JarbirdPub>()
-    private val repos = mutableSetOf<RepoSpec>()
-    private var isDefaultRepos = true
-    private var repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
 
     private var implicited: JarbirdPub? = null
+
+    companion object {
+        /**
+         * Get the Jarbird extension of the parent project.
+         * @return null if current project is root project or no Jarbird extension is found in parent project
+         */
+        fun getParentExt(project: Project): JarbirdExtension? {
+            return if (project.isRoot()) {
+                null
+            } else {
+                project.parent?.extensions?.findByName(SP_EXT_NAME)?.let {
+                    return@getParentExt it as JarbirdExtension
+                }
+            }
+        }
+    }
 
     open fun newPub(project: Project, variant: String = ""): JarbirdPubImpl {
         return JarbirdPubImpl(project, this, projectProperty, variant).apply {
@@ -124,81 +133,6 @@ open class JarbirdExtensionImpl(
         if (implicited == null || pubList.size == 1) return
         pubList.remove(implicited)
         implicited = null
-    }
-
-    /**
-     * If user declare a repo explicitly, we don't need the default repo any more.
-     */
-    private fun disableDefaultRepos() {
-        if (isDefaultRepos) {
-            repos.clear()
-            isDefaultRepos = false
-        }
-    }
-
-    // There is no effect to declare mavenCentral() more than once, just use the same RepoSpec
-    override fun mavenCentral(): RepoSpec {
-        disableDefaultRepos()
-        return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral(project).also {
-            repos.add(it)
-        }
-    }
-
-    // There is no effect to declare mavenRepo() more than once in the same pub, just use the same RepoSpec
-    override fun mavenRepo(key: String): RepoSpec {
-        disableDefaultRepos()
-        val repo = repoSpecBuilder.buildMavenRepo(key)
-        val existingRepo = getRepos().filterIsInstance(MavenRepoSpecImpl::class.java).find { it.id == repo.id }
-        return if (existingRepo == null) {
-            repos.add(repo)
-            repo
-        } else {
-            existingRepo
-        }
-    }
-
-    override fun mavenLocal(): RepoSpec {
-        disableDefaultRepos()
-        return repos.find { it is MavenLocalRepoSpec } ?: repoSpecBuilder.buildMavenLocalRepo().also {
-            repos.add(it)
-        }
-    }
-
-    override fun gradlePortal(): RepoSpec {
-        disableDefaultRepos()
-        return repos.find { it is GradlePortalSpec } ?: repoSpecBuilder.buildGradlePluginRepo().also {
-            repos.add(it)
-        }
-    }
-
-    override fun artifactory(key: String): RepoSpec {
-        disableDefaultRepos()
-        val repo = repoSpecBuilder.buildArtifactoryRepo(key)
-        val existingRepo = getRepos().filterIsInstance(ArtifactoryRepoSpecImpl::class.java).find { it.id == repo.id }
-        return if (existingRepo == null) {
-            repos.add(repo)
-            repo
-        } else {
-            existingRepo
-        }
-    }
-
-    /**
-     * Get the Jarbird extension of the parent project.
-     * @return null if current project is root project or no Jarbird extension is found in parent project
-     */
-    fun getParentExt(): JarbirdExtension? {
-        return if (project.isRoot()) {
-            null
-        } else {
-            project.parent?.extensions?.findByName(SP_EXT_NAME)?.let {
-                return@getParentExt it as JarbirdExtension
-            }
-        }
-    }
-
-    override fun getRepos(): Set<RepoSpec> {
-        return repos
     }
 
     fun finalizeRepos() {

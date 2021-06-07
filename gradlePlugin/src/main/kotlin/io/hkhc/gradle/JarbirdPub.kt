@@ -19,8 +19,6 @@
 package io.hkhc.gradle
 
 import groovy.lang.Closure
-import io.hkhc.gradle.internal.VariantStrategy
-import org.jetbrains.dokka.gradle.AbstractDokkaTask
 import org.jetbrains.dokka.gradle.DokkaTask
 
 interface JarbirdPub : RepoDeclaration, SigningStrategy, VariantStrategy {
@@ -53,4 +51,5 @@ interface JarbirdPub : RepoDeclaration, SigningStrategy, VariantStrategy {
     fun sourceSetNames(vararg names: String): Any
     fun sourceSetNames(names: List<String>): Any
     fun sourceDirs(dirs: Any): Any
+
 }

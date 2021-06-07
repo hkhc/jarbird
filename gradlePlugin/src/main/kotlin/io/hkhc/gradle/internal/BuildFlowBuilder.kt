@@ -143,7 +143,7 @@ internal class BuildFlowBuilder(
             }
 
             PublishingConfig(project, extension, pubs, sourceResolver).config()
-            if (pubs.any { it.shouldSign() }) {
+            if (pubs.any { it.shouldSignOrNot() }) {
                 SigningConfig(project, pubs).config()
             }
         }

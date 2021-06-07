@@ -16,8 +16,10 @@
  *
  */
 
-package io.hkhc.gradle.internal
+package io.hkhc.gradle.internal.pub
 
+import io.hkhc.gradle.VariantStrategy
+import io.hkhc.gradle.internal.VariantMode
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.internal.appendBeforeSnapshot
 import io.hkhc.gradle.pom.internal.isSnapshot

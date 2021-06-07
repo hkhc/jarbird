@@ -20,8 +20,13 @@ package io.hkhc.gradle.internal
 
 import groovy.lang.Closure
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SigningStrategy
+import io.hkhc.gradle.VariantStrategy
+import io.hkhc.gradle.internal.pub.RepoDeclarationsImpl
+import io.hkhc.gradle.internal.pub.SigningStrategyImpl
+import io.hkhc.gradle.internal.pub.VariantStrategyImpl
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpecImpl
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
@@ -29,28 +34,23 @@ import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
-import io.hkhc.gradle.internal.utils.initPub
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.tasks.SourceSet
 import org.gradle.kotlin.dsl.get
-import org.jetbrains.dokka.gradle.AbstractDokkaTask
 import org.jetbrains.dokka.gradle.DokkaTask
 
 open class JarbirdPubImpl(
     protected val project: Project,
     private val ext: JarbirdExtensionImpl,
     projectProperty: ProjectProperty,
-    variant: String = "",
-    signingStrategy: SigningStrategy = SigningStrategyImpl(),
-    variantStrategy: VariantStrategy = VariantStrategyImpl(variant)
+    variant: String = ""
 ) : JarbirdPub,
-    SigningStrategy by signingStrategy,
-    VariantStrategy by variantStrategy {
-
-    private val repos = mutableSetOf<RepoSpec>()
-    private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
+    SigningStrategy by SigningStrategyImpl(),
+    VariantStrategy by VariantStrategyImpl(variant),
+    RepoDeclaration by RepoDeclarationsImpl(project, projectProperty, ext)
+{
 
     override var pubName: String = "lib"
 
@@ -115,66 +115,6 @@ open class JarbirdPubImpl(
     override fun sourceSetNames(names: List<String>): Any = SourceSetNames(project, names.toTypedArray())
     override fun sourceDirs(dirs: Any): Any = SourceDirs(dirs)
 
-    override fun mavenCentral(): RepoSpec {
-        return repos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral(project).also {
-            repos.add(it)
-        }
-    }
-
-    override fun mavenRepo(key: String): RepoSpec {
-        val repo = repoSpecBuilder.buildMavenRepo(key)
-        val existingRepo = getRepos().filterIsInstance(MavenRepoSpecImpl::class.java).find { it.id == repo.id }
-        return if (existingRepo == null) {
-            repos.add(repo)
-            repo
-        } else {
-            existingRepo
-        }
-    }
-
-    override fun mavenLocal(): RepoSpec {
-        return repos.find { it is MavenLocalRepoSpec } ?: repoSpecBuilder.buildMavenLocalRepo().also {
-            repos.add(it)
-        }
-    }
-
-    override fun gradlePortal(): RepoSpec {
-        return repos.find { it is GradlePortalSpec } ?: repoSpecBuilder.buildGradlePluginRepo().also {
-            repos.add(it)
-        }
-    }
-
-    /*
-    existingRepo    existingParentRepo      action
-    null            null                    repos.add(repo)
-    not null        null                    existingRepo
-    null            not null
-    not null        not null
-     */
-
-    override fun artifactory(key: String): RepoSpec {
-        val repo = repoSpecBuilder.buildArtifactoryRepo(key)
-        val existingRepo = getRepos().filterIsInstance(ArtifactoryRepoSpecImpl::class.java).find { it.id == repo.id }
-        return if (existingRepo == null) {
-            repos.add(repo)
-            repo
-        } else {
-            existingRepo
-        }
-    }
-
-    override fun getRepos(): Set<RepoSpec> {
-        return (
-            repos +
-                ext.getRepos() +
-                (ext.getParentExt()?.getRepos() ?: setOf())
-            )
-    }
-
-    private fun artifactoryRepos(): List<ArtifactoryRepoSpec> {
-        return getRepos().filterIsInstance<ArtifactoryRepoSpec>()
-    }
-
     fun finalizeRepos() {
 
         val artifactoryRepos = artifactoryRepos()
@@ -210,4 +150,10 @@ open class JarbirdPubImpl(
             gradlePortal()
         }
     }
+
+    private fun artifactoryRepos(): List<ArtifactoryRepoSpec> {
+        return getRepos().filterIsInstance<ArtifactoryRepoSpec>()
+    }
+
+
 }

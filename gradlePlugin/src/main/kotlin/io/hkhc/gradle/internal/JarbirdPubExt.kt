@@ -19,6 +19,7 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
@@ -46,14 +47,14 @@ internal val JarbirdPub.markerPubNameCap: String
 internal val RepoSpec.repoName: String
     get() = id
 
-internal fun List<JarbirdPub>.needSigning() = any { it.shouldSign() }
+internal fun List<JarbirdPub>.needSigning() = any { it.shouldSignOrNot() }
 
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
 
 internal fun List<JarbirdPub>.needsArtifactory() = any { it.needsArtifactory() }
 
-internal fun JarbirdPub.needsArtifactory() =
-    (this as JarbirdPubImpl).getRepos()
+internal fun RepoDeclaration.needsArtifactory() =
+    getRepos()
         .filterIsInstance<ArtifactoryRepoSpec>()
         .isNotEmpty()
 

@@ -18,13 +18,5 @@
 
 package io.hkhc.gradle
 
-interface RepoDeclaration {
-
-    fun mavenLocal(): RepoSpec
-    fun mavenCentral(): RepoSpec
-    fun mavenRepo(key: String): RepoSpec
-    fun gradlePortal(): RepoSpec
-    fun artifactory(key: String): RepoSpec
-    fun getRepos(): Set<RepoSpec>
-
+interface DocDeclaration {
 }

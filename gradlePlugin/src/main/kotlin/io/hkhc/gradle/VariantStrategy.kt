@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.internal
+package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.Pom
 
