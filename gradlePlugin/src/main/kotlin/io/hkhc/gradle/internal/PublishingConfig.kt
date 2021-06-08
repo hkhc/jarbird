@@ -165,7 +165,9 @@ internal class PublishingConfig(
                      */
 
                     project.afterEvaluate {
-                        artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
+                        if (pub.needsGenDoc()) {
+                            artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
+                        }
                         artifactCompat(
                             SourceConfig(project, sourceResolver)
                                 .configSourceJarTask(pub, pub.sourceSetModel()!!)

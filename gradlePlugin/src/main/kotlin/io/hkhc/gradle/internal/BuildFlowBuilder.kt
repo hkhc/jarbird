@@ -112,11 +112,13 @@ internal class BuildFlowBuilder(
     fun buildPhase3() {
         project.logger.debug("$LOG_PREFIX $PLUGIN_FRIENDLY_NAME Builder phase 3 of 4")
 
-        DokkaConfig(project, extension, sourceResolver).apply {
-            if (project.isMultiProjectRoot()) {
-                configRootDokka(pubs)
-            } else {
-                configDokka(pubs)
+        if (pubs.needsGenDoc()) {
+            DokkaConfig(project, extension, sourceResolver).apply {
+                if (project.isMultiProjectRoot()) {
+                    configRootDokka(pubs)
+                } else {
+                    configDokka(pubs)
+                }
             }
         }
     }

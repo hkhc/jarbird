@@ -101,13 +101,7 @@ configurations {
 jarbird {
     mavenLocal()
     mavenCentral()
-    pub {
-        dokkaConfig {
-            dokkaSourceSets.forEach {
-                it.externalDocumentationLink("https://docs.gradle.org/current/javadoc/")
-            }
-        }
-    }
+    pub { }
 }
 
 dependencies {

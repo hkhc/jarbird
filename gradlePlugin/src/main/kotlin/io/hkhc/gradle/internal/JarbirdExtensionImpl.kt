@@ -19,9 +19,11 @@
 package io.hkhc.gradle.internal
 
 import groovy.lang.Closure
+import io.hkhc.gradle.DocDeclaration
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoDeclaration
+import io.hkhc.gradle.internal.pub.DocDeclarationImpl
 import io.hkhc.gradle.internal.pub.ExtRepoDeclarationsImpl
 import io.hkhc.gradle.internal.utils.initPub
 import org.gradle.api.GradleException
@@ -32,11 +34,12 @@ open class JarbirdExtensionImpl(
     protected val projectProperty: ProjectProperty,
     private val pomResolver: PomResolver
 ) : JarbirdExtension,
-    RepoDeclaration by ExtRepoDeclarationsImpl(project, projectProperty, getParentExt(project)) {
+    RepoDeclaration by ExtRepoDeclarationsImpl(project, projectProperty, getParentExt(project)),
+    DocDeclaration by DocDeclarationImpl(getParentExt(project), null /* no default */) {
 
     val pubList = mutableListOf<JarbirdPub>()
 
-    private var implicited: JarbirdPub? = null
+    private var implicitPub: JarbirdPub? = null
 
     companion object {
         /**
@@ -120,9 +123,9 @@ open class JarbirdExtensionImpl(
         if implicit != null, we have already got an implicit, no need to create another
         if pubList.isNotEmpty() and implicit == null, we have an non-implicit pub, no need to create implicit
          */
-        if (implicited != null || pubList.isNotEmpty()) return
+        if (implicitPub != null || pubList.isNotEmpty()) return
         pub {}
-        implicited = pubList[0]
+        implicitPub = pubList[0]
     }
 
     fun removeImplicit() {
@@ -130,9 +133,9 @@ open class JarbirdExtensionImpl(
         If implicit == null , means we have not created an implicit pub, no need to remove
         If pubList.size == 1 and implicit != null, this means it is the only pub, so we still need it, don't remove
          */
-        if (implicited == null || pubList.size == 1) return
-        pubList.remove(implicited)
-        implicited = null
+        if (implicitPub == null || pubList.size == 1) return
+        pubList.remove(implicitPub)
+        implicitPub = null
     }
 
     fun finalizeRepos() {

@@ -21,15 +21,12 @@ package io.hkhc.gradle
 import groovy.lang.Closure
 import org.jetbrains.dokka.gradle.DokkaTask
 
-interface JarbirdPub : RepoDeclaration, SigningStrategy, VariantStrategy {
+interface JarbirdPub : RepoDeclaration, SigningStrategy, VariantStrategy, DocDeclaration {
 
     /**
      * the publication name, that affect the task names for publishing
      */
     val pubName: String
-
-    fun dokkaConfig(action: Closure<DokkaTask>)
-    fun dokkaConfig(block: DokkaTask.(pub: JarbirdPub) -> Unit)
 
     /**
      * provide information on how the project is build. The parameter could be instance of

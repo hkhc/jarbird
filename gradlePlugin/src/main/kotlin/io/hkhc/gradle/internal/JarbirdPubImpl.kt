@@ -18,28 +18,21 @@
 
 package io.hkhc.gradle.internal
 
-import groovy.lang.Closure
+import io.hkhc.gradle.DocDeclaration
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoDeclaration
-import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.SigningStrategy
 import io.hkhc.gradle.VariantStrategy
+import io.hkhc.gradle.internal.pub.DocDeclarationImpl
 import io.hkhc.gradle.internal.pub.RepoDeclarationsImpl
 import io.hkhc.gradle.internal.pub.SigningStrategyImpl
 import io.hkhc.gradle.internal.pub.VariantStrategyImpl
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpecImpl
-import io.hkhc.gradle.internal.repo.GradlePortalSpec
-import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
-import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
-import io.hkhc.gradle.internal.repo.MavenRepoSpecImpl
-import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.tasks.SourceSet
 import org.gradle.kotlin.dsl.get
-import org.jetbrains.dokka.gradle.DokkaTask
 
 open class JarbirdPubImpl(
     protected val project: Project,
@@ -49,15 +42,14 @@ open class JarbirdPubImpl(
 ) : JarbirdPub,
     SigningStrategy by SigningStrategyImpl(),
     VariantStrategy by VariantStrategyImpl(variant),
-    RepoDeclaration by RepoDeclarationsImpl(project, projectProperty, ext)
+    RepoDeclaration by RepoDeclarationsImpl(project, projectProperty, ext),
+    DocDeclaration by DocDeclarationImpl(ext, { /* default cokkaConfig */ })
 {
 
     override var pubName: String = "lib"
 
     var mComponent: SoftwareComponent? = null
     var mSourceSet: SourceSet? = null
-
-    var dokkaConfig: DokkaTask.(pub: JarbirdPub) -> Unit = {}
 
     var component: SoftwareComponent? = null
         get() {
@@ -75,18 +67,6 @@ open class JarbirdPubImpl(
         JavaConventionSourceSetModel(project, sourceSet!!.name)
     else
         null
-
-    override fun dokkaConfig(action: Closure<DokkaTask>) {
-        dokkaConfig = {
-            action.delegate = this
-            action.resolveStrategy = Closure.DELEGATE_FIRST
-            action.call(this@JarbirdPubImpl)
-        }
-    }
-
-    override fun dokkaConfig(block: DokkaTask.(pub: JarbirdPub) -> Unit) {
-        dokkaConfig = block
-    }
 
     override fun getGAV(): String {
         return "${pom.group}:${variantArtifactId()}:${variantVersion()}"

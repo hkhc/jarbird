@@ -64,3 +64,7 @@ internal fun JarbirdPub.needsNonLocalMaven() =
         .any { it is MavenRepoSpec && it !is MavenLocalRepoSpec && it !is GradlePortalSpec }
 
 internal fun List<JarbirdPub>.needsNonLocalMaven() = any { it.needsNonLocalMaven() }
+
+internal fun List<JarbirdPub>.needsGenDoc() = any { it.needsGenDoc() }
+
+internal fun JarbirdPub.needsGenDoc() = genDocOrNot() != false

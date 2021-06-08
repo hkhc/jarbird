@@ -18,5 +18,16 @@
 
 package io.hkhc.gradle
 
+import groovy.lang.Closure
+import org.jetbrains.dokka.gradle.DokkaTask
+
 interface DocDeclaration {
+
+    val dokkaConfig: DokkaTask.(pub: JarbirdPub) -> Unit
+
+    fun noDoc()
+    fun genDoc()
+    fun genDocOrNot() : Boolean?
+    fun dokkaConfig(action: Closure<DokkaTask>)
+    fun dokkaConfig(block: DokkaTask.(pub: JarbirdPub) -> Unit)
 }

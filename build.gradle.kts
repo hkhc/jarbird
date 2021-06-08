@@ -27,6 +27,14 @@ buildscript {
     }
 }
 
+jarbird {
+    dokkaConfig {
+        dokkaSourceSets.forEach {
+            it.externalDocumentationLink("https://docs.gradle.org/current/javadoc/")
+        }
+    }
+}
+
 allprojects {
     repositories {
         mavenCentral()

@@ -27,6 +27,7 @@ import io.hkhc.gradle.internal.JbDokkaPubTaskInfo
 import io.hkhc.gradle.internal.JbDokkaTaskInfo
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.SourceResolver
+import io.hkhc.gradle.internal.needsGenDoc
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
@@ -59,8 +60,7 @@ internal class DokkaConfig(
         project.logger.debug("$LOG_PREFIX Configure Dokka at root project")
 
         JbDokkaTaskInfo().register(project.tasks, DokkaMultiModuleTask::class.java) {
-//            extension.dokkaConfig.invoke(this)
-            pubs.forEach { pub ->
+            pubs.filter { it.needsGenDoc() } .forEach { pub ->
                 addSubprojectChildTasks(JbDokkaPubTaskInfo(pub).name)
             }
         }
@@ -71,7 +71,7 @@ internal class DokkaConfig(
 
         project.logger.debug("$LOG_PREFIX Configure Dokka for pubs")
 
-        pubs.forEach { pub ->
+        pubs.filter { it.needsGenDoc() }.forEach { pub ->
             val impl = pub as JarbirdPubImpl
             impl.sourceSetModel()?.let { sourceSetModel ->
                 val pubClasspath = sourceSetModel.classpath.toTypedArray()
