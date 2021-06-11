@@ -37,7 +37,7 @@ class SigningConfig(
     // return true if checking passed, otherwise failed
     private fun validateConfig(project: Project, pub: JarbirdPub): Boolean {
 
-        var complete = if (pub.pom.isSnapshot() && pub.shouldSignOrNot()) {
+        var complete = if (pub.pom.isSnapshot() && pub.needsSigning()) {
             project.logger.warn(
                 "WARNING: $LOG_PREFIX Not performing signing " +
                     "for SNAPSHOT artifact ('${pub.pom.version}')"

@@ -73,7 +73,7 @@ import java.util.Properties
  * credential with env variable
  * handle publishing rejection
  *
- * - (should fail) try to invoke disabled target (e.g. jbPublishToMavenRepository when maven = false)
+ * - (should fail) try to invoke disabled target (e.g. jbPublishToMavenRepositories when maven = false)
  * - (should fail) build snapshot plugin to bintray
  * - support javadoc rather than dokka
  * - build multiple project with maven repository
@@ -98,7 +98,7 @@ class BuildTwoMavenRepoTest : FunSpec({
 
     context("Publish library") {
 
-        val targetTask = "jbPublishToMavenRepository"
+        val targetTask = "jbPublishToMavenRepositories"
 
         fun commonSetup(coordinates: List<Coordinate>, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
@@ -171,22 +171,22 @@ class BuildTwoMavenRepoTest : FunSpec({
         context("to release two global Maven Repositories") {
 
             val coordinates = listOf(
-                Coordinate("test.group", "test.artifact1", "0.1"),
-                Coordinate("test.group", "test.artifact2", "0.1")
+                Coordinate("test.group", "test.artifact1", "0.1", versionWithVariant="0.1-lib1"),
+                Coordinate("test.group", "test.artifact2", "0.1", versionWithVariant="0.1-lib2")
             )
             val setup = commonSetup(
                 coordinates,
                 stringTreeOf(NoBarTheme) {
-                    ":jbPublishToMavenRepository SUCCESS" {
-                        ":jbPublishTestArtifact1Lib1ToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifact1Lib1ToMavenMock1Repository SUCCESS" {
+                    ":jbPublishToMavenRepositories SUCCESS" {
+                        ":jbPublishTestArtifact1Lib1ToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifact1Lib1ToMavenMock1 SUCCESS" {
                                 ":publishTestArtifact1Lib1PublicationToMavenMock1Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
                                     ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
                                         ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
                                     }
                                     ":signTestArtifact1Lib1Publication SUCCESS" {
-                                        ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                       ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
                                         ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
                                             ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
                                         }
@@ -197,7 +197,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                                     ":sourcesJarTestArtifact1Lib1 SUCCESS"()
                                 }
                             }
-                            ":jbPublishTestArtifact1Lib1ToMavenMock2Repository SUCCESS" {
+                            ":jbPublishTestArtifact1Lib1ToMavenMock2 SUCCESS" {
                                 ":publishTestArtifact1Lib1PublicationToMavenMock2Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
                                     ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
@@ -216,8 +216,8 @@ class BuildTwoMavenRepoTest : FunSpec({
                                 }
                             }
                         }
-                        ":jbPublishTestArtifact2Lib2ToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifact2Lib2ToMavenMock1Repository SUCCESS" {
+                        ":jbPublishTestArtifact2Lib2ToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifact2Lib2ToMavenMock1 SUCCESS" {
                                 ":publishTestArtifact2Lib2PublicationToMavenMock1Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
                                     ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
@@ -235,7 +235,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                                     ":sourcesJarTestArtifact2Lib2 SUCCESS"()
                                 }
                             }
-                            ":jbPublishTestArtifact2Lib2ToMavenMock2Repository SUCCESS" {
+                            ":jbPublishTestArtifact2Lib2ToMavenMock2 SUCCESS" {
                                 ":publishTestArtifact2Lib2PublicationToMavenMock2Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
                                     ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {
@@ -295,15 +295,15 @@ class BuildTwoMavenRepoTest : FunSpec({
         context("to release two local Maven Repository") {
 
             val coordinates = listOf(
-                Coordinate("test.group", "test.artifact1", "0.1"),
-                Coordinate("test.group", "test.artifact2", "0.1")
+                Coordinate("test.group", "test.artifact1", "0.1", versionWithVariant = "0.1-lib1"),
+                Coordinate("test.group", "test.artifact2", "0.1", versionWithVariant = "0.1-lib2")
             )
             val setup = commonSetup(
                 coordinates,
                 stringTreeOf(NoBarTheme) {
-                    ":jbPublishToMavenRepository SUCCESS" {
-                        ":jbPublishTestArtifact1Lib1ToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifact1Lib1ToMavenMock1Repository SUCCESS" {
+                    ":jbPublishToMavenRepositories SUCCESS" {
+                        ":jbPublishTestArtifact1Lib1ToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifact1Lib1ToMavenMock1 SUCCESS" {
                                 ":publishTestArtifact1Lib1PublicationToMavenMock1Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
                                     ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
@@ -322,8 +322,8 @@ class BuildTwoMavenRepoTest : FunSpec({
                                 }
                             }
                         }
-                        ":jbPublishTestArtifact2Lib2ToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifact2Lib2ToMavenMock2Repository SUCCESS" {
+                        ":jbPublishTestArtifact2Lib2ToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifact2Lib2ToMavenMock2 SUCCESS" {
                                 ":publishTestArtifact2Lib2PublicationToMavenMock2Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
                                     ":jbDokkaJarTestArtifact2Lib2 SUCCESS" {

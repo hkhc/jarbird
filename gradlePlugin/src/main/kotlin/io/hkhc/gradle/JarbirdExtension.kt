@@ -19,9 +19,10 @@
 package io.hkhc.gradle
 
 import groovy.lang.Closure
+import org.gradle.cache.internal.VersionStrategy
 
 // Gradle plugin extensions must be open classes so that Gradle system can "decorate" it.
-interface JarbirdExtension : RepoDeclaration, DocDeclaration {
+interface JarbirdExtension : RepoDeclaration, DocDeclaration, SigningStrategy, VariantStrategy {
 
     /* to be invoked by Groovy Gradle script */
     fun pub(action: Closure<JarbirdPub>): JarbirdPub

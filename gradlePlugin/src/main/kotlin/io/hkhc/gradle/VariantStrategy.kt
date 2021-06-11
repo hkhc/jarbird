@@ -22,8 +22,7 @@ import io.hkhc.gradle.pom.Pom
 
 interface VariantStrategy {
 
-    val variant: String
-    var pom: Pom
+    val variantMode: VariantMode
 
     /**
      * variant is combined with version
@@ -43,15 +42,4 @@ interface VariantStrategy {
      */
     fun variantInvisible()
 
-    /**
-     * get the artifactID augmented by variatn
-     * e.g. mylib-variant
-     */
-    fun variantArtifactId(): String?
-
-    /**
-     * get the version augmented by variatn
-     * e.g. 1.0.0-variant
-     */
-    fun variantVersion(): String?
 }

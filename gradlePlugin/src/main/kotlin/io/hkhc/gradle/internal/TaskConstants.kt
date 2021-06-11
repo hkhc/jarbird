@@ -24,7 +24,9 @@ import io.hkhc.gradle.internal.bintray.BintrayPublishPlan
 import io.hkhc.gradle.internal.repo.GradlePortalSpecImpl
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
+import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import io.hkhc.utils.joinToStringAnd
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
@@ -33,21 +35,25 @@ import org.gradle.api.tasks.TaskProvider
 internal const val JB_TASK_PREFIX = "jbPublish"
 internal const val MAVEN_LOCAL_CAP = "MavenLocal"
 
-internal const val TO_MAVEN_LOCAL = "To$MAVEN_LOCAL_CAP"
-internal const val TO_MAVEN_REPO = "ToMavenRepository"
-internal const val TO_GRADLE_PORTAL = "ToGradlePortal"
-internal const val TO_BINTRAY = "ToBintray"
+//internal const val TO_MAVEN_LOCAL = "To$MAVEN_LOCAL_CAP"
+//internal const val TO_MAVEN_REPO = "ToMavenRepository"
+//internal const val TO_GRADLE_PORTAL = "ToGradlePortal"
+//internal const val TO_BINTRAY = "ToBintray"
 internal const val TO_ARTIFACTORY = "ToArtifactory"
 
 internal const val PLUGIN_MARKER_PUB_SUFFIX = "PluginMarkerMaven"
 
-private const val JB_PUBLISH_TO_MAVEN_LOCAL_TASK = "$JB_TASK_PREFIX$TO_MAVEN_LOCAL"
-private const val JB_PUBLISH_TO_MAVEN_REPO_TASK = "$JB_TASK_PREFIX$TO_MAVEN_REPO"
-private const val JB_PUBLISH_TO_BINTRAY_TASK = "$JB_TASK_PREFIX$TO_BINTRAY"
+//private const val JB_PUBLISH_TO_MAVEN_LOCAL_TASK = "$JB_TASK_PREFIX$TO_MAVEN_LOCAL"
+//private const val JB_PUBLISH_TO_MAVEN_REPO_TASK = "$JB_TASK_PREFIX$TO_MAVEN_REPO"
+//private const val JB_PUBLISH_TO_BINTRAY_TASK = "$JB_TASK_PREFIX$TO_BINTRAY"
 private const val JB_PUBLISH_TO_ARTIFACTORY_TASK = "$JB_TASK_PREFIX$TO_ARTIFACTORY"
-internal const val JB_PUBLISH_TO_GRADLE_PORTAL_TASK = "$JB_TASK_PREFIX$TO_GRADLE_PORTAL"
+//internal const val JB_PUBLISH_TO_GRADLE_PORTAL_TASK = "$JB_TASK_PREFIX$TO_GRADLE_PORTAL"
 
 abstract class TaskInfo {
+
+    companion object {
+        var eagar = false
+    }
 
     open val group: String
         get() = SP_GROUP
@@ -78,6 +84,8 @@ abstract class TaskInfo {
             task.group = this@TaskInfo.group
             task.description = this@TaskInfo.description
             block.invoke(task)
+        }.apply {
+            if (eagar) get()
         }
     }
 
@@ -87,6 +95,8 @@ abstract class TaskInfo {
             task.group = this@TaskInfo.group
             task.description = this@TaskInfo.description
             block.invoke(task)
+        }.apply {
+            if (eagar) get()
         }
     }
 
@@ -96,6 +106,8 @@ abstract class TaskInfo {
             task.group = this@TaskInfo.group
             task.description = this@TaskInfo.description
             block.invoke(task)
+        }.apply {
+            if (eagar) get()
         }
     }
 }
@@ -144,7 +156,7 @@ object JbPublish {
         override val name = nameSource()
         override val description = descriptionSource()
         fun append(another: TaskInfo) = newInfo(
-            "$name${another.name}",
+            "$name${another.name.capitalize()}",
             "$description${if (another.description != "") " " else ""}${another.description}"
         )
     }
@@ -180,12 +192,18 @@ object JbPublish {
     class To(private val pub: JarbirdPub? = null, private val prefixInfo: SimpleTaskInfo) {
         private val toInfo = newInfo("To", "to")
         val mavenLocal = MavenLocalTask(prefixInfo.append(toInfo))
-        fun mavenRepo(spec: RepoSpec) = MavenRepoTask(prefixInfo.append(toInfo), spec)
+        fun mavenRepo(spec: MavenRepoSpec) = MavenRepoTask(prefixInfo.append(toInfo), spec)
         val mavenRepo = AllMavenRepoTask(prefixInfo.append(toInfo))
-        fun mavenCentral() = MavenRepoTask(
-            prefixInfo.append(toInfo),
-            pub?.let { it.getRepos().filterIsInstance(MavenCentralRepoSpec::class.java)[0] }!!
-        )
+        fun mavenCentral(): MavenRepoTask {
+            val mavenCentralRepoSpec = pub?.let { it.getRepos().filterIsInstance<MavenCentralRepoSpec>()[0] }
+            if (mavenCentralRepoSpec == null)
+                throw GradleException("No MavenCentral repository is declared")
+            else
+                return MavenRepoTask(
+                    prefixInfo.append(toInfo),
+                    mavenCentralRepoSpec!!
+                )
+        }
 
         var gradlePortal = GradlePortalTask(prefixInfo.append(toInfo))
     }

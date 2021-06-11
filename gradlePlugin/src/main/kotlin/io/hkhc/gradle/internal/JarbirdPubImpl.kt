@@ -20,13 +20,13 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.DocDeclaration
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.PubVariantStrategy
 import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.SigningStrategy
-import io.hkhc.gradle.VariantStrategy
 import io.hkhc.gradle.internal.pub.DocDeclarationImpl
+import io.hkhc.gradle.internal.pub.PubVariantStrategyImpl
 import io.hkhc.gradle.internal.pub.RepoDeclarationsImpl
 import io.hkhc.gradle.internal.pub.SigningStrategyImpl
-import io.hkhc.gradle.internal.pub.VariantStrategyImpl
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -41,9 +41,9 @@ open class JarbirdPubImpl(
     variant: String = ""
 ) : JarbirdPub,
     SigningStrategy by SigningStrategyImpl(),
-    VariantStrategy by VariantStrategyImpl(variant),
+    PubVariantStrategy by PubVariantStrategyImpl(variant, ext),
     RepoDeclaration by RepoDeclarationsImpl(project, projectProperty, ext),
-    DocDeclaration by DocDeclarationImpl(ext, { /* default cokkaConfig */ })
+    DocDeclaration by DocDeclarationImpl(ext, { /* default dokkaConfig */ })
 {
 
     override var pubName: String = "lib"
@@ -51,15 +51,20 @@ open class JarbirdPubImpl(
     var mComponent: SoftwareComponent? = null
     var mSourceSet: SourceSet? = null
 
-    var component: SoftwareComponent? = null
+    var component: SoftwareComponent?
         get() {
-            return mComponent ?: project.components["java"]
+            return mComponent ?: if (mSourceSet==null) project.components["java"] else null
         }
-        private set
+        private set(value) {
+            mComponent = value
+        }
 
-    var sourceSet: SourceSet? = null
+    // TODO handle multi source sets
+    var sourceSet: SourceSet?
         get() = mSourceSet
-        private set
+        private set(value) {
+            mSourceSet = value
+        }
 
     open fun sourceSetModel(): SourceSetModel? = if (component != null)
         JavaConventionSourceSetModel(project)
@@ -80,6 +85,7 @@ open class JarbirdPubImpl(
         when (source) {
             is SoftwareComponent -> {
                 component = source
+                sourceSet = null
             }
             is SourceSet -> {
                 component = null

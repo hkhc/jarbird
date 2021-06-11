@@ -22,7 +22,7 @@ import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JbPublishToArtifactoryTaskInfo
 import io.hkhc.gradle.internal.TaskInfo
 import io.hkhc.gradle.internal.isMultiProjectRoot
-import io.hkhc.gradle.internal.needsArtifactory
+import io.hkhc.gradle.internal.needArtifactory
 import io.hkhc.gradle.internal.registerRootProjectTasks
 import org.gradle.api.Project
 
@@ -51,7 +51,7 @@ class ArtifactoryTaskBuilder(
 
     private fun registerLeafArtifactoryTask() {
 
-        if (pubs.needsArtifactory()) {
+        if (pubs.needArtifactory()) {
 
             taskInfo.register(project.tasks) {
                 /*

@@ -43,10 +43,10 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
     private val repoTaskInfos = mutableListOf<TaskInfo>()
 
     class RepoTasks {
-        // we want the iteration order of the map to be predictable to help functional tests.
-        val repoTaskInfoMap = linkedMapOf<RepoSpec, MutableList<String>>()
+        // we want to use linkedMap to keep order of the map, to help functional tests.
+        val repoTaskInfoMap = linkedMapOf<MavenRepoSpec, MutableList<String>>()
 
-        fun add(repo: RepoSpec, taskName: String) {
+        fun add(repo: MavenRepoSpec, taskName: String) {
             val taskList = repoTaskInfoMap[repo] ?: mutableListOf()
             taskList.add(taskName)
             repoTaskInfoMap[repo] = taskList
@@ -94,10 +94,9 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
     fun registerMavenRepositoryTask(container: TaskContainer) {
 
         if (project.isMultiProjectRoot()) {
-
-//            if (pubs.flatMap { it.getRepos() }.any { it is MavenSpec }) {
-//                project.registerRootProjectTasks(JbPublishToMavenRepoTaskInfo())
-//            }
+            if (pubs.flatMap { it.getRepos() }.any { it is MavenRepoSpec }) {
+                project.registerRootProjectTasks(JbPublish.to.mavenRepo.taskInfo)
+            }
             // TODO we shall check POM group that pubName is not duplicated among variants.
         } else if (pubs.needsNonLocalMaven()) {
 
@@ -137,10 +136,10 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
                             }
                         }
 
-                        taskMap.add(repoSpec, taskName)
-                        if (pub.pom.isGradlePlugin()) {
-                            taskMap.add(repoSpec, markerTaskName)
-                        }
+                        taskMap.add(repoSpec, it.name)
+//                        if (pub.pom.isGradlePlugin()) {
+//                            taskMap.add(repoSpec, markerTaskName)
+//                        }
                     }
                 }
 
@@ -177,37 +176,15 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
      */
     private fun filterUnwantedPublication() {
 
+        val filter = MavenPublicationFilter()
+
         // Filter unwanted combinations of publications and repositories
         // Retain the repository only if there is some JarbirdPubs that need it
         project.tasks.withType<PublishToMavenRepository>().configureEach {
             onlyIf {
-                pubs.any { pub ->
-                    pub.getRepos()
-                        .filterIsInstance<MavenRepoSpec>()
-                        .any { repoSpec -> pub.needs(repoSpec, repository, publication) }
-                }
+                filter.filter(pubs, repository, publication)
             }
         }
     }
 
-    /**
-     * return true if the combination of repository and publication is needed by the RepoSpec
-     */
-    private fun JarbirdPub.needs(
-        repoSpec: MavenRepoSpec,
-        repository: MavenArtifactRepository,
-        publication: MavenPublication
-    ): Boolean {
-
-        // return true if the repo name matches and the pubName matches
-        return if (repoSpec.repoName == repository.name) {
-            if (pom.isGradlePlugin()) {
-                pubNameWithVariant() == publication.name || markerPubName == publication.name
-            } else {
-                pubNameWithVariant() == publication.name
-            }
-        } else {
-            false
-        }
-    }
 }

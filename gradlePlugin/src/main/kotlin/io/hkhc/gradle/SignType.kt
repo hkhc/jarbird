@@ -16,28 +16,10 @@
  *
  */
 
-package io.hkhc.utils.tree
+package io.hkhc.gradle
 
-/**
- *  StringNodeBuilder("RootNode").build({
- *      + "Hello"
- *      "World" {
- *          + "Leaf"
- *      }
- *  })
- *
- *  or
- *
- *  StringNodeBuilder().build({
- *      "RootNode" {
- *          + "Hello"
- *          "World" {
- *              + "Leaf"
- *          }
- *      }
- *  })
- *
- */
-fun stringTreeOf(theme: TreeTheme = defaulTreeTheme, block: TreeBuilder<String>.() -> Unit) =
-    TreeBuilder<String>(theme).build(null, block)
-
+enum class SignType {
+    SIGN_WITH_KEYBOX,
+    SIGN_WITH_KEYRING,
+    NO_SIGN
+}

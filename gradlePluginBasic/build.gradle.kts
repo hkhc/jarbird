@@ -103,8 +103,6 @@ configurations {
 }
 
 jarbird {
-    mavenLocal()
-    mavenCentral()
     gradlePortal()
     pub {}
 }

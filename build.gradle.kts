@@ -28,6 +28,9 @@ buildscript {
 }
 
 jarbird {
+    mavenLocal()
+    mavenCentral()
+    signWithKeybox()
     dokkaConfig {
         dokkaSourceSets.forEach {
             it.externalDocumentationLink("https://docs.gradle.org/current/javadoc/")

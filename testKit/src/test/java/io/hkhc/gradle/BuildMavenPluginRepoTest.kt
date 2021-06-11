@@ -79,7 +79,7 @@ class BuildMavenPluginRepoTest : FunSpec({
 
     context("Publish Gradle plugin") {
 
-        val targetTask = "jbPublishToMavenRepository"
+        val targetTask = "jbPublishToMavenRepositories"
 
         fun commonSetup(coordinate: Coordinate, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
@@ -166,8 +166,8 @@ class BuildMavenPluginRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 stringTreeOf(NoBarTheme) {
-                    ":jbPublishToMavenRepository SUCCESS" {
-                        ":jbPublishTestArtifactToMavenRepository SUCCESS" {
+                    ":jbPublishToMavenRepositories SUCCESS" {
+                        ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
                             ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                 ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository SUCCESS" {
                                     ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()
@@ -212,8 +212,8 @@ class BuildMavenPluginRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 stringTreeOf(NoBarTheme) {
-                    ":jbPublishToMavenRepository SUCCESS" {
-                        ":jbPublishTestArtifactToMavenRepository SUCCESS" {
+                    ":jbPublishToMavenRepositories SUCCESS" {
+                        ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
                             ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                 ":publishTestArtifactPluginMarkerMavenPublicationToMavenMockRepository SUCCESS" {
                                     ":generatePomFileForTestArtifactPluginMarkerMavenPublication SUCCESS"()

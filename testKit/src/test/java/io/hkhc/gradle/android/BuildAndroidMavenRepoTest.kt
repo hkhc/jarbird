@@ -51,12 +51,12 @@ class BuildAndroidMavenRepoTest : FunSpec({
 
     context("Publish Android AAR in to Maven Repository") {
 
-        val targetTask = "jbPublishToMavenRepository"
+        val targetTask = "jbPublishToMavenRepositories"
 
         val releaseExpectedTaskGraph = stringTreeOf(NoBarTheme) {
-            ":lib:jbPublishToMavenRepository SUCCESS" {
-                ":lib:jbPublishTestArtifactReleaseToMavenRepository SUCCESS" {
-                    ":lib:jbPublishTestArtifactReleaseToMavenMockRepository SUCCESS" {
+            ":lib:jbPublishToMavenRepositories SUCCESS" {
+                ":lib:jbPublishTestArtifactReleaseToMavenRepositories SUCCESS" {
+                    ":lib:jbPublishTestArtifactReleaseToMavenMock SUCCESS" {
                         ":lib:publishTestArtifactReleasePublicationToMavenMockRepository SUCCESS" {
                             ":lib:bundleReleaseAar SUCCESS"()
                             ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
@@ -87,9 +87,9 @@ class BuildAndroidMavenRepoTest : FunSpec({
         }
 
         val snapshotExpectedTaskGraph = stringTreeOf(NoBarTheme) {
-            ":lib:jbPublishToMavenRepository SUCCESS" {
-                ":lib:jbPublishTestArtifactReleaseToMavenRepository SUCCESS" {
-                    ":lib:jbPublishTestArtifactReleaseToMavenMockRepository SUCCESS" {
+            ":lib:jbPublishToMavenRepositories SUCCESS" {
+                ":lib:jbPublishTestArtifactReleaseToMavenRepositories SUCCESS" {
+                    ":lib:jbPublishTestArtifactReleaseToMavenMock SUCCESS" {
                         ":lib:publishTestArtifactReleasePublicationToMavenMockRepository SUCCESS" {
                             ":lib:bundleReleaseAar SUCCESS"()
                             ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {

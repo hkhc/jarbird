@@ -18,61 +18,28 @@
 
 package io.hkhc.gradle.internal.pub
 
+import io.hkhc.gradle.VariantMode
 import io.hkhc.gradle.VariantStrategy
-import io.hkhc.gradle.internal.VariantMode
 import io.hkhc.gradle.pom.Pom
-import io.hkhc.gradle.pom.internal.appendBeforeSnapshot
-import io.hkhc.gradle.pom.internal.isSnapshot
 
-class VariantStrategyImpl(override val variant: String = "") : VariantStrategy {
+open class VariantStrategyImpl(
+    private val parent: VariantStrategy? = null
+) : VariantStrategy {
 
-    override lateinit var pom: Pom
-    private var variantMode: VariantMode = VariantMode.WithVersion
+    private var mVariantMode: VariantMode? = null
+
+    override val variantMode: VariantMode
+        get() {
+            return mVariantMode ?: parent?.variantMode ?: VariantMode.WithVersion
+        }
 
     override fun variantWithVersion() {
-        variantMode = VariantMode.WithVersion
+        mVariantMode = VariantMode.WithVersion
     }
     override fun variantWithArtifactId() {
-        variantMode = VariantMode.WithArtifactId
+        mVariantMode = VariantMode.WithArtifactId
     }
     override fun variantInvisible() {
-        variantMode = VariantMode.Invisible
-    }
-
-    /**
-     * if set, the deployed version will be suffixed with the variant name, delimited by '-'.
-     * if version is a SNAPSHOT, the variant is added before SNAPSHOT.
-     * if variant is empty, the version is not altered
-     *
-     * e.g.
-     * version = "1.0", variant = "" -> "1.0"
-     * version = "1.0", variant = "debug" -> "1.0-debug"
-     * version = "1.0-SNAPSHOT", variant = "debug" -> "1.0-debug-SNAPSHOT"
-     */
-    override fun variantArtifactId(): String? {
-        return pom.artifactId?.let { id ->
-            when {
-                variantMode != VariantMode.WithArtifactId -> {
-                    id
-                }
-                variant == "" -> {
-                    id
-                }
-                else -> {
-                    "$id-$variant"
-                }
-            }
-        }
-    }
-
-    override fun variantVersion(): String? {
-        return pom.version?.let { ver ->
-            when {
-                variantMode != VariantMode.WithVersion -> ver
-                variant == "" -> ver
-                ver.isSnapshot() -> ver.appendBeforeSnapshot(variant)
-                else -> "$ver-$variant"
-            }
-        }
+        mVariantMode = VariantMode.Invisible
     }
 }

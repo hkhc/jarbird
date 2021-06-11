@@ -105,6 +105,7 @@ internal class PublishingConfig(
         "PublishArtifact(name=$name,file=$file,classifier=$classifier,date=$date,extension=$extension,type=$type)"
 
     private fun registerSourceSetCompileTask(pub: JarbirdPubImpl): TaskProvider<Jar>? {
+        // TODO Handle multiple source sets
         return pub.mSourceSet?.let { sourceSet ->
 
             if (sourceSet.name != "main") {

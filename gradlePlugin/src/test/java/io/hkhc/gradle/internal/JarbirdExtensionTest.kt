@@ -156,8 +156,8 @@ class JarbirdExtensionTest : FunSpec({
 
             ext.pub { }
 
-            ext.pubList[0].needsArtifactory() shouldBe true
-            ext.pubList.needsArtifactory() shouldBe true
+            ext.pubList[0].needArtifactory() shouldBe true
+            ext.pubList.needArtifactory() shouldBe true
 
             ext.finalizeRepos()
             ext.getRepos().shouldContainExactlyInAnyOrder(
@@ -194,10 +194,10 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needsArtifactory() shouldBe false
+                    ext.pubList.needArtifactory() shouldBe false
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 } else {
-                    ext.pubList.needsArtifactory() shouldBe false
+                    ext.pubList.needArtifactory() shouldBe false
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 }
             }
@@ -233,10 +233,10 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 } else {
-                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 }
             }
@@ -266,10 +266,10 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe false
                 } else {
-                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe false
                 }
             }
@@ -305,10 +305,10 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 } else {
-                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe true
                 }
             }
@@ -338,10 +338,10 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe false
                 } else {
-                    ext.pubList.needsArtifactory() shouldBe true
+                    ext.pubList.needArtifactory() shouldBe true
                     ext.pubList.needsNonLocalMaven() shouldBe false
                 }
             }

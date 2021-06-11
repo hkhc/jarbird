@@ -18,35 +18,23 @@
 
 package io.hkhc.gradle
 
-interface SigningStrategy {
+import io.hkhc.gradle.pom.Pom
+
+interface PubVariantStrategy : VariantStrategy {
+
+    val variant: String
+    var pom: Pom
 
     /**
-     * Not to do signing for this pub
+     * get the artifactID augmented by variatn
+     * e.g. mylib-variant
      */
-    fun doNotSign()
+    fun variantArtifactId(): String?
 
     /**
-     * Do signing for this pub (default)
+     * get the version augmented by variatn
+     * e.g. 1.0.0-variant
      */
-    val signType: SignType
+    fun variantVersion(): String?
 
-    /**
-     * Use GnuPG v1 Keyring to perform artifact signing
-     */
-    fun signWithKeyring()
-
-    /**
-     * return true if the artifacts is going to be signed with keyring
-     */
-    fun isSignWithKeyring(): Boolean
-
-    /**
-     * Use GnuPG v2 Keybox to perform artifact signing
-     */
-    fun signWithKeybox()
-
-    /**
-     * return true if the artifacts is going to be signed with keybox
-     */
-    fun isSignWithKeybox(): Boolean
 }

@@ -74,7 +74,7 @@ import java.util.Properties
  * credential with env variable
  * handle publishing rejection
  *
- * - (should fail) try to invoke disabled target (e.g. jbPublishToMavenRepository when maven = false)
+ * - (should fail) try to invoke disabled target (e.g. jbPublishToMavenRepositories when maven = false)
  * - (should fail) build snapshot plugin to bintray
  * - support javadoc rather than dokka
  * - build multiple project with maven repository
@@ -99,7 +99,7 @@ class BuildMavenRepoTest : FunSpec({
 
     context("Publish library") {
 
-        val targetTask = "jbPublishToMavenRepository"
+        val targetTask = "jbPublishToMavenRepositories"
 
         fun commonSetup(coordinate: Coordinate, expectedTaskGraph: Tree<String>): DefaultGradleProjectSetup {
 
@@ -176,9 +176,9 @@ class BuildMavenRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 stringTreeOf(NoBarTheme) {
-                    ":jbPublishToMavenRepository SUCCESS" {
-                        ":jbPublishTestArtifactToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                    ":jbPublishToMavenRepositories SUCCESS" {
+                        ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                 ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                     ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                         ":jar SUCCESS"()
@@ -216,9 +216,9 @@ class BuildMavenRepoTest : FunSpec({
             val setup = commonSetup(
                 coordinate,
                 stringTreeOf {
-                    ":jbPublishToMavenRepository SUCCESS" {
-                        ":jbPublishTestArtifactToMavenRepository SUCCESS" {
-                            ":jbPublishTestArtifactToMavenMockRepository SUCCESS" {
+                    ":jbPublishToMavenRepositories SUCCESS" {
+                        ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
+                            ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                 ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                     ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                         ":jar SUCCESS"()

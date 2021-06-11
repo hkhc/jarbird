@@ -18,48 +18,44 @@
 
 package io.hkhc.gradle.internal.pub
 
+import io.hkhc.gradle.SignType
 import io.hkhc.gradle.SigningStrategy
 
-class SigningStrategyImpl : SigningStrategy {
+class SigningStrategyImpl(private val parent: SigningStrategy? = null) : SigningStrategy {
 
     /**
      * Configure for artifact signing or not
      */
-    private var signing = true
-
-    /**
-     * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
-     * We will need useGpg=true if we use new keybox (.kbx) format for signing key.
-     */
-    private var useKeybox = true
+    private var signing: SignType? = null
+//
+//    /**
+//     * Use if performing signing with external GPG command. false to use Gradle built-in PGP implementation.
+//     * We will need useGpg=true if we use new keybox (.kbx) format for signing key.
+//     */
+//    private var useKeybox = true
 
     override fun doNotSign() {
-        signing = false
+        signing = SignType.NO_SIGN
     }
 
-    override fun needSign() {
-        signing = true
-    }
-
-    override fun shouldSignOrNot(): Boolean {
-        return signing
-    }
+    override val signType: SignType
+        get() {
+            return signing ?: parent?.signType ?: SignType.SIGN_WITH_KEYBOX
+        }
 
     override fun signWithKeyring() {
-        signing = true
-        useKeybox = false
+        signing = SignType.SIGN_WITH_KEYRING
     }
 
     override fun signWithKeybox() {
-        signing = true
-        useKeybox = true
+        signing = SignType.SIGN_WITH_KEYBOX
     }
 
     override fun isSignWithKeyring(): Boolean {
-        return signing && !useKeybox
+        return signType == SignType.SIGN_WITH_KEYRING
     }
 
     override fun isSignWithKeybox(): Boolean {
-        return signing && useKeybox
+        return signType == SignType.SIGN_WITH_KEYBOX
     }
 }

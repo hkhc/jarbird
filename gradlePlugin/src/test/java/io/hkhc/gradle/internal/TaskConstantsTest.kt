@@ -23,6 +23,7 @@ import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
 import io.hkhc.gradle.internal.repo.MavenCentralRepoSpecImpl
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
+import io.hkhc.gradle.pom.PluginInfo
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockProjectProperty
 import io.kotest.core.spec.style.FunSpec
@@ -64,8 +65,7 @@ class TaskConstantsTest : FunSpec({
 
         mavenCentralRepo = repoBuilder.buildMavenCentral(project)
 
-        val pom = mockk<Pom>()
-        every { pom.isGradlePlugin() } returns false
+        val pom = Pom()
 
         every { pub.pubName } returns "abc"
         every { pub.variant } returns "var"
@@ -73,8 +73,7 @@ class TaskConstantsTest : FunSpec({
         every { pub.pluginCoordinate() } returns "NOT-A-PLUGIN"
         every { pub.pom } returns pom
 
-        val pomPlugin = mockk<Pom>()
-        every { pomPlugin.isGradlePlugin() } returns true
+        val pomPlugin = Pom(plugin = PluginInfo())
 
         every { pubPlugin.pubName } returns "abc"
         every { pubPlugin.variant } returns "var"
@@ -147,6 +146,27 @@ class TaskConstantsTest : FunSpec({
                 "jbPublishAbcVarToMavenCentral",
                 "Publish module 'abc' (var) to Maven Central"
             )
+    }
+
+    test("lower level task names") {
+
+        Publish.to.mavenLocal.taskName shouldBe
+            "publishToMavenLocal"
+        Publish.to.mavenRepo(mavenRepo).taskName shouldBe
+            "publishToMavenMockRepository"
+        Publish.pub(pub).to.mavenLocal.taskName shouldBe
+            "publishAbcVarPublicationToMavenLocal"
+        Publish.pub(pub).to.mavenRepo(mavenRepo).taskName shouldBe
+            "publishAbcVarPublicationToMavenMockRepository"
+        Publish.pub(pubPlugin).to.mavenLocal.taskName shouldBe
+            "publishAbcVarPublicationToMavenLocal"
+        Publish.pub(pubPlugin).to.mavenRepo(mavenRepo).taskName shouldBe
+            "publishAbcVarPublicationToMavenMockRepository"
+        Publish.pluginMarker(pubPlugin).to.mavenLocal.taskName shouldBe
+            "publishAbcVarPluginMarkerMavenPublicationToMavenLocal"
+        Publish.pluginMarker(pubPlugin).to.mavenRepo(mavenRepo).taskName shouldBe
+            "publishAbcVarPluginMarkerMavenPublicationToMavenMockRepository"
+
     }
 
     test("Jarbird publish all to one repo") {

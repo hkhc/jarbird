@@ -20,7 +20,7 @@ package io.hkhc.utils.tree
 
 import kotlin.reflect.full.createInstance
 
-open class TreeBuilder<T>(val theme: TreeTheme = defaulTreeTHeme, private val newNode: (T) -> Node<T> = { AbstractNode(it) }) {
+open class TreeBuilder<T>(val theme: TreeTheme = defaulTreeTheme, private val newNode: (T) -> Node<T> = { AbstractNode(it) }) {
 
     // the root node
     private var node: Node<T>? = null

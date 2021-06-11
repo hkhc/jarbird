@@ -98,7 +98,7 @@ internal class TaskBuilder(
 //                    dependsOn(it.name)
 //                }
             }
-            if (pubs.needsArtifactory()) {
+            if (pubs.needArtifactory()) {
                 dependsOn(artifactoryTaskBuilder.getTaskInfo().name)
             }
         }
@@ -112,7 +112,7 @@ internal class TaskBuilder(
                 it.registerMavenLocalTask(this)
                 it.registerMavenRepositoryTask(this)
             }
-            if (pubs.needsArtifactory()) {
+            if (pubs.needArtifactory()) {
                 artifactoryTaskBuilder.registerArtifactoryTask()
             }
             if (pubs.any { it.pom.isGradlePlugin() }) {

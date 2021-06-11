@@ -21,7 +21,7 @@ package io.hkhc.gradle.test
 import io.hkhc.gradle.internal.PLUGIN_ID
 
 open class Versions {
-    open val kotlin = "1.3.72"
+    open val kotlin = "1.4.32"
     open val taskInfo = "1.0.5"
     open val pluginId = PLUGIN_ID
 }
@@ -103,7 +103,7 @@ fun commonAndroidBuildGradleKtsAndroid(): String {
     """
 }
 
-fun buildGradle(maven: Boolean = true, bintray: Boolean = true, versions: Versions = Versions()): String {
+fun buildGradle(maven: Boolean = true, artifactory: Boolean = true, versions: Versions = Versions()): String {
     return """
         ${commonBuildGradlePlugins(versions)}
         repositories {
@@ -166,6 +166,7 @@ fun buildTwoGlobalGradleKts(versions: Versions = Versions()): String {
             jcenter()
         }
         jarbird {
+            signWithKeyring()
             mavenRepo("mock1")
             mavenRepo("mock2")
             pub("lib1") {
@@ -189,6 +190,7 @@ fun buildTwoLocalGradleKts(versions: Versions = Versions()): String {
             jcenter()
         }
         jarbird {
+            signWithKeyring()
             pub("lib1") {
                 mavenRepo("mock1")
                 from(sourceSets["sourceSet1"])
@@ -282,6 +284,7 @@ fun commonAndroidRootGradle(versions: AndroidVersions = AndroidVersions()): Stri
 fun commonAndroidGradle(
     variantMode: String = "variantInvisible()",
     mavenRepo: Boolean = false,
+    artifactoryRepo: Boolean = false,
     versions: AndroidVersions = AndroidVersions()
 ): String {
 
@@ -290,7 +293,7 @@ fun commonAndroidGradle(
         ${commonAndroidBuildGradleKtsAndroid()}
         jarbird {
             ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
-            artifactory("mock")
+            ${if (artifactoryRepo) "artifactory(\"mock\")" else ""}
         }
 
         android.libraryVariants.configureEach { variant ->
@@ -299,7 +302,7 @@ fun commonAndroidGradle(
                 jarbird {
                      pub(variantName) { 
                         ${if (variantMode != "") variantMode else "" } 
-                        signWithKeybox()
+                        signWithKeyring()
                         from(variant)
                     }
                 }

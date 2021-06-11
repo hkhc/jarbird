@@ -22,6 +22,6 @@ import java.io.File
 
 //class FileTreeBuilder: TreeBuilder<File>()
 
-fun fileTreeOf(theme: TreeTheme = defaulTreeTHeme, block: TreeBuilder<File>.() -> Unit) =
+fun fileTreeOf(theme: TreeTheme = defaulTreeTheme, block: TreeBuilder<File>.() -> Unit) =
     TreeBuilder<File>(theme, ::FileNode).build(null, block)
 

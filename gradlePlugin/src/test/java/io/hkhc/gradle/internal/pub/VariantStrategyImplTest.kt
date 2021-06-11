@@ -25,7 +25,7 @@ import io.kotest.matchers.shouldBe
 class VariantStrategyImplTest : FunSpec({
 
     test("default value") {
-        VariantStrategyImpl().apply {
+        PubVariantStrategyImpl().apply {
             pom = Pom(
                 group = "mygroup",
                 artifactId = "mylib",
@@ -37,7 +37,7 @@ class VariantStrategyImplTest : FunSpec({
     }
 
     test("empty variant bind to artifactId") {
-        VariantStrategyImpl().apply {
+        PubVariantStrategyImpl().apply {
             pom = Pom(
                 group = "mygroup",
                 artifactId = "mylib",
@@ -50,7 +50,7 @@ class VariantStrategyImplTest : FunSpec({
     }
 
     test("default value with variant") {
-        VariantStrategyImpl("variant").apply {
+        PubVariantStrategyImpl("variant").apply {
             pom = Pom(
                 group = "mygroup",
                 artifactId = "mylib",
@@ -62,7 +62,7 @@ class VariantStrategyImplTest : FunSpec({
     }
 
     test("default value with variant and bind to version") {
-        VariantStrategyImpl("variant").apply {
+        PubVariantStrategyImpl("variant").apply {
             pom = Pom(
                 group = "mygroup",
                 artifactId = "mylib",
@@ -75,7 +75,7 @@ class VariantStrategyImplTest : FunSpec({
     }
 
     test("default value with variant and bind to artifactId") {
-        VariantStrategyImpl("variant").apply {
+        PubVariantStrategyImpl("variant").apply {
             pom = Pom(
                 group = "mygroup",
                 artifactId = "mylib",
@@ -88,7 +88,7 @@ class VariantStrategyImplTest : FunSpec({
     }
 
     test("default value with variant and not bind to anything") {
-        VariantStrategyImpl("variant").apply {
+        PubVariantStrategyImpl("variant").apply {
             pom = Pom(
                 group = "mygroup",
                 artifactId = "mylib",

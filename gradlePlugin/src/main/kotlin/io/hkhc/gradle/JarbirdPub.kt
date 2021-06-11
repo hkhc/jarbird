@@ -18,10 +18,7 @@
 
 package io.hkhc.gradle
 
-import groovy.lang.Closure
-import org.jetbrains.dokka.gradle.DokkaTask
-
-interface JarbirdPub : RepoDeclaration, SigningStrategy, VariantStrategy, DocDeclaration {
+interface JarbirdPub : RepoDeclaration, SigningStrategy, PubVariantStrategy, DocDeclaration {
 
     /**
      * the publication name, that affect the task names for publishing

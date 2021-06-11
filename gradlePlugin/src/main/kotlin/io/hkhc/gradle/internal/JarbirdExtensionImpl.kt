@@ -23,8 +23,12 @@ import io.hkhc.gradle.DocDeclaration
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoDeclaration
+import io.hkhc.gradle.SigningStrategy
+import io.hkhc.gradle.VariantStrategy
 import io.hkhc.gradle.internal.pub.DocDeclarationImpl
 import io.hkhc.gradle.internal.pub.ExtRepoDeclarationsImpl
+import io.hkhc.gradle.internal.pub.SigningStrategyImpl
+import io.hkhc.gradle.internal.pub.VariantStrategyImpl
 import io.hkhc.gradle.internal.utils.initPub
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -35,7 +39,10 @@ open class JarbirdExtensionImpl(
     private val pomResolver: PomResolver
 ) : JarbirdExtension,
     RepoDeclaration by ExtRepoDeclarationsImpl(project, projectProperty, getParentExt(project)),
-    DocDeclaration by DocDeclarationImpl(getParentExt(project), null /* no default */) {
+    DocDeclaration by DocDeclarationImpl(getParentExt(project), null /* no default */),
+    SigningStrategy by SigningStrategyImpl(getParentExt(project)),
+    VariantStrategy by VariantStrategyImpl(getParentExt(project))
+{
 
     val pubList = mutableListOf<JarbirdPub>()
 

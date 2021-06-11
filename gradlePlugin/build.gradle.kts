@@ -99,8 +99,6 @@ configurations {
 }
 
 jarbird {
-    mavenLocal()
-    mavenCentral()
     pub { }
 }
 

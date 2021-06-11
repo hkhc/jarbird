@@ -92,7 +92,7 @@ internal class BuildFlowBuilder(
                 )
 
                 /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
-                if (pubs.needsArtifactory()) {
+                if (pubs.needArtifactory()) {
                     logger.info("config artifactory")
                     ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()
                 }
@@ -145,7 +145,7 @@ internal class BuildFlowBuilder(
             }
 
             PublishingConfig(project, extension, pubs, sourceResolver).config()
-            if (pubs.any { it.shouldSignOrNot() }) {
+            if (pubs.needSigning()) {
                 SigningConfig(project, pubs).config()
             }
         }
