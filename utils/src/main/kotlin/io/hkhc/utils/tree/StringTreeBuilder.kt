@@ -38,6 +38,6 @@ package io.hkhc.utils.tree
  *  })
  *
  */
-fun stringTreeOf(theme: TreeTheme = defaulTreeTheme, block: TreeBuilder<String>.() -> Unit) =
+fun stringTreeOf(theme: TreeTheme = defaultTreeTheme, block: TreeBuilder<String>.() -> Unit) =
     TreeBuilder<String>(theme).build(null, block)
 

@@ -21,9 +21,9 @@ package io.hkhc.utils.tree
 import java.io.PrintWriter
 import java.io.StringWriter
 
-var defaulTreeTheme: TreeTheme = RoundTheme
+var defaultTreeTheme: TreeTheme = RoundTheme
 
-class TreePrinter(private val theme: TreeTheme = defaulTreeTheme) {
+class TreePrinter(private val theme: TreeTheme = defaultTreeTheme) {
 
     private open class EdgePresenter(open var head: String, open var tail: String) {
         private var first = true

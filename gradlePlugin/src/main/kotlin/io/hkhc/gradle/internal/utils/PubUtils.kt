@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.internal.utils
 
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.PomResolver
 
@@ -54,3 +55,4 @@ fun initPub(pomResolver: PomResolver, pub: JarbirdPubImpl) {
     // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
     pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
 }
+

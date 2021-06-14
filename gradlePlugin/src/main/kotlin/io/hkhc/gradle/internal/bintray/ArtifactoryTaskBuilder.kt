@@ -22,8 +22,9 @@ import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JbPublishToArtifactoryTaskInfo
 import io.hkhc.gradle.internal.TaskInfo
 import io.hkhc.gradle.internal.isMultiProjectRoot
-import io.hkhc.gradle.internal.needArtifactory
+import io.hkhc.gradle.internal.needReposWithType
 import io.hkhc.gradle.internal.registerRootProjectTasks
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import org.gradle.api.Project
 
 // internal const val BINTRAY_UPLOAD_TASK = "bintrayUpload"
@@ -51,7 +52,7 @@ class ArtifactoryTaskBuilder(
 
     private fun registerLeafArtifactoryTask() {
 
-        if (pubs.needArtifactory()) {
+        if (pubs.needReposWithType<ArtifactoryRepoSpec>()) {
 
             taskInfo.register(project.tasks) {
                 /*

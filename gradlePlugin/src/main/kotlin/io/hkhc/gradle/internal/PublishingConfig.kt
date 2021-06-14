@@ -94,7 +94,7 @@ internal class PublishingConfig(
             createPublication()
         }
 
-        if (pubs.needsNonLocalMaven()) {
+        if (pubs.needReposWithType<MavenRepoSpec>()) {
             repositories {
                 createRepository()
             }
@@ -157,24 +157,24 @@ internal class PublishingConfig(
                 } else {
                     artifactCompat(publishJarTask)
                 }
+
                 // We are adding documentation artifact
-                if (!project.isMultiProjectRoot()) {
 
-                    /*
-                     https://github.com/gradle/gradle/pull/13505
-                     artifact supports TaskProvider from Gradle 6.6
-                     */
+                /*
+                 https://github.com/gradle/gradle/pull/13505
+                 artifact supports TaskProvider from Gradle 6.6
+                 */
 
-                    project.afterEvaluate {
-                        if (pub.needsGenDoc()) {
-                            artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
-                        }
-                        artifactCompat(
-                            SourceConfig(project, sourceResolver)
-                                .configSourceJarTask(pub, pub.sourceSetModel()!!)
-                        )
+                project.afterEvaluate {
+                    if (pub.needsGenDoc()) {
+                        artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
                     }
+                    artifactCompat(
+                        SourceConfig(project, sourceResolver)
+                            .configSourceJarTask(pub, pub.sourceSetModel()!!)
+                    )
                 }
+
                 pom { MavenPomAdapter().fill(this, pom) }
             }
 

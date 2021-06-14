@@ -18,20 +18,29 @@
 
 package io.hkhc.gradle.internal.android
 
+import io.hkhc.gradle.DocDeclaration
+import io.hkhc.gradle.RepoDeclaration
+import io.hkhc.gradle.VariantStrategy
 import io.hkhc.gradle.android.AndroidJarbirdPlugin.Companion.LOG_PREFIX
-import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdPubImpl
-import io.hkhc.gradle.internal.JavaConventionSourceSetModel
 import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.SourceSetModel
 import org.gradle.api.Project
 
 class AndroidJarbirdPubImpl(
     project: Project,
-    ext: JarbirdExtensionImpl,
+    parentVariantStrategy: VariantStrategy,
+    parentRepoDeclaration: RepoDeclaration,
+    parentDocDeclaration: DocDeclaration,
     projectProperty: ProjectProperty,
     variant: String = ""
-) : JarbirdPubImpl(project, ext, projectProperty, variant) {
+) : JarbirdPubImpl(
+    project,
+    parentVariantStrategy,
+    parentRepoDeclaration,
+    parentDocDeclaration,
+    projectProperty, variant
+) {
 
     private var libraryVariant: LibraryVariant? = null
 

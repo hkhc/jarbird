@@ -34,7 +34,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 open class JarbirdExtensionImpl(
-    private val project: Project,
+    val project: Project,
     protected val projectProperty: ProjectProperty,
     private val pomResolver: PomResolver
 ) : JarbirdExtension,
@@ -45,8 +45,6 @@ open class JarbirdExtensionImpl(
 {
 
     val pubList = mutableListOf<JarbirdPub>()
-
-    private var implicitPub: JarbirdPub? = null
 
     companion object {
         /**
@@ -65,7 +63,14 @@ open class JarbirdExtensionImpl(
     }
 
     open fun newPub(project: Project, variant: String = ""): JarbirdPubImpl {
-        return JarbirdPubImpl(project, this, projectProperty, variant).apply {
+        return JarbirdPubImpl(
+            project,
+            this,
+            this,
+            this,
+            projectProperty,
+            variant
+        ).apply {
             pubList.add(this)
         }
     }
@@ -90,7 +95,6 @@ open class JarbirdExtensionImpl(
         val newPub = newPub(project)
         newPub.configure(action)
         initPub(pomResolver, newPub)
-        removeImplicit()
         return newPub
     }
 
@@ -101,7 +105,6 @@ open class JarbirdExtensionImpl(
         val newPub = newPub(project, variant)
         initPub(pomResolver, newPub)
         newPub.configure(action)
-        removeImplicit()
         return newPub
     }
 
@@ -110,7 +113,6 @@ open class JarbirdExtensionImpl(
         val newPub = newPub(project)
         newPub.configure(action)
         initPub(pomResolver, newPub)
-        removeImplicit()
         return newPub
     }
 
@@ -121,29 +123,28 @@ open class JarbirdExtensionImpl(
         val newPub = newPub(project, variant)
         initPub(pomResolver, newPub)
         newPub.configure(action)
-        removeImplicit()
         return newPub
     }
 
-    fun createImplicit() {
-        /*
-        if implicit != null, we have already got an implicit, no need to create another
-        if pubList.isNotEmpty() and implicit == null, we have an non-implicit pub, no need to create implicit
-         */
-        if (implicitPub != null || pubList.isNotEmpty()) return
-        pub {}
-        implicitPub = pubList[0]
-    }
-
-    fun removeImplicit() {
-        /*
-        If implicit == null , means we have not created an implicit pub, no need to remove
-        If pubList.size == 1 and implicit != null, this means it is the only pub, so we still need it, don't remove
-         */
-        if (implicitPub == null || pubList.size == 1) return
-        pubList.remove(implicitPub)
-        implicitPub = null
-    }
+//    fun createImplicit() {
+//        /*
+//        if implicit != null, we have already got an implicit, no need to create another
+//        if pubList.isNotEmpty() and implicit == null, we have an non-implicit pub, no need to create implicit
+//         */
+//        if (implicitPub != null || pubList.isNotEmpty()) return
+//        pub {}
+//        implicitPub = pubList[0]
+//    }
+//
+//    fun removeImplicit() {
+//        /*
+//        If implicit == null , means we have not created an implicit pub, no need to remove
+//        If pubList.size == 1 and implicit != null, this means it is the only pub, so we still need it, don't remove
+//         */
+//        if (implicitPub == null || pubList.size == 1) return
+//        pubList.remove(implicitPub)
+//        implicitPub = null
+//    }
 
     fun finalizeRepos() {
         mavenLocal()

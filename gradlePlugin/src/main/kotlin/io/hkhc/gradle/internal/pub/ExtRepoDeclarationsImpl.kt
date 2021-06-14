@@ -29,41 +29,45 @@ class ExtRepoDeclarationsImpl(
     parentRepoDeclaration: RepoDeclaration? = null
     ) : RepoDeclarationsImpl(project, projectProperty, parentRepoDeclaration) {
 
-    private var isDefaultRepos = true
+//    private var isDefaultRepos = true
+//
+//    /**
+//     * If user declare a repo explicitly, we don't need the default repo any more.
+//     */
+//    private fun disableDefaultRepos() {
+//        if (isDefaultRepos) {
+//            mRepos.clear()
+//            isDefaultRepos = false
+//        }
+//    }
+//
+//    override fun mavenCentral(): RepoSpec {
+//        disableDefaultRepos()
+//        return super.mavenCentral()
+//    }
+//
+//    override fun mavenRepo(key: String): RepoSpec {
+//        disableDefaultRepos()
+//        return super.mavenRepo(key)
+//    }
+//
+//    override fun mavenLocal(): RepoSpec {
+//        disableDefaultRepos()
+//        return super.mavenLocal()
+//    }
+//
+//    override fun gradlePortal(): RepoSpec {
+//        disableDefaultRepos()
+//        return super.gradlePortal()
+//    }
+//
+//    override fun artifactory(key: String): RepoSpec {
+//        disableDefaultRepos()
+//        return super.artifactory(key)
+//    }
 
-    /**
-     * If user declare a repo explicitly, we don't need the default repo any more.
-     */
-    private fun disableDefaultRepos() {
-        if (isDefaultRepos) {
-            mRepos.clear()
-            isDefaultRepos = false
-        }
+
+    override fun getRepos(): Set<RepoSpec> {
+        return mRepos
     }
-
-    override fun mavenCentral(): RepoSpec {
-        disableDefaultRepos()
-        return super.mavenCentral()
-    }
-
-    override fun mavenRepo(key: String): RepoSpec {
-        disableDefaultRepos()
-        return super.mavenRepo(key)
-    }
-
-    override fun mavenLocal(): RepoSpec {
-        disableDefaultRepos()
-        return super.mavenLocal()
-    }
-
-    override fun gradlePortal(): RepoSpec {
-        disableDefaultRepos()
-        return super.gradlePortal()
-    }
-
-    override fun artifactory(key: String): RepoSpec {
-        disableDefaultRepos()
-        return super.artifactory(key)
-    }
-
 }

@@ -18,7 +18,7 @@
 
 package io.hkhc.utils.tree
 
-open class Tree<T>(private var root: Node<T>? = null, var theme: TreeTheme = defaulTreeTheme) {
+open class Tree<T>(private var root: Node<T>? = null, var theme: TreeTheme = defaultTreeTheme) {
 
     constructor(otherTree: Tree<T>) : this(otherTree.root)
 

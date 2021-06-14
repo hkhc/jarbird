@@ -42,9 +42,14 @@ class PluginPublishingConfig(
         e.g. for plugin com.gradle.plugin-publish, check the dependency section of POM at
         https://plugins.gradle.org/m2/com/gradle/plugin-publish/
             com.gradle.plugin-publish.gradle.plugin/0.10.1/com.gradle.plugin-publish.gradle.plugin-0.10.1.pom
+
      */
 
     fun config() {
+
+        assert(pubs.needGradlePlugin())
+
+        val model = PluginPublishingModel(project, pubs)
 
         (
             project.findByType(GradlePluginDevelopmentExtension::class.java)
@@ -52,7 +57,7 @@ class PluginPublishingConfig(
                     "\"gradlePlugin\" extension is not found, may be " +
                         "\"plugin org.gradle.java-gradle-plugin\" is not applied?"
                 )
-            ).config()
+            ).config(model)
 
         (
             // TODO rename findByType to findExtension
@@ -61,9 +66,9 @@ class PluginPublishingConfig(
                     "\"pluginBundle\" extension is not found, may be " +
                         "\"com.gradle.plugin-publish\" plugin is not applied?"
                 )
-            ).config()
+            ).config(model)
 
-        presetupPluginMarkerPublication()
+        presetupPluginMarkerPublication(model)
     }
 
     /*
@@ -72,28 +77,23 @@ class PluginPublishingConfig(
         The default value of pom.name is still project.name so we are not violating the Gradle convention.
         "publishPluginMavenPublication*" task is created by gradle plugin publish plugin.
      */
-    private fun presetupPluginMarkerPublication() {
+    private fun presetupPluginMarkerPublication(model: PluginPublishingModel) {
 
-        // TODO we can have one pluginMaven publication per sub-project only
-
-        pubs.forEach { pub ->
-            // We create the marker pubkication here so that the MavenPluginPublishPlugin may reuse it
+        model.publishingPub.also { pub ->
+            // We create the marker publication here so that the MavenPluginPublishPlugin may reuse it
             // and we can do some customization here.
-            if (pub.pom.isGradlePlugin()) {
-                val publishing = project.findByType(PublishingExtension::class.java)
-                publishing?.publications {
-                    val pluginMainPublication = maybeCreate(
-                        "pluginMaven",
-                        MavenPublication::class.java
-                    )
-                    with(pluginMainPublication) {
-                        from((pub as JarbirdPubImpl).component)
-                        groupId = pub.pom.group
-                        artifactId = pub.pom.artifactId
-                        version = pub.pom.version
-                    }
-
-                    pluginMainPublication.pom {
+            val publishing = project.findByType(PublishingExtension::class.java)
+            publishing?.publications {
+                val pluginMainPublication = maybeCreate(
+                    "pluginMaven",
+                    MavenPublication::class.java
+                )
+                with(pluginMainPublication) {
+                    from((pub as JarbirdPubImpl).component)
+                    groupId = pub.pom.group
+                    artifactId = pub.pom.artifactId
+                    version = pub.pom.version
+                    pom {
                         MavenPomAdapter().fill(this, pub.pom)
                     }
                 }
@@ -101,28 +101,26 @@ class PluginPublishingConfig(
         }
     }
 
-    private fun PluginBundleExtension.config() {
+    private fun PluginBundleExtension.config(model: PluginPublishingModel) {
 
         // TODO we can have one set of metadata for gradle plugins in one project.
         // TODO do a pre check
 
-        val infoPom = pubs.map { it.pom }.first { it.isGradlePlugin() }
-
-        website = infoPom.web.url
-        vcsUrl = infoPom.scm.url ?: website
-        description = infoPom.plugin?.description ?: infoPom.description
-        tags = infoPom.plugin?.tags ?: listOf()
+        website = model.website
+        vcsUrl = model.vcsUrl
+        description = model.description
+        tags = model.tags
 
         plugins {
-            pubs.filter { it.pom.isGradlePlugin() }.forEach { pub ->
+            model.publishingPub.also{ pub ->
+                mavenCoordinates {
+                    group = pub.pom.group
+                    artifactId = pub.pom.artifactId
+                    version = pub.pom.version
+                }
                 maybeCreate(pub.pubNameWithVariant()).apply {
                     // We have overrided a large part of the gradle plugin publish plugin.
                     // so we need to set the coordinate by ourselves.
-                    mavenCoordinates {
-                        group = pub.pom.group
-                        artifactId = pub.pom.artifactId
-                        version = pub.pom.version
-                    }
                     displayName = pub.pom.name
                     description = pub.pom.description
                 }
@@ -130,19 +128,18 @@ class PluginPublishingConfig(
         }
     }
 
-    private fun GradlePluginDevelopmentExtension.config() {
+
+    private fun GradlePluginDevelopmentExtension.config(model: PluginPublishingModel) {
 
         project.logger.debug("$LOG_PREFIX configure Gradle plugin development plugin")
 
         isAutomatedPublishing = false
 
         plugins {
-            pubs.filter { it.pom.isGradlePlugin() }.forEach {
-                maybeCreate(it.pubNameWithVariant()).apply {
-                    it.pom.plugin?.let { plugin ->
-                        id = plugin.id
-                        implementationClass = plugin.implementationClass
-                    }
+            model.entries.forEach {
+                maybeCreate(it.pubName).apply {
+                    id = it.id
+                    implementationClass = it.implementationClass
                 }
             }
         }

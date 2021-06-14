@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.internal
+package io.hkhc.utils.test
 
 import groovy.lang.Closure
 import io.mockk.every
@@ -42,7 +42,7 @@ class MockTaskContainer(val mockProject: Project): TaskContainer {
 
     var mockTasks = mutableListOf<Task>()
 
-    var mockWithTypeTask: Task? = null
+    var mockWithTypeTasks: Map<Class<out Task>,Task> = mutableMapOf()
 
     override fun add(element: Task): Boolean {
         TODO("Not yet implemented")
@@ -92,12 +92,16 @@ class MockTaskContainer(val mockProject: Project): TaskContainer {
         TODO("Not yet implemented")
     }
 
-    @Suppress("NULLABLE_TYPE_PARAMETER_AGAINST_NOT_NULL_TYPE_PARAMETER", "UNCHECKED_CAST")
+    @Suppress(
+        "NULLABLE_TYPE_PARAMETER_AGAINST_NOT_NULL_TYPE_PARAMETER",
+        "UNCHECKED_CAST",
+        "TYPE_INFERENCE_ONLY_INPUT_TYPES_WARNING"
+    )
     override fun <S : Task?> withType(type: Class<S>): TaskCollection<S> {
         return mockk {
             every { configureEach(any()) } answers {
                 val action = firstArg<Action<S>>()
-                action.execute(mockWithTypeTask as S)
+                action.execute(mockWithTypeTasks[type] as S)
             }
         }
     }

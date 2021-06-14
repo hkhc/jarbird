@@ -18,7 +18,9 @@
 
 package io.hkhc.gradle.internal
 
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
+import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.gradle.pom.PomGroup
 import io.hkhc.gradle.pom.internal.PomGroupFactory
@@ -118,12 +120,6 @@ class JarbirdExtensionTest : FunSpec({
             val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
             ext.pubList.shouldBeEmpty()
 
-            ext.createImplicit()
-            ext.pubList.shouldHaveSize(1)
-
-            ext.removeImplicit()
-            ext.getRepos().shouldHaveSize(0)
-
             ext.finalizeRepos()
             ext.getRepos().shouldContainExactly(setOf(MavenLocalRepoSpecImpl()))
         }
@@ -131,14 +127,6 @@ class JarbirdExtensionTest : FunSpec({
         test("Implicit pub will be removed if there are explicitly declared pub") {
             val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
             ext.pubList.shouldBeEmpty()
-
-            ext.createImplicit()
-            ext.pubList.shouldHaveSize(1)
-
-            ext.pub { }
-
-            ext.removeImplicit()
-            ext.getRepos().shouldHaveSize(0)
 
             ext.finalizeRepos()
             ext.getRepos().shouldContainExactly(setOf(MavenLocalRepoSpecImpl()))
@@ -149,15 +137,12 @@ class JarbirdExtensionTest : FunSpec({
             val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
             ext.pubList.shouldBeEmpty()
 
-            ext.createImplicit()
-            ext.pubList.shouldHaveSize(1)
-
             ext.artifactory("mock")
 
             ext.pub { }
 
-            ext.pubList[0].needArtifactory() shouldBe true
-            ext.pubList.needArtifactory() shouldBe true
+            ext.pubList[0].needsReposWithType<ArtifactoryRepoSpec>() shouldBe true
+            ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
 
             ext.finalizeRepos()
             ext.getRepos().shouldContainExactlyInAnyOrder(
@@ -178,14 +163,9 @@ class JarbirdExtensionTest : FunSpec({
                 val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
-                ext.createImplicit()
-                ext.pubList.shouldHaveSize(1)
-
                 ext.mavenRepo("mock")
 
                 ext.pub { }
-
-                ext.removeImplicit()
 
                 ext.finalizeRepos()
 
@@ -194,11 +174,11 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needArtifactory() shouldBe false
-                    ext.pubList.needsNonLocalMaven() shouldBe true
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe false
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe true
                 } else {
-                    ext.pubList.needArtifactory() shouldBe false
-                    ext.pubList.needsNonLocalMaven() shouldBe true
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe false
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe true
                 }
             }
         }
@@ -212,15 +192,10 @@ class JarbirdExtensionTest : FunSpec({
                 val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
-                ext.createImplicit()
-                ext.pubList.shouldHaveSize(1)
-
                 ext.mavenRepo("mock")
                 ext.artifactory("mock")
 
                 ext.pub { }
-
-                ext.removeImplicit()
 
                 ext.finalizeRepos()
 
@@ -233,11 +208,11 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needArtifactory() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe true
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe true
                 } else {
-                    ext.pubList.needArtifactory() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe true
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe true
                 }
             }
         }
@@ -250,14 +225,9 @@ class JarbirdExtensionTest : FunSpec({
                 val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
-                ext.createImplicit()
-                ext.pubList.shouldHaveSize(1)
-
                 ext.artifactory("mock")
 
                 ext.pub { }
-
-                ext.removeImplicit()
 
                 ext.finalizeRepos()
 
@@ -266,11 +236,11 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needArtifactory() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe false
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe false
                 } else {
-                    ext.pubList.needArtifactory() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe false
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe false
                 }
             }
         }
@@ -284,15 +254,10 @@ class JarbirdExtensionTest : FunSpec({
                 val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
-                ext.createImplicit()
-                ext.pubList.shouldHaveSize(1)
-
                 ext.mavenRepo("mock")
                 ext.artifactory("mock")
 
                 ext.pub { }
-
-                ext.removeImplicit()
 
                 ext.finalizeRepos()
 
@@ -305,11 +270,11 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needArtifactory() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe true
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe true
                 } else {
-                    ext.pubList.needArtifactory() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe true
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe true
                 }
             }
         }
@@ -322,14 +287,9 @@ class JarbirdExtensionTest : FunSpec({
                 val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
 
-                ext.createImplicit()
-                ext.pubList.shouldHaveSize(1)
-
                 ext.artifactory("mock")
 
                 ext.pub { }
-
-                ext.removeImplicit()
 
                 ext.finalizeRepos()
 
@@ -338,11 +298,11 @@ class JarbirdExtensionTest : FunSpec({
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
-                    ext.pubList.needArtifactory() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe false
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe false
                 } else {
-                    ext.pubList.needArtifactory() shouldBe true
-                    ext.pubList.needsNonLocalMaven() shouldBe false
+                    ext.pubList.needReposWithType<ArtifactoryRepoSpec>() shouldBe true
+                    ext.pubList.needReposWithType<MavenRepoSpec>() shouldBe false
                 }
             }
         }
@@ -355,15 +315,12 @@ class JarbirdExtensionTest : FunSpec({
             File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
 
             val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
-            ext.pubList.shouldBeEmpty()
-
-            ext.createImplicit()
-            ext.pubList.shouldHaveSize(1)
+            ext.getRepos().shouldBeEmpty()
 
             ext.artifactory("mock")
-            ext.pubList.shouldHaveSize(1)
+            ext.getRepos().shouldHaveSize(1)
             ext.artifactory("mock")
-            ext.pubList.shouldHaveSize(1)
+            ext.getRepos().shouldHaveSize(1)
         }
     }
 })

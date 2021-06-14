@@ -23,6 +23,7 @@ import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.PubVariantStrategy
 import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.SigningStrategy
+import io.hkhc.gradle.VariantStrategy
 import io.hkhc.gradle.internal.pub.DocDeclarationImpl
 import io.hkhc.gradle.internal.pub.PubVariantStrategyImpl
 import io.hkhc.gradle.internal.pub.RepoDeclarationsImpl
@@ -36,14 +37,16 @@ import org.gradle.kotlin.dsl.get
 
 open class JarbirdPubImpl(
     protected val project: Project,
-    private val ext: JarbirdExtensionImpl,
+    parentVariantStrategy: VariantStrategy,
+    parentRepoDeclaration: RepoDeclaration,
+    parentDocDeclaration: DocDeclaration,
     projectProperty: ProjectProperty,
     variant: String = ""
 ) : JarbirdPub,
     SigningStrategy by SigningStrategyImpl(),
-    PubVariantStrategy by PubVariantStrategyImpl(variant, ext),
-    RepoDeclaration by RepoDeclarationsImpl(project, projectProperty, ext),
-    DocDeclaration by DocDeclarationImpl(ext, { /* default dokkaConfig */ })
+    PubVariantStrategy by PubVariantStrategyImpl(variant, parentVariantStrategy),
+    RepoDeclaration by RepoDeclarationsImpl(project, projectProperty, parentRepoDeclaration),
+    DocDeclaration by DocDeclarationImpl(parentDocDeclaration, { /* default dokkaConfig */ })
 {
 
     override var pubName: String = "lib"
@@ -133,6 +136,7 @@ open class JarbirdPubImpl(
         if (err != null) throw GradleException(err)
 
         if (pom.isGradlePlugin()) {
+            // TODO add warning log here
             gradlePortal()
         }
     }

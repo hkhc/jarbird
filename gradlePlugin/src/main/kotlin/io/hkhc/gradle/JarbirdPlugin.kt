@@ -71,9 +71,9 @@ open class JarbirdPlugin : Plugin<Project> {
             )
         }
 
-        override fun shallCreateImplicit(): Boolean {
-            return true
-        }
+//        override fun shallCreateImplicit(): Boolean {
+//            return true
+//        }
 
         override fun pluginId(): String {
             return PLUGIN_ID
@@ -227,9 +227,9 @@ open class JarbirdPlugin : Plugin<Project> {
         // Build Phase 1
         project.gradleAfterEvaluate {
 
-            if (!project.isMultiProjectRoot() && pluginConfig.shallCreateImplicit()) {
-                extension.createImplicit()
-            }
+//            if (!project.isMultiProjectRoot() && pluginConfig.shallCreateImplicit()) {
+//                extension.createImplicit()
+//            }
 
             /*
             JavaGradlePluginPlugin expect plugin declaration at top level and not in afterEvaluate block.

@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.internal.utils
+package io.hkhc.utils
 
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.safeCast

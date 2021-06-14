@@ -16,7 +16,7 @@
  *
  */
 
-package io.hkhc.gradle.internal
+package io.hkhc.utils.test
 
 import groovy.lang.Closure
 import org.gradle.api.Action

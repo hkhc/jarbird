@@ -21,6 +21,8 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryTaskBuilder
 import io.hkhc.gradle.internal.maven.MavenTaskBuilder
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
+import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
@@ -34,42 +36,35 @@ internal class TaskBuilder(
     private val artifactoryTaskBuilder = ArtifactoryTaskBuilder(project, pubs)
     private val mavenTaskBuilder = MavenTaskBuilder(project, pubs)
 
-    private fun TaskContainer.registerGradlePortalTask() {
+    fun registerGradlePortalTask(container: TaskContainer) {
 
         val taskInfo = JbPublish.to.gradlePortal.taskInfo
 
-        if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(taskInfo)
-        } else {
-            val pub = pubs.firstOrNull { it.pom.isGradlePlugin() }
-            pub?.let {
-                val pubTask = JbPublish.pub(pub).to.gradlePortal.taskInfo
-                pubTask.register(this) {
-                    dependsOn("publishPlugins")
-                }
-                taskInfo.register(project.tasks) {
-                    dependsOn(pubTask.name)
-                }
+        val pub = pubs.firstOrNull { it.pom.isGradlePlugin() }
+        pub?.let {
+            val pubTask = JbPublish.pub(pub).to.gradlePortal.taskInfo
+            pubTask.register(container) {
+                dependsOn("publishPlugins")
+            }
+            taskInfo.register(container) {
+                dependsOn(pubTask.name)
             }
         }
+
     }
 
-    private fun TaskContainer.registerPublishTask() {
+    fun TaskContainer.registerPublishTask() {
 
         pubs.forEach { pub ->
 
             val taskInfo = JbPublish.pub(pub).taskInfo
 
-            if (project.isMultiProjectRoot()) {
-                project.registerRootProjectTasks(taskInfo)
-            } else {
-                taskInfo.register(this) {
-                    // TODO depends on jbPublish{pubName}To{mavenLocal}
-                    // TODO depends on jbPublish{pubName}To{mavenRepository}
-                    dependsOn(JbPublish.pub(pub).to.mavenLocal.taskInfo.name)
-                    if (pub.needsNonLocalMaven()) {
-                        dependsOn(JbPublish.pub(pub).to.mavenRepo.taskInfo.name)
-                    }
+            taskInfo.register(this) {
+                // TODO depends on jbPublish{pubName}To{mavenLocal}
+                // TODO depends on jbPublish{pubName}To{mavenRepository}
+                dependsOn(JbPublish.pub(pub).to.mavenLocal.taskInfo.name)
+                if (pub.needsReposWithType<MavenRepoSpec>()) {
+                    dependsOn(JbPublish.pub(pub).to.mavenRepo.taskInfo.name)
                 }
             }
         }
@@ -92,13 +87,10 @@ internal class TaskBuilder(
             if (pubs.needGradlePlugin()) {
                 dependsOn(JbPublish.to.gradlePortal.taskInfo.name)
             }
-            if (pubs.needsNonLocalMaven()) {
+            if (pubs.needReposWithType<MavenRepoSpec>()) {
                 dependsOn(JbPublish.to.mavenRepo.taskInfo.name)
-//                mavenTaskBuilder.getRepoTaskInfos().forEach {
-//                    dependsOn(it.name)
-//                }
             }
-            if (pubs.needArtifactory()) {
+            if (pubs.needReposWithType<ArtifactoryRepoSpec>()) {
                 dependsOn(artifactoryTaskBuilder.getTaskInfo().name)
             }
         }
@@ -112,11 +104,11 @@ internal class TaskBuilder(
                 it.registerMavenLocalTask(this)
                 it.registerMavenRepositoryTask(this)
             }
-            if (pubs.needArtifactory()) {
+            if (pubs.needReposWithType<ArtifactoryRepoSpec>()) {
                 artifactoryTaskBuilder.registerArtifactoryTask()
             }
-            if (pubs.any { it.pom.isGradlePlugin() }) {
-                registerGradlePortalTask()
+            if (pubs.needGradlePlugin()) {
+                registerGradlePortalTask(this)
             }
             registerRootTask()
         }

@@ -18,12 +18,10 @@
 
 package io.hkhc.gradle.internal
 
+import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
-import io.hkhc.gradle.internal.repo.GradlePortalSpec
-import io.hkhc.gradle.internal.repo.MavenLocalRepoSpec
+import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
 
 internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
@@ -51,22 +49,22 @@ internal fun List<JarbirdPub>.needSigning() = any { it.needsSigning() }
 
 internal fun JarbirdPub.needsSigning() = isSignWithKeybox() || isSignWithKeyring()
 
+internal inline fun <reified T: RepoSpec> JarbirdPub.reposWithType() =
+    getRepos().filterIsInstance<T>()
+
+internal inline fun <reified T: RepoSpec> List<JarbirdPub>.reposWithType() =
+    flatMap { it.getRepos() }.filterIsInstance<T>().toSet()
+
+internal inline fun <reified T: RepoSpec> JarbirdPub.needsReposWithType() = getRepos().any { it is T }
+
+internal inline fun <reified T: RepoSpec> List<JarbirdPub>.needReposWithType() = any { it.needsReposWithType<T>() }
+
+internal inline fun <reified T: RepoSpec> JarbirdExtension.reposWithType() =
+    (this as JarbirdExtensionImpl).pubList.flatMap { it.reposWithType<T>() }
+
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }
-
-internal fun List<JarbirdPub>.needArtifactory() = any { it.needArtifactory() }
-
-internal fun RepoDeclaration.needArtifactory() =
-    getRepos()
-        .filterIsInstance<ArtifactoryRepoSpec>()
-        .isNotEmpty()
-
-// TODO reorg class structure to check it in single filterIsInstance
-internal fun JarbirdPub.needsNonLocalMaven() =
-    (this as JarbirdPubImpl).getRepos()
-        .any { it is MavenRepoSpec && it !is MavenLocalRepoSpec && it !is GradlePortalSpec }
-
-internal fun List<JarbirdPub>.needsNonLocalMaven() = any { it.needsNonLocalMaven() }
 
 internal fun List<JarbirdPub>.needsGenDoc() = any { it.needsGenDoc() }
 
+// getDocOrNot may be null and (null!=false) == true
 internal fun JarbirdPub.needsGenDoc() = genDocOrNot() != false

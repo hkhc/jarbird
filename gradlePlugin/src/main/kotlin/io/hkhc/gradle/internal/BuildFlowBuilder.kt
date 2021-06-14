@@ -22,6 +22,7 @@ import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryConfig
 import io.hkhc.gradle.internal.dokka.DokkaConfig
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import org.gradle.api.Project
 
 /**
@@ -91,8 +92,7 @@ internal class BuildFlowBuilder(
                     }
                 )
 
-                /* we support release gradle plugin or snapshot library, but not snapshot gradle plugin, to bintray */
-                if (pubs.needArtifactory()) {
+                if (pubs.needReposWithType<ArtifactoryRepoSpec>()) {
                     logger.info("config artifactory")
                     ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()
                 }

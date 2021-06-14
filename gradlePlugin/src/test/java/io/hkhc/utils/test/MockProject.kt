@@ -16,13 +16,16 @@
  *
  */
 
-package io.hkhc.gradle.internal
+package io.hkhc.utils.test
 
 import io.hkhc.utils.tree.Node
 import io.hkhc.utils.tree.Tree
 import io.mockk.every
 import io.mockk.mockk
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
+import org.gradle.api.specs.Spec
 
 fun createMockProjectTree(stringNode: Node<String>, map: MutableMap<String, Project>, rootProj: Project?, parentProj: Project?): Project {
     val p = mockk<Project> {
@@ -36,7 +39,21 @@ fun createMockProjectTree(stringNode: Node<String>, map: MutableMap<String, Proj
             childMap[item.text()] = createMockProjectTree(item, map, rootProj?: this, this)
             childMap
         }
-        every { tasks } returns MockTaskContainer(this)
+        every { tasks } returns MockTaskContainer(this).apply {
+            mockWithTypeTasks = mapOf(
+                PublishToMavenRepository::class.java to mockk<PublishToMavenRepository>(relaxed = true) {
+                    val task = this
+                    every { onlyIf(any<Spec<Task>>()) } answers {
+                        val action = firstArg<Spec<Task>>()
+                        action.isSatisfiedBy(task)
+                    }
+                }
+            )
+        }
+
+        every { extensions } returns MockExtensionContainer()
+        every { logger } returns mockk(relaxUnitFun = true)
+
         println("save to global map (${stringNode.text()})")
         map[stringNode.text()] = this
     }

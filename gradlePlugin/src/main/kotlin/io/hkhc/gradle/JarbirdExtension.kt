@@ -28,6 +28,6 @@ interface JarbirdExtension : RepoDeclaration, DocDeclaration, SigningStrategy, V
     fun pub(action: Closure<JarbirdPub>): JarbirdPub
     fun pub(variant: String, action: Closure<JarbirdPub>): JarbirdPub
     /* to be invoked by Kotlin Gradle script */
-    fun pub(action: JarbirdPub.() -> Unit): JarbirdPub
-    fun pub(variant: String, action: JarbirdPub.() -> Unit): JarbirdPub
+    fun pub(action: JarbirdPub.() -> Unit = {}): JarbirdPub
+    fun pub(variant: String, action: JarbirdPub.() -> Unit = {}): JarbirdPub
 }

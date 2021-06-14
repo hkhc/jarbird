@@ -31,13 +31,14 @@ import org.gradle.api.Project
 
 open class RepoDeclarationsImpl(
     private val project: Project,
-    private val projectProperty: ProjectProperty,
+    projectProperty: ProjectProperty,
     private val parentRepoDeclaration: RepoDeclaration? = null
 ) : RepoDeclaration {
 
     protected val mRepos = mutableSetOf<RepoSpec>()
     private val repoSpecBuilder = PropertyRepoSpecBuilder(projectProperty)
 
+    // Ensure one instance per pub
     override fun mavenCentral(): RepoSpec {
         return mRepos.find { it is MavenCentralRepoSpec } ?: repoSpecBuilder.buildMavenCentral(project).also {
             mRepos.add(it)
@@ -55,12 +56,14 @@ open class RepoDeclarationsImpl(
         }
     }
 
+    // Ensure one instance per pub
     override fun mavenLocal(): RepoSpec {
         return mRepos.find { it is MavenLocalRepoSpec } ?: repoSpecBuilder.buildMavenLocalRepo().also {
             mRepos.add(it)
         }
     }
 
+    // Ensure one instance per pub
     override fun gradlePortal(): RepoSpec {
         return mRepos.find { it is GradlePortalSpec } ?: repoSpecBuilder.buildGradlePluginRepo().also {
             mRepos.add(it)

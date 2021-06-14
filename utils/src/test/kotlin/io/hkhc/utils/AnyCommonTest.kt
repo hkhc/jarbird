@@ -18,9 +18,6 @@
 
 package io.hkhc.utils
 
-import io.hkhc.gradle.internal.utils.commonEquals
-import io.hkhc.gradle.internal.utils.commonHashCode
-import io.hkhc.gradle.internal.utils.commonToString
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe

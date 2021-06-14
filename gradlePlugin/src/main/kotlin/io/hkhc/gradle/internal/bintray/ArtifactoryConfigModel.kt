@@ -23,26 +23,28 @@ import io.hkhc.gradle.internal.markerPubName
 import io.hkhc.gradle.internal.pubNameWithVariant
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.effectiveUrl
+import io.hkhc.gradle.internal.reposWithType
 import org.gradle.api.GradleException
 
 class ArtifactoryConfigModel(pubs: List<JarbirdPub>) {
 
     private val pubsWithArtifactory = pubs.filter { it.getRepos().any { repos -> repos is ArtifactoryRepoSpec } }
-    private val artifactoryRepoSpecs = pubs.flatMap { it.getRepos() }.filterIsInstance<ArtifactoryRepoSpec>()
+    private val artifactoryRepoSpecs = pubs.reposWithType<ArtifactoryRepoSpec>()
 
     init {
         if (mixedSnapshotRelease(pubs)) {
             throw GradleException("Component published to Artifactory must be all release or all snapshot.")
         }
 
-        if (artifactoryRepoSpecs.toSet().size > 1) {
+        if (artifactoryRepoSpecs.size > 1) {
             throw GradleException("Only one artifactory repo is supported in one project or sub-project.")
         }
     }
 
     fun needsArtifactory() = pubsWithArtifactory.isNotEmpty()
 
-    val repoSpec = if (artifactoryRepoSpecs.isEmpty()) null else artifactoryRepoSpecs[0]
+    // we know artifactoryRepoSpecs is not empty and has at most 1 element when we use iternator().next()
+    val repoSpec = if (artifactoryRepoSpecs.isEmpty()) null else artifactoryRepoSpecs.iterator().next()
     val publications = pubsWithArtifactory.flatMap { publicationsFromPub(it) }
 
     // if repoSpec is not null, pubsWithArtifactory should be non-empty

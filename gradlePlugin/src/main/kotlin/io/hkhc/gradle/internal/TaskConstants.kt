@@ -32,22 +32,14 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 
-internal const val JB_TASK_PREFIX = "jbPublish"
+internal const val JB_PUBLISH_TASK_PREFIX = "jbPublish"
 internal const val MAVEN_LOCAL_CAP = "MavenLocal"
 
-//internal const val TO_MAVEN_LOCAL = "To$MAVEN_LOCAL_CAP"
-//internal const val TO_MAVEN_REPO = "ToMavenRepository"
-//internal const val TO_GRADLE_PORTAL = "ToGradlePortal"
-//internal const val TO_BINTRAY = "ToBintray"
 internal const val TO_ARTIFACTORY = "ToArtifactory"
 
 internal const val PLUGIN_MARKER_PUB_SUFFIX = "PluginMarkerMaven"
 
-//private const val JB_PUBLISH_TO_MAVEN_LOCAL_TASK = "$JB_TASK_PREFIX$TO_MAVEN_LOCAL"
-//private const val JB_PUBLISH_TO_MAVEN_REPO_TASK = "$JB_TASK_PREFIX$TO_MAVEN_REPO"
-//private const val JB_PUBLISH_TO_BINTRAY_TASK = "$JB_TASK_PREFIX$TO_BINTRAY"
-private const val JB_PUBLISH_TO_ARTIFACTORY_TASK = "$JB_TASK_PREFIX$TO_ARTIFACTORY"
-//internal const val JB_PUBLISH_TO_GRADLE_PORTAL_TASK = "$JB_TASK_PREFIX$TO_GRADLE_PORTAL"
+private const val JB_PUBLISH_TO_ARTIFACTORY_TASK = "$JB_PUBLISH_TASK_PREFIX$TO_ARTIFACTORY"
 
 abstract class TaskInfo {
 
@@ -164,7 +156,7 @@ object JbPublish {
     private fun newInfo(n: String, d: String) = SimpleTaskInfo(n, d)
     private fun newInfo(n: () -> String, d: () -> String) = SimpleTaskInfo(n, d)
 
-    private val initialInfo = newInfo(JB_TASK_PREFIX, "Publish")
+    private val initialInfo = newInfo(JB_PUBLISH_TASK_PREFIX, "Publish")
 
     fun pub(pub: JarbirdPub) = Pub(initialInfo, pub)
 

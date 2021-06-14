@@ -28,6 +28,6 @@ interface PluginConfig {
         projectProperty: ProjectProperty,
         pomResolver: PomResolver
     ): JarbirdExtensionImpl
-    fun shallCreateImplicit(): Boolean
+//    fun shallCreateImplicit(): Boolean
     fun pluginId(): String
 }

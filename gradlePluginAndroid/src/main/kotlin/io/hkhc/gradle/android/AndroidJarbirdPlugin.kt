@@ -55,9 +55,9 @@ class AndroidJarbirdPlugin : Plugin<Project> {
             )
         }
 
-        override fun shallCreateImplicit(): Boolean {
-            return false
-        }
+//        override fun shallCreateImplicit(): Boolean {
+//            return false
+//        }
 
         override fun pluginId(): String {
             return PLUGIN_ID
