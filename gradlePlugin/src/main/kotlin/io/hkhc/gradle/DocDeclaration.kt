@@ -27,7 +27,7 @@ interface DocDeclaration {
 
     fun noDoc()
     fun genDoc()
-    fun genDocOrNot() : Boolean?
+    fun genDocOrNot(): Boolean?
     fun dokkaConfig(action: Closure<DokkaTask>)
     fun dokkaConfig(block: DokkaTask.(pub: JarbirdPub) -> Unit)
 }

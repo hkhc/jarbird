@@ -64,9 +64,9 @@ class AndroidJarbirdPubImpl(
     }
 
     // As initial value, we don't use getter wrapper to access component and sourceSet.
-    override fun sourceSetModel(): SourceSetModel? = if (libraryVariant != null)
+    override fun sourceSetModel(): SourceSetModel? = if (libraryVariant != null) {
         AndroidLibraryVariantSourceSetModel(project, libraryVariant!!)
-    else
+    } else {
         super.sourceSetModel()
-
+    }
 }

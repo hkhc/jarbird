@@ -22,7 +22,6 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 
-
 class JavaConventionSourceSetModel(
     private val project: Project,
     private val sourceSetName: String = "main"
@@ -34,7 +33,6 @@ class JavaConventionSourceSetModel(
             JavaPluginConvention::class.java
         )
         return javaPlugin.sourceSets.getByName(name)
-
     }
 
     override val sourceFolders: Set<Any>

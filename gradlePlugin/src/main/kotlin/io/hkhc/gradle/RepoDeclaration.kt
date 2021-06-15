@@ -26,5 +26,4 @@ interface RepoDeclaration {
     fun gradlePortal(): RepoSpec
     fun artifactory(key: String): RepoSpec
     fun getRepos(): Set<RepoSpec>
-
 }

@@ -36,12 +36,11 @@ class DocDeclarationImplTest : FunSpec({
             this shouldBe mockedDokkaTask
             pub shouldBe mockedPub
             configExecuted = true
-        } .apply {
+        }.apply {
             dokkaConfig.invoke(mockedDokkaTask, mockedPub)
         }
 
         configExecuted shouldBe true
-
     }
 
     test("Specify a config") {
@@ -53,7 +52,7 @@ class DocDeclarationImplTest : FunSpec({
 
         DocDeclarationImpl { pub ->
             defaultConfigExecuted = true
-        } .apply {
+        }.apply {
             dokkaConfig { pub ->
                 this shouldBe mockedDokkaTask
                 pub shouldBe mockedPub
@@ -64,7 +63,6 @@ class DocDeclarationImplTest : FunSpec({
 
         defaultConfigExecuted shouldBe false
         customConfigExecuted shouldBe true
-
     }
 
     test("parent declaration with config and have local config") {
@@ -89,7 +87,6 @@ class DocDeclarationImplTest : FunSpec({
 
         parentConfigExecuted shouldBe false
         defaultConfigExecuted shouldBe true
-
     }
 
     test("with parent declaration default config and no local config") {
@@ -107,13 +104,12 @@ class DocDeclarationImplTest : FunSpec({
 
         DocDeclarationImpl(parent) { pub ->
             defaultConfigExecuted = true
-        } .apply {
+        }.apply {
             dokkaConfig.invoke(mockedDokkaTask, mockedPub)
         }
 
         defaultConfigExecuted shouldBe false
         parentConfigExecuted shouldBe true
-
     }
 
     test("with parent declaration custom config and no local config") {
@@ -133,13 +129,12 @@ class DocDeclarationImplTest : FunSpec({
 
         DocDeclarationImpl(parent) { pub ->
             defaultConfigExecuted = true
-        } .apply {
+        }.apply {
             dokkaConfig.invoke(mockedDokkaTask, mockedPub)
         }
 
         defaultConfigExecuted shouldBe false
         parentConfigExecuted shouldBe true
-
     }
 
     test("with parent declaration custom config and local custom config") {
@@ -158,7 +153,7 @@ class DocDeclarationImplTest : FunSpec({
 
         DocDeclarationImpl(parent) { pub ->
             defaultConfigExecuted = true
-        } .apply {
+        }.apply {
             dokkaConfig { pub ->
                 this shouldBe mockedDokkaTask
                 pub shouldBe mockedPub
@@ -170,8 +165,5 @@ class DocDeclarationImplTest : FunSpec({
         defaultConfigExecuted shouldBe false
         customConfigExecuted shouldBe true
         parentConfigExecuted shouldBe false
-
     }
-
-
 })

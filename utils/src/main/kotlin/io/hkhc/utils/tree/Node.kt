@@ -30,4 +30,3 @@ interface Node<T> {
     fun addChild(node: Node<T>)
     fun newInstance(value: T): Node<T>
 }
-

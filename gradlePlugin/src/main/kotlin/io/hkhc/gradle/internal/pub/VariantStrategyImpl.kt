@@ -20,7 +20,6 @@ package io.hkhc.gradle.internal.pub
 
 import io.hkhc.gradle.VariantMode
 import io.hkhc.gradle.VariantStrategy
-import io.hkhc.gradle.pom.Pom
 
 open class VariantStrategyImpl(
     private val parent: VariantStrategy? = null

@@ -19,17 +19,14 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.utils.test.MockProjectProperty
-import io.hkhc.utils.test.tempDirectory
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import org.gradle.api.Project
 import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.tasks.SourceSet
-import java.io.File
 
 class JarbirdPubImplTest : FunSpec({
 
@@ -56,8 +53,6 @@ class JarbirdPubImplTest : FunSpec({
         )
 
         ext = mockk()
-
-
     }
 
     test("Default value") {
@@ -68,9 +63,7 @@ class JarbirdPubImplTest : FunSpec({
         pub.from(component)
         pub.component shouldBe component
         pub.sourceSet.shouldBeNull()
-
     }
-
 
     test("Setup component") {
         val pub = JarbirdPubImpl(project, ext, ext, ext, projectProperty)
@@ -80,7 +73,6 @@ class JarbirdPubImplTest : FunSpec({
         pub.from(component)
         pub.component shouldBe component
         pub.sourceSet.shouldBeNull()
-
     }
 
     test("Setup sourceSet") {
@@ -91,8 +83,5 @@ class JarbirdPubImplTest : FunSpec({
         pub.from(sourceSet)
         pub.sourceSet shouldBe sourceSet
         pub.component.shouldBeNull()
-
     }
-
-
 })

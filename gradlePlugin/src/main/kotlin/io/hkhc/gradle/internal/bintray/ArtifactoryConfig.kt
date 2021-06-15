@@ -49,8 +49,9 @@ class ArtifactoryConfig(
         // - all ArtifactoryRepoSpec in all pubs are the same.
         // - all coordinate are either all release or all snapshot
 
-        if (pubs.isEmpty())
+        if (pubs.isEmpty()) {
             throw GradleException("No pubs to config")
+        }
 
         val model = ArtifactoryConfigModel(pubs)
 

@@ -50,9 +50,8 @@ fun MockTaskContainer.convertToTrees(theme: TreeTheme = NoBarTheme): List<Tree<S
         .toSet()
 
     // remove these nodes from the map
-    allChilds.forEach {nodeMap.remove(it) }
+    allChilds.forEach { nodeMap.remove(it) }
 
     // create a tree for each of remaining nodes in map
     return nodeMap.map { entry -> Tree(entry.value, theme) }
-
 }

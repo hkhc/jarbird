@@ -53,8 +53,9 @@ class ArtifactoryConfigModel(pubs: List<JarbirdPub>) {
     private fun publicationsFromPub(pub: JarbirdPub): List<String> {
         val result = mutableListOf<String>()
         result.add(pub.pubNameWithVariant())
-        if (pub.pom.isGradlePlugin())
+        if (pub.pom.isGradlePlugin()) {
             result.add(pub.markerPubName)
+        }
         return result
     }
 

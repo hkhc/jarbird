@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.internal.utils
 
-import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.PomResolver
 
@@ -29,11 +28,7 @@ fun normalizePubName(name: String): String {
     name.forEach {
         if (it.isLetterOrDigit()) {
             if (newWord) {
-                if (firstWord) {
-                    newName.append(it.toLowerCase())
-                } else {
-                    newName.append(it.toUpperCase())
-                }
+                newName.append(if (firstWord) it.toLowerCase() else it.toUpperCase())
                 newWord = false
             } else {
                 newName.append(it)
@@ -55,4 +50,3 @@ fun initPub(pomResolver: PomResolver, pub: JarbirdPubImpl) {
     // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
     pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
 }
-

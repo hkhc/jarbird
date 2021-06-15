@@ -37,8 +37,6 @@ import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.SP_EXT_NAME
 import io.hkhc.gradle.internal.SourceResolver
 import io.hkhc.gradle.internal.gradleAfterEvaluate
-import io.hkhc.gradle.internal.isMultiProjectRoot
-import io.hkhc.gradle.internal.isRoot
 import io.hkhc.gradle.internal.needGradlePlugin
 import io.hkhc.gradle.internal.utils.detailMessageError
 import io.hkhc.gradle.internal.utils.fatalMessage
@@ -147,47 +145,47 @@ open class JarbirdPlugin : Plugin<Project> {
      * important. So mess around them without know exactly the consequence.
      *
 
-    gradle.afterEvaluate
-    - Sync POM
-    - Phase 1
-    - config artifactory extension
-    - plugin: bintray gradle.afterEvaluate
-    - Phase 2
-    - config plugin publishing
+        gradle.afterEvaluate
+        - Sync POM
+        - Phase 1
+        - config artifactory extension
+        - plugin: bintray gradle.afterEvaluate
+        - Phase 2
+        - config plugin publishing
 
-    project.afterEvaluate
-    - Phase 3
-    - ...
-    - gradle plugin
-    setup testkit dependency
-    validate plugin config
-    - Phase 4
-    configure publishing
-    configure signing
-    setup tasks
+        project.afterEvaluate
+        - Phase 3
+        - ...
+        - gradle plugin
+        setup testkit dependency
+        validate plugin config
+        - Phase 4
+        configure publishing
+        configure signing
+        setup tasks
 
-    gradle.projectEvaluated
-    - bintray
+        gradle.projectEvaluated
+        - bintray
 
-    ------------------------------------------------
+        ------------------------------------------------
 
-    ProjectEvaluationListener is invoked before any project.afterEvaluate.
-    So we use projectEvaluateListener to make sure our setup has done before the projectEvaluationListener
-    in other plugins.
+        ProjectEvaluationListener is invoked before any project.afterEvaluate.
+        So we use projectEvaluateListener to make sure our setup has done before the projectEvaluationListener
+        in other plugins.
 
-    Further, the ProjectEvaluationListener added by Gradle.addProjectEvaluationListener() within
-    project.afterEvaluate will not be executed, as the ProjectEvaluateListeners have been executed
-    before callback of project.afterEvaluate and will not go back to run again. So if a plugin needs to invoke
-    project.afterEvaluate, then it should not be applied within another project.afterEvaluate. However it is
-    OK to apply it in ProjectEvaluationListener.
+        Further, the ProjectEvaluationListener added by Gradle.addProjectEvaluationListener() within
+        project.afterEvaluate will not be executed, as the ProjectEvaluateListeners have been executed
+        before callback of project.afterEvaluate and will not go back to run again. So if a plugin needs to invoke
+        project.afterEvaluate, then it should not be applied within another project.afterEvaluate. However it is
+        OK to apply it in ProjectEvaluationListener.
 
-    Setup bintrayExtension before bintray's ProjectEvaluationListener.afterEvaluate
-    which expect bintray extension to be ready.
-    The bintray task has been given publication names and it is fine the the publication
-    is not ready yet. The actual publication is not accessed until execution of task.
+        Setup bintrayExtension before bintray's ProjectEvaluationListener.afterEvaluate
+        which expect bintray extension to be ready.
+        The bintray task has been given publication names and it is fine the the publication
+        is not ready yet. The actual publication is not accessed until execution of task.
 
-    Setup publication for android library shall be done at late afterEvaluate, so that android library plugin
-    has change to create the components and source sets.
+        Setup publication for android library shall be done at late afterEvaluate, so that android library plugin
+        has change to create the components and source sets.
 
      */
     override fun apply(p: Project) {

@@ -45,5 +45,4 @@ interface JarbirdPub : RepoDeclaration, SigningStrategy, PubVariantStrategy, Doc
     fun sourceSetNames(vararg names: String): Any
     fun sourceSetNames(names: List<String>): Any
     fun sourceDirs(dirs: Any): Any
-
 }

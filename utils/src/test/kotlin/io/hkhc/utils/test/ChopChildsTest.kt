@@ -24,32 +24,37 @@ import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class ChopChildsTest: FunSpec({
+class ChopChildsTest : FunSpec({
 
     test("single node") {
 
-        TreePrinter().dumpToString(stringTreeOf {
-            "Hello"()
-        }.chopChilds { it.text() == "Hello" } ) shouldBe
-        TreePrinter().dumpToString(stringTreeOf {
+        TreePrinter().dumpToString(
+            stringTreeOf {
                 "Hello"()
-            })
-
+            }.chopChilds { it.text() == "Hello" }
+        ) shouldBe
+        TreePrinter().dumpToString(
+            stringTreeOf {
+                "Hello"()
+            }
+        )
     }
 
     test("two node and chop nothing") {
 
-        TreePrinter().dumpToString(stringTreeOf {
-            "Hello" {
-                "World"()
-            }
-        }.chopChilds { it.text() == "Hellox" } ) shouldBe
-            TreePrinter().dumpToString(stringTreeOf {
+        TreePrinter().dumpToString(
+            stringTreeOf {
                 "Hello" {
                     "World"()
                 }
-            })
-
+            }.chopChilds { it.text() == "Hellox" }
+        ) shouldBe
+            TreePrinter().dumpToString(
+                stringTreeOf {
+                    "Hello" {
+                        "World"()
+                    }
+                }
+            )
     }
-
 })

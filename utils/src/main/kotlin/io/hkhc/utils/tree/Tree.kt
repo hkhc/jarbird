@@ -26,7 +26,7 @@ open class Tree<T>(private var root: Node<T>? = null, var theme: TreeTheme = def
 //    abstract fun newTree(rootNode: Node<T>): Tree<T>
 
     fun getRoot(): Node<T> {
-        return root?: throw TreeException("no root node in tree")
+        return root ?: throw TreeException("no root node in tree")
     }
 
     fun getRootOrNull(): Node<T>? {

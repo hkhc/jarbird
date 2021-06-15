@@ -112,7 +112,7 @@ class PluginPublishingConfig(
         tags = model.tags
 
         plugins {
-            model.publishingPub.also{ pub ->
+            model.publishingPub.also { pub ->
                 mavenCoordinates {
                     group = pub.pom.group
                     artifactId = pub.pom.artifactId
@@ -127,7 +127,6 @@ class PluginPublishingConfig(
             }
         }
     }
-
 
     private fun GradlePluginDevelopmentExtension.config(model: PluginPublishingModel) {
 

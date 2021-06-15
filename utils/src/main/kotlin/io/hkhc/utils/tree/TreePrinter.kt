@@ -77,5 +77,4 @@ class TreePrinter(private val theme: TreeTheme = defaultTreeTheme) {
             }
         }
     }
-
 }

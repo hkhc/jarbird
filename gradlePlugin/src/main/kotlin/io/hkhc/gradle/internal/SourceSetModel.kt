@@ -18,8 +18,6 @@
 
 package io.hkhc.gradle.internal
 
-import java.io.File
-
 interface SourceSetModel {
 
     /**
@@ -32,5 +30,4 @@ interface SourceSetModel {
      * Classpath to compile the soruce code specified in #sourceFolders
      */
     val classpath: Set<Any>
-
 }

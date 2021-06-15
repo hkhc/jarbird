@@ -153,7 +153,6 @@ internal class PublishingConfig(
 
                 if (publishJarTask == null) {
                     pub.component?.let { from(it) } ?: throw GradleException("Software component is not set.")
-
                 } else {
                     artifactCompat(publishJarTask)
                 }

@@ -43,9 +43,11 @@ class TaskBuilderTest : FunSpec({
     context("gradle portal") {
 
         test("single project one pub to gradle portal") {
-            val projectMap = createMockProjectTree(stringTreeOf(RoundTheme) {
-                "app"()
-            })
+            val projectMap = createMockProjectTree(
+                stringTreeOf {
+                    "app"()
+                }
+            )
             val project = projectMap["app"]!!
 
             TaskInfo.eagar = true
@@ -75,9 +77,11 @@ class TaskBuilderTest : FunSpec({
         }
 
         test("single project two pubs to gradle portal") {
-            val projectMap = createMockProjectTree(stringTreeOf(RoundTheme) {
-                "app"()
-            })
+            val projectMap = createMockProjectTree(
+                stringTreeOf(RoundTheme) {
+                    "app"()
+                }
+            )
             val project = projectMap["app"]!!
 
             TaskInfo.eagar = true
@@ -85,7 +89,7 @@ class TaskBuilderTest : FunSpec({
             val pubs = List<JarbirdPub>(2) {
                 mockk {
                     every { variant } returns ""
-                    every { pubName } returns "pub${it+1}"
+                    every { pubName } returns "pub${it + 1}"
                     every { pom } returns Pom(plugin = PluginInfo())
                     every { getRepos() } returns setOf<RepoSpec>(GradlePortalSpecImpl())
                 }
@@ -109,5 +113,4 @@ class TaskBuilderTest : FunSpec({
                 )
         }
     }
-
 })

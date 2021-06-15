@@ -50,7 +50,6 @@ internal class TaskBuilder(
                 dependsOn(pubTask.name)
             }
         }
-
     }
 
     fun TaskContainer.registerPublishTask() {

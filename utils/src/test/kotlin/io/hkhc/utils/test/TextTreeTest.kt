@@ -27,46 +27,53 @@ import io.kotest.matchers.shouldBe
 class TextTreeTest : StringSpec({
 
     "Single Node" {
-        TreePrinter(TaskTreeTheme).dumpToString(stringTreeOf {
-            +"Hello"
-        }) shouldBe """
+        TreePrinter(TaskTreeTheme).dumpToString(
+            stringTreeOf {
+                +"Hello"
+            }
+        ) shouldBe """
             Hello
         """.trimIndent() + "\n"
     }
 
     "One Child" {
-        TreePrinter(TaskTreeTheme).dumpToString(stringTreeOf {
-            "Hello" {
-                +"World"
+        TreePrinter(TaskTreeTheme).dumpToString(
+            stringTreeOf {
+                "Hello" {
+                    +"World"
+                }
             }
-        }) shouldBe """
+        ) shouldBe """
             Hello
             \--- World
         """.trimIndent() + "\n"
     }
 
     "Two Children" {
-        TreePrinter(TaskTreeTheme).dumpToString(stringTreeOf {
-            "Hello" {
-                +"World"
-                +"Zero"
+        TreePrinter(TaskTreeTheme).dumpToString(
+            stringTreeOf {
+                "Hello" {
+                    +"World"
+                    +"Zero"
+                }
             }
-        }) shouldBe """
+        ) shouldBe """
             Hello
             +--- World
             \--- Zero
         """.trimIndent() + "\n"
     }
 
-
     "Three generation" {
-        TreePrinter(TaskTreeTheme).dumpToString(stringTreeOf {
-            "Hello" {
-                "World" {
-                    + "Leaf"
+        TreePrinter(TaskTreeTheme).dumpToString(
+            stringTreeOf {
+                "Hello" {
+                    "World" {
+                        + "Leaf"
+                    }
                 }
             }
-        }) shouldBe """
+        ) shouldBe """
             Hello
             \--- World
                  \--- Leaf
@@ -74,21 +81,23 @@ class TextTreeTest : StringSpec({
     }
 
     "Two children, Three generation" {
-        TreePrinter(TaskTreeTheme).dumpToString(stringTreeOf {
-            "Hello" {
-                "World" {
-                    + "Leaf"
-                }
-                "Zero" {
-                    + "Leaf 2"
+        TreePrinter(TaskTreeTheme).dumpToString(
+            stringTreeOf {
+                "Hello" {
+                    "World" {
+                        + "Leaf"
+                    }
+                    "Zero" {
+                        + "Leaf 2"
+                    }
                 }
             }
-        }) shouldBe """
+        ) shouldBe """
             Hello
             +--- World
             |    \--- Leaf
             \--- Zero
                  \--- Leaf 2
-             """.trimIndent() + "\n"
+        """.trimIndent() + "\n"
     }
 })

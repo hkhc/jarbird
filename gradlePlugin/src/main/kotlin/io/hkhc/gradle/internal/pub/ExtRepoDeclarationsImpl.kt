@@ -27,7 +27,7 @@ class ExtRepoDeclarationsImpl(
     project: Project,
     projectProperty: ProjectProperty,
     parentRepoDeclaration: RepoDeclaration? = null
-    ) : RepoDeclarationsImpl(project, projectProperty, parentRepoDeclaration) {
+) : RepoDeclarationsImpl(project, projectProperty, parentRepoDeclaration) {
 
 //    private var isDefaultRepos = true
 //
@@ -65,7 +65,6 @@ class ExtRepoDeclarationsImpl(
 //        disableDefaultRepos()
 //        return super.artifactory(key)
 //    }
-
 
     override fun getRepos(): Set<RepoSpec> {
         return mRepos

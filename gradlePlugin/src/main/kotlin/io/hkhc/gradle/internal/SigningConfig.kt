@@ -118,13 +118,15 @@ class SigningConfig(
             isRequired = pub.pom.isRelease()
 
             if (pub.pom.isRelease()) {
-                project.findByType(PublishingExtension::class.java)?.let {
-                    sign(it.publications[pub.pubNameWithVariant()])
-                    if (pub.pom.isGradlePlugin()) {
-                        sign(it.publications[pub.markerPubName])
-                    }
-                }
+                project.findByType(PublishingExtension::class.java)?.addSigningArtifact(this, pub)
             }
+        }
+    }
+
+    private fun PublishingExtension.addSigningArtifact(signingExt: SigningExtension, pub: JarbirdPub) {
+        signingExt.sign(publications[pub.pubNameWithVariant()])
+        if (pub.pom.isGradlePlugin()) {
+            signingExt.sign(publications[pub.markerPubName])
         }
     }
 }

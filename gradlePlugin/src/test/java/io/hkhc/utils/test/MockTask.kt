@@ -40,7 +40,7 @@ import org.gradle.api.tasks.TaskState
 import java.io.File
 import java.time.Duration
 
-class MockTask: Task {
+class MockTask : Task {
 
     lateinit var mockProject: Project
     var mockName: String = ""
@@ -116,10 +116,11 @@ class MockTask: Task {
     }
 
     private fun getPathPrefix(p: Project): String {
-        return if (p.rootProject !== p)
+        return if (p.rootProject !== p) {
             "${getPathPrefix(p.parent!!)}:${p.name}"
-        else
+        } else {
             ""
+        }
     }
 
     override fun getPath(): String {

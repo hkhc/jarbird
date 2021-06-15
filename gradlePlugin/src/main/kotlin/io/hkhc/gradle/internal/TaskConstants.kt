@@ -188,13 +188,14 @@ object JbPublish {
         val mavenRepo = AllMavenRepoTask(prefixInfo.append(toInfo))
         fun mavenCentral(): MavenRepoTask {
             val mavenCentralRepoSpec = pub?.let { it.getRepos().filterIsInstance<MavenCentralRepoSpec>()[0] }
-            if (mavenCentralRepoSpec == null)
+            if (mavenCentralRepoSpec == null) {
                 throw GradleException("No MavenCentral repository is declared")
-            else
+            } else {
                 return MavenRepoTask(
                     prefixInfo.append(toInfo),
                     mavenCentralRepoSpec!!
                 )
+            }
         }
 
         var gradlePortal = GradlePortalTask(prefixInfo.append(toInfo))

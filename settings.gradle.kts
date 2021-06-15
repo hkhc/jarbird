@@ -30,6 +30,7 @@ pluginManagement {
 
 plugins {
     id("de.fayard.refreshVersions") version "0.10.0"
+////                            # available:"0.10.1"
 }
 
 // If you want the root project name to be different from the directory name

@@ -29,7 +29,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 class DocDeclarationImpl(
     private val parent: DocDeclaration? = null,
     private val defaultBlock: (DokkaTask.(pub: JarbirdPub) -> Unit)? = null
-): DocDeclaration {
+) : DocDeclaration {
 
     private var mDokkaConfig: (DokkaTask.(pub: JarbirdPub) -> Unit)? = null
 
@@ -53,7 +53,7 @@ class DocDeclarationImpl(
      * - the dokkaConfig as provided by parent declaration
      * - the local default dokkaConfig
      * - the ultimate default of default "{}"
-      */
+     */
     override val dokkaConfig: DokkaTask.(pub: JarbirdPub) -> Unit
         get() {
             return mDokkaConfig ?: parent?.dokkaConfig ?: defaultBlock ?: { }
@@ -70,6 +70,4 @@ class DocDeclarationImpl(
     override fun dokkaConfig(block: DokkaTask.(pub: JarbirdPub) -> Unit) {
         mDokkaConfig = block
     }
-
-
 }

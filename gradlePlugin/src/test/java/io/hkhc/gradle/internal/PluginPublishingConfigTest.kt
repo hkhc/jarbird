@@ -28,6 +28,7 @@ import io.hkhc.gradle.pom.PluginInfo
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.Scm
 import io.hkhc.gradle.pom.Web
+import io.hkhc.utils.removeLineBreak
 import io.hkhc.utils.test.MockExtensionContainer
 import io.hkhc.utils.test.createMockProjectTree
 import io.hkhc.utils.tree.NoBarTheme
@@ -61,11 +62,9 @@ class PluginPublishingConfigTest : FunSpec({
             "app"()
         })
         project = projectMap["app"]!!
-
     }
 
     context("PluginPublishingModel.filterGradlePluginPubs") {
-
 
         test("empty pub list") {
             PluginPublishingModel.filterGradlePluginPub(project, listOf()) shouldBe listOf()
@@ -90,7 +89,7 @@ class PluginPublishingConfigTest : FunSpec({
             var pubs = List<JarbirdPub>(2) {
                 mockk {
                     every { variant } returns ""
-                    every { pubName } returns "pub${it+1}"
+                    every { pubName } returns "pub${it + 1}"
                     every { pom } returns Pom(plugin = PluginInfo())
                     every { getRepos() } returns setOf<RepoSpec>(GradlePortalSpecImpl())
                 }
@@ -103,8 +102,8 @@ class PluginPublishingConfigTest : FunSpec({
             pubs = List<JarbirdPub>(2) {
                 mockk {
                     every { variant } returns ""
-                    every { pubName } returns "pub${it+1}"
-                    every { pom } returns Pom(plugin = PluginInfo(id = "plugin${it+1}"))
+                    every { pubName } returns "pub${it + 1}"
+                    every { pom } returns Pom(plugin = PluginInfo(id = "plugin${it + 1}"))
                     every { getRepos() } returns setOf<RepoSpec>(GradlePortalSpecImpl())
                 }
             }
@@ -112,8 +111,6 @@ class PluginPublishingConfigTest : FunSpec({
             shouldThrowExactly<GradleException> {
                 PluginPublishingModel.filterGradlePluginPub(project, pubs)
             }.message shouldBe "Plugin implementation class is not specified for pub pub1"
-
-
         }
 
         test("one of the pubs with gradle plugin portal declaration") {
@@ -121,35 +118,52 @@ class PluginPublishingConfigTest : FunSpec({
             var pubs = List<JarbirdPub>(2) {
                 mockk {
                     every { variant } returns ""
-                    every { pubName } returns "pub${it+1}"
-                    every { pom } returns if (it==0) Pom() else Pom(plugin = PluginInfo(id = "plugin${it+1}", implementationClass="myClass${it+1}"))
+                    every { pubName } returns "pub${it + 1}"
+                    every { pom } returns if (it == 0) {
+                        Pom()
+                    } else {
+                        Pom(plugin = PluginInfo(id = "plugin${it + 1}", implementationClass = "myClass${it + 1}"))
+                    }
                     every { getRepos() } returns
-                        if (it==0) setOf<RepoSpec>(MavenLocalRepoSpecImpl())
+                        if (it == 0) setOf<RepoSpec>(MavenLocalRepoSpecImpl())
                         else setOf<RepoSpec>(GradlePortalSpecImpl())
                 }
             }
 
             PluginPublishingModel.filterGradlePluginPub(project, pubs) shouldBe listOf(pubs[1])
-
         }
-
 
         test("two pubs with gradle plugin portal declaration") {
 
             var pubs = List<JarbirdPub>(2) {
                 mockk {
                     every { variant } returns ""
-                    every { pubName } returns "pub${it+1}"
-                    every { pom } returns Pom(plugin = PluginInfo(id = "plugin${it+1}", implementationClass="myClass${it+1}"))
+                    every { pubName } returns "pub${it + 1}"
+                    every { pom } returns Pom(
+                        plugin = PluginInfo(
+                            id = "plugin${it + 1}",
+                            implementationClass = "myClass${it + 1}"
+                        )
+                    )
                     every { getRepos() } returns setOf<RepoSpec>(GradlePortalSpecImpl())
                 }
             }
 
             PluginPublishingModel.filterGradlePluginPub(project, pubs) shouldBe pubs
 
-            verify { project.logger.warn("$LOG_PREFIX More than one pub are declared to perform gradlePluginPublishing. "+
-                "pub1, pub2 Only the first one will be published to Gradle Plugin Portal.") }
-
+            verify {
+                project.logger.warn(
+                    """
+                    $LOG_PREFIX More than one pub are declared to perform gradlePluginPublishing 
+                    (pub1, pub2). 
+                    Only the first one will be published to Gradle Plugin Portal.
+                    """.trimIndent().removeLineBreak(ensureSpaceWithMerge = true)
+//                    """
+//                        $LOG_PREFIX More than one pub are declared to perform gradlePluginPublishing
+//                        (pub1, pub2). Only the first one will be published to Gradle Plugin Portal.
+//                    """.trimIndent().removeLineBreak(ensureSpaceWithMerge = true)
+                )
+            }
         }
 
         test("create plugin entries") {
@@ -157,20 +171,20 @@ class PluginPublishingConfigTest : FunSpec({
             var pubs = List<JarbirdPub>(2) {
                 mockk {
                     every { variant } returns ""
-                    every { pubName } returns "pub${it+1}"
-                    every { pom } returns if (it==0) Pom() else Pom(
+                    every { pubName } returns "pub${it + 1}"
+                    every { pom } returns if (it == 0) Pom() else Pom(
                         group = "myGroup",
                         artifactId = "mylib",
                         version = "1.0",
                         plugin = PluginInfo(
-                            id = "plugin${it+1}",
-                            implementationClass="myClass${it+1}",
+                            id = "plugin${it + 1}",
+                            implementationClass = "myClass${it + 1}",
                             displayName = "displayName"
                         ),
                         description = "description"
                     )
                     every { getRepos() } returns
-                        if (it==0) setOf<RepoSpec>(MavenLocalRepoSpecImpl())
+                        if (it == 0) setOf<RepoSpec>(MavenLocalRepoSpecImpl())
                         else setOf<RepoSpec>(GradlePortalSpecImpl())
                 }
             }
@@ -214,7 +228,6 @@ class PluginPublishingConfigTest : FunSpec({
             shouldThrowExactly<AssertionError> {
                 PluginPublishingModel(project, pubs)
             }
-
         }
 
         test("with gradle plugin declaration and no plugin info") {
@@ -231,18 +244,17 @@ class PluginPublishingConfigTest : FunSpec({
             shouldThrowExactly<AssertionError> {
                 PluginPublishingModel(project, pubs)
             }
-
         }
     }
 
     context("plugin publishing config") {
 
         val mockPluginDeclaration: PluginDeclaration = mockk(relaxUnitFun = true)
-        val mockPluginDeclarationCollection : NamedDomainObjectContainer<PluginDeclaration> = mockk {
+        val mockPluginDeclarationCollection: NamedDomainObjectContainer<PluginDeclaration> = mockk {
             every { maybeCreate(any()) } returns mockPluginDeclaration
         }
 
-        val mockGradlePluginDevelopmentExension =
+        val mockGradlePluginDevelopmentExtension =
             mockk<GradlePluginDevelopmentExtension>(relaxUnitFun = true) {
                 every { plugins(any()) } answers {
                     val block = firstArg<Action<NamedDomainObjectContainer<PluginDeclaration>>>()
@@ -253,8 +265,8 @@ class PluginPublishingConfigTest : FunSpec({
         val mockMavenCoordinates: MavenCoordinates = mockk(relaxUnitFun = true)
         val mockPluginConfig: com.gradle.publish.PluginConfig = mockk(relaxUnitFun = true) { }
         val mockPluginConfigCollection: NamedDomainObjectContainer<com.gradle.publish.PluginConfig> = mockk {
-                every { maybeCreate(any()) } returns mockPluginConfig
-            }
+            every { maybeCreate(any()) } returns mockPluginConfig
+        }
 
         val mockPluginBundleExtension =
             mockk<PluginBundleExtension>(relaxUnitFun = true) {
@@ -279,7 +291,7 @@ class PluginPublishingConfigTest : FunSpec({
             val project = projectMap["app"]!!
 
             (project.extensions as MockExtensionContainer).mockExtensions = mapOf(
-                GradlePluginDevelopmentExtension::class.java to mockGradlePluginDevelopmentExension,
+                GradlePluginDevelopmentExtension::class.java to mockGradlePluginDevelopmentExtension,
                 PluginBundleExtension::class.java to mockPluginBundleExtension
             )
 
@@ -322,19 +334,20 @@ class PluginPublishingConfigTest : FunSpec({
             verify { mockPluginDeclaration.id = "plugin.id" }
             verify { mockPluginDeclaration.implementationClass = "myClass" }
 
-            verify { mockMavenCoordinates.group = "group"}
-            verify { mockMavenCoordinates.artifactId = "mylib"}
-            verify { mockMavenCoordinates.version = "1.0"}
-            verify { mockMavenCoordinates.group = "group"}
+            verify { mockMavenCoordinates.group = "group" }
+            verify { mockMavenCoordinates.artifactId = "mylib" }
+            verify { mockMavenCoordinates.version = "1.0" }
+            verify { mockMavenCoordinates.group = "group" }
 
             verify { mockPluginBundleExtension.website = "http://web" }
             verify { mockPluginBundleExtension.vcsUrl = "http://scm" }
-            verify { mockPluginBundleExtension.description = "description" /* pom.plugin.description fallback to pom.description */ }
+            verify {
+                mockPluginBundleExtension.description =
+                    "description" /* pom.plugin.description fallback to pom.description */
+            }
             verify { mockPluginBundleExtension.tags = listOf("publish") }
 
             verify { mockPluginConfigCollection.maybeCreate("mypub") }
-
         }
     }
-
 })

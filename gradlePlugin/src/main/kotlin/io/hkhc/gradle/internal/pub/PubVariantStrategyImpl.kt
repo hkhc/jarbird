@@ -28,7 +28,7 @@ import io.hkhc.gradle.pom.internal.isSnapshot
 class PubVariantStrategyImpl(
     override val variant: String = "",
     private val parent: VariantStrategy? = null
-): VariantStrategyImpl(parent), PubVariantStrategy {
+) : VariantStrategyImpl(parent), PubVariantStrategy {
 
     override lateinit var pom: Pom
 

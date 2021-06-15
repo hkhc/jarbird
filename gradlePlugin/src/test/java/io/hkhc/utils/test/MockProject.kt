@@ -27,16 +27,21 @@ import org.gradle.api.Task
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.specs.Spec
 
-fun createMockProjectTree(stringNode: Node<String>, map: MutableMap<String, Project>, rootProj: Project?, parentProj: Project?): Project {
+fun createMockProjectTree(
+    stringNode: Node<String>,
+    map: MutableMap<String, Project>,
+    rootProj: Project?,
+    parentProj: Project?
+): Project {
     val p = mockk<Project> {
         println("create project ${stringNode.text()}")
         every { name } returns stringNode.text()
         every { project } returns this
-        every { rootProject } returns (rootProj?: this)
+        every { rootProject } returns (rootProj ?: this)
         every { parent } returns parentProj
 
         every { childProjects } returns stringNode.children().fold(mutableMapOf<String, Project>()) { childMap, item ->
-            childMap[item.text()] = createMockProjectTree(item, map, rootProj?: this, this)
+            childMap[item.text()] = createMockProjectTree(item, map, rootProj ?: this, this)
             childMap
         }
         every { tasks } returns MockTaskContainer(this).apply {
@@ -52,7 +57,12 @@ fun createMockProjectTree(stringNode: Node<String>, map: MutableMap<String, Proj
         }
 
         every { extensions } returns MockExtensionContainer()
-        every { logger } returns mockk(relaxUnitFun = true)
+        every { logger } returns mockk {
+            every { logger.warn(any()) } returns Unit
+            every { logger.debug(any()) } returns Unit
+            every { logger.error(any()) } returns Unit
+            every { logger.info(any()) } returns Unit
+        }
 
         println("save to global map (${stringNode.text()})")
         map[stringNode.text()] = this

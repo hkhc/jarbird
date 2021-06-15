@@ -18,8 +18,6 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.pom.Pom
-
 interface VariantStrategy {
 
     val variantMode: VariantMode
@@ -41,5 +39,4 @@ interface VariantStrategy {
      * e.g. mygroup:mylib:1.0.0
      */
     fun variantInvisible()
-
 }

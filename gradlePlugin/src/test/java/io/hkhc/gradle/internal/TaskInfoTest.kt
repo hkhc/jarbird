@@ -32,20 +32,18 @@ class TaskInfoTest : FunSpec({
         override val description = "newDescription"
     }
 
-
-
     beforeTest {
-
-
     }
 
     test("register task") {
 
         TaskInfo.eagar = false
 
-        val projectMap = createMockProjectTree(stringTreeOf(RoundTheme) {
-            "app" ()
-        })
+        val projectMap = createMockProjectTree(
+            stringTreeOf(RoundTheme) {
+                "app" ()
+            }
+        )
         val project = projectMap.get("app")!!
 
         var callbackExecuted = false
@@ -63,9 +61,5 @@ class TaskInfoTest : FunSpec({
         callbackExecuted shouldBe true
         task.name shouldBe "newTask"
         task.description shouldBe "newDescription"
-
     }
-
-
 })
-

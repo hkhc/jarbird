@@ -118,34 +118,33 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
             val jbPublishPubToCustomMavenRepoTasks = pubs
                 .map { pub -> pub to pub.reposWithType<MavenRepoSpec>() }
                 .filter { it.second.isNotEmpty() }
-                .map { (pub, repos) -> pub
+                .map { (pub, repos) ->
 
-                val customRepoTaskInfos = repos.map { repoSpec ->
-                    // TODO shall repo.name be capitalized?
+                    val customRepoTaskInfos = repos.map { repoSpec ->
+                        // TODO shall repo.name be capitalized?
 
-                    JbPublish.pub(pub).to.mavenRepo(repoSpec).taskInfo.also {
+                        JbPublish.pub(pub).to.mavenRepo(repoSpec).taskInfo.also {
 
-                        val taskName = Publish.pub(pub).to.mavenRepo(repoSpec).taskName
-                        val markerTaskName = Publish.pluginMarker(pub).to.mavenRepo(repoSpec).taskName
+                            val taskName = Publish.pub(pub).to.mavenRepo(repoSpec).taskName
+                            val markerTaskName = Publish.pluginMarker(pub).to.mavenRepo(repoSpec).taskName
 
-                        it.register(container) {
-                            dependsOn(taskName)
-                            if (pub.pom.isGradlePlugin()) {
-                                dependsOn(markerTaskName)
+                            it.register(container) {
+                                dependsOn(taskName)
+                                if (pub.pom.isGradlePlugin()) {
+                                    dependsOn(markerTaskName)
+                                }
                             }
+
+                            taskMap.add(repoSpec, it.name)
                         }
+                    }
 
-                        taskMap.add(repoSpec, it.name)
+                    JbPublish.pub(pub).to.mavenRepo.taskInfo.register(container) {
+                        customRepoTaskInfos.forEach {
+                            dependsOn(it.name)
+                        }
                     }
                 }
-
-                JbPublish.pub(pub).to.mavenRepo.taskInfo.register(container) {
-                    customRepoTaskInfos.forEach {
-                        dependsOn(it.name)
-                    }
-                }
-
-            }
 
             taskMap.repoTaskInfoMap.forEach { (repo, taskList) ->
                 JbPublish.to.mavenRepo(repo).taskInfo.also {
@@ -185,5 +184,4 @@ class MavenTaskBuilder(val project: Project, val pubs: List<JarbirdPub>) {
             }
         }
     }
-
 }

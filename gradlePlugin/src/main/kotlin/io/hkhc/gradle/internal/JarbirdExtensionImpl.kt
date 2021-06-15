@@ -41,8 +41,7 @@ open class JarbirdExtensionImpl(
     RepoDeclaration by ExtRepoDeclarationsImpl(project, projectProperty, getParentExt(project)),
     DocDeclaration by DocDeclarationImpl(getParentExt(project), null /* no default */),
     SigningStrategy by SigningStrategyImpl(getParentExt(project)),
-    VariantStrategy by VariantStrategyImpl(getParentExt(project))
-{
+    VariantStrategy by VariantStrategyImpl(getParentExt(project)) {
 
     val pubList = mutableListOf<JarbirdPub>()
 

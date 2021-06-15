@@ -36,5 +36,4 @@ interface PubVariantStrategy : VariantStrategy {
      * e.g. 1.0.0-variant
      */
     fun variantVersion(): String?
-
 }

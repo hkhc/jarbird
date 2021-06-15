@@ -29,17 +29,15 @@ import io.hkhc.utils.test.MockTaskContainer
 import io.hkhc.utils.test.createMockProjectTree
 import io.hkhc.utils.tree.NoBarTheme
 import io.hkhc.utils.tree.RoundTheme
-import io.hkhc.utils.tree.Tree
 import io.hkhc.utils.tree.defaultTreeTheme
 import io.hkhc.utils.tree.stringTreeOf
-import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 
-class MavenTaskBuilderTest : FunSpec( {
+class MavenTaskBuilderTest : FunSpec({
 
     beforeSpec {
         defaultTreeTheme = NoBarTheme
@@ -48,9 +46,11 @@ class MavenTaskBuilderTest : FunSpec( {
     context("maven local") {
 
         test("single project without maven local repo") {
-            val projectMap = createMockProjectTree(stringTreeOf(RoundTheme) {
-                "app"()
-            })
+            val projectMap = createMockProjectTree(
+                stringTreeOf(RoundTheme) {
+                    "app"()
+                }
+            )
             val project = projectMap["app"]!!
 
             TaskInfo.eagar = true
@@ -73,9 +73,11 @@ class MavenTaskBuilderTest : FunSpec( {
 
         test("register maven local tasks for single project") {
 
-            val projectMap = createMockProjectTree(stringTreeOf(RoundTheme) {
-                "app"()
-            })
+            val projectMap = createMockProjectTree(
+                stringTreeOf {
+                    "app"()
+                }
+            )
             val project = projectMap["app"]!!
 
             TaskInfo.eagar = true
@@ -93,23 +95,27 @@ class MavenTaskBuilderTest : FunSpec( {
             builder.registerMavenLocalTask(project.tasks)
 
             (project.tasks as MockTaskContainer).convertToTrees() shouldBe
-                listOf(stringTreeOf {
-                    "jbPublishToMavenLocal" {
-                        "jbPublishPub1ToMavenLocal" {
-                            "publishPub1PublicationToMavenLocal"()
-                        }
-                        "jbPublishPub2ToMavenLocal" {
-                            "publishPub2PublicationToMavenLocal"()
+                listOf(
+                    stringTreeOf {
+                        "jbPublishToMavenLocal" {
+                            "jbPublishPub1ToMavenLocal" {
+                                "publishPub1PublicationToMavenLocal"()
+                            }
+                            "jbPublishPub2ToMavenLocal" {
+                                "publishPub2PublicationToMavenLocal"()
+                            }
                         }
                     }
-                })
+                )
         }
 
         test("register maven local tasks for single project with gradle plugin pub") {
 
-            val projectMap = createMockProjectTree(stringTreeOf {
-                "app"()
-            })
+            val projectMap = createMockProjectTree(
+                stringTreeOf {
+                    "app"()
+                }
+            )
             val project = projectMap["app"]!!
 
             TaskInfo.eagar = true
@@ -136,30 +142,33 @@ class MavenTaskBuilderTest : FunSpec( {
             builder.registerMavenLocalTask(project.tasks)
 
             (project.tasks as MockTaskContainer).convertToTrees() shouldBe
-                listOf(stringTreeOf {
-                    "jbPublishToMavenLocal" {
-                        "jbPublishPub1ToMavenLocal" {
-                            "publishPub1PublicationToMavenLocal"()
-                        }
-                        "jbPublishPub2ToMavenLocal" {
-                            "publishPub2PublicationToMavenLocal"()
-                        }
-                        "jbPublishPubPluginToMavenLocal" {
-                            "publishPubPluginPublicationToMavenLocal"()
-                            "publishPubPluginPluginMarkerMavenPublicationToMavenLocal"()
+                listOf(
+                    stringTreeOf {
+                        "jbPublishToMavenLocal" {
+                            "jbPublishPub1ToMavenLocal" {
+                                "publishPub1PublicationToMavenLocal"()
+                            }
+                            "jbPublishPub2ToMavenLocal" {
+                                "publishPub2PublicationToMavenLocal"()
+                            }
+                            "jbPublishPubPluginToMavenLocal" {
+                                "publishPubPluginPublicationToMavenLocal"()
+                                "publishPubPluginPluginMarkerMavenPublicationToMavenLocal"()
+                            }
                         }
                     }
-                })
-
+                )
         }
 
         test("register maven local tasks for root project") {
 
-            val projectMap = createMockProjectTree(stringTreeOf(RoundTheme) {
-                "root" {
-                    "app"()
+            val projectMap = createMockProjectTree(
+                stringTreeOf(RoundTheme) {
+                    "root" {
+                        "app"()
+                    }
                 }
-            })
+            )
             projectMap.keys.forEach {
                 println("project key $it")
             }
@@ -193,36 +202,41 @@ class MavenTaskBuilderTest : FunSpec( {
             rootBuilder.registerMavenLocalTask(rootProject.tasks)
 
             (childProject.tasks as MockTaskContainer).convertToTrees() shouldBe
-                listOf(stringTreeOf {
-                    "jbPublishToMavenLocal" {
-                        "jbPublishPub1ToMavenLocal" {
-                            "publishPub1PublicationToMavenLocal"()
-                        }
-                        "jbPublishPub2ToMavenLocal" {
-                            "publishPub2PublicationToMavenLocal"()
+                listOf(
+                    stringTreeOf {
+                        "jbPublishToMavenLocal" {
+                            "jbPublishPub1ToMavenLocal" {
+                                "publishPub1PublicationToMavenLocal"()
+                            }
+                            "jbPublishPub2ToMavenLocal" {
+                                "publishPub2PublicationToMavenLocal"()
+                            }
                         }
                     }
-                })
+                )
 
             (rootProject.tasks as MockTaskContainer).convertToTrees() shouldBe
-                listOf(stringTreeOf {
-                    "jbPublishToMavenLocal" {
-                        "jbPublishPub1ToMavenLocal" {
-                            "publishPub1PublicationToMavenLocal"()
+                listOf(
+                    stringTreeOf {
+                        "jbPublishToMavenLocal" {
+                            "jbPublishPub1ToMavenLocal" {
+                                "publishPub1PublicationToMavenLocal"()
+                            }
                         }
                     }
-                })
+                )
         }
-
     }
 
     context("Maven repo") {
 
         test("register maven repo tasks for single project") {
 
-            val projectMap = createMockProjectTree(stringTreeOf(RoundTheme) {
-                "app"()
-            })
+            val projectMap = createMockProjectTree(
+                stringTreeOf {
+                    "app"()
+                }
+            )
             val project = projectMap.get("app")!!
 
             TaskInfo.eagar = true
@@ -232,11 +246,13 @@ class MavenTaskBuilderTest : FunSpec( {
                 mockk {
                     every { variant } returns ""
                     every { pubName } returns "pub${it + 1}"
-                    every { pom } returns if (it==0) Pom() else Pom(plugin = PluginInfo())
-                    every { getRepos() } returns setOf(MavenRepoSpecImpl(
-                        description = "description",
-                        id = "mock"
-                    ))
+                    every { pom } returns if (it == 0) Pom() else Pom(plugin = PluginInfo())
+                    every { getRepos() } returns setOf(
+                        MavenRepoSpecImpl(
+                            description = "description",
+                            id = "mock"
+                        )
+                    )
                 }
             }
             val builder = MavenTaskBuilder(project, pubs)
@@ -278,9 +294,11 @@ class MavenTaskBuilderTest : FunSpec( {
 
         test("register maven local tasks for single project with gradle plugin pub") {
 
-            val projectMap = createMockProjectTree(stringTreeOf(RoundTheme) {
-                "app"()
-            })
+            val projectMap = createMockProjectTree(
+                stringTreeOf {
+                    "app"()
+                }
+            )
             val project = projectMap["app"]!!
 
             TaskInfo.eagar = true
@@ -290,10 +308,12 @@ class MavenTaskBuilderTest : FunSpec( {
                     every { variant } returns ""
                     every { pubName } returns "pub"
                     every { pom } returns Pom(plugin = PluginInfo())
-                    every { getRepos() } returns setOf<RepoSpec>(MavenRepoSpecImpl(
-                        description = "description",
-                        id = "mock"
-                    ))
+                    every { getRepos() } returns setOf<RepoSpec>(
+                        MavenRepoSpecImpl(
+                            description = "description",
+                            id = "mock"
+                        )
+                    )
                 }
             }
 
@@ -326,9 +346,11 @@ class MavenTaskBuilderTest : FunSpec( {
 
         test("register two maven repo tasks for single project") {
 
-            val projectMap = createMockProjectTree(stringTreeOf {
-                "app"()
-            })
+            val projectMap = createMockProjectTree(
+                stringTreeOf {
+                    "app"()
+                }
+            )
             val project = projectMap.get("app")!!
 
             TaskInfo.eagar = true
@@ -349,7 +371,7 @@ class MavenTaskBuilderTest : FunSpec( {
                         // pub2 only.
                         MavenRepoSpecImpl(
                             description = "description",
-                            id = "mock${it+1}"
+                            id = "mock${it + 1}"
                         )
                     )
                 }
@@ -407,11 +429,13 @@ class MavenTaskBuilderTest : FunSpec( {
 
         test("register maven repo tasks for multi project") {
 
-            val projectMap = createMockProjectTree(stringTreeOf {
-                "root" {
-                    "app"()
+            val projectMap = createMockProjectTree(
+                stringTreeOf {
+                    "root" {
+                        "app"()
+                    }
                 }
-            })
+            )
             val rootProject = projectMap["root"]!!
             val childProject = projectMap["app"]!!
 
@@ -422,11 +446,13 @@ class MavenTaskBuilderTest : FunSpec( {
                 mockk {
                     every { variant } returns ""
                     every { pubName } returns "pub${it + 1}"
-                    every { pom } returns if (it==0) Pom() else Pom(plugin = PluginInfo())
-                    every { getRepos() } returns setOf<RepoSpec>(MavenRepoSpecImpl(
-                        description = "description",
-                        id = "mock"
-                    ))
+                    every { pom } returns if (it == 0) Pom() else Pom(plugin = PluginInfo())
+                    every { getRepos() } returns setOf<RepoSpec>(
+                        MavenRepoSpecImpl(
+                            description = "description",
+                            id = "mock"
+                        )
+                    )
                 }
             }
             val childBuilder = MavenTaskBuilder(childProject, childPubs)
@@ -437,10 +463,12 @@ class MavenTaskBuilderTest : FunSpec( {
                     every { variant } returns ""
                     every { pubName } returns "pub1"
                     every { pom } returns Pom()
-                    every { getRepos() } returns setOf<RepoSpec>(MavenRepoSpecImpl(
-                        description = "description",
-                        id = "mock"
-                    ))
+                    every { getRepos() } returns setOf<RepoSpec>(
+                        MavenRepoSpecImpl(
+                            description = "description",
+                            id = "mock"
+                        )
+                    )
                 }
             }
             val rootBuilder = MavenTaskBuilder(rootProject, rootPubs)

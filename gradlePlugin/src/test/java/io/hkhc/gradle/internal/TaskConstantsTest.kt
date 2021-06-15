@@ -166,7 +166,6 @@ class TaskConstantsTest : FunSpec({
             "publishAbcVarPluginMarkerMavenPublicationToMavenLocal"
         Publish.pluginMarker(pubPlugin).to.mavenRepo(mavenRepo).taskName shouldBe
             "publishAbcVarPluginMarkerMavenPublicationToMavenMockRepository"
-
     }
 
     test("Jarbird publish all to one repo") {

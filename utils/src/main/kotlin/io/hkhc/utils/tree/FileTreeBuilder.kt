@@ -20,8 +20,7 @@ package io.hkhc.utils.tree
 
 import java.io.File
 
-//class FileTreeBuilder: TreeBuilder<File>()
+// class FileTreeBuilder: TreeBuilder<File>()
 
 fun fileTreeOf(theme: TreeTheme = defaultTreeTheme, block: TreeBuilder<File>.() -> Unit) =
     TreeBuilder<File>(theme, ::FileNode).build(null, block)
-

@@ -22,7 +22,7 @@ import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class NodeTest : FunSpec( {
+class NodeTest : FunSpec({
 
     test("one node equality") {
 
@@ -62,7 +62,7 @@ class NodeTest : FunSpec( {
             }
         }
 
-        (n1==n2) shouldBe true
-        (n1==n3) shouldBe false
+        (n1 == n2) shouldBe true
+        (n1 == n3) shouldBe false
     }
 })

@@ -232,7 +232,10 @@ class JarbirdExtensionTest : FunSpec({
                 ext.finalizeRepos()
 
                 ext.getRepos().shouldContainExactlyInAnyOrder(
-                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock"))
+                    setOf(
+                        MavenLocalRepoSpecImpl(),
+                        PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock")
+                    )
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {
@@ -294,7 +297,10 @@ class JarbirdExtensionTest : FunSpec({
                 ext.finalizeRepos()
 
                 ext.getRepos().shouldContainExactlyInAnyOrder(
-                    setOf(MavenLocalRepoSpecImpl(), PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock"))
+                    setOf(
+                        MavenLocalRepoSpecImpl(),
+                        PropertyRepoSpecBuilder(projectProperty).buildArtifactoryRepo("mock")
+                    )
                 )
 
                 if (ext.pubList[0].pom.isSnapshot()) {

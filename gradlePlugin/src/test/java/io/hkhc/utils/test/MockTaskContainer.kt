@@ -38,11 +38,11 @@ import org.gradle.kotlin.dsl.invoke
 import java.util.SortedMap
 import java.util.SortedSet
 
-class MockTaskContainer(val mockProject: Project): TaskContainer {
+class MockTaskContainer(val mockProject: Project) : TaskContainer {
 
     var mockTasks = mutableListOf<Task>()
 
-    var mockWithTypeTasks: Map<Class<out Task>,Task> = mutableMapOf()
+    var mockWithTypeTasks: Map<Class<out Task>, Task> = mutableMapOf()
 
     override fun add(element: Task): Boolean {
         TODO("Not yet implemented")
@@ -325,10 +325,11 @@ class MockTaskContainer(val mockProject: Project): TaskContainer {
     override fun findByPath(path: String): Task? {
 //        println("findByPath ${path} in ${mockProject.name}")
 //        println(" tasks " + mockTasks.joinToString(separator = ",") { it.path })
-        return if (!path.contains(":"))
+        return if (!path.contains(":")) {
             findByName(path)
-        else
+        } else {
             mockTasks.find { it.path == path }
+        }
     }
 
     override fun getByPath(path: String): Task {

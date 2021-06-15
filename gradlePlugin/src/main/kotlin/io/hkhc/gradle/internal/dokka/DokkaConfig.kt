@@ -60,7 +60,7 @@ internal class DokkaConfig(
         project.logger.debug("$LOG_PREFIX Configure Dokka at root project")
 
         JbDokkaTaskInfo().register(project.tasks, DokkaMultiModuleTask::class.java) {
-            pubs.filter { it.needsGenDoc() } .forEach { pub ->
+            pubs.filter { it.needsGenDoc() }.forEach { pub ->
                 addSubprojectChildTasks(JbDokkaPubTaskInfo(pub).name)
             }
         }

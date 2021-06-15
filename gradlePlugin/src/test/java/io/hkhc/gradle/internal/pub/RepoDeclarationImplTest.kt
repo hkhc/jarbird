@@ -18,9 +18,7 @@
 
 package io.hkhc.gradle.internal.pub
 
-import io.hkhc.gradle.internal.DefaultProjectInfo
 import io.hkhc.gradle.internal.JarbirdLogger
-import io.hkhc.gradle.internal.ProjectInfo
 import io.hkhc.gradle.internal.ProjectProperty
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.GradlePortalSpec
@@ -37,7 +35,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.every
 import io.mockk.mockk
 import org.gradle.api.Project
-import org.gradle.api.logging.Logger
 import java.io.File
 
 class RepoDeclarationImplTest : FunSpec({
@@ -66,7 +63,6 @@ class RepoDeclarationImplTest : FunSpec({
                 "repository.artifactory.mock.repoKey" to "oss-snapshot-local"
             )
         )
-
     }
 
     context("single RepoDeclaration") {
@@ -260,5 +256,4 @@ class RepoDeclarationImplTest : FunSpec({
             }
         }
     }
-
 })

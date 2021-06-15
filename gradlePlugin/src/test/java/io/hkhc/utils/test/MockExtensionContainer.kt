@@ -18,17 +18,15 @@
 
 package io.hkhc.utils.test
 
-import io.mockk.every
-import io.mockk.mockk
 import org.gradle.api.Action
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.plugins.ExtensionsSchema
 import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.api.reflect.TypeOf
 
-class MockExtensionContainer: ExtensionContainer {
+class MockExtensionContainer : ExtensionContainer {
 
-    var mockExtensions : Map<Class<out Any>, Any> = mutableMapOf()
+    var mockExtensions: Map<Class<out Any>, Any> = mutableMapOf()
 
     override fun <T : Any?> add(publicType: Class<T>, name: String, extension: T) {
         TODO("Not yet implemented")

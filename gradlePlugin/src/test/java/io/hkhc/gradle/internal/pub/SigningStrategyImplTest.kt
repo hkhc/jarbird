@@ -24,13 +24,13 @@ import io.kotest.matchers.shouldBe
 
 class SigningStrategyImplTest : FunSpec({
 
-  test("Default value") {
-      SigningStrategyImpl().apply {
-          signType shouldBe SignType.SIGN_WITH_KEYBOX
-          isSignWithKeybox() shouldBe true
-          isSignWithKeyring() shouldBe false
-      }
-  }
+    test("Default value") {
+        SigningStrategyImpl().apply {
+            signType shouldBe SignType.SIGN_WITH_KEYBOX
+            isSignWithKeybox() shouldBe true
+            isSignWithKeyring() shouldBe false
+        }
+    }
 
     test("Do not sign") {
 
@@ -96,5 +96,4 @@ class SigningStrategyImplTest : FunSpec({
             signType shouldBe SignType.NO_SIGN
         }
     }
-
 })

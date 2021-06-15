@@ -21,8 +21,6 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
-import io.hkhc.gradle.internal.repo.MavenRepoSpec
 
 internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
     return "${pubName}${variant.capitalize()}"
@@ -49,17 +47,17 @@ internal fun List<JarbirdPub>.needSigning() = any { it.needsSigning() }
 
 internal fun JarbirdPub.needsSigning() = isSignWithKeybox() || isSignWithKeyring()
 
-internal inline fun <reified T: RepoSpec> JarbirdPub.reposWithType() =
+internal inline fun <reified T : RepoSpec> JarbirdPub.reposWithType() =
     getRepos().filterIsInstance<T>()
 
-internal inline fun <reified T: RepoSpec> List<JarbirdPub>.reposWithType() =
+internal inline fun <reified T : RepoSpec> List<JarbirdPub>.reposWithType() =
     flatMap { it.getRepos() }.filterIsInstance<T>().toSet()
 
-internal inline fun <reified T: RepoSpec> JarbirdPub.needsReposWithType() = getRepos().any { it is T }
+internal inline fun <reified T : RepoSpec> JarbirdPub.needsReposWithType() = getRepos().any { it is T }
 
-internal inline fun <reified T: RepoSpec> List<JarbirdPub>.needReposWithType() = any { it.needsReposWithType<T>() }
+internal inline fun <reified T : RepoSpec> List<JarbirdPub>.needReposWithType() = any { it.needsReposWithType<T>() }
 
-internal inline fun <reified T: RepoSpec> JarbirdExtension.reposWithType() =
+internal inline fun <reified T : RepoSpec> JarbirdExtension.reposWithType() =
     (this as JarbirdExtensionImpl).pubList.flatMap { it.reposWithType<T>() }
 
 internal fun List<JarbirdPub>.needGradlePlugin() = any { it.pom.isGradlePlugin() }

@@ -19,12 +19,13 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.utils.removeLineBreak
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
 
-    lateinit var publishingPub: JarbirdPub // the pub that selected to publish artifact to Gradle Plugin Gradle
+    var publishingPub: JarbirdPub // the pub that selected to publish artifact to Gradle Plugin Gradle
     var gradlePluginPubs: List<JarbirdPub>
 
     var entries: List<PluginEntry>
@@ -39,10 +40,11 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
         assert(pubs.needGradlePlugin())
 
         gradlePluginPubs = filterGradlePluginPub(project, pubs)
-        if (gradlePluginPubs.isNotEmpty())
+        if (gradlePluginPubs.isNotEmpty()) {
             publishingPub = gradlePluginPubs[0]
-        else
+        } else {
             throw GradleException("No pub with Gradle Plugin Portal declaration")
+        }
 
         entries = createPluginEntries(gradlePluginPubs)
 
@@ -55,7 +57,6 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
             description = pom.plugin?.description ?: pom.description ?: ""
             tags = pom.plugin?.tags ?: listOf()
         }
-
     }
 
     companion object {
@@ -63,29 +64,37 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
         fun filterGradlePluginPub(project: Project, pubs: List<JarbirdPub>): List<JarbirdPub> {
             // TODO we can have one pluginMaven publication per sub-project only
 
-            var pluginPub = pubs.filter { pub -> pub.pom.isGradlePlugin() }
+            val pluginPub = pubs.filter { pub -> pub.pom.isGradlePlugin() }
             if (pluginPub.isEmpty()) return listOf()
             if (pluginPub.size > 1) {
-                project.logger.warn("$LOG_PREFIX More than one pub are declared to perform gradlePluginPublishing. "+
-                    pluginPub.joinToString { it.pubNameWithVariant() } +
-                    " Only the first one will be published to Gradle Plugin Portal.")
+                project.logger.warn(
+                    """
+                    $LOG_PREFIX More than one pub are declared to perform gradlePluginPublishing 
+                    (${pluginPub.joinToString { it.pubNameWithVariant() }}). 
+                    Only the first one will be published to Gradle Plugin Portal.
+                    """.trimIndent().removeLineBreak(ensureSpaceWithMerge = true)
+                )
             }
 
             pluginPub.forEach {
                 it.pom.plugin?.let { plugin ->
-                    if (plugin.id == null)
+                    if (plugin.id == null) {
                         throw GradleException("Plugin ID is not specified for pub ${it.pubNameWithVariant()}")
-                    if (plugin.implementationClass == null)
-                        throw GradleException("Plugin implementation class is not specified for pub ${it.pubNameWithVariant()}")
-                } ?:
-                throw GradleException(
-                    "$LOG_PREFIX Pub ${it.pubNameWithVariant()} has Gradle Plugin Portal declared, " +
-                            "but has no plugin information declared in pom.yaml"
+                    }
+                    if (plugin.implementationClass == null) {
+                        throw GradleException(
+                            "Plugin implementation class is not specified for pub ${it.pubNameWithVariant()}"
+                        )
+                    }
+                } ?: throw GradleException(
+                    """
+                        $LOG_PREFIX Pub ${it.pubNameWithVariant()} has Gradle Plugin Portal declared,
+                        but has no plugin information declared in pom.yaml
+                    """.trimIndent().removeLineBreak(ensureSpaceWithMerge = true)
                 )
             }
 
             return pluginPub
-
         }
 
         fun createPluginEntries(pluginPubs: List<JarbirdPub>): List<PluginEntry> {
@@ -112,9 +121,7 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
             }
 
             return entries
-
         }
-
     }
 
     data class PluginEntry(
@@ -127,5 +134,4 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
         val displayName: String,
         val description: String
     )
-
 }

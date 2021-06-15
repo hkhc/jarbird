@@ -46,8 +46,7 @@ open class JarbirdPubImpl(
     SigningStrategy by SigningStrategyImpl(),
     PubVariantStrategy by PubVariantStrategyImpl(variant, parentVariantStrategy),
     RepoDeclaration by RepoDeclarationsImpl(project, projectProperty, parentRepoDeclaration),
-    DocDeclaration by DocDeclarationImpl(parentDocDeclaration, { /* default dokkaConfig */ })
-{
+    DocDeclaration by DocDeclarationImpl(parentDocDeclaration, { /* default dokkaConfig */ }) {
 
     override var pubName: String = "lib"
 
@@ -56,7 +55,7 @@ open class JarbirdPubImpl(
 
     var component: SoftwareComponent?
         get() {
-            return mComponent ?: if (mSourceSet==null) project.components["java"] else null
+            return mComponent ?: if (mSourceSet == null) project.components["java"] else null
         }
         private set(value) {
             mComponent = value
@@ -69,12 +68,13 @@ open class JarbirdPubImpl(
             mSourceSet = value
         }
 
-    open fun sourceSetModel(): SourceSetModel? = if (component != null)
+    open fun sourceSetModel(): SourceSetModel? = if (component != null) {
         JavaConventionSourceSetModel(project)
-    else if (sourceSet != null)
+    } else if (sourceSet != null) {
         JavaConventionSourceSetModel(project, sourceSet!!.name)
-    else
+    } else {
         null
+    }
 
     override fun getGAV(): String {
         return "${pom.group}:${variantArtifactId()}:${variantVersion()}"
@@ -144,6 +144,4 @@ open class JarbirdPubImpl(
     private fun artifactoryRepos(): List<ArtifactoryRepoSpec> {
         return getRepos().filterIsInstance<ArtifactoryRepoSpec>()
     }
-
-
 }

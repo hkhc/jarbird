@@ -99,5 +99,4 @@ class VariantStrategyImplTest : FunSpec({
             variantVersion() shouldBe "1.0"
         }
     }
-
 })

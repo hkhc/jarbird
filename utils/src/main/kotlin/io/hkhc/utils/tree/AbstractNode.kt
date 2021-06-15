@@ -18,7 +18,7 @@
 
 package io.hkhc.utils.tree
 
-open class AbstractNode<T>(private val value: T): Node<T> {
+open class AbstractNode<T>(private val value: T) : Node<T> {
 
     protected val children = mutableListOf<Node<T>>()
 
@@ -44,7 +44,6 @@ open class AbstractNode<T>(private val value: T): Node<T> {
         }
 
         return true
-
     }
 
     override fun hashCode(): Int {
@@ -52,7 +51,7 @@ open class AbstractNode<T>(private val value: T): Node<T> {
     }
 
     override fun toString(): String {
-        return "Node(${value()})${if (children.size!=0) " " + children.joinToString(prefix="[", postfix="]") else ""}"
+        return "Node(${value()})${if (children.size != 0) " " + children.joinToString(prefix = "[", postfix = "]") else ""}"
     }
 
     override fun addChild(node: Node<T>) { children.add(node) }
@@ -68,5 +67,4 @@ open class AbstractNode<T>(private val value: T): Node<T> {
     override fun children() = children
     override fun text() = value().toString()
     override fun value() = value
-
 }

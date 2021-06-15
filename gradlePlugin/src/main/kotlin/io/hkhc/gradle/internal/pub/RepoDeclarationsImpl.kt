@@ -92,5 +92,4 @@ open class RepoDeclarationsImpl(
     override fun getRepos(): Set<RepoSpec> {
         return mRepos + (parentRepoDeclaration?.getRepos() ?: setOf())
     }
-
 }

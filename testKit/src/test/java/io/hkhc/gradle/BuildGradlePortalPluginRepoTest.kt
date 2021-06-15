@@ -18,22 +18,13 @@
 
 package io.hkhc.gradle
 
-import io.hkhc.gradle.pom.internal.isSnapshot
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
-import io.hkhc.gradle.test.GradlePortalRepoResult
-import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockGradlePortalRepositoryServer
-import io.hkhc.gradle.test.MockMavenRepositoryServer
-import io.hkhc.gradle.test.buildGradlePluginKts
 import io.hkhc.gradle.test.buildGradlePortalPluginKts
 import io.hkhc.gradle.test.getTaskTree
-import io.hkhc.gradle.test.gradlePortal.publishedPluginToGradlePortalCompletely
-import io.hkhc.gradle.test.maven.publishedPluginToMavenRepositoryCompletely
-import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.pluginPom
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme
@@ -46,9 +37,7 @@ import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.spec.style.scopes.FunSpecContextScope
 import io.kotest.core.test.TestStatus
-import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
-import java.io.File
 
 /**
  * snapshot / release
@@ -99,7 +88,7 @@ class BuildGradlePortalPluginRepoTest : FunSpec({
                     }
                 )
 
-                System.setProperty("gradle.portal.url",mockServers[0].getServerUrl())
+                System.setProperty("gradle.portal.url", mockServers[0].getServerUrl())
 
                 setupGradleProperties {
                     "gradle.publish.key" to "key"
