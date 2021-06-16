@@ -73,7 +73,7 @@ class DiffPresenter<T> {
         }
     }
 
-    private class Printer<T>(private val source: List<T>, target: List<T>, writer: Writer) {
+    private class Printer<T>(private val source: List<T>, target: List<T>, private val writer: Writer) {
 
         var sourceLineNumber = LineNumber(source)
         var targetLineNumber = LineNumber(target)
@@ -87,40 +87,40 @@ class DiffPresenter<T> {
 
         private fun <T> insert(delta: AbstractDelta<T>) {
             while (targetLineNumber.lastNumber < delta.target.position) {
-                println("$sourceLineNumber   $targetLineNumber    ${targetLineNumber.getData()}")
+                printWriter.println("$sourceLineNumber   $targetLineNumber    ${targetLineNumber.getData()}")
                 sourceLineNumber++
                 targetLineNumber++
             }
             delta.target.lines.forEach { line ->
-                println("${sourceLineNumber.getNumberPlaceHolder()}  $targetLineNumber  + $line")
+                printWriter.println("${sourceLineNumber.getNumberPlaceHolder()}  $targetLineNumber  + $line")
                 targetLineNumber++
             }
         }
 
         private fun <T> delete(delta: AbstractDelta<T>) {
             while (sourceLineNumber.lastNumber < delta.source.position) {
-                println("$sourceLineNumber   $targetLineNumber    ${sourceLineNumber.getData()}")
+                printWriter.println("$sourceLineNumber   $targetLineNumber    ${sourceLineNumber.getData()}")
                 sourceLineNumber++
                 targetLineNumber++
             }
             delta.source.lines.forEach { line ->
-                println("$sourceLineNumber  ${targetLineNumber.getNumberPlaceHolder()}  - $line")
+                printWriter.println("$sourceLineNumber  ${targetLineNumber.getNumberPlaceHolder()}  - $line")
                 sourceLineNumber++
             }
         }
 
         private fun <T> change(delta: AbstractDelta<T>) {
             while (targetLineNumber.lastNumber < delta.target.position) {
-                println("$sourceLineNumber   $targetLineNumber    ${targetLineNumber.getData()}")
+                printWriter.println("$sourceLineNumber   $targetLineNumber    ${targetLineNumber.getData()}")
                 sourceLineNumber++
                 targetLineNumber++
             }
             delta.source.lines.forEach { line ->
-                println("$sourceLineNumber  ${targetLineNumber.getNumberPlaceHolder()}  - $line")
+                printWriter.println("$sourceLineNumber  ${targetLineNumber.getNumberPlaceHolder()}  - $line")
                 sourceLineNumber++
             }
             delta.target.lines.forEach { line ->
-                println("${sourceLineNumber.getNumberPlaceHolder()}  $targetLineNumber  + $line")
+                printWriter.println("${sourceLineNumber.getNumberPlaceHolder()}  $targetLineNumber  + $line")
                 targetLineNumber++
             }
         }
