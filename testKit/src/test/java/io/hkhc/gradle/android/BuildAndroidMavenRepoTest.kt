@@ -40,7 +40,7 @@ import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.spec.style.scopes.FunSpecContainerContext
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -55,7 +55,7 @@ class BuildAndroidMavenRepoTest : FunSpec({
 
         val releaseExpectedTaskGraph = stringTreeOf(NoBarTheme) {
             ":lib:jbPublishToMavenRepositories SUCCESS" {
-                ":lib:jbPublishTestArtifactReleaseToMavenRepositories SUCCESS" {
+                ":lib:jbPublishToMavenMock SUCCESS" {
                     ":lib:jbPublishTestArtifactReleaseToMavenMock SUCCESS" {
                         ":lib:publishTestArtifactReleasePublicationToMavenMockRepository SUCCESS" {
                             ":lib:bundleReleaseAar SUCCESS"()
@@ -88,7 +88,7 @@ class BuildAndroidMavenRepoTest : FunSpec({
 
         val snapshotExpectedTaskGraph = stringTreeOf(NoBarTheme) {
             ":lib:jbPublishToMavenRepositories SUCCESS" {
-                ":lib:jbPublishTestArtifactReleaseToMavenRepositories SUCCESS" {
+                ":lib:jbPublishToMavenMock SUCCESS" {
                     ":lib:jbPublishTestArtifactReleaseToMavenMock SUCCESS" {
                         ":lib:publishTestArtifactReleasePublicationToMavenMockRepository SUCCESS" {
                             ":lib:bundleReleaseAar SUCCESS"()
@@ -138,7 +138,7 @@ class BuildAndroidMavenRepoTest : FunSpec({
                     """.trimIndent()
                 )
 
-                writeFile("build.gradle", commonAndroidRootGradle())
+                writeFile("build.gradle", commonAndroidRootGradle(maven = true, artifactory = false))
                 writeFile(
                     "${subProjDirs[0]}/pom.yaml",
                     simplePom(coordinate, "release", "aar")
@@ -162,7 +162,7 @@ class BuildAndroidMavenRepoTest : FunSpec({
             }
         }
 
-        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
+        suspend fun FunSpecContainerContext.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
 
             afterTest {
                 setup.mockServers.forEach { it.teardown() }

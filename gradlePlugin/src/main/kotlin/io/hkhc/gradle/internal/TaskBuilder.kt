@@ -18,7 +18,6 @@
 
 package io.hkhc.gradle.internal
 
-import com.google.common.annotations.VisibleForTesting
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryTaskBuilder
 import io.hkhc.gradle.internal.maven.MavenTaskBuilder
@@ -53,7 +52,6 @@ internal class TaskBuilder(
         }
     }
 
-    @VisibleForTesting
     fun TaskContainer.registerPublishTask() {
 
         pubs.forEach { pub ->
@@ -80,7 +78,6 @@ internal class TaskBuilder(
 //        }
 //    }
 
-    @VisibleForTesting
     fun registerRootTask(): TaskProvider<Task> {
         return JbPublish.taskInfo.register(project) {
             dependsOn(mavenTaskBuilder.getLocalTaskInfo().name)
@@ -98,12 +95,6 @@ internal class TaskBuilder(
 
     fun build() {
 
-        pubs.forEach {
-            println("pub ${it.pubName}")
-            it.getRepos().forEach {
-                println("repos ${it::class.java.name} ${it.id}")
-            }
-        }
         with(project.tasks) {
             registerPublishTask()
             mavenTaskBuilder.also {

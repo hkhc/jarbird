@@ -25,8 +25,8 @@ import io.hkhc.gradle.test.commonAndroidExtGradle
 import io.hkhc.gradle.test.commonAndroidRootGradle
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.getTestAndroidSdkHomePair
-import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.mavenlocal.publishToMavenLocalCompletely
+import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.setupAndroidProperties
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
@@ -38,7 +38,7 @@ import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.spec.style.scopes.FunSpecContainerContext
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -52,51 +52,47 @@ class BuildAndroidMavenLocalTest : FunSpec({
         val targetTask = "jbPublishToMavenLocal"
 
         val releaseExpectedTaskGraph = stringTreeOf(NoBarTheme) {
-            ":jbPublishToMavenLocal SUCCESS" {
-                ":lib:jbPublishToMavenLocal SUCCESS" {
-                    ":lib:jbPublishTestArtifactReleaseToMavenLocal SUCCESS" {
-                        ":lib:publishTestArtifactReleasePublicationToMavenLocal SUCCESS" {
+            ":lib:jbPublishToMavenLocal SUCCESS" {
+                ":lib:jbPublishTestArtifactReleaseToMavenLocal SUCCESS" {
+                    ":lib:publishTestArtifactReleasePublicationToMavenLocal SUCCESS" {
+                        ":lib:bundleReleaseAar SUCCESS"()
+                        ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
+                            ":lib:bundleReleaseAar SUCCESS"()
+                        }
+                        ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS"()
+                        ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
+                            ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
+                        }
+                        ":lib:signTestArtifactReleasePublication SUCCESS" {
                             ":lib:bundleReleaseAar SUCCESS"()
                             ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
                                 ":lib:bundleReleaseAar SUCCESS"()
                             }
-                            ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS"()
+                            ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS" ()
                             ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
                                 ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
                             }
-                            ":lib:signTestArtifactReleasePublication SUCCESS" {
-                                ":lib:bundleReleaseAar SUCCESS"()
-                                ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
-                                    ":lib:bundleReleaseAar SUCCESS"()
-                                }
-                                ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS" ()
-                                ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
-                                    ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
-                                }
-                                ":lib:sourcesJarTestArtifactRelease SUCCESS"()
-                            }
                             ":lib:sourcesJarTestArtifactRelease SUCCESS"()
                         }
+                        ":lib:sourcesJarTestArtifactRelease SUCCESS"()
                     }
                 }
             }
         }
 
         val snapshotExpectedTaskGraph = stringTreeOf(NoBarTheme) {
-            ":jbPublishToMavenLocal SUCCESS" {
-                ":lib:jbPublishToMavenLocal SUCCESS" {
-                    ":lib:jbPublishTestArtifactReleaseToMavenLocal SUCCESS" {
-                        ":lib:publishTestArtifactReleasePublicationToMavenLocal SUCCESS" {
+            ":lib:jbPublishToMavenLocal SUCCESS" {
+                ":lib:jbPublishTestArtifactReleaseToMavenLocal SUCCESS" {
+                    ":lib:publishTestArtifactReleasePublicationToMavenLocal SUCCESS" {
+                        ":lib:bundleReleaseAar SUCCESS"()
+                        ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
                             ":lib:bundleReleaseAar SUCCESS"()
-                            ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
-                                ":lib:bundleReleaseAar SUCCESS"()
-                            }
-                            ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS"()
-                            ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
-                                ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
-                            }
-                            ":lib:sourcesJarTestArtifactRelease SUCCESS"()
                         }
+                        ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS"()
+                        ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
+                            ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
+                        }
+                        ":lib:sourcesJarTestArtifactRelease SUCCESS"()
                     }
                 }
             }
@@ -132,7 +128,7 @@ class BuildAndroidMavenLocalTest : FunSpec({
                     """.trimIndent()
                 )
 
-                writeFile("build.gradle", commonAndroidRootGradle())
+                writeFile("build.gradle", commonAndroidRootGradle(maven = true, artifactory = false))
 
                 // Note: sub-projects build.gradle is specified in test case specific context
 
@@ -145,7 +141,7 @@ class BuildAndroidMavenLocalTest : FunSpec({
             }
         }
 
-        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
+        suspend fun FunSpecContainerContext.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
 
             afterTest {
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {

@@ -42,7 +42,7 @@ import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.spec.style.scopes.FunSpecContainerContext
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -108,7 +108,7 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
             }
         }
 
-        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
+        suspend fun FunSpecContainerContext.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
@@ -216,7 +216,7 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                             }
                         }
                         ":jbPublishToMavenRepositories SUCCESS" {
-                            ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
+                            ":jbPublishToMavenMock SUCCESS" {
                                 ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                     ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                         ":generateMetadataFileForTestArtifactPublication SUCCESS" {
@@ -292,7 +292,7 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                             }
                         }
                         ":jbPublishToMavenRepositories SUCCESS" {
-                            ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
+                            ":jbPublishToMavenMock SUCCESS" {
                                 ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                     ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                         ":generateMetadataFileForTestArtifactPublication SUCCESS" {
@@ -353,7 +353,7 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
                             }
                         }
                         ":jbPublishToMavenRepositories SUCCESS" {
-                            ":jbPublishTestArtifactToMavenRepositories SUCCESS" {
+                            ":jbPublishToMavenMock SUCCESS" {
                                 ":jbPublishTestArtifactToMavenMock SUCCESS" {
                                     ":publishTestArtifactPublicationToMavenMockRepository SUCCESS" {
                                         ":generateMetadataFileForTestArtifactPublication SUCCESS" {

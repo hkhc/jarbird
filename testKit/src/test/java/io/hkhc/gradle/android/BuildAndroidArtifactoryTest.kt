@@ -39,7 +39,7 @@ import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.spec.style.scopes.FunSpecContainerContext
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -106,7 +106,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
                     """.trimIndent()
                 )
 
-                writeFile("build.gradle", commonAndroidRootGradle())
+                writeFile("build.gradle", commonAndroidRootGradle(artifactory = true, maven = false))
                 writeFile(
                     "${subProjDirs[0]}/pom.yaml",
                     simplePom(coordinate, "release", "aar")
@@ -124,7 +124,7 @@ class BuildAndroidArtifactoryTest : FunSpec({
             }
         }
 
-        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
+        suspend fun FunSpecContainerContext.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
 
             afterTest {
                 setup.mockServers.forEach { it.teardown() }

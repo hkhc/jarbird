@@ -112,6 +112,10 @@ fun buildGradle(maven: Boolean = true, artifactory: Boolean = true, versions: Ve
         dependencies {
             implementation "org.jetbrains.kotlin:kotlin-stdlib"
         }
+        jarbird {
+            mavenLocal()
+            pub {}
+        }
     """.trimIndent()
 }
 
@@ -124,6 +128,7 @@ fun buildGradleKts(maven: Boolean = true, artifactory: Boolean = true, versions:
         jarbird {
             ${if (maven) "mavenRepo(\"mock\")" else ""}
             ${if (artifactory) "artifactory(\"mock\")" else ""}
+            pub {}
         }
     """.trimIndent()
 }
@@ -208,6 +213,7 @@ fun buildGradleCustomArtifactoryKts(versions: Versions = Versions()): String {
         ${commonBuildGradleKtsPlugins(versions)}
         jarbird {
             artifactory("mock")
+            pub {}
         }
         repositories {
             jcenter()
@@ -248,7 +254,7 @@ fun buildGradlePortalPluginKts(versions: Versions = Versions()): String {
     """.trimIndent()
 }
 
-fun commonAndroidRootGradle(versions: AndroidVersions = AndroidVersions()): String {
+fun commonAndroidRootGradle(versions: AndroidVersions = AndroidVersions(), maven: Boolean = true, artifactory: Boolean = false): String {
 
     return """
         buildscript {
@@ -270,7 +276,8 @@ fun commonAndroidRootGradle(versions: AndroidVersions = AndroidVersions()): Stri
             id '${versions.pluginId}'
         }
         jarbird {
-            mavenRepo("mock")
+            ${if (maven) "mavenRepo(\"mock\")" else ""} 
+            ${if (artifactory) "artifactory(\"mock\")" else ""}
         }
         allprojects {
             repositories {
@@ -317,14 +324,19 @@ fun commonAndroidGradle(
     """.trimIndent()
 }
 
-fun commonAndroidExtGradle(variantMode: String = "variantInvisible()", mavenRepo: Boolean = false, versions: AndroidVersions = AndroidVersions()): String {
+fun commonAndroidExtGradle(
+    variantMode: String = "variantInvisible()",
+    maven: Boolean = false,
+    artifactory: Boolean = false,
+    versions: AndroidVersions = AndroidVersions()
+): String {
 
     return """
         ${commonAndroidBuildGradleKtsPlugins(versions)}
         ${commonAndroidBuildGradleKtsAndroid()}
         jarbird {
-            ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
-            artifactory("mock")
+            ${if (maven) "mavenRepo(\"mock\")" else ""}
+            ${if (artifactory) "artifactory(\"mock\")" else ""}
         }
 
         android.libraryVariants.configureEach { variant ->

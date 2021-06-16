@@ -39,6 +39,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import java.io.File
 
 @Tags("Library", "MavenLocal", "Multi")
 class BuildMultiProjectMavenLocalTest : FunSpec({
@@ -74,6 +75,7 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
                         id 'org.barfuin.gradle.taskinfo' version '1.0.5'
                         id 'io.hkhc.jarbird'
                     }
+                   
                     """.trimIndent()
                 )
                 coordinates.zip(subProjDirs).forEach { (coor, dir) ->
@@ -82,11 +84,16 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
                         "$dir/build.gradle",
                         """
                         plugins {
+                            id 'org.barfuin.gradle.taskinfo' 
                             id 'java'
                             id 'io.hkhc.jarbird'
                         }
                         repositories {
                             jcenter()
+                        }
+                        jarbird {
+                            mavenLocal()
+                            pub {}
                         }
                         """.trimIndent()
                     )
@@ -102,17 +109,17 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
 
         test("execute task '$targetTask'") {
 
-            setup.getGradleTaskTester().runTasks(arrayOf("tiJson", targetTask))
+            setup.getGradleTaskTester().runTasks(arrayOf("lib1:tiJson", "lib1:$targetTask"))
+            setup.getGradleTaskTester().runTasks(arrayOf("lib2:tiJson", "lib2:$targetTask"))
             val result = tester.runTask(targetTask)
 
             withClue("expected list of tasks executed with expected result") {
-                val actualTaskTree = getTaskTree(projectDir, targetTask, result)
-                    .chopChilds { it.value().path in arrayOf(":lib1:jar", ":lib2:jar") }
+                val actualTaskTreeLib1 = getTaskTree(File(projectDir,"lib1"), targetTask, result)
+                    .chopChilds { it.value().path in arrayOf(":lib1:jar") }
                     .toStringTree()
 
-                actualTaskTree shouldBe
+                actualTaskTreeLib1 shouldBe
                     stringTreeOf(NoBarTheme) {
-                        ":jbPublishToMavenLocal SUCCESS" {
                             ":lib1:jbPublishToMavenLocal SUCCESS" {
                                 ":lib1:jbPublishTestArtifactOneToMavenLocal SUCCESS" {
                                     ":lib1:publishTestArtifactOnePublicationToMavenLocal SUCCESS" {
@@ -139,6 +146,14 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
                                     }
                                 }
                             }
+                    }
+
+                val actualTaskTreeLib2 = getTaskTree(File(projectDir,"lib2"), targetTask, result)
+                    .chopChilds { it.value().path in arrayOf(":lib2:jar") }
+                    .toStringTree()
+
+                actualTaskTreeLib2 shouldBe
+                    stringTreeOf(NoBarTheme) {
                             ":lib2:jbPublishToMavenLocal SUCCESS" {
                                 ":lib2:jbPublishTestArtifactTwoToMavenLocal SUCCESS" {
                                     ":lib2:publishTestArtifactTwoPublicationToMavenLocal SUCCESS" {
@@ -165,8 +180,8 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
                                     }
                                 }
                             }
-                        }
                     }
+
             }
 
             coordinates.forEach { coor ->

@@ -37,7 +37,7 @@ class ArtifactChecker {
         val artifactPath = pluginMarkerCoordinate.getPluginPath()
         val artifactDir = File(repoDir, artifactPath)
 
-        withClue("Artifactory directory '$artifactDir' in Local repository shall exists") {
+        withClue("Artifact directory '$artifactDir' in Local repository shall exists") {
             artifactDir.shouldExist()
         }
 
@@ -80,7 +80,7 @@ class ArtifactChecker {
         val artifactPath = coordinate.getPath()
         val artifactDir = File(repoDir, artifactPath)
 
-        withClue("Artifactory directory '$artifactDir' in Local repository shall exists") {
+        withClue("Artifact directory '$artifactDir' in Local repository shall exists") {
             artifactDir.shouldExist()
         }
 

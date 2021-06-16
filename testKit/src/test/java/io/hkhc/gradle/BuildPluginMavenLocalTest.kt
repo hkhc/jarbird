@@ -73,6 +73,9 @@ class BuildPluginMavenLocalTest : FunSpec({
                     repositories {
                         jcenter()
                     }
+                    jarbird {
+                        pub {}
+                    }
                     """.trimIndent()
                 )
             }

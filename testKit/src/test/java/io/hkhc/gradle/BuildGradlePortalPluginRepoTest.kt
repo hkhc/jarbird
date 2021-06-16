@@ -35,7 +35,7 @@ import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.spec.style.scopes.FunSpecContainerContext
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.shouldBe
 
@@ -53,12 +53,10 @@ import io.kotest.matchers.shouldBe
  * snapshot / release
  * plugin gradle plugin portal
  * plugin mavenLocal
- * plugin mavenrepository
- * plugin bintray
+ * plugin mavenRepository
  * plugin artifactory
  *
- * all - mavenrepository
- * all - bintray
+ * all - mavenRepository
  *
  * gradle versions
  * signing v1 signing v2
@@ -110,7 +108,7 @@ class BuildGradlePortalPluginRepoTest : FunSpec({
             }
         }
 
-        suspend fun FunSpecContextScope.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
+        suspend fun FunSpecContainerContext.testBody(coordinate: Coordinate, setup: DefaultGradleProjectSetup) {
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {

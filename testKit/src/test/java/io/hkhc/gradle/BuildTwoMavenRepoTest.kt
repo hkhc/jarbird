@@ -37,7 +37,7 @@ import io.hkhc.utils.tree.toStringTree
 import io.kotest.assertions.withClue
 import io.kotest.core.annotation.Tags
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.core.spec.style.scopes.FunSpecContextScope
+import io.kotest.core.spec.style.scopes.FunSpecContainerContext
 import io.kotest.core.test.TestStatus
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -135,7 +135,7 @@ class BuildTwoMavenRepoTest : FunSpec({
             }
         }
 
-        suspend fun FunSpecContextScope.testBody(coordinates: List<Coordinate>, setup: DefaultGradleProjectSetup) {
+        suspend fun FunSpecContainerContext.testBody(coordinates: List<Coordinate>, setup: DefaultGradleProjectSetup) {
             afterTest {
                 setup.mockServers.forEach { it.teardown() }
                 if (it.b.status == TestStatus.Error || it.b.status == TestStatus.Failure) {
@@ -177,7 +177,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                 coordinates,
                 stringTreeOf(NoBarTheme) {
                     ":jbPublishToMavenRepositories SUCCESS" {
-                        ":jbPublishTestArtifact1Lib1ToMavenRepositories SUCCESS" {
+                        ":jbPublishToMavenMock1 SUCCESS" {
                             ":jbPublishTestArtifact1Lib1ToMavenMock1 SUCCESS" {
                                 ":publishTestArtifact1Lib1PublicationToMavenMock1Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
@@ -196,26 +196,6 @@ class BuildTwoMavenRepoTest : FunSpec({
                                     ":sourcesJarTestArtifact1Lib1 SUCCESS"()
                                 }
                             }
-                            ":jbPublishTestArtifact1Lib1ToMavenMock2 SUCCESS" {
-                                ":publishTestArtifact1Lib1PublicationToMavenMock2Repository SUCCESS" {
-                                    ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
-                                    ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
-                                        ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
-                                    }
-                                    ":signTestArtifact1Lib1Publication SUCCESS" {
-                                        ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
-                                        ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
-                                            ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
-                                        }
-                                        ":sourceSet1Jar SUCCESS"()
-                                        ":sourcesJarTestArtifact1Lib1 SUCCESS"()
-                                    }
-                                    ":sourceSet1Jar SUCCESS"()
-                                    ":sourcesJarTestArtifact1Lib1 SUCCESS"()
-                                }
-                            }
-                        }
-                        ":jbPublishTestArtifact2Lib2ToMavenRepositories SUCCESS" {
                             ":jbPublishTestArtifact2Lib2ToMavenMock1 SUCCESS" {
                                 ":publishTestArtifact2Lib2PublicationToMavenMock1Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()
@@ -232,6 +212,26 @@ class BuildTwoMavenRepoTest : FunSpec({
                                     }
                                     ":sourceSet2Jar SUCCESS"()
                                     ":sourcesJarTestArtifact2Lib2 SUCCESS"()
+                                }
+                            }
+                        }
+                        ":jbPublishToMavenMock2 SUCCESS" {
+                            ":jbPublishTestArtifact1Lib1ToMavenMock2 SUCCESS" {
+                                ":publishTestArtifact1Lib1PublicationToMavenMock2Repository SUCCESS" {
+                                    ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                    ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                        ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":signTestArtifact1Lib1Publication SUCCESS" {
+                                        ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                        ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
+                                        }
+                                        ":sourceSet1Jar SUCCESS"()
+                                        ":sourcesJarTestArtifact1Lib1 SUCCESS"()
+                                    }
+                                    ":sourceSet1Jar SUCCESS"()
+                                    ":sourcesJarTestArtifact1Lib1 SUCCESS"()
                                 }
                             }
                             ":jbPublishTestArtifact2Lib2ToMavenMock2 SUCCESS" {
@@ -301,7 +301,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                 coordinates,
                 stringTreeOf(NoBarTheme) {
                     ":jbPublishToMavenRepositories SUCCESS" {
-                        ":jbPublishTestArtifact1Lib1ToMavenRepositories SUCCESS" {
+                        ":jbPublishToMavenMock1 SUCCESS" {
                             ":jbPublishTestArtifact1Lib1ToMavenMock1 SUCCESS" {
                                 ":publishTestArtifact1Lib1PublicationToMavenMock1Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
@@ -321,7 +321,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                                 }
                             }
                         }
-                        ":jbPublishTestArtifact2Lib2ToMavenRepositories SUCCESS" {
+                        ":jbPublishToMavenMock2 SUCCESS" {
                             ":jbPublishTestArtifact2Lib2ToMavenMock2 SUCCESS" {
                                 ":publishTestArtifact2Lib2PublicationToMavenMock2Repository SUCCESS" {
                                     ":generatePomFileForTestArtifact2Lib2Publication SUCCESS"()

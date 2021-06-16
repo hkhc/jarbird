@@ -332,14 +332,19 @@ class JarbirdExtensionTest : FunSpec({
 
     context("Jarbird extension and JarbirdPub") {
 
-        val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
+        test("one pub in ext") {
 
-        val pub = ext.pub {}
+            val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
 
-        ext.artifactory("mock")
+            val pub = ext.pub {}
 
-        // the pub inherit the repository from extension
-        pub.getRepos().map { it.id } shouldBe listOf("ArtifactoryMock")
+            ext.artifactory("mock")
+
+            // the pub inherit the repository from extension
+            pub.getRepos().map { it.id } shouldBe listOf("ArtifactoryMock")
+
+
+        }
 
     }
 

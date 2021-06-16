@@ -146,6 +146,9 @@ open class JarbirdExtensionImpl(
 //    }
 
     fun finalizeRepos() {
+        if (project.childProjects.isEmpty() && pubList.isEmpty()) {
+            project.logger.warn("No pub has been declared in jarbird plugin extension.")
+        }
         mavenLocal()
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
     }
