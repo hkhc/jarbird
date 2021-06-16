@@ -73,7 +73,7 @@ class DiffPresenter<T> {
         }
     }
 
-    private class Printer<T>(private val source: List<T>, target: List<T>, private val writer: Writer) {
+    private class Printer<T>(private val source: List<T>, target: List<T>, writer: Writer) {
 
         var sourceLineNumber = LineNumber(source)
         var targetLineNumber = LineNumber(target)
