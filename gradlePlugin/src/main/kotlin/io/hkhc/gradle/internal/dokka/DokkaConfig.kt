@@ -28,7 +28,6 @@ import io.hkhc.gradle.internal.JbDokkaTaskInfo
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.SourceResolver
 import io.hkhc.gradle.internal.needsGenDoc
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
@@ -43,17 +42,6 @@ internal class DokkaConfig(
 ) {
 
     private val docType = "Html"
-
-//    private fun getSourceJarSource(source: Any): Array<out Any> {
-//        return when (source) {
-//            is SourceSet -> source.allSource.srcDirs.toTypedArray()
-//            is String -> SourceSetNames(project, arrayOf(source)).getDirs()
-//            is SourceSetNames -> source.getDirs()
-//            is SourceDirs -> arrayOf(source.getDirs())
-//            // TODO is SourceSetContainer -> ...
-//            else -> arrayOf(source)
-//        }
-//    }
 
     fun configRootDokka(pubs: List<JarbirdPub>) {
 

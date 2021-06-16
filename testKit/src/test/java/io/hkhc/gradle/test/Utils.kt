@@ -22,7 +22,6 @@ import io.hkhc.utils.PropertiesEditor
 import io.kotest.assertions.withClue
 import io.kotest.matchers.file.shouldExist
 import io.kotest.matchers.nulls.shouldNotBeNull
-import org.gradle.api.GradleException
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import java.io.File

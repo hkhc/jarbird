@@ -45,7 +45,8 @@ class RepoTest : FunSpec({
         val projectProperty = MockProjectProperty(
             mapOf(
                 "repository.mavencentral.username" to "username",
-                "repository.mavencentral.password" to "password"
+                "repository.mavencentral.password" to "password",
+                "repository.mavencentral.newUser" to "true"
             )
         )
         PropertyRepoSpecBuilder(projectProperty).apply {

@@ -67,10 +67,11 @@ class MavenRepoPatterns(
                                 "${coor.pluginId}.gradle.plugin-${versionTransformer(coor.versionWithVariant)}.pom"
                             ).toString()
                         ).flatMap {
-                            if (isSnapshot(coor))
+                            if (isSnapshot(coor)) {
                                 listOf(it)
-                            else
+                            } else {
                                 listOf(it, "$it.asc")
+                            }
                         }
                 }
                 .flatMap(::hashedPaths)

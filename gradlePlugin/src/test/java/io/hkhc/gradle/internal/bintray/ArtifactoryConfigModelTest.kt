@@ -29,7 +29,6 @@ import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockProjectProperty
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -58,14 +57,12 @@ class ArtifactoryConfigModelTest : FunSpec({
         shouldThrow<GradleException> {
             ArtifactoryConfigModel(listOf())
         }.message shouldBe "$LOG_PREFIX Artifactory repo spec is not found unexpectedly. Probably a bug of Jarbird"
-
     }
 
     test("one repo with no artifactory repos") {
 
         // GIVEN
         val projectProperty = MockProjectProperty(mapOf())
-        val pomResolver = PomResolverImpl(projectInfo)
         val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
 
         // WHEN
@@ -74,7 +71,6 @@ class ArtifactoryConfigModelTest : FunSpec({
         shouldThrow<GradleException> {
             ArtifactoryConfigModel(listOf(pub))
         }.message shouldBe "$LOG_PREFIX Artifactory repo spec is not found unexpectedly. Probably a bug of Jarbird"
-
     }
 
     test("one artifactory repos") {

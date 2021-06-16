@@ -45,10 +45,11 @@ class ArtifactoryConfigModel(pubs: List<JarbirdPub>) {
     fun needsArtifactory() = pubsWithArtifactory.isNotEmpty()
 
     // we know artifactoryRepoSpecs is not empty and has at most 1 element when we use iternator().next()
-    val repoSpec = if (artifactoryRepoSpecs.isEmpty())
-            throw GradleException("$LOG_PREFIX Artifactory repo spec is not found unexpectedly. Probably a bug of Jarbird")
-        else
-            artifactoryRepoSpecs.iterator().next()
+    val repoSpec = if (artifactoryRepoSpecs.isEmpty()) {
+        throw GradleException("$LOG_PREFIX Artifactory repo spec is not found unexpectedly. Probably a bug of Jarbird")
+    } else {
+        artifactoryRepoSpecs.iterator().next()
+    }
     val publications = pubsWithArtifactory.flatMap { publicationsFromPub(it) }
 
     // if repoSpec is not null, pubsWithArtifactory should be non-empty

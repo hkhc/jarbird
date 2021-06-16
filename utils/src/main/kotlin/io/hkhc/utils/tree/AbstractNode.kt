@@ -25,22 +25,17 @@ open class AbstractNode<T>(private val value: T) : Node<T> {
     override fun equals(other: Any?): Boolean {
 
         if (other == null) return false
-        if (other is Node<*>) {
-            if (value() != other.value()) {
-                return false
+        if (other !is Node<*>) return false
+        if (value() != other.value()) return false
+
+        val otherIterator = other.children().iterator()
+        children().forEach {
+            val otherChild = if (otherIterator.hasNext()) otherIterator.next() else null
+            if (otherChild != null) {
+                if (it != otherChild) return false
             } else {
-                val otherIterator = other.children().iterator()
-                children().forEach {
-                    val otherChild = if (otherIterator.hasNext()) otherIterator.next() else null
-                    if (otherChild != null) {
-                        if (it != otherChild) return false
-                    } else {
-                        return false
-                    }
-                }
+                return false
             }
-        } else {
-            return false
         }
 
         return true
@@ -51,7 +46,8 @@ open class AbstractNode<T>(private val value: T) : Node<T> {
     }
 
     override fun toString(): String {
-        return "Node(${value()})${if (children.size != 0) " " + children.joinToString(prefix = "[", postfix = "]") else ""}"
+        val childrenStr = children.joinToString(prefix = "[", postfix = "]")
+        return "Node(${value()})${if (children.size != 0) " $childrenStr" else ""}"
     }
 
     override fun addChild(node: Node<T>) { children.add(node) }

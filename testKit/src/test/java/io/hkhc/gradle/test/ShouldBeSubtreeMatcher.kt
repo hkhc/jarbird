@@ -50,4 +50,3 @@ fun isSubtreeOfMatcher(actual: Node<String>) = object : Matcher<Node<String>> {
         )
     }
 }
-

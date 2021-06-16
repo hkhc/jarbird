@@ -43,7 +43,17 @@ class TaskConstantsTest : FunSpec({
     }
 
     val pub = mockk<JarbirdPub>()
-    val pubMavenCentral = mockk<JarbirdPub>()
+    val pubMavenCentral = mockk<JarbirdPub> {
+        every { variant } returns "var"
+        every { pubName } returns "abc"
+        every { getRepos() } returns setOf<RepoSpec>(
+            MavenCentralRepoSpecImpl(
+                username = "username",
+                password = "password",
+                newUser = true
+            )
+        )
+    }
     val pubPlugin = mockk<JarbirdPub>()
     val repoBuilder = PropertyRepoSpecBuilder(
         MockProjectProperty(
@@ -80,16 +90,6 @@ class TaskConstantsTest : FunSpec({
         every { pubPlugin.getGAV() } returns "group:artifact:1.0"
         every { pubPlugin.pluginCoordinate() } returns "group.artifact.plugin"
         every { pubPlugin.pom } returns pomPlugin
-
-        val pomMavenCentral = mockk<Pom>()
-        every { pubMavenCentral.pubName } returns "abc"
-        every { pubMavenCentral.variant } returns "var"
-        every { pubMavenCentral.getGAV() } returns "group:artifact:1.0"
-        every { pubMavenCentral.pluginCoordinate() } returns "NOT-A-PLUGIN"
-        every { pubMavenCentral.pom } returns pom
-        every { pubMavenCentral.getRepos() } returns setOf(
-            MavenCentralRepoSpecImpl(username = "username", password = "password", newUser = true)
-        )
     }
 
     test("publish all") {

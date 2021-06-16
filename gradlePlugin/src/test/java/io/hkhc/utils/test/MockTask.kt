@@ -40,6 +40,7 @@ import org.gradle.api.tasks.TaskState
 import java.io.File
 import java.time.Duration
 
+@Suppress("UnsafeCallOnNullableType")
 class MockTask : Task {
 
     lateinit var mockProject: Project

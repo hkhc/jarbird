@@ -288,7 +288,8 @@ class MockTaskContainer(val mockProject: Project) : TaskContainer {
         }
     }
 
-    override fun <T : Task?> register(
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Task> register(
         name: String,
         type: Class<T>,
         configurationAction: Action<in T>

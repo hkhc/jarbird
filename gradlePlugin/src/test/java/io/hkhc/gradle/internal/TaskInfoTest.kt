@@ -25,6 +25,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import org.gradle.api.Task
 
+@Suppress("UnsafeCallOnNullableType")
 class TaskInfoTest : FunSpec({
 
     class TestTaskInfo : TaskInfo() {

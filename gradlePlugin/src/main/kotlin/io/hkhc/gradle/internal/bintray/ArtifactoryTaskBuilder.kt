@@ -45,8 +45,6 @@ class ArtifactoryTaskBuilder(
 
     private fun registerLeafArtifactoryTask() {
 
-        println("registerLeafArtifactoryTask")
-
         if (pubs.needReposWithType<ArtifactoryRepoSpec>()) {
 
             taskInfo.register(project.tasks) {

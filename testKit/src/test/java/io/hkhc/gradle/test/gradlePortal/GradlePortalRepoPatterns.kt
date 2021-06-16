@@ -59,15 +59,18 @@ class GradlePortalRepoPatterns(
                 ).toString()
             )
                 .flatMap {
-                    listOf(relativePath(
-                        it,
-                        coor.versionWithVariant,
-                        "${coor.pluginId}.gradle.plugin-${versionTransformer(coor.versionWithVariant)}.pom"
-                    ).toString()).flatMap {
-                        if (isSnapshot(coor))
+                    listOf(
+                        relativePath(
+                            it,
+                            coor.versionWithVariant,
+                            "${coor.pluginId}.gradle.plugin-${versionTransformer(coor.versionWithVariant)}.pom"
+                        ).toString()
+                    ).flatMap {
+                        if (isSnapshot(coor)) {
                             listOf(it)
-                        else
+                        } else {
                             listOf(it, "$it.asc")
+                        }
                     }
                 }
                 .flatMap(::hashedPaths)
@@ -86,29 +89,25 @@ class GradlePortalRepoPatterns(
     }
 
     fun list() = coordinates.flatMap { coor ->
-        (
-//            listPluginRepo(coor, versionTransformer(coor)) +
+        listOf(
+            relativePath(
+                baseUrl,
+                coor.group.replace('.', '/'),
+                coor.artifactIdWithVariant
+            ).toString()
+        )
+            .flatMap { path ->
                 listOf(
                     relativePath(
-                        baseUrl,
-                        coor.group.replace('.', '/'),
-                        coor.artifactIdWithVariant
+                        path,
+                        coor.versionWithVariant,
+                        "${coor.artifactIdWithVariant}-${versionTransformer(coor)(coor.versionWithVariant)}"
                     ).toString()
                 )
-                    .flatMap { path ->
-//                        metafile(path, coor) +
-                            listOf(
-                                relativePath(
-                                    path,
-                                    coor.versionWithVariant,
-                                    "${coor.artifactIdWithVariant}-${versionTransformer(coor)(coor.versionWithVariant)}"
-                                ).toString()
-                            )
-                                .flatMap(::artifactTypes)
-                                .flatMap { if (isSnapshot(coor)) listOf(it) else listOf(it, "$it.asc") }
-                    }
-                    .flatMap(::hashedPaths)
-            )
+                    .flatMap(::artifactTypes)
+                    .flatMap { if (isSnapshot(coor)) listOf(it) else listOf(it, "$it.asc") }
+            }
+            .flatMap(::hashedPaths)
             .map { Regex("$it.*") }
     }
 }

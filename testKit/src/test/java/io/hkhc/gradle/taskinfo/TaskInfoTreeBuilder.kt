@@ -46,9 +46,8 @@ fun TreeBuilder<TaskInfo>.load(taskInfoFilePath: String, taskResults: List<Build
 /**
  * Load the execution result of tasks from the BuildTask, so they can combine
  */
-private fun readTaskStatuses(taskResults: List<BuildTask>): Map<String,String> {
+private fun readTaskStatuses(taskResults: List<BuildTask>): Map<String, String> {
     return taskResults.fold(mutableMapOf()) { map, buildTask ->
         map.apply { put(buildTask.path, buildTask.outcome.toString()) }
     }
 }
-

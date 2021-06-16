@@ -21,7 +21,7 @@ package io.hkhc.gradle.test
 import io.hkhc.gradle.internal.PLUGIN_ID
 
 open class Versions {
-    open val kotlin = "1.4.32"
+    open val kotlin = "1.4.20"
     open val taskInfo = "1.0.5"
     open val pluginId = PLUGIN_ID
 }
@@ -67,9 +67,9 @@ fun commonAndroidBuildGradleKtsPlugins(versions: Versions = Versions()): String 
     """
 }
 
-fun commonAndroidBuildGradleKtsAndroid(): String {
+const val commonAndroidBuildGradleKtsAndroid =
     // it is included in another multi-line string, don't do trimIndent() here
-    return """
+    """
         android {
             compileSdkVersion 29
             buildToolsVersion "29.0.3"
@@ -101,7 +101,6 @@ fun commonAndroidBuildGradleKtsAndroid(): String {
             
         }        
     """
-}
 
 fun buildGradle(maven: Boolean = true, artifactory: Boolean = true, versions: Versions = Versions()): String {
     return """
@@ -254,7 +253,11 @@ fun buildGradlePortalPluginKts(versions: Versions = Versions()): String {
     """.trimIndent()
 }
 
-fun commonAndroidRootGradle(versions: AndroidVersions = AndroidVersions(), maven: Boolean = true, artifactory: Boolean = false): String {
+fun commonAndroidRootGradle(
+    versions: AndroidVersions = AndroidVersions(),
+    maven: Boolean = true,
+    artifactory: Boolean = false
+): String {
 
     return """
         buildscript {
@@ -297,7 +300,7 @@ fun commonAndroidGradle(
 
     return """
         ${commonAndroidBuildGradleKtsPlugins(versions)}
-        ${commonAndroidBuildGradleKtsAndroid()}
+        $commonAndroidBuildGradleKtsAndroid
         jarbird {
             ${if (mavenRepo) "mavenRepo(\"mock\")" else ""}
             ${if (artifactoryRepo) "artifactory(\"mock\")" else ""}
@@ -333,7 +336,7 @@ fun commonAndroidExtGradle(
 
     return """
         ${commonAndroidBuildGradleKtsPlugins(versions)}
-        ${commonAndroidBuildGradleKtsAndroid()}
+        $commonAndroidBuildGradleKtsAndroid
         jarbird {
             ${if (maven) "mavenRepo(\"mock\")" else ""}
             ${if (artifactory) "artifactory(\"mock\")" else ""}

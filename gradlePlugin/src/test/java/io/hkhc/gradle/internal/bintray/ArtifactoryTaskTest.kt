@@ -25,7 +25,6 @@ import io.hkhc.gradle.internal.convertToTrees
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockTaskContainer
-import io.hkhc.utils.test.createMockProjectTree
 import io.hkhc.utils.test.createSingleMockProject
 import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.core.spec.style.FunSpec

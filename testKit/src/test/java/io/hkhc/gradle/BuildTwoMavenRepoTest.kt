@@ -342,9 +342,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                             }
                         }
                     }
-
                 }
-
             )
 
             setup.writeFile("build.gradle.kts", buildTwoLocalGradleKts())

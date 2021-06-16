@@ -33,6 +33,31 @@ tasks {
         }
 //        shouldRunAfter("test")
     }
+    withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+        jvmTarget = jvmTargetVersion
+        languageVersion = kotlinLanguageVersion
+    }
+}
+
+detekt {
+    input = files(
+        "src/main/java",
+        "src/main/kotlin",
+        "src/test/java",
+        "src/test/kotlin"
+    )
+    debug = true
+    buildUponDefaultConfig = true
+    config = files("${project.rootDir}/config/detekt/detekt.yml")
+}
+
+ktlint {
+    debug.set(false)
+    verbose.set(false)
+    coloredOutput.set(true)
+    reporters {
+        setOf(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE, org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+    }
 }
 
 dependencies {

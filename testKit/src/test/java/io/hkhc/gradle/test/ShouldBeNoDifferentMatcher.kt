@@ -16,6 +16,7 @@
  *
  */
 
+@file:Suppress("MatchingDeclarationName")
 package io.hkhc.gradle.test
 
 import com.github.difflib.DiffUtils

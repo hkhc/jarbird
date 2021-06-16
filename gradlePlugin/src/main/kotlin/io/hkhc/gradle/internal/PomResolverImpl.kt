@@ -20,7 +20,6 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.gradle.pom.internal.PomGroupFactory
-import org.gradle.api.GradleException
 
 class PomResolverImpl(private val projectInfo: ProjectInfo) : PomResolver {
 

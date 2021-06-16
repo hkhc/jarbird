@@ -15,13 +15,12 @@
  *
  *
  */
-
+@file:Suppress("TooManyFunctions")
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import org.gradle.api.GradleException
 
 internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
     return "${pubName}${variant.capitalize()}"

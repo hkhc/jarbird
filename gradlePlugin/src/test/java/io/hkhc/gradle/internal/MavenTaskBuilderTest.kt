@@ -38,6 +38,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 
+@Suppress("UnsafeCallOnNullableType")
 class MavenTaskBuilderTest : FunSpec({
 
     beforeSpec {

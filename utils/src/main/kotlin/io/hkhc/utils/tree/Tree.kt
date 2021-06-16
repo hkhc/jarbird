@@ -22,9 +22,6 @@ open class Tree<T>(private var root: Node<T>? = null, var theme: TreeTheme = def
 
     constructor(otherTree: Tree<T>) : this(otherTree.root)
 
-//    abstract fun newNode(value: T): Node<T>
-//    abstract fun newTree(rootNode: Node<T>): Tree<T>
-
     fun getRoot(): Node<T> {
         return root ?: throw TreeException("no root node in tree")
     }
@@ -33,7 +30,6 @@ open class Tree<T>(private var root: Node<T>? = null, var theme: TreeTheme = def
         return root
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun newInstance(rootNode: Node<T>): Tree<T> {
         this::class.constructors.iterator().forEach {
             if (it.parameters.size == 2 &&

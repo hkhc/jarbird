@@ -24,7 +24,11 @@ import io.kotest.matchers.MatcherResult
 
 fun publishedToGradlePortalCompletely(withMetadata: Boolean = true) = object : Matcher<GradlePortalRepoResult> {
     override fun test(value: GradlePortalRepoResult): MatcherResult {
-        GradlePortalPublishingChecker(value.coordinates, value.packaging, withMetadata).assertArtifacts(value.recordedRequests)
+        GradlePortalPublishingChecker(
+            value.coordinates,
+            value.packaging,
+            withMetadata
+        ).assertArtifacts(value.recordedRequests)
         return MatcherResult(
             true,
             "All files should be published to Maven repository",
@@ -35,7 +39,11 @@ fun publishedToGradlePortalCompletely(withMetadata: Boolean = true) = object : M
 
 fun publishedPluginToGradlePortalCompletely(withMetadata: Boolean = true) = object : Matcher<GradlePortalRepoResult> {
     override fun test(value: GradlePortalRepoResult): MatcherResult {
-        GradlePortalPublishingChecker(value.coordinates, value.packaging, withMetadata).assertPluginArtifacts(value.recordedRequests)
+        GradlePortalPublishingChecker(
+            value.coordinates,
+            value.packaging,
+            withMetadata
+        ).assertPluginArtifacts(value.recordedRequests)
         return MatcherResult(
             true,
             "All files should be published to Maven repository",

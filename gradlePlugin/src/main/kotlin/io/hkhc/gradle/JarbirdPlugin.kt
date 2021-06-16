@@ -189,6 +189,7 @@ open class JarbirdPlugin : Plugin<Project> {
        has change to create the components and source sets.
 
      */
+    @Suppress("LongMethod")
     override fun apply(p: Project) {
 
         if (p.extra.has(EXT_PLUGIN_CONFIG)) {

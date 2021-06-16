@@ -56,12 +56,12 @@ class PropertyRepoSpecBuilder(
                 repoKey = resolve("repoKey"),
                 id = normalizePubName("artifactory.$key").capitalize()
             )
-            if (result.releaseUrl.isNullOrEmpty() && result.snapshotUrl.isNullOrEmpty()) {
+            if (result.releaseUrl.isEmpty() && result.snapshotUrl.isEmpty()) {
                 throw GradleException(
                     "Artifactory repository ${result.id} must have either 'release' or 'snapshot' property"
                 )
             }
-            if (result.repoKey.isNullOrEmpty()) {
+            if (result.repoKey.isEmpty()) {
                 throw GradleException(
                     "Artifactory repository ${result.id} must have 'repoKey' property."
                 )

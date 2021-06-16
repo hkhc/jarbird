@@ -27,9 +27,7 @@ import io.hkhc.gradle.internal.utils.Version
 import io.hkhc.gradle.internal.utils.detailMessageWarning
 import io.hkhc.gradle.internal.utils.findExtension
 import io.hkhc.gradle.pom.Pom
-import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.artifacts.PublishArtifact
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublicationContainer
@@ -80,8 +78,7 @@ internal class PublishingConfig(
         project.logger.debug("$LOG_PREFIX Configure Publishing extension")
 
         requireNotNull(project.findExtension(PublishingExtension::class.java)) {
-            "\"publishing\" extension is not found. " +
-            "Maybe \"org.gradle.maven-publish\" is not applied?"
+            "\"publishing\" extension is not found. Maybe \"org.gradle.maven-publish\" is not applied?"
         }.config()
     }
 
@@ -97,9 +94,6 @@ internal class PublishingConfig(
             }
         }
     }
-
-    private fun PublishArtifact.getString() =
-        "PublishArtifact(name=$name,file=$file,classifier=$classifier,date=$date,extension=$extension,type=$type)"
 
     private fun registerSourceSetCompileTask(pub: JarbirdPubImpl): TaskProvider<Jar>? {
         // TODO Handle multiple source sets
@@ -184,7 +178,9 @@ internal class PublishingConfig(
 
                     (this as MavenPublicationInternal).isAlias = true
 
-                    groupId = pub.pom.plugin!!.id
+                    groupId = requireNotNull(pub.pom.plugin) {
+                        "No plugin information is provided in POM"
+                    }.id
 
                     artifactId = pub.pluginMarkerArtifactIdWithVariant()
 

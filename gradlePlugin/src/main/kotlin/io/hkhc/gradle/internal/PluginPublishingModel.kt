@@ -19,6 +19,8 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
+import io.hkhc.gradle.pom.PluginInfo
+import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.removeLineBreak
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -95,6 +97,21 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
             return pluginPub
         }
 
+        private fun createPluginEntry(pub: JarbirdPub, pom: Pom, plugin: PluginInfo): PluginEntry {
+            return PluginEntry(
+                id = requireNotNull(plugin.id) { "Plugin ID is not provided" },
+                pubName = pub.pubNameWithVariant(),
+                implementationClass = requireNotNull(plugin.implementationClass) {
+                    "Plugin implementation class is not provided"
+                },
+                group = requireNotNull(pom.group) { "POM group is not provided" },
+                artifactId = requireNotNull(pom.artifactId) { "POM artifactID is not provided" },
+                version = requireNotNull(pom.version) { "POM version is not provided" },
+                displayName = plugin.displayName ?: "Untitled plugin",
+                description = pom.description ?: "Untitled component"
+            )
+        }
+
         fun createPluginEntries(pluginPubs: List<JarbirdPub>): List<PluginEntry> {
 
             val entries = mutableListOf<PluginEntry>()
@@ -102,18 +119,7 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
             pluginPubs.forEach {
                 it.pom.plugin?.let { plugin -> // plugin should not be null here
                     with(it.pom) {
-                        entries.add(
-                            PluginEntry(
-                                id = plugin.id!!,
-                                pubName = it.pubNameWithVariant(),
-                                implementationClass = plugin.implementationClass!!,
-                                group = group!!,
-                                artifactId = artifactId!!,
-                                version = version!!,
-                                displayName = plugin.displayName!!,
-                                description = description!!
-                            )
-                        )
+                        entries.add(createPluginEntry(it, it.pom, plugin))
                     }
                 }
             }

@@ -19,6 +19,7 @@
 package io.hkhc.utils
 
 import com.github.difflib.DiffUtils
+import com.github.difflib.patch.AbstractDelta
 import com.github.difflib.patch.DeltaType
 import java.io.PrintWriter
 import java.io.Writer
@@ -72,7 +73,7 @@ class DiffPresenter<T> {
         }
     }
 
-    fun print(source: List<T>, target: List<T>, writer: Writer) {
+    private class Printer<T>(private val source: List<T>, target: List<T>, writer: Writer) {
 
         var sourceLineNumber = LineNumber(source)
         var targetLineNumber = LineNumber(target)
@@ -84,57 +85,70 @@ class DiffPresenter<T> {
             com.github.difflib.algorithm.myers.MyersDiff()
         )
 
-        with(printWriter) {
-            patch.deltas.forEach {
-                when (it.type) {
-                    DeltaType.INSERT -> {
-                        while (targetLineNumber.lastNumber < it.target.position) {
-                            println("$sourceLineNumber   $targetLineNumber    ${targetLineNumber.getData()}")
-                            sourceLineNumber++
-                            targetLineNumber++
-                        }
-                        it.target.lines.forEach { line ->
-                            println("${sourceLineNumber.getNumberPlaceHolder()}  $targetLineNumber  + $line")
-                            targetLineNumber++
-                        }
-                    }
-                    DeltaType.DELETE -> {
-                        while (sourceLineNumber.lastNumber < it.source.position) {
-                            println("$sourceLineNumber   $targetLineNumber    ${sourceLineNumber.getData()}")
-                            sourceLineNumber++
-                            targetLineNumber++
-                        }
-                        it.source.lines.forEach { line ->
-                            println("$sourceLineNumber  ${targetLineNumber.getNumberPlaceHolder()}  - $line")
-                            sourceLineNumber++
-                        }
-                    }
-                    DeltaType.CHANGE -> {
-                        while (targetLineNumber.lastNumber < it.target.position) {
-                            println("$sourceLineNumber   $targetLineNumber    ${targetLineNumber.getData()}")
-                            sourceLineNumber++
-                            targetLineNumber++
-                        }
-                        it.source.lines.forEach { line ->
-                            println("$sourceLineNumber  ${targetLineNumber.getNumberPlaceHolder()}  - $line")
-                            sourceLineNumber++
-                        }
-                        it.target.lines.forEach { line ->
-                            println("${sourceLineNumber.getNumberPlaceHolder()}  $targetLineNumber  + $line")
-                            targetLineNumber++
-                        }
-                    }
-                    else -> {
-                        println("${it.type} : Not handle yet")
-                    }
-                }
+        private fun <T> insert(delta: AbstractDelta<T>) {
+            while (targetLineNumber.lastNumber < delta.target.position) {
+                println("$sourceLineNumber   $targetLineNumber    ${targetLineNumber.getData()}")
+                sourceLineNumber++
+                targetLineNumber++
             }
-            while (sourceLineNumber.lastNumber < source.size) {
+            delta.target.lines.forEach { line ->
+                println("${sourceLineNumber.getNumberPlaceHolder()}  $targetLineNumber  + $line")
+                targetLineNumber++
+            }
+        }
+
+        private fun <T> delete(delta: AbstractDelta<T>) {
+            while (sourceLineNumber.lastNumber < delta.source.position) {
                 println("$sourceLineNumber   $targetLineNumber    ${sourceLineNumber.getData()}")
                 sourceLineNumber++
                 targetLineNumber++
             }
-            close()
+            delta.source.lines.forEach { line ->
+                println("$sourceLineNumber  ${targetLineNumber.getNumberPlaceHolder()}  - $line")
+                sourceLineNumber++
+            }
         }
+
+        private fun <T> change(delta: AbstractDelta<T>) {
+            while (targetLineNumber.lastNumber < delta.target.position) {
+                println("$sourceLineNumber   $targetLineNumber    ${targetLineNumber.getData()}")
+                sourceLineNumber++
+                targetLineNumber++
+            }
+            delta.source.lines.forEach { line ->
+                println("$sourceLineNumber  ${targetLineNumber.getNumberPlaceHolder()}  - $line")
+                sourceLineNumber++
+            }
+            delta.target.lines.forEach { line ->
+                println("${sourceLineNumber.getNumberPlaceHolder()}  $targetLineNumber  + $line")
+                targetLineNumber++
+            }
+        }
+
+        fun print() {
+
+            with(printWriter) {
+                patch.deltas.forEach {
+                    when (it.type) {
+                        DeltaType.INSERT -> insert(it)
+                        DeltaType.DELETE -> delete(it)
+                        DeltaType.CHANGE -> change(it)
+                        else -> {
+                            println("${it.type} : Not handle yet")
+                        }
+                    }
+                }
+                while (sourceLineNumber.lastNumber < source.size) {
+                    println("$sourceLineNumber   $targetLineNumber    ${sourceLineNumber.getData()}")
+                    sourceLineNumber++
+                    targetLineNumber++
+                }
+                close()
+            }
+        }
+    }
+
+    fun print(source: List<T>, target: List<T>, writer: Writer) {
+        Printer(source, target, writer).print()
     }
 }

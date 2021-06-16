@@ -25,7 +25,6 @@ import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockTaskContainer
-import io.hkhc.utils.test.createMockProjectTree
 import io.hkhc.utils.test.createSingleMockProject
 import io.hkhc.utils.tree.NoBarTheme
 import io.hkhc.utils.tree.defaultTreeTheme

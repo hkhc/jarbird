@@ -20,7 +20,7 @@ package io.hkhc.gradle.taskinfo
 
 import io.hkhc.utils.tree.AbstractNode
 
-class TaskInfoNode(private val taskInfo: TaskInfo): AbstractNode<TaskInfo>(taskInfo) {
+class TaskInfoNode(private val taskInfo: TaskInfo) : AbstractNode<TaskInfo>(taskInfo) {
     override fun text() = "${taskInfo.path} ${taskInfo.status}"
 }
 

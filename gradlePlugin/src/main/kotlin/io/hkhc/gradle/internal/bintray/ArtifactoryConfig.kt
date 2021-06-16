@@ -20,7 +20,6 @@ package io.hkhc.gradle.internal.bintray
 
 import groovy.lang.GroovyObject
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isSingleProject

@@ -21,9 +21,11 @@ package io.hkhc.gradle.test
 import com.google.gson.Gson
 import java.nio.charset.Charset
 
+@Suppress("UnsafeCallOnNullableType")
 class MockGradlePortalRepositoryServer : BaseMockRepositoryServer() {
 
     // TODO fix multi coordinates matcher
+    @Suppress("UNCHECKED_CAST")
     override fun setupMatcher(coordinates: List<Coordinate>, baseUrl: String) = coordinates.flatMap { coordinate ->
         val first = coordinates[0]
         with(coordinate) {
@@ -32,25 +34,33 @@ class MockGradlePortalRepositoryServer : BaseMockRepositoryServer() {
                     val requestBody = recordedRequest.body.readString(Charset.defaultCharset())
 //                    println("requestBody new ${requestBody}")
                     val requestBodyTree = Gson().fromJson(requestBody, Map::class.java)
-                    val requestUrl = recordedRequest.requestUrl?.let { url -> "${url.scheme}://${url.host}:${url.port}" }
-                        ?: throw Exception("requestUrl is null")
-                    val artifacts = (requestBodyTree["artifacts"] as List<Map<String,String>>).joinToString(separator = ",") {
-                        "\"${it["hash"]}\": \"${requestUrl}${baseUrl}/upload/${it["hash"]}/\""
+                    val requestUrl = requireNotNull(
+                        recordedRequest.requestUrl?.let { url -> "${url.scheme}://${url.host}:${url.port}" }
+                    ) {
+                        "requestUrl is null"
                     }
-
-                    response.setBody("""
-                        {
-                            pluginId: "test.plugin",
-                            version: "0.1",
-                            publishTo: { $artifacts },
-                            warningMessage: "",
-                            warning: false,
-                            failed: false,
-                            errorMessage: ""
+                    val artifacts = (requestBodyTree["artifacts"] as List<Map<String, String>>)
+                        .joinToString(separator = ",") {
+                            "\"${it["hash"]}\": \"$requestUrl$baseUrl/upload/${it["hash"]}/\""
                         }
-                    """.trimIndent()).setResponseCode(HTTP_SUCCESS)
+
+                    response.setBody(
+                        """
+                            {
+                                pluginId: "test.plugin",
+                                version: "0.1",
+                                publishTo: { $artifacts },
+                                warningMessage: "",
+                                warning: false,
+                                failed: false,
+                                errorMessage: ""
+                            }
+                        """.trimIndent()
+                    ).setResponseCode(HTTP_SUCCESS)
                 },
-                PostMatcher("/api/v1/publish/versions/activate/${coordinate.pluginId}/${coordinate.version}") { recordedRequest, response ->
+                PostMatcher(
+                    "/api/v1/publish/versions/activate/${coordinate.pluginId}/${coordinate.version}"
+                ) { recordedRequest, response ->
                     val requestBody = recordedRequest.body.readString(Charset.defaultCharset())
 //                    println("requestBody activate ${requestBody}")
                     response.setResponseCode(HTTP_SUCCESS)

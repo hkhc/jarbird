@@ -114,74 +114,73 @@ class BuildMultiProjectMavenLocalTest : FunSpec({
             val result = tester.runTask(targetTask)
 
             withClue("expected list of tasks executed with expected result") {
-                val actualTaskTreeLib1 = getTaskTree(File(projectDir,"lib1"), targetTask, result)
+                val actualTaskTreeLib1 = getTaskTree(File(projectDir, "lib1"), targetTask, result)
                     .chopChilds { it.value().path in arrayOf(":lib1:jar") }
                     .toStringTree()
 
                 actualTaskTreeLib1 shouldBe
                     stringTreeOf(NoBarTheme) {
-                            ":lib1:jbPublishToMavenLocal SUCCESS" {
-                                ":lib1:jbPublishTestArtifactOneToMavenLocal SUCCESS" {
-                                    ":lib1:publishTestArtifactOnePublicationToMavenLocal SUCCESS" {
+                        ":lib1:jbPublishToMavenLocal SUCCESS" {
+                            ":lib1:jbPublishTestArtifactOneToMavenLocal SUCCESS" {
+                                ":lib1:publishTestArtifactOnePublicationToMavenLocal SUCCESS" {
+                                    ":lib1:generateMetadataFileForTestArtifactOnePublication SUCCESS" {
+                                        ":lib1:jar SUCCESS"()
+                                    }
+                                    ":lib1:generatePomFileForTestArtifactOnePublication SUCCESS"()
+                                    ":lib1:jar SUCCESS"()
+                                    ":lib1:jbDokkaJarTestArtifactOne SUCCESS" {
+                                        ":lib1:jbDokkaHtmlTestArtifactOne SUCCESS"()
+                                    }
+                                    ":lib1:signTestArtifactOnePublication SUCCESS" {
                                         ":lib1:generateMetadataFileForTestArtifactOnePublication SUCCESS" {
                                             ":lib1:jar SUCCESS"()
                                         }
-                                        ":lib1:generatePomFileForTestArtifactOnePublication SUCCESS"()
+                                        ":lib1:generatePomFileForTestArtifactOnePublication SUCCESS" ()
                                         ":lib1:jar SUCCESS"()
                                         ":lib1:jbDokkaJarTestArtifactOne SUCCESS" {
                                             ":lib1:jbDokkaHtmlTestArtifactOne SUCCESS"()
                                         }
-                                        ":lib1:signTestArtifactOnePublication SUCCESS" {
-                                            ":lib1:generateMetadataFileForTestArtifactOnePublication SUCCESS" {
-                                                ":lib1:jar SUCCESS"()
-                                            }
-                                            ":lib1:generatePomFileForTestArtifactOnePublication SUCCESS" ()
-                                            ":lib1:jar SUCCESS"()
-                                            ":lib1:jbDokkaJarTestArtifactOne SUCCESS" {
-                                                ":lib1:jbDokkaHtmlTestArtifactOne SUCCESS"()
-                                            }
-                                            ":lib1:sourcesJarTestArtifactOne SUCCESS"()
-                                        }
                                         ":lib1:sourcesJarTestArtifactOne SUCCESS"()
                                     }
+                                    ":lib1:sourcesJarTestArtifactOne SUCCESS"()
                                 }
                             }
+                        }
                     }
 
-                val actualTaskTreeLib2 = getTaskTree(File(projectDir,"lib2"), targetTask, result)
+                val actualTaskTreeLib2 = getTaskTree(File(projectDir, "lib2"), targetTask, result)
                     .chopChilds { it.value().path in arrayOf(":lib2:jar") }
                     .toStringTree()
 
                 actualTaskTreeLib2 shouldBe
                     stringTreeOf(NoBarTheme) {
-                            ":lib2:jbPublishToMavenLocal SUCCESS" {
-                                ":lib2:jbPublishTestArtifactTwoToMavenLocal SUCCESS" {
-                                    ":lib2:publishTestArtifactTwoPublicationToMavenLocal SUCCESS" {
+                        ":lib2:jbPublishToMavenLocal SUCCESS" {
+                            ":lib2:jbPublishTestArtifactTwoToMavenLocal SUCCESS" {
+                                ":lib2:publishTestArtifactTwoPublicationToMavenLocal SUCCESS" {
+                                    ":lib2:generateMetadataFileForTestArtifactTwoPublication SUCCESS" {
+                                        ":lib2:jar SUCCESS"()
+                                    }
+                                    ":lib2:generatePomFileForTestArtifactTwoPublication SUCCESS"()
+                                    ":lib2:jar SUCCESS"()
+                                    ":lib2:jbDokkaJarTestArtifactTwo SUCCESS" {
+                                        ":lib2:jbDokkaHtmlTestArtifactTwo SUCCESS"()
+                                    }
+                                    ":lib2:signTestArtifactTwoPublication SUCCESS" {
                                         ":lib2:generateMetadataFileForTestArtifactTwoPublication SUCCESS" {
                                             ":lib2:jar SUCCESS"()
                                         }
-                                        ":lib2:generatePomFileForTestArtifactTwoPublication SUCCESS"()
+                                        ":lib2:generatePomFileForTestArtifactTwoPublication SUCCESS" ()
                                         ":lib2:jar SUCCESS"()
                                         ":lib2:jbDokkaJarTestArtifactTwo SUCCESS" {
                                             ":lib2:jbDokkaHtmlTestArtifactTwo SUCCESS"()
                                         }
-                                        ":lib2:signTestArtifactTwoPublication SUCCESS" {
-                                            ":lib2:generateMetadataFileForTestArtifactTwoPublication SUCCESS" {
-                                                ":lib2:jar SUCCESS"()
-                                            }
-                                            ":lib2:generatePomFileForTestArtifactTwoPublication SUCCESS" ()
-                                            ":lib2:jar SUCCESS"()
-                                            ":lib2:jbDokkaJarTestArtifactTwo SUCCESS" {
-                                                ":lib2:jbDokkaHtmlTestArtifactTwo SUCCESS"()
-                                            }
-                                            ":lib2:sourcesJarTestArtifactTwo SUCCESS"()
-                                        }
                                         ":lib2:sourcesJarTestArtifactTwo SUCCESS"()
                                     }
+                                    ":lib2:sourcesJarTestArtifactTwo SUCCESS"()
                                 }
                             }
+                        }
                     }
-
             }
 
             coordinates.forEach { coor ->

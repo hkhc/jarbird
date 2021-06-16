@@ -30,11 +30,9 @@ import io.hkhc.gradle.pom.Scm
 import io.hkhc.gradle.pom.Web
 import io.hkhc.utils.removeLineBreak
 import io.hkhc.utils.test.MockExtensionContainer
-import io.hkhc.utils.test.createMockProjectTree
 import io.hkhc.utils.test.createSingleMockProject
 import io.hkhc.utils.tree.NoBarTheme
 import io.hkhc.utils.tree.defaultTreeTheme
-import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -42,7 +40,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.gradle.api.Action
-import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.invoke

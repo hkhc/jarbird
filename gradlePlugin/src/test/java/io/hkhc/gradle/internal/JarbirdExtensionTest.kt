@@ -22,8 +22,6 @@ import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import io.hkhc.gradle.internal.repo.MavenLocalRepoSpecImpl
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
-import io.hkhc.gradle.pom.PomGroup
-import io.hkhc.gradle.pom.internal.PomGroupFactory
 import io.hkhc.utils.test.MockProjectProperty
 import io.hkhc.utils.test.tempDirectory
 import io.kotest.core.spec.style.FunSpec
@@ -43,7 +41,6 @@ class JarbirdExtensionTest : FunSpec({
     lateinit var project: Project
     lateinit var projectProperty: ProjectProperty
     lateinit var projectInfo: ProjectInfo
-    lateinit var pomGroup: PomGroup
 
     fun commonPom(version: String) =
         """
@@ -83,13 +80,8 @@ class JarbirdExtensionTest : FunSpec({
         every { project.version } returns "0.1"
         every { project.description } returns "This is description"
 
-        every { project.property("repository.artifactory.mock.release") } returns "https://release"
-        every { project.property("repository.artifactory.mock.snapshot") } returns "https://release"
-        every { project.property("repository.artifactory.mock.repoKe") } returns "oss-snapshot-local"
-        every { project.property("repository.artifactory.mock.username") } returns "username"
-        every { project.property("repository.artifactory.mock.password") } returns "password"
-        every { project.getRootDir() } returns projectDir
-        every { project.getProjectDir() } returns File(projectDir, "module")
+        every { project.rootDir } returns projectDir
+        every { project.projectDir } returns File(projectDir, "module")
         every { project.property(any()) } returns ""
         // we need to rerun test for child project
         every { project.getRootProject() } returns project
@@ -158,7 +150,6 @@ class JarbirdExtensionTest : FunSpec({
             listOf("0.1", "0.1-SNAPSHOT").forEach { version ->
 
                 File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonPom(version))
-                pomGroup = PomGroupFactory.resolvePomGroup(project.projectDir, File(project.projectDir, "module"))
 
                 val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
                 ext.pubList.shouldBeEmpty()
@@ -342,10 +333,6 @@ class JarbirdExtensionTest : FunSpec({
 
             // the pub inherit the repository from extension
             pub.getRepos().map { it.id } shouldBe listOf("ArtifactoryMock")
-
-
         }
-
     }
-
 })

@@ -24,10 +24,8 @@ import io.hkhc.gradle.internal.repo.GradlePortalSpecImpl
 import io.hkhc.gradle.pom.PluginInfo
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockTaskContainer
-import io.hkhc.utils.test.createMockProjectTree
 import io.hkhc.utils.test.createSingleMockProject
 import io.hkhc.utils.tree.NoBarTheme
-import io.hkhc.utils.tree.RoundTheme
 import io.hkhc.utils.tree.defaultTreeTheme
 import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.core.spec.style.FunSpec

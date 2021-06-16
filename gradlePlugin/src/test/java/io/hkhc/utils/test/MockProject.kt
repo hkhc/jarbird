@@ -29,7 +29,7 @@ import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.specs.Spec
 
 fun createSingleMockProject(name: String): Project {
-    return createMockProjectTree(StringNode("name"), mutableMapOf(), null, null)
+    return createMockProjectTree(StringNode(name), mutableMapOf(), null, null)
 }
 
 fun createMockProjectTree(

@@ -141,8 +141,10 @@ class BuildPluginMavenLocalTest : FunSpec({
 
             pluginPom shouldBe pluginPom(coordinate)
 
-            LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should publishToMavenLocalCompletely()
-            LocalRepoResult(setup.localRepoDirFile, coordinate, "dont-care") should publishPluginToMavenLocalCompletely()
+            LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should
+                publishToMavenLocalCompletely()
+            LocalRepoResult(setup.localRepoDirFile, coordinate, "dont-care") should
+                publishPluginToMavenLocalCompletely()
             printFileTree(setup.projectDir)
         }
     }
