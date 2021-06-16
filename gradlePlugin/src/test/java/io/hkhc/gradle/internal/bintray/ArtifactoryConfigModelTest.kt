@@ -78,7 +78,6 @@ class ArtifactoryConfigModelTest : FunSpec({
     }
 
     test("one artifactory repos") {
-
         // GIVEN
         val projectProperty = MockProjectProperty(
             mapOf(

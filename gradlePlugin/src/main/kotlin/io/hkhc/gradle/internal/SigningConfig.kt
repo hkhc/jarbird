@@ -19,8 +19,7 @@
 package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
-import io.hkhc.gradle.internal.utils.findByType
-import org.gradle.api.GradleException
+import io.hkhc.gradle.internal.utils.findExtension
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.kotlin.dsl.get
@@ -93,10 +92,9 @@ class SigningConfig(
             }
         }
 
-        (
-            project.findByType(SigningExtension::class.java)
-                ?: throw GradleException("Signing extension is not found. May be Signing Plugin is not applied?")
-            ).config()
+        requireNotNull(project.findExtension(SigningExtension::class.java)) {
+            "Signing extension is not found. May be Signing Plugin is not applied?"
+        }.config()
     }
 
     private fun isV1ConfigPresents() =
@@ -118,7 +116,7 @@ class SigningConfig(
             isRequired = pub.pom.isRelease()
 
             if (pub.pom.isRelease()) {
-                project.findByType(PublishingExtension::class.java)?.addSigningArtifact(this, pub)
+                project.findExtension(PublishingExtension::class.java)?.addSigningArtifact(this, pub)
             }
         }
     }

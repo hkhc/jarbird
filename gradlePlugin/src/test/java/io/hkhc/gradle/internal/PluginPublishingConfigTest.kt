@@ -92,7 +92,7 @@ class PluginPublishingConfigTest : FunSpec({
                 }
             }
 
-            shouldThrowExactly<GradleException> {
+            shouldThrowExactly<IllegalArgumentException> {
                 PluginPublishingModel.filterGradlePluginPub(project, pubs)
             }.message shouldBe "Plugin ID is not specified for pub pub1"
 
@@ -105,7 +105,7 @@ class PluginPublishingConfigTest : FunSpec({
                 }
             }
 
-            shouldThrowExactly<GradleException> {
+            shouldThrowExactly<IllegalArgumentException> {
                 PluginPublishingModel.filterGradlePluginPub(project, pubs)
             }.message shouldBe "Plugin implementation class is not specified for pub pub1"
         }

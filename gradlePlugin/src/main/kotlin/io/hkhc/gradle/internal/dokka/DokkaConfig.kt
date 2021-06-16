@@ -73,7 +73,9 @@ internal class DokkaConfig(
 
         pubs.filter { it.needsGenDoc() }.forEach { pub ->
             val impl = pub as JarbirdPubImpl
-            impl.sourceSetModel()?.let { sourceSetModel ->
+            requireNotNull(impl.sourceSetModel()) {
+                "sourceSetModel is not set"
+            }.let { sourceSetModel ->
                 val pubClasspath = sourceSetModel.classpath.toTypedArray()
                 JbDokkaPubTaskInfo(pub).register(project.tasks, DokkaTask::class.java) {
                     dokkaSourceSets.create("${pub.pom.group}:${pub.pom.artifactId}") {
@@ -84,7 +86,7 @@ internal class DokkaConfig(
                     }
                     impl.dokkaConfig.invoke(this, pub)
                 }
-            } ?: throw GradleException("sourceSetModel is not set")
+            }
         }
     }
 

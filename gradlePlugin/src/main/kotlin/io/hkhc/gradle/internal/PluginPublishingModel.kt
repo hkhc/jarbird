@@ -77,21 +77,19 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
             }
 
             pluginPub.forEach {
-                it.pom.plugin?.let { plugin ->
-                    if (plugin.id == null) {
-                        throw GradleException("Plugin ID is not specified for pub ${it.pubNameWithVariant()}")
-                    }
-                    if (plugin.implementationClass == null) {
-                        throw GradleException(
-                            "Plugin implementation class is not specified for pub ${it.pubNameWithVariant()}"
-                        )
-                    }
-                } ?: throw GradleException(
+                requireNotNull(it.pom.plugin) {
                     """
                         $LOG_PREFIX Pub ${it.pubNameWithVariant()} has Gradle Plugin Portal declared,
                         but has no plugin information declared in pom.yaml
                     """.trimIndent().removeLineBreak(ensureSpaceWithMerge = true)
-                )
+                }.let { plugin ->
+                    requireNotNull(plugin.id) {
+                        "Plugin ID is not specified for pub ${it.pubNameWithVariant()}"
+                    }
+                    requireNotNull(plugin.implementationClass) {
+                        "Plugin implementation class is not specified for pub ${it.pubNameWithVariant()}"
+                    }
+                }
             }
 
             return pluginPub

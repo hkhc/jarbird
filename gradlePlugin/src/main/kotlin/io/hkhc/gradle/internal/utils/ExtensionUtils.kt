@@ -20,6 +20,6 @@ package io.hkhc.gradle.internal.utils
 
 import org.gradle.api.Project
 
-internal fun <T> Project.findByType(type: Class<T>): T? {
+internal fun <T> Project.findExtension(type: Class<T>): T? {
     return extensions.findByType(type)
 }

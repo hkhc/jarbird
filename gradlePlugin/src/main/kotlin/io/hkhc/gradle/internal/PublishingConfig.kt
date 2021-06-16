@@ -25,7 +25,7 @@ import io.hkhc.gradle.internal.maven.MavenPomAdapter
 import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import io.hkhc.gradle.internal.utils.Version
 import io.hkhc.gradle.internal.utils.detailMessageWarning
-import io.hkhc.gradle.internal.utils.findByType
+import io.hkhc.gradle.internal.utils.findExtension
 import io.hkhc.gradle.pom.Pom
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -79,13 +79,10 @@ internal class PublishingConfig(
 
         project.logger.debug("$LOG_PREFIX Configure Publishing extension")
 
-        (
-            project.findByType(PublishingExtension::class.java)
-                ?: throw GradleException(
-                    "\"publishing\" extension is not found. " +
-                        "Maybe \"org.gradle.maven-publish\" is not applied?"
-                )
-            ).config()
+        requireNotNull(project.findExtension(PublishingExtension::class.java)) {
+            "\"publishing\" extension is not found. " +
+            "Maybe \"org.gradle.maven-publish\" is not applied?"
+        }.config()
     }
 
     private fun PublishingExtension.config() {
@@ -152,7 +149,9 @@ internal class PublishingConfig(
                 version = pub.variantVersion()
 
                 if (publishJarTask == null) {
-                    pub.component?.let { from(it) } ?: throw GradleException("Software component is not set.")
+                    requireNotNull(pub.component) {
+                        "Software component is not set."
+                    }.let { from(it) }
                 } else {
                     artifactCompat(publishJarTask)
                 }
@@ -168,13 +167,13 @@ internal class PublishingConfig(
                     if (pub.needsGenDoc()) {
                         artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
                     }
-                    pub.sourceSetModel()?.let { sourceSetModel ->
+                    requireNotNull(pub.sourceSetModel()) {
+                        "sourceSet model is unexpectedly null. Probably a bug."
+                    }.let { sourceSetModel ->
                         artifactCompat(
-                            SourceConfig(project, sourceResolver)
-                                .configSourceJarTask(pub, sourceSetModel)
+                            SourceConfig(project, sourceResolver).configSourceJarTask(pub, sourceSetModel)
                         )
                     }
-                        ?: throw GradleException("sourceSet model is unexpectedly null. Probably a bug.")
                 }
 
                 pom { MavenPomAdapter().fill(this, pom) }

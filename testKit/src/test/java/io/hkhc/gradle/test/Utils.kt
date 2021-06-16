@@ -273,10 +273,8 @@ fun getTestGradleHomePair(projectDir: File): Pair<String, String> {
 }
 
 fun getTestAndroidSdkHomePair(): Pair<String, String> {
-    val path = System.getenv()["ANDROID_HOME"] ?: System.getenv()["ANDROID_SDK_ROOT"]
-        ?: throw GradleException(
-            "environment variable 'ANDROID_SDK_ROOT' is missed." +
-                " It shall contain path to Android SDK"
-        )
+    val path = requireNotNull(System.getenv()["ANDROID_HOME"] ?: System.getenv()["ANDROID_SDK_ROOT"]) {
+        "environment variable 'ANDROID_SDK_ROOT' is missed. It shall contain path to Android SDK"
+    }
     return "ANDROID_SDK_ROOT" to path
 }

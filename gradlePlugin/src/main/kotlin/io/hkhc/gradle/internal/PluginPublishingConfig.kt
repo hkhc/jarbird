@@ -21,8 +21,7 @@ package io.hkhc.gradle.internal
 import com.gradle.publish.PluginBundleExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.maven.MavenPomAdapter
-import io.hkhc.gradle.internal.utils.findByType
-import org.gradle.api.GradleException
+import io.hkhc.gradle.internal.utils.findExtension
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -51,22 +50,16 @@ class PluginPublishingConfig(
 
         val model = PluginPublishingModel(project, pubs)
 
-        (
-            project.findByType(GradlePluginDevelopmentExtension::class.java)
-                ?: throw GradleException(
-                    "\"gradlePlugin\" extension is not found, may be " +
-                        "\"plugin org.gradle.java-gradle-plugin\" is not applied?"
-                )
-            ).config(model)
+        requireNotNull(project.findExtension(GradlePluginDevelopmentExtension::class.java)) {
+            "\"gradlePlugin\" extension is not found, may be " +
+                "\"plugin org.gradle.java-gradle-plugin\" is not applied?"
+        }.config(model)
 
-        (
-            // TODO rename findByType to findExtension
-            project.findByType(PluginBundleExtension::class.java)
-                ?: throw GradleException(
-                    "\"pluginBundle\" extension is not found, may be " +
-                        "\"com.gradle.plugin-publish\" plugin is not applied?"
-                )
-            ).config(model)
+        // TODO rename findByType to findExtension
+        requireNotNull(project.findExtension(PluginBundleExtension::class.java)) {
+            "\"pluginBundle\" extension is not found, may be " +
+                "\"com.gradle.plugin-publish\" plugin is not applied?"
+        }.config(model)
 
         presetupPluginMarkerPublication(model)
     }
@@ -82,7 +75,7 @@ class PluginPublishingConfig(
         model.publishingPub.also { pub ->
             // We create the marker publication here so that the MavenPluginPublishPlugin may reuse it
             // and we can do some customization here.
-            val publishing = project.findByType(PublishingExtension::class.java)
+            val publishing = project.findExtension(PublishingExtension::class.java)
             publishing?.publications {
                 val pluginMainPublication = maybeCreate(
                     "pluginMaven",

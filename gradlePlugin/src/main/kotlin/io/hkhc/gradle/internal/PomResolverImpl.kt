@@ -35,7 +35,11 @@ class PomResolverImpl(private val projectInfo: ProjectInfo) : PomResolver {
         // the non-variant pom spec directly
         pomGroup[variant].also { variantPom ->
             if (variantPom == null) {
-                pomGroup[""]?.let { pom = it } ?: throw GradleException("Variant '$variant' is not found")
+                requireNotNull(pomGroup[""]) {
+                    "Variant '$variant' is not found"
+                }.let {
+                    pom = it
+                }
             } else {
                 pom = variantPom
             }

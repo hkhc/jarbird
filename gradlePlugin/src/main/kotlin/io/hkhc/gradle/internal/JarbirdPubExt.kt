@@ -28,10 +28,9 @@ internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): Stri
 }
 
 internal fun JarbirdPub.pluginMarkerArtifactIdWithVariant(): String {
-    return pom.plugin?.let {
-        "${it.id}.gradle.plugin"
-    }
-    ?: throw GradleException("POM plugin is unexpectedly null. Probably a bug.")
+    return requireNotNull(pom.plugin) {
+        "POM plugin is unexpectedly null. Probably a bug."
+    }.run { "$id.gradle.plugin" }
 }
 
 // If function is suffixed with "Cap" this means the callers do not need to worry about the first letter case.
