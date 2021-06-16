@@ -50,7 +50,7 @@ class DocDeclarationImplTest : FunSpec({
         val mockedPub = mockk<JarbirdPub>()
         val mockedDokkaTask = mockk<DokkaTask>()
 
-        DocDeclarationImpl { pub ->
+        DocDeclarationImpl { _ ->
             defaultConfigExecuted = true
         }.apply {
             dokkaConfig { pub ->
@@ -73,13 +73,13 @@ class DocDeclarationImplTest : FunSpec({
         val mockedDokkaTask = mockk<DokkaTask>()
 
         val parent = DocDeclarationImpl().apply {
-            dokkaConfig { pub ->
+            dokkaConfig { _ ->
                 parentConfigExecuted = true
             }
         }
 
         DocDeclarationImpl(parent).apply {
-            dokkaConfig { pub ->
+            dokkaConfig { _ ->
                 defaultConfigExecuted = true
             }
             dokkaConfig.invoke(mockedDokkaTask, mockedPub)
@@ -102,7 +102,7 @@ class DocDeclarationImplTest : FunSpec({
             parentConfigExecuted = true
         }
 
-        DocDeclarationImpl(parent) { pub ->
+        DocDeclarationImpl(parent) { _ ->
             defaultConfigExecuted = true
         }.apply {
             dokkaConfig.invoke(mockedDokkaTask, mockedPub)
@@ -127,7 +127,7 @@ class DocDeclarationImplTest : FunSpec({
             }
         }
 
-        DocDeclarationImpl(parent) { pub ->
+        DocDeclarationImpl(parent) { _ ->
             defaultConfigExecuted = true
         }.apply {
             dokkaConfig.invoke(mockedDokkaTask, mockedPub)
@@ -146,12 +146,12 @@ class DocDeclarationImplTest : FunSpec({
         val mockedDokkaTask = mockk<DokkaTask>()
 
         val parent = DocDeclarationImpl().apply {
-            dokkaConfig { pub ->
+            dokkaConfig { _ ->
                 parentConfigExecuted = true
             }
         }
 
-        DocDeclarationImpl(parent) { pub ->
+        DocDeclarationImpl(parent) { _ ->
             defaultConfigExecuted = true
         }.apply {
             dokkaConfig { pub ->

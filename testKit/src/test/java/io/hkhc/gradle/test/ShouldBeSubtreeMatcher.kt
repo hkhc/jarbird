@@ -36,7 +36,7 @@ fun isSubtreeOfMatcher(actual: Node<String>) = object : Matcher<Node<String>> {
 
         val isSubtree = expected.isSubtreeOf(actual)
 
-        println("isSubtree ${isSubtree}")
+        println("isSubtree $isSubtree")
 
         val actualGraph = TreePrinter().dumpToString(actual)
         val expectedGraph = TreePrinter().dumpToString(expected)
@@ -48,7 +48,6 @@ fun isSubtreeOfMatcher(actual: Node<String>) = object : Matcher<Node<String>> {
             { "Expected task graph should be subtree of actual tasks graph\n$failureMessageWriter" },
             { "Expected task graph should not be subtree of actual tasks graph\n$actualGraph" }
         )
-
     }
 }
 

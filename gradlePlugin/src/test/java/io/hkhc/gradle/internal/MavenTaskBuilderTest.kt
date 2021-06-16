@@ -27,6 +27,7 @@ import io.hkhc.gradle.pom.PluginInfo
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockTaskContainer
 import io.hkhc.utils.test.createMockProjectTree
+import io.hkhc.utils.test.createSingleMockProject
 import io.hkhc.utils.tree.NoBarTheme
 import io.hkhc.utils.tree.RoundTheme
 import io.hkhc.utils.tree.defaultTreeTheme
@@ -46,12 +47,7 @@ class MavenTaskBuilderTest : FunSpec({
     context("maven local") {
 
         test("single project without maven local repo") {
-            val projectMap = createMockProjectTree(
-                stringTreeOf(RoundTheme) {
-                    "app"()
-                }
-            )
-            val project = projectMap["app"]!!
+            val project = createSingleMockProject("app")
 
             TaskInfo.eagar = true
 
@@ -73,12 +69,7 @@ class MavenTaskBuilderTest : FunSpec({
 
         test("register maven local tasks for single project") {
 
-            val projectMap = createMockProjectTree(
-                stringTreeOf {
-                    "app"()
-                }
-            )
-            val project = projectMap["app"]!!
+            val project = createSingleMockProject("app")
 
             TaskInfo.eagar = true
 
@@ -111,12 +102,7 @@ class MavenTaskBuilderTest : FunSpec({
 
         test("register maven local tasks for single project with gradle plugin pub") {
 
-            val projectMap = createMockProjectTree(
-                stringTreeOf {
-                    "app"()
-                }
-            )
-            val project = projectMap["app"]!!
+            val project = createSingleMockProject("app")
 
             TaskInfo.eagar = true
 
@@ -169,9 +155,6 @@ class MavenTaskBuilderTest : FunSpec({
                     }
                 }
             )
-            projectMap.keys.forEach {
-                println("project key $it")
-            }
             val rootProject = projectMap["root"]!!
             val childProject = projectMap["app"]!!
 
@@ -232,12 +215,7 @@ class MavenTaskBuilderTest : FunSpec({
 
         test("register maven repo tasks for single project") {
 
-            val projectMap = createMockProjectTree(
-                stringTreeOf {
-                    "app"()
-                }
-            )
-            val project = projectMap.get("app")!!
+            val project = createSingleMockProject("app")
 
             TaskInfo.eagar = true
 
@@ -294,12 +272,7 @@ class MavenTaskBuilderTest : FunSpec({
 
         test("register maven local tasks for single project with gradle plugin pub") {
 
-            val projectMap = createMockProjectTree(
-                stringTreeOf {
-                    "app"()
-                }
-            )
-            val project = projectMap["app"]!!
+            val project = createSingleMockProject("app")
 
             TaskInfo.eagar = true
 
@@ -346,12 +319,7 @@ class MavenTaskBuilderTest : FunSpec({
 
         test("register two maven repo tasks for single project") {
 
-            val projectMap = createMockProjectTree(
-                stringTreeOf {
-                    "app"()
-                }
-            )
-            val project = projectMap.get("app")!!
+            val project = createSingleMockProject("app")
 
             TaskInfo.eagar = true
 

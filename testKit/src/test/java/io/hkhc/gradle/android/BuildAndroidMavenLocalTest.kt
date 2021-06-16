@@ -69,9 +69,7 @@ class BuildAndroidMavenLocalTest : FunSpec({
                                 ":lib:generateMetadataFileForTestArtifactReleasePublication SUCCESS" {
                                     ":lib:bundleReleaseAar SUCCESS"()
                                 }
-                                ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS" {
-
-                                }
+                                ":lib:generatePomFileForTestArtifactReleasePublication SUCCESS" ()
                                 ":lib:jbDokkaJarTestArtifactRelease SUCCESS" {
                                     ":lib:jbDokkaHtmlTestArtifactRelease SUCCESS"()
                                 }

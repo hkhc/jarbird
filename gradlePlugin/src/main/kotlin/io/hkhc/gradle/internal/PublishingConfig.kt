@@ -168,10 +168,13 @@ internal class PublishingConfig(
                     if (pub.needsGenDoc()) {
                         artifactCompat(DokkaConfig(project, extension, sourceResolver).setupDokkaJar(pub))
                     }
-                    artifactCompat(
-                        SourceConfig(project, sourceResolver)
-                            .configSourceJarTask(pub, pub.sourceSetModel()!!)
-                    )
+                    pub.sourceSetModel()?.let { sourceSetModel ->
+                        artifactCompat(
+                            SourceConfig(project, sourceResolver)
+                                .configSourceJarTask(pub, sourceSetModel)
+                        )
+                    }
+                        ?: throw GradleException("sourceSet model is unexpectedly null. Probably a bug.")
                 }
 
                 pom { MavenPomAdapter().fill(this, pom) }

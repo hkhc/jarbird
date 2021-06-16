@@ -143,49 +143,50 @@ open class JarbirdPlugin : Plugin<Project> {
     /**
      * The order of applying plugins and whether they are deferred by the two kind of afterEvaluate listener, are
      * important. So mess around them without know exactly the consequence.
-     *
+     */
 
-        gradle.afterEvaluate
-        - Sync POM
-        - Phase 1
-        - config artifactory extension
-        - plugin: bintray gradle.afterEvaluate
-        - Phase 2
-        - config plugin publishing
+    /*
+       gradle.afterEvaluate
+       - Sync POM
+       - Phase 1
+       - config artifactory extension
+       - plugin: bintray gradle.afterEvaluate
+       - Phase 2
+       - config plugin publishing
 
-        project.afterEvaluate
-        - Phase 3
-        - ...
-        - gradle plugin
-        setup testkit dependency
-        validate plugin config
-        - Phase 4
-        configure publishing
-        configure signing
-        setup tasks
+       project.afterEvaluate
+       - Phase 3
+       - ...
+       - gradle plugin
+       setup testkit dependency
+       validate plugin config
+       - Phase 4
+       configure publishing
+       configure signing
+       setup tasks
 
-        gradle.projectEvaluated
-        - bintray
+       gradle.projectEvaluated
+       - bintray
 
-        ------------------------------------------------
+       ------------------------------------------------
 
-        ProjectEvaluationListener is invoked before any project.afterEvaluate.
-        So we use projectEvaluateListener to make sure our setup has done before the projectEvaluationListener
-        in other plugins.
+       ProjectEvaluationListener is invoked before any project.afterEvaluate.
+       So we use projectEvaluateListener to make sure our setup has done before the projectEvaluationListener
+       in other plugins.
 
-        Further, the ProjectEvaluationListener added by Gradle.addProjectEvaluationListener() within
-        project.afterEvaluate will not be executed, as the ProjectEvaluateListeners have been executed
-        before callback of project.afterEvaluate and will not go back to run again. So if a plugin needs to invoke
-        project.afterEvaluate, then it should not be applied within another project.afterEvaluate. However it is
-        OK to apply it in ProjectEvaluationListener.
+       Further, the ProjectEvaluationListener added by Gradle.addProjectEvaluationListener() within
+       project.afterEvaluate will not be executed, as the ProjectEvaluateListeners have been executed
+       before callback of project.afterEvaluate and will not go back to run again. So if a plugin needs to invoke
+       project.afterEvaluate, then it should not be applied within another project.afterEvaluate. However it is
+       OK to apply it in ProjectEvaluationListener.
 
-        Setup bintrayExtension before bintray's ProjectEvaluationListener.afterEvaluate
-        which expect bintray extension to be ready.
-        The bintray task has been given publication names and it is fine the the publication
-        is not ready yet. The actual publication is not accessed until execution of task.
+       Setup bintrayExtension before bintray's ProjectEvaluationListener.afterEvaluate
+       which expect bintray extension to be ready.
+       The bintray task has been given publication names and it is fine the the publication
+       is not ready yet. The actual publication is not accessed until execution of task.
 
-        Setup publication for android library shall be done at late afterEvaluate, so that android library plugin
-        has change to create the components and source sets.
+       Setup publication for android library shall be done at late afterEvaluate, so that android library plugin
+       has change to create the components and source sets.
 
      */
     override fun apply(p: Project) {
@@ -316,13 +317,13 @@ open class JarbirdPlugin : Plugin<Project> {
          */
 
         with(project.pluginManager) {
-             /**
-             * "com.jfrog.artifactory"
-             *     afterEvaluate:
-             *         artifactoryTasks task depends on subProject
-             *     projectEvaluated:
-             *         finalize artifactoryTasks task
-             */
+            /*
+            * "com.jfrog.artifactory"
+            *     afterEvaluate:
+            *         artifactoryTasks task depends on subProject
+            *     projectEvaluated:
+            *         finalize artifactoryTasks task
+            */
             apply(ArtifactoryPlugin::class.java)
         }
     }

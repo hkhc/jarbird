@@ -36,10 +36,11 @@ class AndroidJarbirdPubImpl(
     variant: String = ""
 ) : JarbirdPubImpl(
     project,
+    projectProperty,
+    variant,
     parentVariantStrategy,
     parentRepoDeclaration,
-    parentDocDeclaration,
-    projectProperty, variant
+    parentDocDeclaration
 ) {
 
     private var libraryVariant: LibraryVariant? = null
@@ -64,9 +65,6 @@ class AndroidJarbirdPubImpl(
     }
 
     // As initial value, we don't use getter wrapper to access component and sourceSet.
-    override fun sourceSetModel(): SourceSetModel? = if (libraryVariant != null) {
-        AndroidLibraryVariantSourceSetModel(project, libraryVariant!!)
-    } else {
-        super.sourceSetModel()
-    }
+    override fun sourceSetModel(): SourceSetModel? =
+        libraryVariant?.let { AndroidLibraryVariantSourceSetModel(project, it) } ?: super.sourceSetModel()
 }

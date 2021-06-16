@@ -37,11 +37,11 @@ import org.gradle.kotlin.dsl.get
 
 open class JarbirdPubImpl(
     protected val project: Project,
-    parentVariantStrategy: VariantStrategy,
-    parentRepoDeclaration: RepoDeclaration,
-    parentDocDeclaration: DocDeclaration,
     projectProperty: ProjectProperty,
-    variant: String = ""
+    variant: String = "",
+    parentVariantStrategy: VariantStrategy? = null,
+    parentRepoDeclaration: RepoDeclaration? = null,
+    parentDocDeclaration: DocDeclaration? = null
 ) : JarbirdPub,
     SigningStrategy by SigningStrategyImpl(),
     PubVariantStrategy by PubVariantStrategyImpl(variant, parentVariantStrategy),
@@ -68,13 +68,9 @@ open class JarbirdPubImpl(
             mSourceSet = value
         }
 
-    open fun sourceSetModel(): SourceSetModel? = if (component != null) {
-        JavaConventionSourceSetModel(project)
-    } else if (sourceSet != null) {
-        JavaConventionSourceSetModel(project, sourceSet!!.name)
-    } else {
-        null
-    }
+    open fun sourceSetModel(): SourceSetModel? =
+        component?.let { JavaConventionSourceSetModel(project) }
+            ?: sourceSet?.let { JavaConventionSourceSetModel(project, it.name) }
 
     override fun getGAV(): String {
         return "${pom.group}:${variantArtifactId()}:${variantVersion()}"

@@ -25,10 +25,10 @@ import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
-class StringNodeBuilderTest: FunSpec( {
+class StringNodeBuilderTest : FunSpec({
 
     test("Single Node") {
-        val tree = TreeBuilder<String>().build("Hello") {  }
+        val tree = TreeBuilder<String>().build("Hello") { }
         TreePrinter(TaskTreeTheme).dumpToString(tree) shouldBe """
             Hello
             

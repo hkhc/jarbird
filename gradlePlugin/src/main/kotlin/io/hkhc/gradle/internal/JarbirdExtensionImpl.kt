@@ -26,7 +26,7 @@ import io.hkhc.gradle.RepoDeclaration
 import io.hkhc.gradle.SigningStrategy
 import io.hkhc.gradle.VariantStrategy
 import io.hkhc.gradle.internal.pub.DocDeclarationImpl
-import io.hkhc.gradle.internal.pub.ExtRepoDeclarationsImpl
+import io.hkhc.gradle.internal.pub.RepoDeclarationsImpl
 import io.hkhc.gradle.internal.pub.SigningStrategyImpl
 import io.hkhc.gradle.internal.pub.VariantStrategyImpl
 import io.hkhc.gradle.internal.utils.initPub
@@ -38,7 +38,7 @@ open class JarbirdExtensionImpl(
     protected val projectProperty: ProjectProperty,
     private val pomResolver: PomResolver
 ) : JarbirdExtension,
-    RepoDeclaration by ExtRepoDeclarationsImpl(project, projectProperty, getParentExt(project)),
+    RepoDeclaration by RepoDeclarationsImpl(project, projectProperty, getParentExt(project)),
     DocDeclaration by DocDeclarationImpl(getParentExt(project), null /* no default */),
     SigningStrategy by SigningStrategyImpl(getParentExt(project)),
     VariantStrategy by VariantStrategyImpl(getParentExt(project)) {
@@ -64,11 +64,11 @@ open class JarbirdExtensionImpl(
     open fun newPub(project: Project, variant: String = ""): JarbirdPubImpl {
         return JarbirdPubImpl(
             project,
-            this,
-            this,
-            this,
             projectProperty,
-            variant
+            variant,
+            this,
+            this,
+            this
         ).apply {
             pubList.add(this)
         }

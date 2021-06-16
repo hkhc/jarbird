@@ -21,12 +21,18 @@ package io.hkhc.gradle.internal
 import io.hkhc.gradle.JarbirdExtension
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
+import org.gradle.api.GradleException
 
 internal fun JarbirdPub.pubNameWithVariant(pubName: String = this.pubName): String {
     return "${pubName}${variant.capitalize()}"
 }
 
-internal fun JarbirdPub.pluginMarkerArtifactIdWithVariant() = "${pom.plugin!!.id}.gradle.plugin"
+internal fun JarbirdPub.pluginMarkerArtifactIdWithVariant(): String {
+    return pom.plugin?.let {
+        "${it.id}.gradle.plugin"
+    }
+    ?: throw GradleException("POM plugin is unexpectedly null. Probably a bug.")
+}
 
 // If function is suffixed with "Cap" this means the callers do not need to worry about the first letter case.
 // It should always be capitalized. If it is not with "Cap", then there is no such guarantee.

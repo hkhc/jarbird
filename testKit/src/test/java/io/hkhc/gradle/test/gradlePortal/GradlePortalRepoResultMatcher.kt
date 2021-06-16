@@ -19,8 +19,6 @@
 package io.hkhc.gradle.test.gradlePortal
 
 import io.hkhc.gradle.test.GradlePortalRepoResult
-import io.hkhc.gradle.test.MavenRepoResult
-import io.hkhc.gradle.test.maven.MavenPublishingChecker
 import io.kotest.matchers.Matcher
 import io.kotest.matchers.MatcherResult
 

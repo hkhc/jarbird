@@ -47,27 +47,27 @@ class PropertyRepoSpecBuilder(
 
     fun buildArtifactoryRepo(key: String): ArtifactoryRepoSpec =
         with(PropertyBuilder(projectProperty, "artifactory.$key")) {
-        val result = ArtifactoryRepoSpecImpl(
-            releaseUrl = resolve("release"),
-            snapshotUrl = resolve("snapshot"),
-            username = resolve("username"),
-            password = resolve("password"),
-            description = resolve("description", "Artifactory repository '$key'"),
-            repoKey = resolve("repoKey"),
-            id = normalizePubName("artifactory.$key").capitalize()
-        )
-        if (result.releaseUrl.isNullOrEmpty() && result.snapshotUrl.isNullOrEmpty()) {
-            throw GradleException(
-                "Artifactory repository ${result.id} must have either 'release' or 'snapshot' property"
+            val result = ArtifactoryRepoSpecImpl(
+                releaseUrl = resolve("release"),
+                snapshotUrl = resolve("snapshot"),
+                username = resolve("username"),
+                password = resolve("password"),
+                description = resolve("description", "Artifactory repository '$key'"),
+                repoKey = resolve("repoKey"),
+                id = normalizePubName("artifactory.$key").capitalize()
             )
+            if (result.releaseUrl.isNullOrEmpty() && result.snapshotUrl.isNullOrEmpty()) {
+                throw GradleException(
+                    "Artifactory repository ${result.id} must have either 'release' or 'snapshot' property"
+                )
+            }
+            if (result.repoKey.isNullOrEmpty()) {
+                throw GradleException(
+                    "Artifactory repository ${result.id} must have 'repoKey' property."
+                )
+            }
+            return result
         }
-        if (result.repoKey.isNullOrEmpty()) {
-            throw GradleException(
-                "Artifactory repository ${result.id} must have 'repoKey' property."
-            )
-        }
-        return result
-    }
 
     fun buildMavenCentral(project: Project): MavenRepoSpec = with(PropertyBuilder(projectProperty, "mavencentral")) {
 

@@ -94,7 +94,7 @@ internal class BuildFlowBuilder(
 
                 if (pubs.needReposWithType<ArtifactoryRepoSpec>()) {
                     logger.info("config artifactory")
-                    ArtifactoryConfig(this, extension as JarbirdExtensionImpl, pubs).config()
+                    ArtifactoryConfig(this, pubs).config()
                 }
             }
         }

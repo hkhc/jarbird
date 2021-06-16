@@ -19,6 +19,7 @@
 package io.hkhc.utils.test
 
 import io.hkhc.utils.tree.Node
+import io.hkhc.utils.tree.StringNode
 import io.hkhc.utils.tree.Tree
 import io.mockk.every
 import io.mockk.mockk
@@ -27,6 +28,10 @@ import org.gradle.api.Task
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.api.specs.Spec
 
+fun createSingleMockProject(name: String): Project {
+    return createMockProjectTree(StringNode("name"), mutableMapOf(), null, null)
+}
+
 fun createMockProjectTree(
     stringNode: Node<String>,
     map: MutableMap<String, Project>,
@@ -34,7 +39,6 @@ fun createMockProjectTree(
     parentProj: Project?
 ): Project {
     val p = mockk<Project> {
-        println("create project ${stringNode.text()}")
         every { name } returns stringNode.text()
         every { project } returns this
         every { rootProject } returns (rootProj ?: this)
@@ -64,7 +68,6 @@ fun createMockProjectTree(
             every { logger.info(any()) } returns Unit
         }
 
-        println("save to global map (${stringNode.text()})")
         map[stringNode.text()] = this
     }
 

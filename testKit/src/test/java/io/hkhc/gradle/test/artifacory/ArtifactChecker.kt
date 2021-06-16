@@ -50,12 +50,12 @@ class ArtifactChecker {
                         .flatMap {
                             if (pluginMarkerCoordinate.version.isSnapshot()) {
                                 listOf(
-                                    File("$versionWithVariant/${pluginId}.gradle.plugin-${versionWithVariant}$it")
+                                    File("$versionWithVariant/$pluginId.gradle.plugin-$versionWithVariant$it")
                                 )
                             } else {
                                 listOf(
-                                    File("$versionWithVariant/${pluginId}.gradle.plugin-${versionWithVariant}$it"),
-                                    File("$versionWithVariant/${pluginId}.gradle.plugin-${versionWithVariant}$it.asc")
+                                    File("$versionWithVariant/$pluginId.gradle.plugin-$versionWithVariant$it"),
+                                    File("$versionWithVariant/$pluginId.gradle.plugin-$versionWithVariant$it.asc")
                                 )
                             }
                         }
@@ -69,7 +69,6 @@ class ArtifactChecker {
                 files shouldContainExactlyInAnyOrder expectedFileList
             }
         }
-
     }
 
     fun verifyRepository(repoDir: File, coordinate: Coordinate, packaging: String) {

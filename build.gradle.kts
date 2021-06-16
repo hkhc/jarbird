@@ -30,6 +30,7 @@ buildscript {
 jarbird {
     mavenLocal()
     mavenCentral()
+    artifactory("hc")
     signWithKeybox()
     dokkaConfig {
         dokkaSourceSets.forEach {

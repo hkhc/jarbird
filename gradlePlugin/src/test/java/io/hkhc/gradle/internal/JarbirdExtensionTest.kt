@@ -329,4 +329,18 @@ class JarbirdExtensionTest : FunSpec({
             ext.getRepos().shouldHaveSize(1)
         }
     }
+
+    context("Jarbird extension and JarbirdPub") {
+
+        val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
+
+        val pub = ext.pub {}
+
+        ext.artifactory("mock")
+
+        // the pub inherit the repository from extension
+        pub.getRepos().map { it.id } shouldBe listOf("ArtifactoryMock")
+
+    }
+
 })

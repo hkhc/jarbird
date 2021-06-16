@@ -19,7 +19,6 @@
 package io.hkhc.gradle
 
 import io.hkhc.gradle.pom.internal.isSnapshot
-import io.hkhc.gradle.taskinfo.TaskInfo
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
 import io.hkhc.gradle.test.MavenRepoResult
@@ -28,7 +27,6 @@ import io.hkhc.gradle.test.buildGradleKts
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme

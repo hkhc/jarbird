@@ -102,7 +102,7 @@ class PluginPublishingModel(project: Project, pubs: List<JarbirdPub>) {
             val entries = mutableListOf<PluginEntry>()
 
             pluginPubs.forEach {
-                it.pom.plugin?.let { plugin -> // plugin sbould not be null here
+                it.pom.plugin?.let { plugin -> // plugin should not be null here
                     with(it.pom) {
                         entries.add(
                             PluginEntry(

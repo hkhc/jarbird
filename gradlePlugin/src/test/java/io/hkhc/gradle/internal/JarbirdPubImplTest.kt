@@ -56,7 +56,7 @@ class JarbirdPubImplTest : FunSpec({
     }
 
     test("Default value") {
-        val pub = JarbirdPubImpl(project, ext, ext, ext, projectProperty)
+        val pub = JarbirdPubImpl(project, projectProperty, "", ext, ext, ext)
 
         val component: SoftwareComponent = mockk()
 
@@ -66,7 +66,7 @@ class JarbirdPubImplTest : FunSpec({
     }
 
     test("Setup component") {
-        val pub = JarbirdPubImpl(project, ext, ext, ext, projectProperty)
+        val pub = JarbirdPubImpl(project, projectProperty, "", ext, ext, ext)
 
         val component: SoftwareComponent = mockk()
 
@@ -76,7 +76,7 @@ class JarbirdPubImplTest : FunSpec({
     }
 
     test("Setup sourceSet") {
-        val pub = JarbirdPubImpl(project, ext, ext, ext, projectProperty)
+        val pub = JarbirdPubImpl(project, projectProperty, "", ext, ext, ext)
 
         val sourceSet: SourceSet = mockk()
 

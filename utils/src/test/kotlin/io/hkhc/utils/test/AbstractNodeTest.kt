@@ -24,7 +24,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-class AbstractNodeTest: FunSpec( {
+class AbstractNodeTest : FunSpec({
 
     context("toString") {
         test("single node toString") {
@@ -58,5 +58,4 @@ class AbstractNodeTest: FunSpec( {
                 (TreeBuilder<String>().build("hello") { "Pluto"() })
         }
     }
-
 })

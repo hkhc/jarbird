@@ -187,13 +187,13 @@ object JbPublish {
         fun mavenRepo(spec: MavenRepoSpec) = MavenRepoTask(prefixInfo.append(toInfo), spec)
         val mavenRepo = AllMavenRepoTask(prefixInfo.append(toInfo))
         fun mavenCentral(): MavenRepoTask {
-            val mavenCentralRepoSpec = pub?.let { it.getRepos().filterIsInstance<MavenCentralRepoSpec>()[0] }
-            if (mavenCentralRepoSpec == null) {
+            val mavenCentralRepoSpecs = pub?.reposWithType<MavenCentralRepoSpec>() ?: listOf()
+            if (mavenCentralRepoSpecs.isEmpty()) {
                 throw GradleException("No MavenCentral repository is declared")
             } else {
                 return MavenRepoTask(
                     prefixInfo.append(toInfo),
-                    mavenCentralRepoSpec!!
+                    mavenCentralRepoSpecs[0] // not empty, so it should not throw error
                 )
             }
         }

@@ -59,17 +59,16 @@ class GradlePortalRepoPatterns(
                 ).toString()
             )
                 .flatMap {
-//                    metafile(it, coor) +
-                        listOf(relativePath(
-                            it,
-                            coor.versionWithVariant,
-                            "${coor.pluginId}.gradle.plugin-${versionTransformer(coor.versionWithVariant)}.pom"
-                        ).toString()).flatMap {
-                            if (isSnapshot(coor))
-                                listOf(it)
-                            else
-                                listOf(it, "${it}.asc")
-                        }
+                    listOf(relativePath(
+                        it,
+                        coor.versionWithVariant,
+                        "${coor.pluginId}.gradle.plugin-${versionTransformer(coor.versionWithVariant)}.pom"
+                    ).toString()).flatMap {
+                        if (isSnapshot(coor))
+                            listOf(it)
+                        else
+                            listOf(it, "$it.asc")
+                    }
                 }
                 .flatMap(::hashedPaths)
         } ?: listOf()

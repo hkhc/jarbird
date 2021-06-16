@@ -87,36 +87,34 @@ class BuildMavenLocalTest : FunSpec({
                     .toStringTree()
 
                 actualTaskTree shouldBe
-                stringTreeOf(NoBarTheme) {
-                    ":jbPublishToMavenLocal SUCCESS" {
-                        ":jbPublishTestArtifactToMavenLocal SUCCESS" {
-                            ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
-                                ":generateMetadataFileForTestArtifactPublication SUCCESS" {
-                                    ":jar SUCCESS"()
-                                }
-                                ":generatePomFileForTestArtifactPublication SUCCESS"()
-                                ":jar SUCCESS"()
-                                ":jbDokkaJarTestArtifact SUCCESS" {
-                                    ":jbDokkaHtmlTestArtifact SUCCESS"()
-                                }
-                                ":signTestArtifactPublication SUCCESS" {
+                    stringTreeOf(NoBarTheme) {
+                        ":jbPublishToMavenLocal SUCCESS" {
+                            ":jbPublishTestArtifactToMavenLocal SUCCESS" {
+                                ":publishTestArtifactPublicationToMavenLocal SUCCESS" {
                                     ":generateMetadataFileForTestArtifactPublication SUCCESS" {
                                         ":jar SUCCESS"()
                                     }
-                                    ":generatePomFileForTestArtifactPublication SUCCESS" {
-
-                                    }
+                                    ":generatePomFileForTestArtifactPublication SUCCESS"()
                                     ":jar SUCCESS"()
                                     ":jbDokkaJarTestArtifact SUCCESS" {
                                         ":jbDokkaHtmlTestArtifact SUCCESS"()
                                     }
+                                    ":signTestArtifactPublication SUCCESS" {
+                                        ":generateMetadataFileForTestArtifactPublication SUCCESS" {
+                                            ":jar SUCCESS"()
+                                        }
+                                        ":generatePomFileForTestArtifactPublication SUCCESS"()
+                                        ":jar SUCCESS"()
+                                        ":jbDokkaJarTestArtifact SUCCESS" {
+                                            ":jbDokkaHtmlTestArtifact SUCCESS"()
+                                        }
+                                        ":sourcesJarTestArtifact SUCCESS"()
+                                    }
                                     ":sourcesJarTestArtifact SUCCESS"()
                                 }
-                                ":sourcesJarTestArtifact SUCCESS"()
                             }
                         }
                     }
-                }
             }
 
             LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should publishToMavenLocalCompletely()

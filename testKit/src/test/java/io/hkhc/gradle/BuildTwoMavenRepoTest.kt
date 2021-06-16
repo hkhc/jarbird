@@ -27,7 +27,6 @@ import io.hkhc.gradle.test.buildTwoLocalGradleKts
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
 import io.hkhc.gradle.test.printFileTree
-import io.hkhc.gradle.test.shouldBeNoDifference
 import io.hkhc.gradle.test.simpleTwoPoms
 import io.hkhc.test.utils.test.tempDirectory
 import io.hkhc.utils.tree.NoBarTheme
@@ -171,8 +170,8 @@ class BuildTwoMavenRepoTest : FunSpec({
         context("to release two global Maven Repositories") {
 
             val coordinates = listOf(
-                Coordinate("test.group", "test.artifact1", "0.1", versionWithVariant="0.1-lib1"),
-                Coordinate("test.group", "test.artifact2", "0.1", versionWithVariant="0.1-lib2")
+                Coordinate("test.group", "test.artifact1", "0.1", versionWithVariant = "0.1-lib1"),
+                Coordinate("test.group", "test.artifact2", "0.1", versionWithVariant = "0.1-lib2")
             )
             val setup = commonSetup(
                 coordinates,
@@ -186,7 +185,7 @@ class BuildTwoMavenRepoTest : FunSpec({
                                         ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
                                     }
                                     ":signTestArtifact1Lib1Publication SUCCESS" {
-                                       ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
+                                        ":generatePomFileForTestArtifact1Lib1Publication SUCCESS"()
                                         ":jbDokkaJarTestArtifact1Lib1 SUCCESS" {
                                             ":jbDokkaHtmlTestArtifact1Lib1 SUCCESS"()
                                         }

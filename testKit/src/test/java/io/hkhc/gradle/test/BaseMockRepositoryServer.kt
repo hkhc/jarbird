@@ -22,7 +22,6 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import java.nio.charset.Charset
 
 abstract class BaseMockRepositoryServer {
     private lateinit var server: MockWebServer
@@ -33,11 +32,8 @@ abstract class BaseMockRepositoryServer {
     abstract fun setupMatcher(coordinates: List<Coordinate>, baseUrl: String): List<RequestMatcher>
 
     private fun pathMatcher(request: RecordedRequest): MockResponse {
-        return matcher.find { it.matches(request) }?.
-            responseHandler?.invoke(request, MockResponse()) ?: FileNotFound.invoke(
-            request,
-            MockResponse()
-        )
+        return matcher.find { it.matches(request) }?.responseHandler?.invoke(request, MockResponse())
+            ?: FileNotFound.invoke(request, MockResponse())
     }
 
     fun setUp(coordinates: List<Coordinate>, baseUrl: String) {

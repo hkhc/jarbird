@@ -31,6 +31,7 @@ import io.hkhc.gradle.pom.Web
 import io.hkhc.utils.removeLineBreak
 import io.hkhc.utils.test.MockExtensionContainer
 import io.hkhc.utils.test.createMockProjectTree
+import io.hkhc.utils.test.createSingleMockProject
 import io.hkhc.utils.tree.NoBarTheme
 import io.hkhc.utils.tree.defaultTreeTheme
 import io.hkhc.utils.tree.stringTreeOf
@@ -57,11 +58,7 @@ class PluginPublishingConfigTest : FunSpec({
     lateinit var project: Project
 
     beforeTest {
-
-        val projectMap = createMockProjectTree(stringTreeOf {
-            "app"()
-        })
-        project = projectMap["app"]!!
+        project = createSingleMockProject("app")
     }
 
     context("PluginPublishingModel.filterGradlePluginPubs") {
@@ -209,11 +206,6 @@ class PluginPublishingConfigTest : FunSpec({
 
     context("plugin publishing model") {
 
-        val projectMap = createMockProjectTree(stringTreeOf {
-            "app"()
-        })
-        val project = projectMap["app"]!!
-
         test("non gradle plugin declaration") {
 
             val pubs = List<JarbirdPub>(1) {
@@ -285,10 +277,6 @@ class PluginPublishingConfigTest : FunSpec({
             }
 
         test("GradlePluginDevelopmentExtension") {
-            val projectMap = createMockProjectTree(stringTreeOf {
-                "app"()
-            })
-            val project = projectMap["app"]!!
 
             (project.extensions as MockExtensionContainer).mockExtensions = mapOf(
                 GradlePluginDevelopmentExtension::class.java to mockGradlePluginDevelopmentExtension,

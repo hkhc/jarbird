@@ -21,7 +21,6 @@ package io.hkhc.gradle.test.gradlePortal
 import groovy.util.GroovyTestCase
 import io.hkhc.gradle.internal.SNAPSHOT_SUFFIX
 import io.hkhc.gradle.test.Coordinate
-import io.hkhc.gradle.test.maven.MavenRepoPatterns
 import io.kotest.assertions.fail
 import okhttp3.mockwebserver.RecordedRequest
 

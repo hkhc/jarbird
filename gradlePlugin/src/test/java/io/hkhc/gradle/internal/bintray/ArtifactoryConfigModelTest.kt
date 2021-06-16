@@ -21,6 +21,7 @@ package io.hkhc.gradle.internal.bintray
 import io.hkhc.gradle.internal.DefaultProjectInfo
 import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.JarbirdLogger
+import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.PomResolver
 import io.hkhc.gradle.internal.PomResolverImpl
 import io.hkhc.gradle.pom.PluginInfo
@@ -54,12 +55,10 @@ class ArtifactoryConfigModelTest : FunSpec({
     test("empty repos") {
 
         // WHEN
-        val model = ArtifactoryConfigModel(listOf())
+        shouldThrow<GradleException> {
+            ArtifactoryConfigModel(listOf())
+        }.message shouldBe "$LOG_PREFIX Artifactory repo spec is not found unexpectedly. Probably a bug of Jarbird"
 
-        // THEN
-        model.needsArtifactory() shouldBe false
-        model.contextUrl shouldBe null
-        model.publications.shouldBeEmpty()
     }
 
     test("one repo with no artifactory repos") {
@@ -71,12 +70,11 @@ class ArtifactoryConfigModelTest : FunSpec({
 
         // WHEN
         val pub = ext.pub {}
-        val model = ArtifactoryConfigModel(listOf(pub))
 
-        // THEN
-        model.needsArtifactory() shouldBe false
-        model.contextUrl shouldBe null
-        model.publications.shouldBeEmpty()
+        shouldThrow<GradleException> {
+            ArtifactoryConfigModel(listOf(pub))
+        }.message shouldBe "$LOG_PREFIX Artifactory repo spec is not found unexpectedly. Probably a bug of Jarbird"
+
     }
 
     test("one artifactory repos") {
@@ -113,7 +111,7 @@ class ArtifactoryConfigModelTest : FunSpec({
         model.publications.shouldHaveSize(1)
         model.publications[0] shouldBe "mylib"
         model.repoSpec shouldNotBe null
-        with(model.repoSpec!!) {
+        with(model.repoSpec) {
             repoKey shouldBe projectProperty.property("repository.artifactory.mock.repoKey")
             username shouldBe projectProperty.property("repository.artifactory.mock.username")
             password shouldBe projectProperty.property("repository.artifactory.mock.password")
@@ -155,7 +153,7 @@ class ArtifactoryConfigModelTest : FunSpec({
         model.publications.shouldHaveSize(1)
         model.publications[0] shouldBe "mylib"
         model.repoSpec shouldNotBe null
-        with(model.repoSpec!!) {
+        with(model.repoSpec) {
             repoKey shouldBe projectProperty.property("repository.artifactory.mock.repoKey")
             username shouldBe projectProperty.property("repository.artifactory.mock.username")
             password shouldBe projectProperty.property("repository.artifactory.mock.password")
@@ -197,7 +195,7 @@ class ArtifactoryConfigModelTest : FunSpec({
         model.publications.shouldHaveSize(1)
         model.publications[0] shouldBe "mylib"
         model.repoSpec shouldNotBe null
-        with(model.repoSpec!!) {
+        with(model.repoSpec) {
             repoKey shouldBe projectProperty.property("repository.artifactory.mock.repoKey")
             username shouldBe projectProperty.property("repository.artifactory.mock.username")
             password shouldBe projectProperty.property("repository.artifactory.mock.password")
@@ -284,7 +282,7 @@ class ArtifactoryConfigModelTest : FunSpec({
         model.contextUrl shouldBe projectProperty.property("repository.artifactory.mock.release")
         model.publications shouldBe listOf("mylib1Variant1", "mylib2Variant2")
         model.repoSpec shouldNotBe null
-        with(model.repoSpec!!) {
+        with(model.repoSpec) {
             repoKey shouldBe projectProperty.property("repository.artifactory.mock.repoKey")
             username shouldBe projectProperty.property("repository.artifactory.mock.username")
             password shouldBe projectProperty.property("repository.artifactory.mock.password")
@@ -369,7 +367,7 @@ class ArtifactoryConfigModelTest : FunSpec({
         model.contextUrl shouldBe projectProperty.property("repository.artifactory.mock.release")
         model.publications shouldBe listOf("mylib", "mylibPluginMarkerMaven")
         model.repoSpec shouldNotBe null
-        with(model.repoSpec!!) {
+        with(model.repoSpec) {
             repoKey shouldBe projectProperty.property("repository.artifactory.mock.repoKey")
             username shouldBe projectProperty.property("repository.artifactory.mock.username")
             password shouldBe projectProperty.property("repository.artifactory.mock.password")

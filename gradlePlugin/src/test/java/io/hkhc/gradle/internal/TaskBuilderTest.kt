@@ -20,13 +20,14 @@ package io.hkhc.gradle.internal
 
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.RepoSpec
-import io.hkhc.gradle.internal.repo.GradlePortalSpecImpl
-import io.hkhc.gradle.pom.PluginInfo
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
+import io.hkhc.gradle.internal.repo.MavenCentralRepoSpec
+import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import io.hkhc.gradle.pom.Pom
 import io.hkhc.utils.test.MockTaskContainer
 import io.hkhc.utils.test.createMockProjectTree
+import io.hkhc.utils.test.createSingleMockProject
 import io.hkhc.utils.tree.NoBarTheme
-import io.hkhc.utils.tree.RoundTheme
 import io.hkhc.utils.tree.defaultTreeTheme
 import io.hkhc.utils.tree.stringTreeOf
 import io.kotest.core.spec.style.FunSpec
@@ -40,77 +41,93 @@ class TaskBuilderTest : FunSpec({
         defaultTreeTheme = NoBarTheme
     }
 
-    context("gradle portal") {
+    test("jbPublish") {
 
-        test("single project one pub to gradle portal") {
-            val projectMap = createMockProjectTree(
+        val project = createSingleMockProject("app")
+
+        TaskInfo.eagar = true
+
+        val pubs = List<JarbirdPub>(1) {
+            mockk {
+                every { variant } returns ""
+                every { pubName } returns "pub"
+                every { pom } returns Pom(
+                    group = "group",
+                    artifactId = "mylib",
+                    version = "1.0"
+                )
+                every { getGAV() } returns "group:mylib:1.0"
+                every { getRepos() } returns setOf<RepoSpec>(
+                    object : ArtifactoryRepoSpec {
+                        override val description: String = "artifactory description"
+                        override val id: String = "mock"
+                        override val username: String = "username"
+                        override val password: String = "password"
+                        override val releaseUrl: String = "https://artifactory_release"
+                        override val snapshotUrl: String = "https://artifactory_snapshot"
+                        override val repoKey: String = "artifactory-repo"
+                    },
+                    object : MavenRepoSpec {
+                        override val description: String = "maven description"
+                        override val id: String = "mock"
+                        override val username: String = "username"
+                        override val password: String = "password"
+                        override val isAllowInsecureProtocol: Boolean = false
+                        override val releaseUrl: String = "https://maven_release"
+                        override val snapshotUrl: String = "https://maven_snapshot"
+                    },
+                    object : MavenCentralRepoSpec {
+                        override val description: String = "maven central description"
+                        override val id: String = "mavencentral"
+                        override val username: String = "username"
+                        override val password: String = "password"
+                        override val isAllowInsecureProtocol: Boolean = false
+                        override val releaseUrl: String = "https://maven_central_release"
+                        override val snapshotUrl: String = "https://maven_central_snapshot"
+                        override val newUser: Boolean = true
+                    }
+                )
+            }
+        }
+
+        val builder = TaskBuilder(project, pubs)
+        builder.build()
+
+        (project.tasks as MockTaskContainer).convertToTrees() shouldBe
+            listOf(
                 stringTreeOf {
-                    "app"()
-                }
-            )
-            val project = projectMap["app"]!!
-
-            TaskInfo.eagar = true
-
-            val pubs = List<JarbirdPub>(1) {
-                mockk {
-                    every { variant } returns ""
-                    every { pubName } returns "pub"
-                    every { pom } returns Pom(plugin = PluginInfo())
-                    every { getRepos() } returns setOf<RepoSpec>(GradlePortalSpecImpl())
-                }
-            }
-
-            val builder = TaskBuilder(project, pubs)
-            builder.registerGradlePortalTask(project.tasks)
-
-            (project.tasks as MockTaskContainer).convertToTrees() shouldBe
-                listOf(
-                    stringTreeOf {
-                        "jbPublishToGradlePluginPortal" {
-                            "jbPublishPubToGradlePluginPortal" {
-                                "publishPlugins"()
+                    "jbPublishPub" {
+                        "jbPublishPubToMavenLocal"()
+                        "jbPublishPubToMavenRepositories" {
+                            "jbPublishPubToMock" {
+                                "publishPubPublicationToMockRepository"()
+                            }
+                            "jbPublishPubToMavencentral" {
+                                "publishPubPublicationToMavencentralRepository"()
                             }
                         }
                     }
-                )
-        }
-
-        test("single project two pubs to gradle portal") {
-            val projectMap = createMockProjectTree(
-                stringTreeOf(RoundTheme) {
-                    "app"()
-                }
-            )
-            val project = projectMap["app"]!!
-
-            TaskInfo.eagar = true
-
-            val pubs = List<JarbirdPub>(2) {
-                mockk {
-                    every { variant } returns ""
-                    every { pubName } returns "pub${it + 1}"
-                    every { pom } returns Pom(plugin = PluginInfo())
-                    every { getRepos() } returns setOf<RepoSpec>(GradlePortalSpecImpl())
-                }
-            }
-
-            val builder = TaskBuilder(project, pubs)
-            builder.registerGradlePortalTask(project.tasks)
-
-            (project.tasks as MockTaskContainer).convertToTrees() shouldBe
-                listOf(
-                    stringTreeOf {
-                        "jbPublishToGradlePluginPortal" {
-                            "jbPublishPub1ToGradlePluginPortal" {
-                                "publishPlugins"()
+                },
+                stringTreeOf {
+                    "jbPublish" {
+                        "jbPublishToMavenLocal"()
+                        "jbPublishToMavenRepositories" {
+                            "jbPublishToMock" {
+                                "jbPublishPubToMock" {
+                                    "publishPubPublicationToMockRepository"()
+                                }
                             }
-                            "jbPublishPub2ToGradlePluginPortal" {
-                                "publishPlugins"()
+                            "jbPublishToMavencentral" {
+                                "jbPublishPubToMavencentral" {
+                                    "publishPubPublicationToMavencentralRepository"()
+                                }
                             }
                         }
                     }
-                )
-        }
+                    "jbPublishToArtifactory" {
+                        "artifactoryPublish"()
+                    }
+                }
+            )
     }
 })

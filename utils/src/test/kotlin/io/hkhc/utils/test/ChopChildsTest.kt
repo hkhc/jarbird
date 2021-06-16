@@ -33,11 +33,11 @@ class ChopChildsTest : FunSpec({
                 "Hello"()
             }.chopChilds { it.text() == "Hello" }
         ) shouldBe
-        TreePrinter().dumpToString(
-            stringTreeOf {
-                "Hello"()
-            }
-        )
+            TreePrinter().dumpToString(
+                stringTreeOf {
+                    "Hello"()
+                }
+            )
     }
 
     test("two node and chop nothing") {

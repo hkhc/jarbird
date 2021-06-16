@@ -18,6 +18,7 @@
 
 package io.hkhc.gradle.internal
 
+import com.google.common.annotations.VisibleForTesting
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.bintray.ArtifactoryTaskBuilder
 import io.hkhc.gradle.internal.maven.MavenTaskBuilder
@@ -52,6 +53,7 @@ internal class TaskBuilder(
         }
     }
 
+    @VisibleForTesting
     fun TaskContainer.registerPublishTask() {
 
         pubs.forEach { pub ->
@@ -59,8 +61,6 @@ internal class TaskBuilder(
             val taskInfo = JbPublish.pub(pub).taskInfo
 
             taskInfo.register(this) {
-                // TODO depends on jbPublish{pubName}To{mavenLocal}
-                // TODO depends on jbPublish{pubName}To{mavenRepository}
                 dependsOn(JbPublish.pub(pub).to.mavenLocal.taskInfo.name)
                 if (pub.needsReposWithType<MavenRepoSpec>()) {
                     dependsOn(JbPublish.pub(pub).to.mavenRepo.taskInfo.name)
@@ -80,6 +80,7 @@ internal class TaskBuilder(
 //        }
 //    }
 
+    @VisibleForTesting
     fun registerRootTask(): TaskProvider<Task> {
         return JbPublish.taskInfo.register(project) {
             dependsOn(mavenTaskBuilder.getLocalTaskInfo().name)
@@ -97,6 +98,12 @@ internal class TaskBuilder(
 
     fun build() {
 
+        pubs.forEach {
+            println("pub ${it.pubName}")
+            it.getRepos().forEach {
+                println("repos ${it::class.java.name} ${it.id}")
+            }
+        }
         with(project.tasks) {
             registerPublishTask()
             mavenTaskBuilder.also {

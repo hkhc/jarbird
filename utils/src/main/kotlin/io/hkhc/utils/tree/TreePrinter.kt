@@ -72,7 +72,7 @@ class TreePrinter(private val theme: TreeTheme = defaultTreeTheme) {
 
         block.invoke(edgePresenter.getEdge() + node.text())
         node.children().forEachIndexed { childIdx, child ->
-            dump( false, childIdx == node.children().size - 1, child) {
+            dump(false, childIdx == node.children().size - 1, child) {
                 block(edgePresenter.getEdge() + it)
             }
         }

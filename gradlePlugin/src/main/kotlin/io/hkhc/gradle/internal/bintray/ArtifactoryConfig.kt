@@ -24,6 +24,8 @@ import io.hkhc.gradle.internal.JarbirdExtensionImpl
 import io.hkhc.gradle.internal.LOG_PREFIX
 import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.isSingleProject
+import io.hkhc.gradle.internal.needReposWithType
+import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.delegateClosureOf
@@ -35,13 +37,12 @@ import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
 @Suppress("SpreadOperator")
 class ArtifactoryConfig(
     private val project: Project,
-    private val extension: JarbirdExtensionImpl,
     private val pubs: List<JarbirdPub>
 ) {
 
-//    private val publishPlan = BintrayPublishPlan(pubs)
-
     fun config() {
+
+        assert(pubs.needReposWithType<ArtifactoryRepoSpec>())
 
         val convention = project.convention.getPluginByName<ArtifactoryPluginConvention>("artifactory")
 
@@ -77,33 +78,31 @@ class ArtifactoryConfig(
 
         setContextUrl(model.contextUrl)
 
-        model.repoSpec?.let { repoSpec ->
-            publish(
-                delegateClosureOf<PublisherConfig> {
-                    repository(
-                        delegateClosureOf<GroovyObject> {
-                            setProperty("repoKey", repoSpec.repoKey)
-                            setProperty("username", repoSpec.username)
-                            setProperty("password", repoSpec.password)
-                            setProperty("maven", true)
-                        }
-                    )
-                    defaults(
-                        delegateClosureOf<GroovyObject> {
-                            invokeMethod("publications", model.publications.toTypedArray())
-                            setProperty("publishArtifacts", true)
-                            setProperty("publishPom", true)
-                            setProperty("publishIvy", false)
-                        }
-                    )
-                }
-            )
+        publish(
+            delegateClosureOf<PublisherConfig> {
+                repository(
+                    delegateClosureOf<GroovyObject> {
+                        setProperty("repoKey", model.repoSpec.repoKey)
+                        setProperty("username", model.repoSpec.username)
+                        setProperty("password", model.repoSpec.password)
+                        setProperty("maven", true)
+                    }
+                )
+                defaults(
+                    delegateClosureOf<GroovyObject> {
+                        invokeMethod("publications", model.publications.toTypedArray())
+                        setProperty("publishArtifacts", true)
+                        setProperty("publishPom", true)
+                        setProperty("publishIvy", false)
+                    }
+                )
+            }
+        )
 
-            resolve(
-                delegateClosureOf<ResolverConfig> {
-                    setProperty("repoKey", repoSpec.repoKey)
-                }
-            )
-        }
+        resolve(
+            delegateClosureOf<ResolverConfig> {
+                setProperty("repoKey", model.repoSpec.repoKey)
+            }
+        )
     }
 }

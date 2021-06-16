@@ -21,13 +21,6 @@ package io.hkhc.gradle.test
 import com.google.gson.Gson
 import java.nio.charset.Charset
 
-//class GetMatcherAtEnd(
-//    path: String,
-//    responseHandler: (RecordedRequest, MockResponse) -> MockResponse
-//) : GetMatcher(path, responseHandler) {
-//    override fun matches(request: RecordedRequest) = request.method == method && (request.path?.endsWith(path) ?: false)
-//}
-
 class MockGradlePortalRepositoryServer : BaseMockRepositoryServer() {
 
     // TODO fix multi coordinates matcher
@@ -39,7 +32,8 @@ class MockGradlePortalRepositoryServer : BaseMockRepositoryServer() {
                     val requestBody = recordedRequest.body.readString(Charset.defaultCharset())
 //                    println("requestBody new ${requestBody}")
                     val requestBodyTree = Gson().fromJson(requestBody, Map::class.java)
-                    val requestUrl = "${recordedRequest.requestUrl!!.scheme}://${recordedRequest.requestUrl!!.host}:${recordedRequest.requestUrl!!.port}"
+                    val requestUrl = recordedRequest.requestUrl?.let { url -> "${url.scheme}://${url.host}:${url.port}" }
+                        ?: throw Exception("requestUrl is null")
                     val artifacts = (requestBodyTree["artifacts"] as List<Map<String,String>>).joinToString(separator = ",") {
                         "\"${it["hash"]}\": \"${requestUrl}${baseUrl}/upload/${it["hash"]}/\""
                     }

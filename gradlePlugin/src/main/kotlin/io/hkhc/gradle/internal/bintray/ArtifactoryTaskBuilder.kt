@@ -21,9 +21,7 @@ package io.hkhc.gradle.internal.bintray
 import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JbPublishToArtifactoryTaskInfo
 import io.hkhc.gradle.internal.TaskInfo
-import io.hkhc.gradle.internal.isMultiProjectRoot
 import io.hkhc.gradle.internal.needReposWithType
-import io.hkhc.gradle.internal.registerRootProjectTasks
 import io.hkhc.gradle.internal.repo.ArtifactoryRepoSpec
 import org.gradle.api.Project
 
@@ -42,15 +40,12 @@ class ArtifactoryTaskBuilder(
     fun getTaskInfo() = taskInfo
 
     fun registerArtifactoryTask() {
-
-        if (project.isMultiProjectRoot()) {
-            project.registerRootProjectTasks(taskInfo)
-        } else {
-            registerLeafArtifactoryTask()
-        }
+        registerLeafArtifactoryTask()
     }
 
     private fun registerLeafArtifactoryTask() {
+
+        println("registerLeafArtifactoryTask")
 
         if (pubs.needReposWithType<ArtifactoryRepoSpec>()) {
 
