@@ -107,7 +107,7 @@ open class JarbirdPlugin : Plugin<Project> {
     // TODO revamp precheck to based on POM Group rather than project
     private fun precheck(pom: Pom, project: Project) {
         with(project) {
-            if (group.toString().isBlank()) {
+            if (group.toString().isEmpty()) {
                 detailMessageError(
                     project.logger,
                     "Group name is not specified",
@@ -115,7 +115,7 @@ open class JarbirdPlugin : Plugin<Project> {
                 )
                 throw GradleException("$LOG_PREFIX Group name is not specified")
             }
-            if (version.toString().isBlank()) {
+            if (version.toString().isEmpty()) {
                 detailMessageError(
                     project.logger,
                     "Version name is not specified",

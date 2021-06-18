@@ -27,6 +27,11 @@ class JavaConventionSourceSetModel(
     private val sourceSetName: String = "main"
 ) : SourceSetModel {
 
+    /*
+     TODO JavaPluginConvention is deprecated in Gradle 7 and will be removed in Gradle 8. So enhance this class to
+     support both JavaPluginConvention and the new JavaPluginExtensioon class.
+     https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/JavaPluginConvention.html
+     */
     private fun getSourceSet(name: String): SourceSet {
 
         val javaPlugin: JavaPluginConvention = project.convention.getPlugin(

@@ -24,6 +24,7 @@ import io.hkhc.gradle.internal.repo.MavenRepoSpec
 import io.hkhc.gradle.internal.repo.PropertyRepoSpecBuilder
 import io.hkhc.utils.test.MockProjectProperty
 import io.hkhc.utils.test.tempDirectory
+import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
@@ -318,6 +319,26 @@ class JarbirdExtensionTest : FunSpec({
             ext.getRepos().shouldHaveSize(1)
             ext.artifactory("mock")
             ext.getRepos().shouldHaveSize(1)
+        }
+
+        test("check duplicated pubs") {
+
+            File(project.projectDir.also { it.mkdirs() }, "pom.yml").writeText(commonGradlePluginPom("0.1"))
+
+            val ext = JarbirdExtensionImpl(project, projectProperty, PomResolverImpl(projectInfo))
+
+            ext.pub("variant1") {}
+
+            ext.pub("variant1") {}
+
+            ext.pubList.shouldHaveSize(2)
+
+            ext.finalizeRepos()
+
+            assertSoftly {
+                ext.pubList[0].pubNameWithVariant() shouldBe "mypluginVariant1"
+                ext.pubList[1].pubNameWithVariant() shouldBe "myplugin1Variant1"
+            }
         }
     }
 

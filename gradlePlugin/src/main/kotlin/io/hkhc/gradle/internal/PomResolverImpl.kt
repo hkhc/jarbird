@@ -35,7 +35,7 @@ class PomResolverImpl(private val projectInfo: ProjectInfo) : PomResolver {
         pomGroup[variant].also { variantPom ->
             if (variantPom == null) {
                 requireNotNull(pomGroup[""]) {
-                    "Variant '$variant' is not found"
+                    "Pom with Variant '$variant' or '' cannot be resolved"
                 }.let {
                     pom = it
                 }

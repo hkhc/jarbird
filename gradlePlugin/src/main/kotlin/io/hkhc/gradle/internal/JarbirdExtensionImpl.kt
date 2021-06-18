@@ -84,6 +84,24 @@ open class JarbirdExtensionImpl(
         action.invoke(this)
     }
 
+    fun hasDuplicatedPub(pubList: List<JarbirdPub>): Boolean {
+        val pubNameSet = mutableSetOf<String>()
+        pubList.forEach {
+            if (pubNameSet.contains(it.pubNameWithVariant())) {
+                return true
+            } else {
+                pubNameSet.add(it.pubNameWithVariant())
+            }
+        }
+        return false
+    }
+
+    fun checkDuplicatedPub() {
+        if (hasDuplicatedPub(pubList)) {
+            throw GradleException("pubs with duplication name are found. Registered pub names are ${pubList.joinToString { it.pubNameWithVariant() }}")
+        }
+    }
+
     /*
     we call initPub in pub method after callback is invoked if variant is not available.
     we call initPub in pub method before callback is invoked if variant is available.
@@ -93,16 +111,16 @@ open class JarbirdExtensionImpl(
     override fun pub(action: Closure<JarbirdPub>): JarbirdPub {
         val newPub = newPub(project)
         newPub.configure(action)
-        initPub(pomResolver, newPub)
+        initPub(pomResolver, pubList, newPub)
         return newPub
     }
 
     override fun pub(variant: String, action: Closure<JarbirdPub>): JarbirdPub {
-        if (pubList.any { it.variant == variant }) {
-            throw GradleException("Duplicated pubs with variant '$variant' are found.")
-        }
+//        if (pubList.any { it.variant == variant }) {
+//            throw GradleException("Duplicated pubs with variant '$variant' are found.")
+//        }
         val newPub = newPub(project, variant)
-        initPub(pomResolver, newPub)
+        initPub(pomResolver, pubList, newPub)
         newPub.configure(action)
         return newPub
     }
@@ -111,39 +129,19 @@ open class JarbirdExtensionImpl(
     override fun pub(action: JarbirdPub.() -> Unit): JarbirdPub {
         val newPub = newPub(project)
         newPub.configure(action)
-        initPub(pomResolver, newPub)
+        initPub(pomResolver, pubList, newPub)
         return newPub
     }
 
     override fun pub(variant: String, action: JarbirdPub.() -> Unit): JarbirdPub {
-        if (pubList.any { it.variant == variant }) {
-            throw GradleException("Duplicated pubs with variant '$variant' are found.")
-        }
+//        if (pubList.any { it.variant == variant }) {
+//            throw GradleException("Duplicated pubs with variant '$variant' are found.")
+//        }
         val newPub = newPub(project, variant)
-        initPub(pomResolver, newPub)
+        initPub(pomResolver, pubList, newPub)
         newPub.configure(action)
         return newPub
     }
-
-//    fun createImplicit() {
-//        /*
-//        if implicit != null, we have already got an implicit, no need to create another
-//        if pubList.isNotEmpty() and implicit == null, we have an non-implicit pub, no need to create implicit
-//         */
-//        if (implicitPub != null || pubList.isNotEmpty()) return
-//        pub {}
-//        implicitPub = pubList[0]
-//    }
-//
-//    fun removeImplicit() {
-//        /*
-//        If implicit == null , means we have not created an implicit pub, no need to remove
-//        If pubList.size == 1 and implicit != null, this means it is the only pub, so we still need it, don't remove
-//         */
-//        if (implicitPub == null || pubList.size == 1) return
-//        pubList.remove(implicitPub)
-//        implicitPub = null
-//    }
 
     fun finalizeRepos() {
         if (project.childProjects.isEmpty() && pubList.isEmpty()) {
@@ -151,5 +149,6 @@ open class JarbirdExtensionImpl(
         }
         mavenLocal()
         pubList.forEach { (it as JarbirdPubImpl).finalizeRepos() }
+        checkDuplicatedPub()
     }
 }

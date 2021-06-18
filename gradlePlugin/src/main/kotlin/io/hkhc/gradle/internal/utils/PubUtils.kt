@@ -18,8 +18,10 @@
 
 package io.hkhc.gradle.internal.utils
 
+import io.hkhc.gradle.JarbirdPub
 import io.hkhc.gradle.internal.JarbirdPubImpl
 import io.hkhc.gradle.internal.PomResolver
+import io.hkhc.gradle.internal.pubNameWithVariant
 
 fun normalizePubName(name: String): String {
     val newName = StringBuffer()
@@ -42,11 +44,21 @@ fun normalizePubName(name: String): String {
     return newName.toString()
 }
 
-fun initPub(pomResolver: PomResolver, pub: JarbirdPubImpl) {
+fun resolveDuplicatedName(pubList: List<JarbirdPub>, proposedName: String): String {
+    var curName = proposedName
+    var curIndex = 1
+    while (pubList.find { it.pubNameWithVariant() == it.pubNameWithVariant(curName) } != null) {
+        curName = "$proposedName$curIndex"
+        curIndex++
+    }
+    return curName
+}
 
-    pub.pom = pomResolver.resolve(pub.variant)
+fun initPub(pomResolver: PomResolver, pubList: List<JarbirdPub>, newPub: JarbirdPubImpl) {
 
-    // TODO handle two publications of same artifactaId in the same module.
-    // check across the whole pubList, and generate alternate pubName if there is colliding of artifactId
-    pub.pubName = normalizePubName(pub.pom.artifactId ?: "Lib")
+    newPub.pom = pomResolver.resolve(newPub.variant)
+
+    val proposedPubName = normalizePubName(newPub.pom.artifactId ?: "Lib")
+
+    newPub.pubName = resolveDuplicatedName(pubList, proposedPubName)
 }

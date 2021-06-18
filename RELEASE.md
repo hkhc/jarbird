@@ -1,3 +1,8 @@
+## 0.7.0
+- Pub declaration will not inherit from parent project
+- No more implicit pub declaration. pubs must be declared explicitly
+- No root project task to relay to sub-projects, to facilitate component publishing from root project.
+
 ## 0.6.0
 - Retire bintray support
 - Supports for multiple artifactory repository
