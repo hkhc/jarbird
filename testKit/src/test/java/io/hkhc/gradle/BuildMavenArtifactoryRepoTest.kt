@@ -22,7 +22,6 @@ import io.hkhc.gradle.pom.internal.isSnapshot
 import io.hkhc.gradle.test.ArtifactoryRepoResult
 import io.hkhc.gradle.test.Coordinate
 import io.hkhc.gradle.test.DefaultGradleProjectSetup
-import io.hkhc.gradle.test.LocalRepoResult
 import io.hkhc.gradle.test.MavenRepoResult
 import io.hkhc.gradle.test.MockMavenRepositoryServer
 import io.hkhc.gradle.test.artifacory.MockArtifactoryRepositoryServer
@@ -30,7 +29,6 @@ import io.hkhc.gradle.test.artifacory.publishedToArtifactoryRepositoryCompletely
 import io.hkhc.gradle.test.buildGradleKts
 import io.hkhc.gradle.test.getTaskTree
 import io.hkhc.gradle.test.maven.publishedToMavenRepositoryCompletely
-import io.hkhc.gradle.test.mavenlocal.publishToMavenLocalCompletely
 import io.hkhc.gradle.test.printFileTree
 import io.hkhc.gradle.test.simplePom
 import io.hkhc.test.utils.test.tempDirectory
@@ -128,9 +126,6 @@ class BuildMavenArtifactoryRepoTest : FunSpec({
 
                     actualTaskTree shouldBe setup.expectedTaskGraph
                 }
-
-                LocalRepoResult(setup.localRepoDirFile, coordinate, "jar") should
-                    publishToMavenLocalCompletely()
 
                 setup.mavenMockServer?.let { server ->
                     MavenRepoResult(
